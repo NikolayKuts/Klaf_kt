@@ -2,7 +2,7 @@ package com.example.klaf.domain.pojo
 
 data class Deck(
     private val id: Int,
-    private val name: String,
+    val name: String,
     private val creationData: Long,
     private val repeatDay: Long,
     private val lastRepeatDate: Long,

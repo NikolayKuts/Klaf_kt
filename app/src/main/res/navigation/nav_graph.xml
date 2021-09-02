@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navication_graph"
+    app:startDestination="@id/deckListFragment">
+    <fragment
+        android:id="@+id/deckListFragment"
+        android:name="com.example.klaf.presentation.fragments.DeckListFragment"
+        android:label="fragment_deck_list"
+        tools:layout="@layout/fragment_deck_list" >
+        <action
+            android:id="@+id/action_deckListFragment_to_repeatFragment"
+            app:destination="@id/repeatFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/repeatFragment"
+        android:name="com.example.klaf.presentation.fragments.RepeatFragment"
+        android:label="fragment_repeat"
+        tools:layout="@layout/fragment_repeat" />
+</navigation>
