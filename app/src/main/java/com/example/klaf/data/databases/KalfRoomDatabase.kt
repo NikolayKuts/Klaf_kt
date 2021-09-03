@@ -18,6 +18,7 @@ abstract class KlafRoomDatabase : RoomDatabase() {
             synchronized(LOCK) {
                 database?.let { return it }
                 val instance = Room.databaseBuilder(context, KlafRoomDatabase::class.java, DB_NAME)
+                    .fallbackToDestructiveMigration()
                     .build()
                 database = instance
                 return instance
