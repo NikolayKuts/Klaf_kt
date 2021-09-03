@@ -14,5 +14,33 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/main_action_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/main_action_button_icon_24"
+        app:tint="@color/white"
+        app:backgroundTint="@color/main_action_button_background_tint"
+        app:maxImageSize="40dp"
+        android:layout_marginEnd="50dp"
+        android:layout_marginBottom="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/create_deck_action_button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginBottom="10dp"
+        app:fabCustomSize="50dp"
+        app:srcCompat="@drawable/create_deck_action_button_icon_24"
+        app:tint="@color/white"
+        app:backgroundTint="@color/main_action_button_background_tint"
+        app:layout_constraintStart_toStartOf="@id/main_action_button"
+        app:layout_constraintEnd_toEndOf="@id/main_action_button"
+        app:layout_constraintBottom_toTopOf="@id/main_action_button"
+        />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
