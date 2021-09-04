@@ -39,7 +39,6 @@ class DeckListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         activity?.let { activity ->
 
-            val navController = findNavController()
             recyclerViewDecks = binding.recyclerviewDecks
 
             recyclerViewDecks?.let { recycler ->
@@ -53,6 +52,7 @@ class DeckListFragment : Fragment() {
                 adapter.decks = decks
             }
 
+            val navController = findNavController()
             binding.createDeckActionButton.setOnClickListener {
                 navController.navigate(DeckListFragmentDirections.actionDeckListFragmentToDeckCreationDialogFragment())
             }
@@ -80,9 +80,12 @@ class DeckListFragment : Fragment() {
             inflate(R.menu.deck_popup_menu)
             show()
             setOnMenuItemClickListener { item ->
+                val navController = findNavController()
                 when (item.itemId) {
                     R.id.item_deck_deleting -> {
-                        Toast.makeText(context, "Deleting dialog", Toast.LENGTH_SHORT).show()
+                        navController.navigate(
+                            R.id.action_deckListFragment_to_deckRemovingDialogFragment
+                        )
                         true
                     }
                     R.id.item_deck_renaming -> {

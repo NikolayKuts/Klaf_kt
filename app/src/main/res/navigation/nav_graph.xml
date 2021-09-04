@@ -18,6 +18,9 @@
         <action
             android:id="@+id/action_deckListFragment_to_deckCreationDialogFragment"
             app:destination="@id/deckCreationDialogFragment" />
+        <action
+            android:id="@+id/action_deckListFragment_to_deckRemovingDialogFragment"
+            app:destination="@id/deckRemovingDialogFragment" />
     </fragment>
     <fragment
         android:id="@+id/repeatFragment"
@@ -68,6 +71,15 @@
         tools:layout="@layout/dialog_deck_creation" >
         <action
             android:id="@+id/action_deckCreationDialogFragment_to_deckListFragment"
+            app:destination="@id/deckListFragment" />
+    </dialog>
+    <dialog
+        android:id="@+id/deckRemovingDialogFragment"
+        android:name="com.example.klaf.presentation.fragments.DeckRemovingDialogFragment"
+        android:label="dialog_deck_removing"
+        tools:layout="@layout/dialog_deck_removing" >
+        <action
+            android:id="@+id/action_deckRemovingDialogFragment_to_deckListFragment"
             app:destination="@id/deckListFragment" />
     </dialog>
 
