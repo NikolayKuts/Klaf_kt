@@ -18,4 +18,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     init { viewModelScope.launch { _deckSours.value = repository.getDataFormSours() } }
 
+    fun addNewDeck(deck: Deck) {
+        viewModelScope.launch { repository.insertDeck(deck) }
+    }
+
+    fun updateData() {
+        viewModelScope.launch { _deckSours.value = repository.getDataFormSours() }
+    }
+
 }

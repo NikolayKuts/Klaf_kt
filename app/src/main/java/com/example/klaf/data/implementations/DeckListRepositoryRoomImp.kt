@@ -14,4 +14,9 @@ class DeckListRepositoryRoomImp(context: Context) : DeckListRepository {
         database.deckDao().getAllDecks()
     }
 
+    override suspend fun insertDeck(deck: Deck) {
+        withContext(Dispatchers.IO) {
+            database.deckDao().insertDeck(deck)
+        }
+    }
 }
