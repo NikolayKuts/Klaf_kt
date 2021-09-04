@@ -19,4 +19,10 @@ class DeckListRepositoryRoomImp(context: Context) : DeckListRepository {
             database.deckDao().insertDeck(deck)
         }
     }
+
+    override suspend fun removeDeck(deckId: Int) {
+        withContext(Dispatchers.IO) {
+            database.deckDao().deleteDeck(deckId)
+        }
+    }
 }

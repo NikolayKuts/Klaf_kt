@@ -7,8 +7,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.klaf.databinding.DeckListItemBinding
 import com.example.klaf.domain.pojo.Deck
 
-class DeckAdapter(var onClick: () -> Unit = {}, var onLongClick: (View) -> Unit = {}) :
-    RecyclerView.Adapter<DeckAdapter.DeckViewHolder>() {
+class DeckAdapter(
+    var onClick: () -> Unit = {},
+    var onLongClick: (View, Deck) -> Unit = { _, _ -> }
+) : RecyclerView.Adapter<DeckAdapter.DeckViewHolder>() {
 
     var decks: List<Deck> = ArrayList()
     set(value) {
@@ -35,7 +37,7 @@ class DeckAdapter(var onClick: () -> Unit = {}, var onLongClick: (View) -> Unit 
 
 
             deckListItem.setOnLongClickListener { view ->
-                onLongClick(view)
+                onLongClick(view, deck)
                 true
             }
         }

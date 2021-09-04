@@ -61,7 +61,7 @@ class DeckListFragment : Fragment() {
                 Toast.makeText(context, "onClick", Toast.LENGTH_SHORT).show()
             }
 
-            adapter.onLongClick = { view -> showDeckPopupMenu(view) }
+            adapter.onLongClick = { view, deck -> showDeckPopupMenu(view, deck) }
         }
     }
 
@@ -75,17 +75,16 @@ class DeckListFragment : Fragment() {
         super.onDestroy()
     }
 
-    private fun showDeckPopupMenu(view: View) {
+    private fun showDeckPopupMenu(view: View, deck: Deck) {
         PopupMenu(view.context, view).apply{
             inflate(R.menu.deck_popup_menu)
             show()
             setOnMenuItemClickListener { item ->
-                val navController = findNavController()
                 when (item.itemId) {
                     R.id.item_deck_deleting -> {
-                        navController.navigate(
-                            R.id.action_deckListFragment_to_deckRemovingDialogFragment
-                        )
+                        DeckListFragmentDirections
+                            .actionDeckListFragmentToDeckRemovingDialogFragment(deckId = deck.id)
+                            .also { findNavController().navigate(it) }
                         true
                     }
                     R.id.item_deck_renaming -> {

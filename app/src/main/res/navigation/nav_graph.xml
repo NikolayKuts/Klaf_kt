@@ -78,6 +78,10 @@
         android:name="com.example.klaf.presentation.fragments.DeckRemovingDialogFragment"
         android:label="dialog_deck_removing"
         tools:layout="@layout/dialog_deck_removing" >
+        <argument
+            android:name="deckId"
+            app:argType="integer"
+            android:defaultValue="-1" />
         <action
             android:id="@+id/action_deckRemovingDialogFragment_to_deckListFragment"
             app:destination="@id/deckListFragment" />

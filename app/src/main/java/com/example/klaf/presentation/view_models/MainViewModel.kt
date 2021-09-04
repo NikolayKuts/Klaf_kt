@@ -26,4 +26,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { _deckSours.value = repository.getDataFormSours() }
     }
 
+    fun removeDeck(deckId: Int) {
+        viewModelScope.launch { repository.removeDeck(deckId) }
+    }
+
 }

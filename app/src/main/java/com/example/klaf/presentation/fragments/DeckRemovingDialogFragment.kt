@@ -5,15 +5,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
 import com.example.klaf.databinding.DialogDeckRemovingBinding
+import com.example.klaf.presentation.view_models.MainViewModel
 
 class DeckRemovingDialogFragment : DialogFragment() {
 
     private var _binding: DialogDeckRemovingBinding? = null
     private val binding get() = _binding!!
-    private val navController = findNavController()
+    private val viewModel by activityViewModels<MainViewModel>()
+    private val args by navArgs<DeckRemovingDialogFragmentArgs>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,7 +34,10 @@ class DeckRemovingDialogFragment : DialogFragment() {
             findNavController().navigate(R.id.action_deckRemovingDialogFragment_to_deckListFragment)
         }
 
-        binding.buttonConfirmDeckRemoving.setOnClickListener { TODO() }
+        binding.buttonConfirmDeckRemoving.setOnClickListener {
+            viewModel.removeDeck(args.deckId)
+            findNavController().navigate(R.id.action_deckRemovingDialogFragment_to_deckListFragment)
+        }
     }
 
     override fun onDestroy() {

@@ -1,10 +1,7 @@
 package com.example.klaf.data.dao
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.domain.pojo.TABLE_NAME
 
@@ -16,4 +13,7 @@ interface DeckDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertDeck(deck: Deck)
+
+    @Query("DELETE FROM $TABLE_NAME WHERE id = :deckId")
+    fun deleteDeck(deckId: Int)
 }
