@@ -7,13 +7,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.klaf.databinding.DeckListItemBinding
 import com.example.klaf.domain.pojo.Deck
 
-class DeckAdapter(
-    //decks: List<Deck>,
-    var onClick: () -> Unit = {},
-    var onLongClick: () -> Unit = {}
-) : RecyclerView.Adapter<DeckAdapter.DeckViewHolder>() {
+class DeckAdapter(var onClick: () -> Unit = {}, var onLongClick: (View) -> Unit = {}) :
+    RecyclerView.Adapter<DeckAdapter.DeckViewHolder>() {
 
-    var testDecks: List<Deck> = ArrayList()
+    var decks: List<Deck> = ArrayList()
     set(value) {
         field = value
         notifyDataSetChanged()
@@ -26,15 +23,25 @@ class DeckAdapter(
     }
 
     override fun onBindViewHolder(holder: DeckViewHolder, position: Int) {
-        holder.binding.textView.text = testDecks[position].name
-        holder.binding.textView.setOnClickListener { onClick() }
-        holder.binding.deckListItem.setOnLongClickListener {
-            onLongClick()
-            true
+        with(holder.binding) {
+            val deck = decks[position]
+            textViewDeckName.text = deck.name
+            textViewRepeatDay.text = deck.repeatDay.toString()
+            textViewScheduledDate.text = deck.scheduledDate.toString()
+            textViewRepeatQuantity.text = deck.repeatQuantity.toString()
+            textViewCardQuantity.text = deck.cardQuantity.toString()
+
+            deckListItem.setOnClickListener { onClick() }
+
+
+            deckListItem.setOnLongClickListener { view ->
+                onLongClick(view)
+                true
+            }
         }
     }
 
-    override fun getItemCount(): Int = testDecks.size
+    override fun getItemCount(): Int = decks.size
 
     inner class DeckViewHolder(val binding: DeckListItemBinding) :
         RecyclerView.ViewHolder(binding.root)

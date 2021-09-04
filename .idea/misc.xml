@@ -4,10 +4,14 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/Home/AndroidStudioProjects/Klaf/app/src/main/res/layout/activity_main.xml" value="0.1" />
-        <entry key="..\:/Users/Home/AndroidStudioProjects/Klaf/app/src/main/res/layout/deck_list_item.xml" value="0.1" />
+        <entry key="..\:/Users/Home/AndroidStudioProjects/Klaf/app/src/main/res/layout/deck_list_item.xml" value="0.33" />
+        <entry key="..\:/Users/Home/AndroidStudioProjects/Klaf/app/src/main/res/layout/dialog_deck.xml" value="0.1" />
+        <entry key="..\:/Users/Home/AndroidStudioProjects/Klaf/app/src/main/res/layout/dialog_deck_creation.xml" value="0.18432971014492755" />
+        <entry key="..\:/Users/Home/AndroidStudioProjects/Klaf/app/src/main/res/layout/fragment_card_addition.xml" value="0.1" />
         <entry key="..\:/Users/Home/AndroidStudioProjects/Klaf/app/src/main/res/layout/fragment_card_viewer.xml" value="0.1" />
-        <entry key="..\:/Users/Home/AndroidStudioProjects/Klaf/app/src/main/res/layout/fragment_deck_list.xml" value="0.1" />
+        <entry key="..\:/Users/Home/AndroidStudioProjects/Klaf/app/src/main/res/layout/fragment_deck_list.xml" value="0.25" />
         <entry key="..\:/Users/Home/AndroidStudioProjects/Klaf/app/src/main/res/layout/fragment_repeat.xml" value="0.1" />
+        <entry key="..\:/Users/Home/AndroidStudioProjects/Klaf/app/src/main/res/menu/deck_popup_menu.xml" value="0.1" />
       </map>
     </option>
   </component>

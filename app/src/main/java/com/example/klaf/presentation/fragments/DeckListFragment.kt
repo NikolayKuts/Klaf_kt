@@ -4,10 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.navigation.NavController
-import androidx.navigation.compose.navArgument
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,13 +15,16 @@ import com.example.klaf.R
 import com.example.klaf.databinding.FragmentDeckListBinding
 import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.presentation.adapters.DeckAdapter
-import java.util.zip.Inflater
+import com.example.klaf.presentation.view_models.MainViewModel
 
 class DeckListFragment : Fragment() {
+
     private var _binding: FragmentDeckListBinding? = null
     private val binding get() = _binding!!
     private var recyclerViewDecks: RecyclerView? = null
     private val decks = ArrayList<Deck>()
+    private val viewModel by activityViewModels<MainViewModel>()
+    private val adapter = DeckAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,23 +40,34 @@ class DeckListFragment : Fragment() {
         activity?.let { activity ->
 
             val navController = findNavController()
-            val adapter = DeckAdapter()
-            adapter.testDecks = decks
             recyclerViewDecks = binding.recyclerviewDecks
+
             recyclerViewDecks?.let { recycler ->
                 recycler.layoutManager = LinearLayoutManager(activity.applicationContext)
                 recycler.adapter = adapter
-                adapter.onClick = {
-                    navController.navigate(R.id.action_deckListFragment_to_repeatFragment)
-                    Toast.makeText(context, "onClick", Toast.LENGTH_SHORT).show()
-                }
-                adapter.onLongClick = { TODO("Not yet implemented") }
             }
 
-            binding.button.setOnClickListener {
-                navController.navigate(R.id.action_deckListFragment_to_repeatFragment)
+            viewModel.deckSours.observe(viewLifecycleOwner) { deckList ->
+                decks.clear()
+                decks.addAll(deckList)
+                adapter.decks = decks
             }
+
+            binding.createDeckActionButton.setOnClickListener {
+                navController.navigate(DeckListFragmentDirections.actionDeckListFragmentToDeckCreationDialogFragment())
+            }
+            adapter.onClick = {
+                navController.navigate(R.id.action_deckListFragment_to_repeatFragment)
+                Toast.makeText(context, "onClick", Toast.LENGTH_SHORT).show()
+            }
+
+            adapter.onLongClick = { view -> showDeckPopupMenu(view) }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.updateData()
     }
 
     override fun onDestroy() {
@@ -61,4 +75,28 @@ class DeckListFragment : Fragment() {
         super.onDestroy()
     }
 
+    private fun showDeckPopupMenu(view: View) {
+        PopupMenu(view.context, view).apply{
+            inflate(R.menu.deck_popup_menu)
+            show()
+            setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.item_deck_deleting -> {
+                        Toast.makeText(context, "Deleting dialog", Toast.LENGTH_SHORT).show()
+                        true
+                    }
+                    R.id.item_deck_renaming -> {
+                        true
+                    }
+                    R.id.item_card_showing -> {
+                        true
+                    }
+                    R.id.item_card_addition -> {
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }
+    }
 }

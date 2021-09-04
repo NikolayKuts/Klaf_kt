@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/item_deck_deleting"
+        android:title="Delete" />
+    <item android:id="@+id/item_deck_renaming"
+        android:title="Rename" />
+    <item android:id="@+id/item_card_showing"
+        android:title="Show cards" />
+    <item android:id="@+id/item_card_addition"
+        android:title="Add cards" />
+</menu>
