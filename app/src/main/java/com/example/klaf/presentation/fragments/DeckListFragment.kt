@@ -54,7 +54,9 @@ class DeckListFragment : Fragment() {
 
             val navController = findNavController()
             binding.createDeckActionButton.setOnClickListener {
-                navController.navigate(DeckListFragmentDirections.actionDeckListFragmentToDeckCreationDialogFragment())
+                navController.navigate(
+                    DeckListFragmentDirections.actionDeckListFragmentToDeckCreationDialogFragment()
+                )
             }
             adapter.onClick = {
                 navController.navigate(R.id.action_deckListFragment_to_repeatFragment)
@@ -80,14 +82,18 @@ class DeckListFragment : Fragment() {
             inflate(R.menu.deck_popup_menu)
             show()
             setOnMenuItemClickListener { item ->
+                val navController = findNavController()
                 when (item.itemId) {
                     R.id.item_deck_deleting -> {
                         DeckListFragmentDirections
                             .actionDeckListFragmentToDeckRemovingDialogFragment(deckId = deck.id)
-                            .also { findNavController().navigate(it) }
+                            .also { navController.navigate(it) }
                         true
                     }
                     R.id.item_deck_renaming -> {
+                        DeckListFragmentDirections
+                            .actionDeckListFragmentToDeckRenamingDialogFragment(deckId = deck.id)
+                            .also { navController.navigate(it) }
                         true
                     }
                     R.id.item_card_showing -> {

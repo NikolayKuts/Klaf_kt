@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.klaf.data.implementations.DeckListRepositoryRoomImp
 import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.data.repositories.DeckListRepository
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -28,6 +29,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun removeDeck(deckId: Int) {
         viewModelScope.launch { repository.removeDeck(deckId) }
+    }
+
+    fun onGetDeckById(deckId: Int, onDeckRetrieved: (Deck) -> Unit) {
+        viewModelScope.launch {
+            val deck = repository.getDeckById(deckId)
+            onDeckRetrieved(deck)
+        }
     }
 
 }

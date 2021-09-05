@@ -16,4 +16,7 @@ interface DeckDao {
 
     @Query("DELETE FROM $TABLE_NAME WHERE id = :deckId")
     fun deleteDeck(deckId: Int)
+
+    @Query("SELECT * FROM $TABLE_NAME WHERE id = :deckId")
+    fun getDeckById(deckId: Int): Deck
 }
