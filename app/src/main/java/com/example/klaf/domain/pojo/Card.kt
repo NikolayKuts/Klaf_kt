@@ -1,11 +1,17 @@
 package com.example.klaf.domain.pojo
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+const val CARD_TABLE_NAME = "cards"
+
+@Entity(tableName = CARD_TABLE_NAME)
 data class Card(
-    private val id: Int,
-    private val deckId: Int,
-    private val nativeWord: String,
-    private val foreignWord: String,
-    private val ipa: String
+    @PrimaryKey(autoGenerate = true) val id: Int,
+    val deckId: Int,
+    val nativeWord: String,
+    val foreignWord: String,
+    val ipa: String
 ) {
 
 }
