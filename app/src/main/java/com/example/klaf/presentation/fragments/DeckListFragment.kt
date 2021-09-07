@@ -63,9 +63,11 @@ class DeckListFragment : Fragment() {
                     DeckListFragmentDirections.actionDeckListFragmentToDeckCreationDialogFragment()
                 )
             }
-            adapter.onClick = {
-                navController.navigate(R.id.action_deckListFragment_to_repeatFragment)
-                Toast.makeText(context, "onClick", Toast.LENGTH_SHORT).show()
+            adapter.onClick = { deck ->
+                DeckListFragmentDirections.actionDeckListFragmentToRepeatFragment(
+                    deckId = deck.id,
+                    deckName = deck.name
+                ).also { navController.navigate(it) }
             }
 
             adapter.onLongClick = { view, deck -> showDeckPopupMenu(view, deck) }

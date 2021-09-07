@@ -8,7 +8,7 @@ import com.example.klaf.databinding.DeckListItemBinding
 import com.example.klaf.domain.pojo.Deck
 
 class DeckAdapter(
-    var onClick: () -> Unit = {},
+    var onClick: (deck: Deck) -> Unit = {},
     var onLongClick: (View, Deck) -> Unit = { _, _ -> }
 ) : RecyclerView.Adapter<DeckAdapter.DeckViewHolder>() {
 
@@ -33,7 +33,7 @@ class DeckAdapter(
             textViewRepeatQuantity.text = deck.repeatQuantity.toString()
             textViewCardQuantity.text = deck.cardQuantity.toString()
 
-            deckListItem.setOnClickListener { onClick() }
+            deckListItem.setOnClickListener { onClick(decks[position]) }
 
 
             deckListItem.setOnLongClickListener { view ->

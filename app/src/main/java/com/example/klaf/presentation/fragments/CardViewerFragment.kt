@@ -51,18 +51,14 @@ class CardViewerFragment : Fragment() {
             recyclerView.layoutManager = LinearLayoutManager(activity.applicationContext)
             recyclerView.adapter = adapter
 
-            val deckId = args.deckId
-            viewModel?.let { viewModel ->
-                CardViewerViewModelFactory(activity.application, deckId)
-                viewModel.carsSours.observe(viewLifecycleOwner) { cards ->
-                    adapter.cards = cards
-                }
+            viewModel?.carsSours?.observe(viewLifecycleOwner) { receivedCards ->
+                adapter.cards = receivedCards
             }
         }
     }
 
     override fun onDestroy() {
-        _binding = null
         super.onDestroy()
+        _binding = null
     }
 }

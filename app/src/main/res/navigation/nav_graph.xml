@@ -30,6 +30,14 @@
         android:name="com.example.klaf.presentation.fragments.RepeatFragment"
         android:label="fragment_repeat"
         tools:layout="@layout/fragment_repeat" >
+        <argument
+            android:name="deckId"
+            app:argType="integer"
+            android:defaultValue="-1" />
+        <argument
+            android:name="deckName"
+            app:argType="string"
+            android:defaultValue="empty" />
         <action
             android:id="@+id/action_repeatFragment_to_cardAdditionFragment"
             app:destination="@id/cardAdditionFragment" />
