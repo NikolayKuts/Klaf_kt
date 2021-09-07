@@ -18,7 +18,7 @@
         android:id="@+id/main_action_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@drawable/main_action_button_icon_24"
+        app:srcCompat="@drawable/fingerprint_button_icon_24"
         app:tint="@color/white"
         app:backgroundTint="@color/main_action_button_background_tint"
         app:maxImageSize="40dp"
