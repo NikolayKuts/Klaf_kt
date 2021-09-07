@@ -3,9 +3,9 @@ package com.example.klaf.domain.pojo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-const val TABLE_NAME = "decks"
+const val DECK_TABLE_NAME = "decks"
 
-@Entity(tableName = TABLE_NAME)
+@Entity(tableName = DECK_TABLE_NAME)
 data class Deck(
     val name: String,
     @PrimaryKey(autoGenerate = true) var id: Int = 0,

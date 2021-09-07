@@ -12,17 +12,22 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.klaf.R
+import com.example.klaf.data.dao.KlafRoomDatabase
 import com.example.klaf.databinding.FragmentDeckListBinding
+import com.example.klaf.domain.pojo.Card
 import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.presentation.adapters.DeckAdapter
 import com.example.klaf.presentation.view_models.MainViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class DeckListFragment : Fragment() {
 
     private var _binding: FragmentDeckListBinding? = null
     private val binding get() = _binding!!
     private var recyclerViewDecks: RecyclerView? = null
-    private val decks = ArrayList<Deck>()
+    private val decks: MutableList<Deck> = ArrayList()
     private val viewModel by activityViewModels<MainViewModel>()
     private val adapter = DeckAdapter()
 
@@ -78,7 +83,7 @@ class DeckListFragment : Fragment() {
     }
 
     private fun showDeckPopupMenu(view: View, deck: Deck) {
-        PopupMenu(view.context, view).apply{
+        PopupMenu(view.context, view).apply {
             inflate(R.menu.deck_popup_menu)
             show()
             setOnMenuItemClickListener { item ->
@@ -97,6 +102,12 @@ class DeckListFragment : Fragment() {
                         true
                     }
                     R.id.item_card_showing -> {
+                        DeckListFragmentDirections
+                            .actionDeckListFragmentToCardViewerFragment(
+                                deckId = deck.id,
+                                deckName = deck.name
+                            )
+                            .also { navController.navigate(it) }
                         true
                     }
                     R.id.item_card_addition -> {
