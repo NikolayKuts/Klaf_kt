@@ -114,6 +114,10 @@
         android:name="com.example.klaf.presentation.fragments.CardAdditionFragment"
         android:label="fragment_card_addition"
         tools:layout="@layout/fragment_card_addition" >
+        <argument
+            android:name="deckId"
+            app:argType="integer"
+            android:defaultValue="-1" />
         <action
             android:id="@+id/action_cardAdditionFragment_to_repeatFragment"
             app:destination="@id/repeatFragment" />

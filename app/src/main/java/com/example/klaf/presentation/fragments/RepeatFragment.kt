@@ -50,8 +50,8 @@ class RepeatFragment : Fragment() {
         binding.repeatDeckNameTextView.text = args.deckName
 
         binding.repeatCardAdditionButton.setOnClickListener {
-            val navController = findNavController()
-            navController.navigate(R.id.action_repeatFragment_to_cardAdditionFragment)
+            RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(args.deckId)
+                .also { findNavController().navigate(it) }
         }
 
     }

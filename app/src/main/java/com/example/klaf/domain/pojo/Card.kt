@@ -7,11 +7,11 @@ const val CARD_TABLE_NAME = "cards"
 
 @Entity(tableName = CARD_TABLE_NAME)
 data class Card(
-    @PrimaryKey(autoGenerate = true) val id: Int,
     val deckId: Int,
     val nativeWord: String,
     val foreignWord: String,
-    val ipa: String
+    val ipa: String,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0
 ) {
 
 }
