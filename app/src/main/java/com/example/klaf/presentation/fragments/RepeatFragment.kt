@@ -6,7 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.example.klaf.R
 import com.example.klaf.databinding.FragmentRepeatBinding
 import com.example.klaf.domain.pojo.Card
 import com.example.klaf.presentation.view_model_factories.RepetitionViewModelFactory
@@ -46,6 +48,11 @@ class RepeatFragment : Fragment() {
             }
         }
         binding.repeatDeckNameTextView.text = args.deckName
+
+        binding.repeatCardAdditionButton.setOnClickListener {
+            val navController = findNavController()
+            navController.navigate(R.id.action_repeatFragment_to_cardAdditionFragment)
+        }
 
     }
 
