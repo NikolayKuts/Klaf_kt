@@ -1,5 +1,6 @@
 package com.example.klaf.data.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.domain.pojo.DECK_TABLE_NAME
@@ -8,7 +9,7 @@ import com.example.klaf.domain.pojo.DECK_TABLE_NAME
 interface DeckDao {
 
     @Query("SELECT * FROM $DECK_TABLE_NAME")
-    fun getAllDecks(): List<Deck>
+    fun getAllDecks(): LiveData<List<Deck>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertDeck(deck: Deck)

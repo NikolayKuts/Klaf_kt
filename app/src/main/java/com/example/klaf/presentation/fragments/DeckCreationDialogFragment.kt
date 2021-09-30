@@ -39,20 +39,23 @@ class DeckCreationDialogFragment : DialogFragment() {
 
             buttonConfirmDeckCreation.setOnClickListener {
                 val deckName = editTextDeckName.text.toString().trim()
-                val decks = viewModel.deckSours.value
-                val deckNames = decks?.map { deck -> deck.name }
-                when {
-                    (deckNames?.contains(deckName) == true) -> {
-                        Toast.makeText(
-                            context, "such name is already exist", Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    else -> {
-                        viewModel.addNewDeck(Deck(deckName))
-                        navController.navigate(
-                            R.id.action_deckCreationDialogFragment_to_deckListFragment
-                        )
-                        Toast.makeText(context, "it's done", Toast.LENGTH_SHORT).show()
+//                val decks = viewModel.deckSours.value
+                viewModel.onGetDeckSours { liveData ->
+                    val decks = liveData.value
+                    val deckNames = decks?.map { deck -> deck.name }
+                    when {
+                        (deckNames?.contains(deckName) == true) -> {
+                            Toast.makeText(
+                                context, "such name is already exist", Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        else -> {
+                            viewModel.addNewDeck(Deck(deckName))
+                            navController.navigate(
+                                R.id.action_deckCreationDialogFragment_to_deckListFragment
+                            )
+                            Toast.makeText(context, "it's done", Toast.LENGTH_SHORT).show()
+                        }
                     }
 
                 }

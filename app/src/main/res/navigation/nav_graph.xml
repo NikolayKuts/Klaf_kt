@@ -118,6 +118,10 @@
             android:name="deckId"
             app:argType="integer"
             android:defaultValue="-1" />
+        <argument
+            android:name="deckName"
+            app:argType="string"
+            android:defaultValue="empty" />
         <action
             android:id="@+id/action_cardAdditionFragment_to_repeatFragment"
             app:destination="@id/repeatFragment" />

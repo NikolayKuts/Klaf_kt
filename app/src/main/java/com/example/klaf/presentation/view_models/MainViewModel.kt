@@ -14,18 +14,25 @@ import kotlinx.coroutines.launch
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: DeckListRepository = DeckListRepositoryRoomImp(application)
-    private var _deckSours = MutableLiveData<List<Deck>>()
-    val deckSours: LiveData<List<Deck>> get() = _deckSours
+//    private var _deckSours: LiveData<List<Deck>> = MutableLiveData()
+//    val deckSours: LiveData<List<Deck>> get() = _deckSours
+//    private var deckSours: LiveData<List<Deck>> = MutableLiveData()
 
-    init { viewModelScope.launch { _deckSours.value = repository.getDataFormSours() } }
+    fun onGetDeckSours(callback: (LiveData<List<Deck>>) -> Unit) {
+        viewModelScope.launch { callback(repository.getDataFormSours()) }
+    }
+
+//    init {
+//        viewModelScope.launch { deckSours = repository.getDataFormSours() }
+//    }
 
     fun addNewDeck(deck: Deck) {
         viewModelScope.launch { repository.insertDeck(deck) }
     }
 
-    fun updateData() {
-        viewModelScope.launch { _deckSours.value = repository.getDataFormSours() }
-    }
+//    fun updateData() {
+//        viewModelScope.launch { _deckSours.value = repository.getDataFormSours() }
+//    }
 
     fun removeDeck(deckId: Int) {
         viewModelScope.launch { repository.removeDeck(deckId) }

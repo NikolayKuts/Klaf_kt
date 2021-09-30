@@ -6,10 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.databinding.FragmentCardAdditionBinding
 import com.example.klaf.domain.pojo.Card
+import com.example.klaf.presentation.view_model_factories.CardAdditionViewModelFactory
 import com.example.klaf.presentation.view_models.CardAdditionViewModel
 
 class CardAdditionFragment : Fragment() {
@@ -17,8 +18,7 @@ class CardAdditionFragment : Fragment() {
     private var _binding: FragmentCardAdditionBinding? = null
     private val binding get() = _binding!!
     private val args by navArgs<CardAdditionFragmentArgs>()
-    private val viewModel by activityViewModels<CardAdditionViewModel>()
-
+    private var viewModel: CardAdditionViewModel? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,7 +31,20 @@ class CardAdditionFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        activity?.let { activity ->
+            viewModel = ViewModelProvider(
+                owner = activity,
+                factory = CardAdditionViewModelFactory(
+                    context = activity.applicationContext,
+                    deckId = args.deckId)
+            )[CardAdditionViewModel::class.java]
+
+        }
         with(binding) {
+            viewModel?.cardQuantity?.observe(viewLifecycleOwner) { quantity ->
+                cardQuantityTextView.text = quantity.toString()
+            }
+            cardAdditionDeckName.text = args.deckName
             applyCardAdditionButton.setOnClickListener {
                 onConfirmCardAddition()
             }
@@ -47,9 +60,11 @@ class CardAdditionFragment : Fragment() {
         val newCard = getCardForAddition()
         when {
             newCard != null -> {
-                viewModel.addNewCard(newCard)
-                clearEditTextFields()
-                showToast("the card has been added")
+                viewModel?.let { viewModel ->
+                    viewModel.onAddNewCard(newCard)
+                    clearEditTextFields()
+                    showToast("the card has been added")
+                }
             }
             else -> showToast("native and foreign words must be filled")
         }

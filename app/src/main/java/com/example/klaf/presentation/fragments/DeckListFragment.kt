@@ -1,6 +1,7 @@
 package com.example.klaf.presentation.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,6 +45,7 @@ class DeckListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         activity?.let { activity ->
 
+            Log.i("vm_test", "onViewCreated: activity let")
             recyclerViewDecks = binding.recyclerviewDecks
 
             recyclerViewDecks?.let { recycler ->
@@ -51,10 +53,13 @@ class DeckListFragment : Fragment() {
                 recycler.adapter = adapter
             }
 
-            viewModel.deckSours.observe(viewLifecycleOwner) { deckList ->
-                decks.clear()
-                decks.addAll(deckList)
-                adapter.decks = decks
+            viewModel.onGetDeckSours { liveData ->
+                liveData.observe(viewLifecycleOwner) { deckList ->
+                    Log.i("vm_test", "onViewCreated: $deckList")
+                    decks.clear()
+                    decks.addAll(deckList)
+                    adapter.decks = decks
+                }
             }
 
             val navController = findNavController()
@@ -76,7 +81,6 @@ class DeckListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.updateData()
     }
 
     override fun onDestroy() {

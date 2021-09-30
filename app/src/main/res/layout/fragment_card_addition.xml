@@ -119,7 +119,7 @@
         android:id="@+id/card_addition_deck_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TextView"
+        tools:text="deck name"
         android:textSize="24sp"
         android:textColor="#8DAC68"
         app:layout_constraintTop_toTopOf="@id/addition_content_top"
@@ -127,10 +127,10 @@
         />
 
     <TextView
-        android:id="@+id/textViewCardQuantity"
+        android:id="@+id/card_quantity_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TextView"
+        android:text="quantity"
         android:textColor="#BC9359"
         android:textSize="22sp"
         app:layout_constraintStart_toEndOf="@+id/textView3"
