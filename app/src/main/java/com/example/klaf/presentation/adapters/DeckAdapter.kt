@@ -9,7 +9,7 @@ import com.example.klaf.domain.pojo.Deck
 
 class DeckAdapter(
     var onClick: (deck: Deck) -> Unit = {},
-    var onLongClick: (View, Deck) -> Unit = { _, _ -> }
+    var onPopupMenuClick: (View, Deck) -> Unit = { _, _ -> }
 ) : RecyclerView.Adapter<DeckAdapter.DeckViewHolder>() {
 
     var decks: List<Deck> = ArrayList()
@@ -36,9 +36,9 @@ class DeckAdapter(
             deckListItem.setOnClickListener { onClick(decks[position]) }
 
 
-            deckListItem.setOnLongClickListener { view ->
-                onLongClick(view, deck)
-                true
+            popupMenuImageView.setOnClickListener { view ->
+                onPopupMenuClick(view, deck)
+//                true
             }
         }
     }

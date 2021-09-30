@@ -93,8 +93,17 @@
         android:layout_gravity="end"
         android:paddingStart="1dp"
         android:text="c"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/popup_menu_image_view"
+        />
+
+    <ImageView
+        android:id="@+id/popup_menu_image_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:src="@drawable/ic_deck_popup_menu_24"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
