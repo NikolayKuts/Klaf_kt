@@ -12,7 +12,13 @@ import com.example.klaf.domain.pojo.Card
 interface CardDao {
 
     @Query("SELECT * FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
-    fun getAllCardByDeckId(deckId: Int): List<Card>
+    fun getAllCardByDeckId(deckId: Int): LiveData<List<Card>>
+
+    @Query("SELECT * FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
+    fun getCardListByDeckId(deckId: Int): List<Card>
+
+    @Query("SELECT * FROM $CARD_TABLE_NAME WHERE id = :cardId")
+    fun getCardById(cardId: Int): Card
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insetCard(card: Card)

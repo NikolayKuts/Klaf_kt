@@ -41,16 +41,27 @@ class RepeatFragment : Fragment() {
                     deckId = args.deckId)
             )[RepetitionViewModel::class.java]
 
-            viewModel?.cardSours?.observe(viewLifecycleOwner) { receivedCards ->
-                cards.clear()
-                cards.addAll(receivedCards)
-                binding.cardSideTextView.text = cards[0].nativeWord
+            viewModel?.onGetCardSours { cardSours ->
+                cardSours.observe(viewLifecycleOwner) { receivedCards ->
+                    cards.clear()
+                    cards.addAll(receivedCards)
+                    binding.cardSideTextView.text = cards[0].nativeWord
+                }
             }
         }
         binding.repeatDeckNameTextView.text = args.deckName
 
         binding.repeatCardAdditionButton.setOnClickListener {
             RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(
+                deckId = args.deckId,
+                deckName = args.deckName
+            )
+                .also { findNavController().navigate(it) }
+        }
+
+        binding.repeatEditingActionButton.setOnClickListener {
+            RepeatFragmentDirections.actionRepeatFragmentToCardEditingFragment(
+                cardId = args.deckId,
                 deckId = args.deckId,
                 deckName = args.deckName
             )

@@ -38,9 +38,13 @@
             android:name="deckName"
             app:argType="string"
             android:defaultValue="empty" />
+        <argument
+            android:name="cardId"
+            app:argType="integer"
+            android:defaultValue="-1" />
         <action
             android:id="@+id/action_repeatFragment_to_cardEditingFragment"
-            app:destination="@id/cardEditingFragment" />
+            app:destination="@id/cardEditingFragment"/>
         <action
             android:id="@+id/action_repeatFragment_to_deckListFragment"
             app:destination="@id/deckListFragment" />
@@ -53,9 +57,23 @@
         android:name="com.example.klaf.presentation.fragments.CardEditingFragment"
         android:label="fragment_card_editing"
         tools:layout="@layout/fragment_card_editing" >
+        <argument
+            android:name="cardId"
+            app:argType="integer"
+            android:defaultValue="-1" />
+        <argument
+            android:name="deckId"
+            app:argType="integer"
+            android:defaultValue="-1" />
+        <argument
+            android:name="deckName"
+            app:argType="string"
+            android:defaultValue="empty" />
         <action
             android:id="@+id/action_cardEditingFragment_to_repeatFragment"
-            app:destination="@id/repeatFragment" />
+            app:destination="@id/repeatFragment"
+            app:popUpTo="@id/repeatFragment"
+            app:popUpToInclusive="true"/>
     </fragment>
     <fragment
         android:id="@+id/cardViewerFragment"

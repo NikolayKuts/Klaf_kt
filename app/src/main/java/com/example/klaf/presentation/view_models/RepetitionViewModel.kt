@@ -10,13 +10,11 @@ import com.example.klaf.data.repositories.RepetitionRepository
 import com.example.klaf.domain.pojo.Card
 import kotlinx.coroutines.launch
 
-class RepetitionViewModel(context: Context, deckId: Int) : ViewModel() {
+class RepetitionViewModel(context: Context, private val deckId: Int) : ViewModel() {
 
     private val repository: RepetitionRepository = RepetitionRepositoryRoomImp(context)
-    private val _cardSours = MutableLiveData<List<Card>>()
-    val cardSours: LiveData<List<Card>> = _cardSours
 
-    init {
-        viewModelScope.launch { _cardSours.value =  repository.getCardByDeckId(deckId) }
+    fun onGetCardSours(callback: (LiveData<List<Card>>) -> Unit) {
+        viewModelScope.launch { callback(repository.getCardByDeckId(deckId = deckId)) }
     }
 }

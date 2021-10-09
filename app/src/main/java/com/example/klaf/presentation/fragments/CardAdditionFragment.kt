@@ -36,7 +36,8 @@ class CardAdditionFragment : Fragment() {
                 owner = activity,
                 factory = CardAdditionViewModelFactory(
                     context = activity.applicationContext,
-                    deckId = args.deckId)
+                    deckId = args.deckId
+                )
             )[CardAdditionViewModel::class.java]
 
         }
