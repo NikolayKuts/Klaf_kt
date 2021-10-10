@@ -17,4 +17,8 @@ class RepetitionViewModel(context: Context, private val deckId: Int) : ViewModel
     fun onGetCardSours(callback: (LiveData<List<Card>>) -> Unit) {
         viewModelScope.launch { callback(repository.getCardByDeckId(deckId = deckId)) }
     }
+
+    fun removeCard(cardId: Int) {
+        viewModelScope.launch { repository.deleteCard(cardId = cardId) }
+    }
 }

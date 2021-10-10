@@ -68,6 +68,13 @@ class RepeatFragment : Fragment() {
                 .also { findNavController().navigate(it) }
         }
 
+        binding.repeatRemovingActionButton.setOnClickListener {
+            RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
+                cardId = cards[0].id
+            )
+                .also { findNavController().navigate(it) }
+        }
+
     }
 
     override fun onDestroy() {

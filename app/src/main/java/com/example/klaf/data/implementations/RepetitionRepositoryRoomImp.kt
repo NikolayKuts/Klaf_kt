@@ -13,6 +13,10 @@ class RepetitionRepositoryRoomImp(context: Context) : RepetitionRepository {
     private val database = KlafRoomDatabase.getInstance(context)
 
     override suspend fun getCardByDeckId(deckId: Int): LiveData<List<Card>> {
-        return withContext(Dispatchers.IO) { database.cardDao().getAllCardByDeckId(deckId) }
+        return withContext(Dispatchers.IO) { database.cardDao().getAllCardByDeckId(deckId = deckId) }
+    }
+
+    override suspend fun deleteCard(cardId: Int) {
+        withContext(Dispatchers.IO) { database.cardDao().deleteCard(cardId = cardId) }
     }
 }

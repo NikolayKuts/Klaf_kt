@@ -51,6 +51,9 @@
         <action
             android:id="@+id/action_repeatFragment_to_cardAdditionFragment"
             app:destination="@id/cardAdditionFragment" />
+        <action
+            android:id="@+id/action_repeatFragment_to_cardRemovingDialogFragment"
+            app:destination="@id/cardRemovingDialogFragment" />
     </fragment>
     <fragment
         android:id="@+id/cardEditingFragment"
@@ -144,5 +147,20 @@
             android:id="@+id/action_cardAdditionFragment_to_repeatFragment"
             app:destination="@id/repeatFragment" />
     </fragment>
+    <dialog
+        android:id="@+id/cardRemovingDialogFragment"
+        android:name="com.example.klaf.presentation.fragments.CardRemovingDialogFragment"
+        android:label="dialog_card_removing"
+        tools:layout="@layout/dialog_card_removing" >
+        <argument
+            android:name="cardId"
+            app:argType="integer"
+            android:defaultValue="-1" />
+        <action
+            android:id="@+id/action_cardRemovingDialogFragment_to_repeatFragment"
+            app:destination="@id/repeatFragment"
+            app:popUpTo="@id/repeatFragment"
+            app:popUpToInclusive="true"/>
+    </dialog>
 
 </navigation>

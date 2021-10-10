@@ -81,16 +81,14 @@ class CardAdditionFragment : Fragment() {
 
     private fun getCardForAddition(): Card? {
         with(binding) {
-            val deckId = args.deckId
             val nativeWord = nativeWordEditText.text.toString().trim()
             val foreignWord = foreignWordEditText.text.toString().trim()
-            val ipa = ipaEditText.text.toString().trim()
             return if (nativeWord.isNotEmpty() && foreignWord.isNotEmpty()) {
                 Card(
-                    deckId = deckId,
+                    deckId = args.deckId,
                     nativeWord = nativeWord,
                     foreignWord = foreignWord,
-                    ipa = ipa
+                    ipa = ipaEditText.text.toString().trim()
                 )
             } else null
         }
