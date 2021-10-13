@@ -153,6 +153,10 @@
         android:label="dialog_card_removing"
         tools:layout="@layout/dialog_card_removing" >
         <argument
+            android:name="deckId"
+            app:argType="integer"
+            android:defaultValue="-1" />
+        <argument
             android:name="cardId"
             app:argType="integer"
             android:defaultValue="-1" />

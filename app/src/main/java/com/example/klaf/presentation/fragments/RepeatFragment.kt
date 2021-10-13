@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.example.klaf.R
 import com.example.klaf.databinding.FragmentRepeatBinding
 import com.example.klaf.domain.pojo.Card
 import com.example.klaf.presentation.view_model_factories.RepetitionViewModelFactory
@@ -41,15 +40,22 @@ class RepeatFragment : Fragment() {
                     deckId = args.deckId)
             )[RepetitionViewModel::class.java]
 
-            viewModel?.onGetCardSours { cardSours ->
-                cardSours.observe(viewLifecycleOwner) { receivedCards ->
+            viewModel?.onGetCardSource { cardSource ->
+                cardSource.observe(viewLifecycleOwner) { receivedCards ->
                     cards.clear()
                     cards.addAll(receivedCards)
-                    binding.cardSideTextView.text = cards[0].nativeWord
+                    if (cards.isNotEmpty()) {
+                        binding.cardSideTextView.text = cards[0].nativeWord
+                    } else {
+                        binding.cardSideTextView.text = "empty"
+                    }
                 }
             }
         }
-        binding.repeatDeckNameTextView.text = args.deckName
+
+        viewModel?.onGetDeck(args.deckId) { deck ->
+            binding.repeatDeckNameTextView.text = deck.name
+        }
 
         binding.repeatCardAdditionButton.setOnClickListener {
             RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(
@@ -69,10 +75,13 @@ class RepeatFragment : Fragment() {
         }
 
         binding.repeatRemovingActionButton.setOnClickListener {
-            RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
-                cardId = cards[0].id
-            )
-                .also { findNavController().navigate(it) }
+            if (cards.isNotEmpty()) {
+                RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
+                    deckId = args.deckId,
+                    cardId = cards[0].id
+                )
+                    .also { findNavController().navigate(it) }
+            }
         }
 
     }

@@ -32,5 +32,6 @@ class CardAdapter : RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
 
     override fun getItemCount(): Int = cards.size
 
-    inner class CardViewHolder(val binding: CardListItemBinding): RecyclerView.ViewHolder(binding.root)
+    inner class CardViewHolder(val binding: CardListItemBinding):
+        RecyclerView.ViewHolder(binding.root)
 }

@@ -1,3 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <color name="checked_letter_background">#77FFEB3B</color>
+    <color name="unchecked_letter_background">#F8F8F8</color>
 </resources>

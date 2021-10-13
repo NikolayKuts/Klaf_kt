@@ -20,9 +20,10 @@ class CardAdditionRepositoryRoomImp(context: Context) : CardAdditionRepository {
         withContext(Dispatchers.IO) {
             database.cardDao().insetCard(card)
             val cardQuantity = database.cardDao().getCardQuantityAsInt(card.deckId)
-            val updatedDeck = database.deckDao()
-                .getDeckById(card.deckId)
-                .apply { this.cardQuantity = cardQuantity }
+            val updatedDeck = database.deckDao().getDeckById(card.deckId)
+                .apply {
+                    this.cardQuantity = cardQuantity
+                }
             database.deckDao().insertDeck(updatedDeck)
         }
     }

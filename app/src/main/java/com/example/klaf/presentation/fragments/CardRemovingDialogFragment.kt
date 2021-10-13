@@ -22,7 +22,7 @@ class CardRemovingDialogFragment : DialogFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         _binding = DialogCardRemovingBinding.inflate(inflater, container, false)
         return binding.root
@@ -33,25 +33,24 @@ class CardRemovingDialogFragment : DialogFragment() {
         activity?.let { activity ->
             viewModel = ViewModelProvider(owner = activity)[RepetitionViewModel::class.java]
 
-            binding.cancelCardRemovingButton.setOnClickListener {
-                findNavController().navigate(
-                    R.id.action_cardRemovingDialogFragment_to_repeatFragment
-                )
-            }
+            binding.cancelCardRemovingButton.setOnClickListener { navigateToRepeatFragment() }
 
             binding.confirmCardRemovingButton.setOnClickListener {
-
-                viewModel?.removeCard(args.cardId)
-                findNavController().navigate(
-                    R.id.action_cardRemovingDialogFragment_to_repeatFragment
-                )
+                viewModel?.removeCard(cardId = args.cardId)
+                navigateToRepeatFragment()
             }
         }
-
     }
 
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    private fun navigateToRepeatFragment() {
+        CardRemovingDialogFragmentDirections.actionCardRemovingDialogFragmentToRepeatFragment(
+            deckId = args.deckId
+        )
+            .also { findNavController().navigate(it) }
     }
 }
