@@ -15,7 +15,6 @@ class LetterBarAdapter(
 ) :
     RecyclerView.Adapter<LetterBarAdapter.LetterInfoViewHolder>() {
 
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LetterInfoViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding = LetterBarItemBinding.inflate(inflater, parent, false)
@@ -58,7 +57,7 @@ class LetterBarAdapter(
                     letterInfo.isChecked = !letterInfo.isChecked
                     notifyItemChanged(position)
                 }
-                onItemClickListener(IpaProcessor().getUncompletedCouples(letterInfos))
+                onItemClickListener(IpaProcessor().getUncompletedIpa(letterInfos))
             }
         }
     }
@@ -73,6 +72,4 @@ class LetterBarAdapter(
 
     inner class LetterInfoViewHolder(val binding: LetterBarItemBinding) :
         RecyclerView.ViewHolder(binding.root)
-
-
 }

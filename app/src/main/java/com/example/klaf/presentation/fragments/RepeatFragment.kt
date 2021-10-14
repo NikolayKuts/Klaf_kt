@@ -44,10 +44,9 @@ class RepeatFragment : Fragment() {
                 cardSource.observe(viewLifecycleOwner) { receivedCards ->
                     cards.clear()
                     cards.addAll(receivedCards)
-                    if (cards.isNotEmpty()) {
-                        binding.cardSideTextView.text = cards[0].nativeWord
-                    } else {
-                        binding.cardSideTextView.text = "empty"
+                    when {
+                        cards.isNotEmpty() -> binding.cardSideTextView.text = cards[0].nativeWord
+                        else -> binding.cardSideTextView.text = "empty"
                     }
                 }
             }

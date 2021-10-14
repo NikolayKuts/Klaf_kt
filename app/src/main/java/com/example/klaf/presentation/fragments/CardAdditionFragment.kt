@@ -27,7 +27,6 @@ class CardAdditionFragment : Fragment() {
     private val args by navArgs<CardAdditionFragmentArgs>()
     private var viewModel: CardAdditionViewModel? = null
     private val letterInfos: MutableList<LetterInfo> = ArrayList()
-    private var adapter: LetterBarAdapter? = null
 
     // TODO: 10/10/2021 implement card passing as args but not only a card id
 
@@ -44,35 +43,32 @@ class CardAdditionFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         activity?.let { activity ->
             with(binding) {
+                cardAdditionDeckName.text = args.deckName
 
-                adapter = LetterBarAdapter(letterInfos = letterInfos) { uncompletedIpaCouples ->
+                val adapter = LetterBarAdapter(letterInfos = letterInfos) { uncompletedIpaCouples ->
                     ipaEditText.setText(uncompletedIpaCouples)
-
                 }
-//                adapter.setData(listOf(LetterInfo("test", false)))
-
-                letterBarRecyclerView.layoutManager =
-                    LinearLayoutManager(
-                        activity.applicationContext,
-                        LinearLayoutManager.HORIZONTAL,
-                        false
-                    )
+                letterBarRecyclerView.layoutManager = LinearLayoutManager(
+                    activity.applicationContext,
+                    LinearLayoutManager.HORIZONTAL,
+                    false
+                )
                 letterBarRecyclerView.adapter = adapter
 
-                adapter?.let { adapter ->
-                    foreignWordEditText.doOnTextChanged { text, _, _, _ ->
-                        val letters = ArrayList<LetterInfo>()
-                        val foreignWord = text.toString().trim()
-                        if (foreignWord.isNotEmpty()) {
-                            val letterArray = foreignWord.split("")
-                            letterArray.drop(1).dropLast(1).forEach { letter ->
-                                letters.add(LetterInfo(letter = letter, isChecked = false))
-                            }
-                        }
-                        adapter.setData(letters)
-                    }
-                }
+                foreignWordEditText.doOnTextChanged { text, _, _, _ ->
+                    val foreignWord = text.toString().trim()
 
+                    val letterInfos = when {
+                        foreignWord.isNotEmpty() -> {
+                            foreignWord.split("")
+                                .drop(1)
+                                .dropLast(1)
+                                .map { letter -> LetterInfo(letter = letter, isChecked = false) }
+                        }
+                        else -> ArrayList()
+                    }
+                    adapter.setData(letterInfos)
+                }
                 viewModel = ViewModelProvider(
                     owner = activity,
                     factory = CardAdditionViewModelFactory(
@@ -84,11 +80,8 @@ class CardAdditionFragment : Fragment() {
                 viewModel?.cardQuantity?.observe(viewLifecycleOwner) { quantity ->
                     cardQuantityTextView.text = quantity.toString()
                 }
-                cardAdditionDeckName.text = args.deckName
 
                 applyCardAdditionButton.setOnClickListener { onConfirmCardAddition() }
-
-
             }
         }
     }
@@ -105,10 +98,10 @@ class CardAdditionFragment : Fragment() {
                 viewModel?.let { viewModel ->
                     viewModel.onAddNewCard(newCard)
                     clearEditTextFields()
-                    showToast("the card has been added")
+                    showToast(message = "the card has been added")
                 }
             }
-            else -> showToast("native and foreign words must be filled")
+            else -> showToast(message = "native and foreign words must be filled")
         }
     }
 
