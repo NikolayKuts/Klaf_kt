@@ -32,7 +32,7 @@ class IpaProcessor {
     }
 
 
-    fun getCodedIpaForDB(letterInfos: List<LetterInfo>, ipaTemplate: String): String {
+    fun getEncodedIpa(letterInfos: List<LetterInfo>, ipaTemplate: String): String {
 
         val result = StringBuilder()
         val clearedIpaTemplate: String = ipaTemplate.replace(
@@ -40,11 +40,12 @@ class IpaProcessor {
             replacement = "="
         )
 
-        var sbIpaTemplate = StringBuilder(clearedIpaTemplate)
+        var ipaTemplateBuilder = StringBuilder(clearedIpaTemplate)
 
         var index = 0
         while (index < letterInfos.size) {
             val letterInfo: LetterInfo = letterInfos[index]
+
             if (letterInfo.isChecked) {
                 when {
                     index == 0 -> result.append("/")
@@ -52,26 +53,27 @@ class IpaProcessor {
                     index > 0 && letterInfos[index - 1].isChecked -> result.append("//")
                 }
 
-                var ipaCouple: String
-                when {
-                    sbIpaTemplate.substring(1).contains("\n") -> {
-                        if (sbIpaTemplate.startsWith("\n")) {
-                            sbIpaTemplate = StringBuilder(sbIpaTemplate.substring(1))
+                val ipaCouple = when {
+                    ipaTemplateBuilder.isNotEmpty()
+                            && ipaTemplateBuilder.substring(1).contains("\n") -> {
+                        if (ipaTemplateBuilder.startsWith("\n")) {
+                            ipaTemplateBuilder = StringBuilder(ipaTemplateBuilder.substring(1))
                         }
-                        ipaCouple = sbIpaTemplate.substring(0, sbIpaTemplate.indexOf("\n"))
+                        ipaTemplateBuilder.substring(0, ipaTemplateBuilder.indexOf("\n"))
                     }
                     else -> {
-                        if (sbIpaTemplate.startsWith("\n")) {
-                            sbIpaTemplate = StringBuilder(sbIpaTemplate.substring(1))
+                        if (ipaTemplateBuilder.startsWith("\n")) {
+                            ipaTemplateBuilder = StringBuilder(ipaTemplateBuilder.substring(1))
                         }
-                        ipaCouple = sbIpaTemplate.substring(0)
+                        ipaTemplateBuilder.substring(0)
                     }
                 }
-//                
-                val replacedLetters: String = sbIpaTemplate.substring(0, sbIpaTemplate.indexOf("="))
+//
+                val replacedLetters: String =
+                    ipaTemplateBuilder.substring(0, ipaTemplateBuilder.indexOf("="))
                 index += replacedLetters.length - 1
                 result.append(ipaCouple)
-                sbIpaTemplate.delete(0, ipaCouple.length)
+                ipaTemplateBuilder.delete(0, ipaCouple.length)
 
             } else {
                 if (index > 0 && letterInfos[index - 1].isChecked) {
@@ -82,5 +84,63 @@ class IpaProcessor {
             index++
         }
         return result.toString()
+    }
+
+    fun getLetterInfos(codedIpaFromDB: String): List<LetterInfo> {
+        return ArrayList<LetterInfo>().apply {
+
+            val foreignWordBuilder = StringBuilder(codedIpaFromDB)
+            while (foreignWordBuilder.isNotEmpty()) {
+
+                if (foreignWordBuilder.substring(0, 1) == "/") {
+                    foreignWordBuilder.delete(0, 1)
+                    val equalsIndex = foreignWordBuilder.indexOf("=")
+                    val letters = foreignWordBuilder.substring(0, equalsIndex)
+
+                    for (index in letters.indices) {
+                        this.add(LetterInfo(letters.substring(index, index + 1), true))
+                    }
+
+                    if (foreignWordBuilder.toString().contains("/")) {
+                        foreignWordBuilder.delete(0, foreignWordBuilder.indexOf("/") + 1)
+                    } else {
+                        foreignWordBuilder.delete(0, foreignWordBuilder.length)
+                    }
+
+                } else {
+                    this.add(LetterInfo(foreignWordBuilder.substring(0, 1), false))
+                    foreignWordBuilder.delete(0, 1)
+                }
+            }
+        }
+    }
+
+
+    fun getDecodedIpa(encodedIpa: String): String {
+        val result = StringBuilder()
+        val ipa = StringBuilder(encodedIpa)
+
+        while (ipa.isNotEmpty()) {
+            if (ipa.substring(0, 1) == "/") {
+                ipa.delete(0, 1)
+                var couple: String
+                if (ipa.contains("/")) {
+                    val index = ipa.indexOf("/")
+                    couple = "${ipa.substring(0, index)}\n"
+                    ipa.delete(0, index + 1)
+                } else {
+                    couple = ipa.substring(0, ipa.length)
+                    ipa.delete(0, ipa.length)
+                }
+                result.append(couple)
+            } else {
+                ipa.delete(0, 1)
+            }
+        }
+        if (result.endsWith("\n")) {
+            val resultLength = result.length
+            result.delete(resultLength - 1, resultLength)
+        }
+        return result.toString().replace("=", " = ")
     }
 }

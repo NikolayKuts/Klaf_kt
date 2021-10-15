@@ -11,7 +11,7 @@ import com.example.klaf.domain.ipa.LetterInfo
 
 class LetterBarAdapter(
     private val letterInfos: MutableList<LetterInfo>,
-    private val onItemClickListener: (uncompletedIpaCouples: String?) -> Unit,
+    private val onItemClickListener: (uncompletedIpa: String?) -> Unit,
 ) :
     RecyclerView.Adapter<LetterBarAdapter.LetterInfoViewHolder>() {
 

@@ -4,12 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.databinding.FragmentRepeatBinding
 import com.example.klaf.domain.pojo.Card
+import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.presentation.view_model_factories.RepetitionViewModelFactory
 import com.example.klaf.presentation.view_models.RepetitionViewModel
 
@@ -50,39 +52,50 @@ class RepeatFragment : Fragment() {
                     }
                 }
             }
-        }
 
-        viewModel?.onGetDeck(args.deckId) { deck ->
-            binding.repeatDeckNameTextView.text = deck.name
-        }
+            viewModel?.onGetDeck(args.deckId) { deck: Deck? ->
+                if (deck != null) {
+                    binding.repeatDeckNameTextView.text = deck.name
+                }
+            }
 
-        binding.repeatCardAdditionButton.setOnClickListener {
-            RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(
-                deckId = args.deckId,
-                deckName = args.deckName
-            )
-                .also { findNavController().navigate(it) }
-        }
-
-        binding.repeatEditingActionButton.setOnClickListener {
-            RepeatFragmentDirections.actionRepeatFragmentToCardEditingFragment(
-                cardId = args.deckId,
-                deckId = args.deckId,
-                deckName = args.deckName
-            )
-                .also { findNavController().navigate(it) }
-        }
-
-        binding.repeatRemovingActionButton.setOnClickListener {
-            if (cards.isNotEmpty()) {
-                RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
+            binding.repeatCardAdditionButton.setOnClickListener {
+                RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(
                     deckId = args.deckId,
-                    cardId = cards[0].id
+                    deckName = args.deckName
                 )
                     .also { findNavController().navigate(it) }
             }
-        }
 
+            binding.repeatEditingActionButton.setOnClickListener {
+                if (cards.isNotEmpty()) {
+                    RepeatFragmentDirections.actionRepeatFragmentToCardEditingFragment(
+                        cardId = args.deckId,
+                        deckId = args.deckId,
+                        deckName = args.deckName
+                    )
+                        .also { findNavController().navigate(it) }
+                } else {
+                    Toast.makeText(
+                        activity.applicationContext,
+                        "There is nothing to change",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                }
+            }
+
+            binding.repeatRemovingActionButton.setOnClickListener {
+                if (cards.isNotEmpty()) {
+                    RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
+                        deckId = args.deckId,
+                        cardId = cards[0].id
+                    )
+                        .also { findNavController().navigate(it) }
+                }
+            }
+
+        }
     }
 
     override fun onDestroy() {

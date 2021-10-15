@@ -14,7 +14,7 @@ class CardEditingViewModel(context: Context, cardId: Int) : ViewModel() {
 
     private val repository: CardEditingRepository = CardEditingRepositoryRoomImp(context)
 
-    fun onGetCardById(cardId: Int, onGetCard: (Card) -> Unit) {
+    fun onGetCardById(cardId: Int, onGetCard: (Card?) -> Unit) {
         viewModelScope.launch { onGetCard(repository.getCardById(cardId)) }
     }
 

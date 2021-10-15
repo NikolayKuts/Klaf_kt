@@ -23,7 +23,7 @@ class RepetitionViewModel(context: Context, private val deckId: Int) : ViewModel
         viewModelScope.launch { repository.deleteCard(cardId = cardId) }
     }
 
-    fun onGetDeck(deckId: Int, callback: (Deck) -> Unit) {
+    fun onGetDeck(deckId: Int, callback: (Deck?) -> Unit) {
         viewModelScope.launch { callback(repository.getDeckById(deckId = deckId)) }
     }
 }

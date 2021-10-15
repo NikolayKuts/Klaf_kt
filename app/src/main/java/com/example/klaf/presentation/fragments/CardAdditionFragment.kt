@@ -1,14 +1,12 @@
 package com.example.klaf.presentation.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -123,7 +121,7 @@ class CardAdditionFragment : Fragment() {
                     deckId = args.deckId,
                     nativeWord = nativeWord,
                     foreignWord = foreignWord,
-                    ipa = ipaProcessor.getCodedIpaForDB(
+                    ipa = ipaProcessor.getEncodedIpa(
                         letterInfos = letterInfos,
                         ipaTemplate = ipaEditText.text.toString()
                     )
