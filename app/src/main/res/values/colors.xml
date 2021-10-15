@@ -11,4 +11,6 @@
 
     <color name="checked_letter_background">#5C00BCD4</color>
     <color name="unchecked_letter_background">#F8F8F8</color>
+    <color name="ipa_prompt_color">#EC5959</color>
+    <color name="ipa_prompt_transparent">#1B8A8989</color>
 </resources>

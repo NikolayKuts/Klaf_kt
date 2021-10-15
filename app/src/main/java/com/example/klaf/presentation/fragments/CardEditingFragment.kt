@@ -11,11 +11,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.klaf.R
 import com.example.klaf.databinding.FragmentCardEditingBinding
 import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.pojo.Card
+import com.example.klaf.domain.update
 import com.example.klaf.presentation.adapters.LetterBarAdapter
 import com.example.klaf.presentation.view_model_factories.CardEditingViewModelFactory
 import com.example.klaf.presentation.view_models.CardEditingViewModel
@@ -54,8 +54,7 @@ class CardEditingFragment : Fragment() {
                     cardForChanging = card
                     if (card != null) {
                         setContentToEditTexts(card)
-                        letterInfos.clear()
-                        letterInfos.addAll(IpaProcessor().getLetterInfos(card.ipa))
+                        letterInfos.update(IpaProcessor().getLetterInfos(card.ipa))
                     }
                 }
 

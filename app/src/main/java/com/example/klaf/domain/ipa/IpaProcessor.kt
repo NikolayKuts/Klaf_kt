@@ -86,10 +86,10 @@ class IpaProcessor {
         return result.toString()
     }
 
-    fun getLetterInfos(codedIpaFromDB: String): List<LetterInfo> {
+    fun getLetterInfos(encodedIpaFromDB: String): List<LetterInfo> {
         return ArrayList<LetterInfo>().apply {
 
-            val foreignWordBuilder = StringBuilder(codedIpaFromDB)
+            val foreignWordBuilder = StringBuilder(encodedIpaFromDB)
             while (foreignWordBuilder.isNotEmpty()) {
 
                 if (foreignWordBuilder.substring(0, 1) == "/") {
@@ -142,5 +142,57 @@ class IpaProcessor {
             result.delete(resultLength - 1, resultLength)
         }
         return result.toString().replace("=", " = ")
+    }
+
+    fun getIpaPrompts(encodedIpa: String): List<LetterInfo> {
+        val ipa = StringBuilder(encodedIpa)
+        val result: MutableList<LetterInfo> = ArrayList()
+
+        while (ipa.toString() != "") {
+            if (ipa.startsWith("/")) {
+                var codedLetters: String
+                val sound: String = if (ipa.substring(1).contains("/")) {
+                    codedLetters = ipa.substring(0, ipa.indexOf("/", 1) + 1)
+                    ipa.delete(0, ipa.indexOf("/", 1) + 1)
+                    codedLetters.substring(
+                        codedLetters.indexOf("=") + 1,
+                        codedLetters.indexOf("/", 1)
+                    )
+                } else {
+                    codedLetters = ipa.substring(0)
+                    ipa.delete(0, ipa.length + 1)
+                    codedLetters.substring(codedLetters.indexOf("=") + 1)
+                }
+                val letters: String = codedLetters.substring(1, codedLetters.indexOf("="))
+                val letterLength = letters.length
+                val soundLength = sound.length
+
+                if (letterLength > soundLength) {
+                    val d = (letterLength.toDouble() - soundLength.toDouble()) / 2
+                    val n = (letterLength - soundLength) / 2
+                    val indexForPutting = if (d > n) n + 1 else n
+                    var j = 0
+                    var q = 0
+
+                    while (j < letterLength) {
+                        if (j < indexForPutting || soundLength <= q) {
+                            result.add(LetterInfo(letters.substring(j, j + 1), false))
+                        } else {
+                            result.add(LetterInfo(sound.substring(q, q + 1), true))
+                            q++
+                        }
+                        j++
+                    }
+                } else {
+                    for (w in 0 until soundLength) {
+                        result.add(LetterInfo(sound.substring(w, w + 1), true))
+                    }
+                }
+            } else {
+                result.add(LetterInfo(ipa.substring(0, 1), false))
+                ipa.delete(0, 1)
+            }
+        }
+        return result
     }
 }

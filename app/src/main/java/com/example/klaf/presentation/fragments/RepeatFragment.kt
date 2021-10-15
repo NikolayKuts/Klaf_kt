@@ -9,9 +9,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.klaf.databinding.FragmentRepeatBinding
+import com.example.klaf.domain.ipa.IpaProcessor
+import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.pojo.Card
 import com.example.klaf.domain.pojo.Deck
+import com.example.klaf.domain.update
+import com.example.klaf.presentation.adapters.IpaPromptAdapter
 import com.example.klaf.presentation.view_model_factories.RepetitionViewModelFactory
 import com.example.klaf.presentation.view_models.RepetitionViewModel
 
@@ -22,6 +27,9 @@ class RepeatFragment : Fragment() {
     private val args by navArgs<RepeatFragmentArgs>()
     private var viewModel: RepetitionViewModel? = null
     private val cards: MutableList<Card> = ArrayList()
+    private var isFrontSide: Boolean = true
+    private val ipaPrompts = ArrayList<LetterInfo>()
+    private val adapter: IpaPromptAdapter by lazy { IpaPromptAdapter() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,25 +45,39 @@ class RepeatFragment : Fragment() {
         activity?.let { activity ->
             initializeViewModel()
 
-            viewModel?.cardSource?.observe(viewLifecycleOwner) { receivedCards ->
-                cards.clear()
-                    cards.addAll(receivedCards)
-                    when {
-                        cards.isNotEmpty() -> binding.cardSideTextView.text = cards[0].nativeWord
-                        else -> binding.cardSideTextView.text = "empty"
-                    }
-            }
+//            val adapter = IpaPromptAdapter()
 
-            viewModel?.onGetDeck(args.deckId) { deck: Deck? ->
-                if (deck != null) {
-                    binding.repeatDeckNameTextView.text = deck.name
+            binding.ipaRecyclerView.layoutManager = LinearLayoutManager(
+                activity.applicationContext,
+                LinearLayoutManager.HORIZONTAL,
+                false
+            )
+
+            binding.ipaRecyclerView.adapter = adapter
+
+            viewModel?.cardSource?.observe(viewLifecycleOwner) { receivedCards ->
+                cards.update(receivedCards)
+                when {
+                    cards.isNotEmpty() -> {
+                        binding.cardSideTextView.text = cards[0].nativeWord
+                        setIpaPromptAdapterContent()
+                    }
+                    else -> {
+                        binding.cardSideTextView.text = "empty"
+                    }
                 }
             }
-
-            setOnClickListenerOnCArdAdditionButton()
-            setOnClickListenerOnCardEditionButton()
-            setOnClickListenerOnCardRemovingButton()
         }
+
+        viewModel?.onGetDeck(args.deckId) { deck: Deck? ->
+            if (deck != null) {
+                binding.repeatDeckNameTextView.text = deck.name
+            }
+        }
+
+        setOnClickListenerOnCArdAdditionButton()
+        setOnClickListenerOnCardEditionButton()
+        setOnClickListenerOnCardRemovingButton()
     }
 
     override fun onDestroy() {
@@ -115,6 +137,29 @@ class RepeatFragment : Fragment() {
                 )
                     .also { findNavController().navigate(it) }
             }
+        }
+    }
+
+    private fun setIpaPromptAdapterContent() {
+        if (cards.isNotEmpty()) {
+            val card = cards[0]
+            val ipaProcessor = IpaProcessor()
+
+            when {
+                (binding.repeatOrderSwitch.isChecked) -> {
+                    when {
+                        isFrontSide -> ipaPrompts.update(ipaProcessor.getIpaPrompts(card.ipa))
+                        else -> ipaPrompts.clear()
+                    }
+                }
+                else -> {
+                    when {
+                        isFrontSide -> ipaPrompts.clear()
+                        else -> ipaPrompts.update(ipaProcessor.getIpaPrompts(card.ipa))
+                    }
+                }
+            }
+            adapter.setData(ipaPrompts)
         }
     }
 

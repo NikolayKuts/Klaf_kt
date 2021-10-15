@@ -3,4 +3,5 @@
 
     <color name="checked_letter_background">#77FFEB3B</color>
     <color name="unchecked_letter_background">#F8F8F8</color>
+    <color name="ipa_prompt_color">#EA7C7C</color>
 </resources>
