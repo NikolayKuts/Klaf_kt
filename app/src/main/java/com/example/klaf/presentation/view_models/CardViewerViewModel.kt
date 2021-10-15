@@ -1,7 +1,6 @@
 package com.example.klaf.presentation.view_models
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.*
 import com.example.klaf.data.implementations.CardViewerRepositoryRoomImp
 import com.example.klaf.data.repositories.CardViewerRepository
@@ -12,10 +11,8 @@ class CardViewerViewModel(application: Application, private val deckId: Int) :
     AndroidViewModel(application) {
 
     private val repository: CardViewerRepository = CardViewerRepositoryRoomImp(application)
-    private var _cardSours = MutableLiveData<List<Card>>()
-    val carsSours: LiveData<List<Card>> = _cardSours
 
-    init { viewModelScope.launch { _cardSours.value = repository.getCardsByDeckId(deckId) } }
+    val carsSours: LiveData<List<Card>> = repository.getCardsByDeckId(deckId)
 
     fun addNewCard(card: Card) {
         viewModelScope.launch { repository.insertCard(card) }

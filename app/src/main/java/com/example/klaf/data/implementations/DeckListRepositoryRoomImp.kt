@@ -11,9 +11,7 @@ import kotlinx.coroutines.withContext
 class DeckListRepositoryRoomImp(context: Context) : DeckListRepository {
     private val database = KlafRoomDatabase.getInstance(context)
 
-    override suspend fun getDataFormSours(): LiveData<List<Deck>> = withContext(Dispatchers.IO) {
-        database.deckDao().getAllDecks()
-    }
+    override fun getDeckSource(): LiveData<List<Deck>> = database.deckDao().getAllDecks()
 
     override suspend fun insertDeck(deck: Deck) {
         withContext(Dispatchers.IO) { database.deckDao().insertDeck(deck) }

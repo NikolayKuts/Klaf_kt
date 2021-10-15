@@ -5,7 +5,7 @@ import com.example.klaf.domain.pojo.Deck
 
 interface DeckListRepository {
 
-    suspend fun getDataFormSours(): LiveData<List<Deck>>
+    fun getDeckSource(): LiveData<List<Deck>>
 
     suspend fun insertDeck(deck: Deck)
 

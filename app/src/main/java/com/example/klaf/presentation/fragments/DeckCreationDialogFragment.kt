@@ -39,10 +39,9 @@ class DeckCreationDialogFragment : DialogFragment() {
 
             buttonConfirmDeckCreation.setOnClickListener {
                 val deckName = editTextDeckName.text.toString().trim()
-//                val decks = viewModel.deckSours.value
-                viewModel.onGetDeckSours { liveData ->
-                    val decks = liveData.value
-                    val deckNames = decks?.map { deck -> deck.name }
+                
+                viewModel.deckSource.observe(viewLifecycleOwner) { receivedDecks ->
+                    val deckNames = receivedDecks?.map { deck -> deck.name }
                     when {
                         (deckNames?.contains(deckName) == true) -> {
                             Toast.makeText(

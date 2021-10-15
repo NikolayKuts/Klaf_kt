@@ -6,7 +6,7 @@ import com.example.klaf.domain.pojo.Deck
 
 interface RepetitionRepository {
 
-    suspend fun getCardByDeckId(deckId: Int): LiveData<List<Card>>
+    fun getCardsByDeckId(deckId: Int): LiveData<List<Card>>
 
     suspend fun deleteCard(cardId: Int)
 

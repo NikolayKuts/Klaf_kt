@@ -1,12 +1,11 @@
 package com.example.klaf.data.repositories
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.example.klaf.domain.pojo.Card
 
 interface CardViewerRepository {
 
-    suspend fun getCardsByDeckId(deckId: Int): List<Card>
+    fun getCardsByDeckId(deckId: Int): LiveData<List<Card>>
 
     suspend fun insertCard(card: Card)
 

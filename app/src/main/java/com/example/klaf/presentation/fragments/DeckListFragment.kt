@@ -39,7 +39,6 @@ class DeckListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         activity?.let { activity ->
 
-            Log.i("vm_test", "onViewCreated: activity let")
             recyclerViewDecks = binding.recyclerviewDecks
 
             recyclerViewDecks?.let { recycler ->
@@ -47,13 +46,10 @@ class DeckListFragment : Fragment() {
                 recycler.adapter = adapter
             }
 
-            viewModel.onGetDeckSours { liveData ->
-                liveData.observe(viewLifecycleOwner) { deckList ->
-                    Log.i("vm_test", "onViewCreated: $deckList")
-                    decks.clear()
-                    decks.addAll(deckList)
-                    adapter.decks = decks
-                }
+            viewModel.deckSource.observe(viewLifecycleOwner) { receivedDecks ->
+                decks.clear()
+                decks.addAll(receivedDecks)
+                adapter.decks = decks
             }
 
             val navController = findNavController()

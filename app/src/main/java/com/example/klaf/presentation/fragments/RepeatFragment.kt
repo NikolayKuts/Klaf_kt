@@ -35,22 +35,15 @@ class RepeatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         activity?.let { activity ->
-            viewModel = ViewModelProvider(
-                owner = activity,
-                factory = RepetitionViewModelFactory(
-                    context = activity.applicationContext,
-                    deckId = args.deckId)
-            )[RepetitionViewModel::class.java]
+            initializeViewModel()
 
-            viewModel?.onGetCardSource { cardSource ->
-                cardSource.observe(viewLifecycleOwner) { receivedCards ->
-                    cards.clear()
+            viewModel?.cardSource?.observe(viewLifecycleOwner) { receivedCards ->
+                cards.clear()
                     cards.addAll(receivedCards)
                     when {
                         cards.isNotEmpty() -> binding.cardSideTextView.text = cards[0].nativeWord
                         else -> binding.cardSideTextView.text = "empty"
                     }
-                }
             }
 
             viewModel?.onGetDeck(args.deckId) { deck: Deck? ->
@@ -59,42 +52,9 @@ class RepeatFragment : Fragment() {
                 }
             }
 
-            binding.repeatCardAdditionButton.setOnClickListener {
-                RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(
-                    deckId = args.deckId,
-                    deckName = args.deckName
-                )
-                    .also { findNavController().navigate(it) }
-            }
-
-            binding.repeatEditingActionButton.setOnClickListener {
-                if (cards.isNotEmpty()) {
-                    RepeatFragmentDirections.actionRepeatFragmentToCardEditingFragment(
-                        cardId = args.deckId,
-                        deckId = args.deckId,
-                        deckName = args.deckName
-                    )
-                        .also { findNavController().navigate(it) }
-                } else {
-                    Toast.makeText(
-                        activity.applicationContext,
-                        "There is nothing to change",
-                        Toast.LENGTH_SHORT
-                    )
-                        .show()
-                }
-            }
-
-            binding.repeatRemovingActionButton.setOnClickListener {
-                if (cards.isNotEmpty()) {
-                    RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
-                        deckId = args.deckId,
-                        cardId = cards[0].id
-                    )
-                        .also { findNavController().navigate(it) }
-                }
-            }
-
+            setOnClickListenerOnCArdAdditionButton()
+            setOnClickListenerOnCardEditionButton()
+            setOnClickListenerOnCardRemovingButton()
         }
     }
 
@@ -102,4 +62,60 @@ class RepeatFragment : Fragment() {
         super.onDestroy()
         _binding = null
     }
+
+    private fun initializeViewModel() {
+        activity?.let { activity ->
+            viewModel = ViewModelProvider(
+                owner = activity,
+                factory = RepetitionViewModelFactory(
+                    context = activity.applicationContext,
+                    deckId = args.deckId)
+            )[RepetitionViewModel::class.java]
+        }
+    }
+
+    private fun setOnClickListenerOnCArdAdditionButton() {
+        binding.repeatCardAdditionButton.setOnClickListener {
+            RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(
+                deckId = args.deckId,
+                deckName = args.deckName
+            )
+                .also { findNavController().navigate(it) }
+        }
+    }
+
+    private fun setOnClickListenerOnCardEditionButton() {
+        context?.let {
+            binding.repeatCardEditingActionButton.setOnClickListener {
+                if (cards.isNotEmpty()) {
+                    RepeatFragmentDirections.actionRepeatFragmentToCardEditingFragment(
+                        cardId = cards[0].id,
+                        deckId = args.deckId,
+                        deckName = args.deckName
+                    )
+                        .also { findNavController().navigate(it) }
+                } else {
+                    Toast.makeText(
+                        context,
+                        "There is nothing to change",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                }
+            }
+        }
+    }
+
+    private fun setOnClickListenerOnCardRemovingButton() {
+        binding.repeatCardRemovingActionButton.setOnClickListener {
+            if (cards.isNotEmpty()) {
+                RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
+                    deckId = args.deckId,
+                    cardId = cards[0].id
+                )
+                    .also { findNavController().navigate(it) }
+            }
+        }
+    }
+
 }

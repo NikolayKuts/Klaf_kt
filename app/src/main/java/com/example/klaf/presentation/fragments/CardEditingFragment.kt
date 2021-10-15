@@ -105,10 +105,6 @@ class CardEditingFragment : Fragment() {
                                 CardEditingFragmentDirections
                                     .actionCardEditingFragmentToRepeatFragment(deckId = args.deckId)
                                     .also { findNavController().navigate(it) }
-
-//                                findNavController().navigate(
-//                                    R.id.action_cardEditingFragment_to_repeatFragment
-//                                )
                             }
                         }
                     }
@@ -142,7 +138,7 @@ class CardEditingFragment : Fragment() {
             cardEditingDeckNameTextView.text = args.deckName
             nativeWordEditText.setText(card.nativeWord)
             foreignWordEditText.setText(card.foreignWord)
-            ipaEditText.setText(IpaProcessor().getDecodedIpa(card.ipa))
+            ipaEditText.setText(IpaProcessor().getDecodedIpa(encodedIpa = card.ipa))
         }
     }
 
