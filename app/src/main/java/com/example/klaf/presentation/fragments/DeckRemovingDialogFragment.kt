@@ -35,7 +35,7 @@ class DeckRemovingDialogFragment : DialogFragment() {
         }
 
         binding.buttonConfirmDeckRemoving.setOnClickListener {
-            viewModel.removeDeck(args.deckId)
+            viewModel.onRemoveDeck(args.deckId)
             findNavController().navigate(R.id.action_deckRemovingDialogFragment_to_deckListFragment)
         }
     }

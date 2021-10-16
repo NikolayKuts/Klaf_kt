@@ -24,4 +24,8 @@ class DeckListRepositoryRoomImp(context: Context) : DeckListRepository {
     override suspend fun getDeckById(deckId: Int): Deck = withContext(Dispatchers.IO) {
         database.deckDao().getDeckById(deckId)
     }
+
+    override suspend fun removeCardsOfDeck(deckId: Int) {
+        withContext(Dispatchers.IO) { database.cardDao().deleteCardsByDeckId(deckId = deckId) }
+    }
 }

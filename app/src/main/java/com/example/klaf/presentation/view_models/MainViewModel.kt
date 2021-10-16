@@ -16,11 +16,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val deckSource: LiveData<List<Deck>> = repository.getDeckSource()
 
     fun addNewDeck(deck: Deck) {
-        viewModelScope.launch { repository.insertDeck(deck) }
+        viewModelScope.launch { repository.insertDeck(deck = deck) }
     }
 
-    fun removeDeck(deckId: Int) {
-        viewModelScope.launch { repository.removeDeck(deckId) }
+    fun onRemoveDeck(deckId: Int) {
+        viewModelScope.launch {
+            repository.removeDeck(deckId = deckId)
+            repository.removeCardsOfDeck(deckId = deckId)
+        }
     }
 
     fun onGetDeckById(deckId: Int, onDeckRetrieved: (Deck) -> Unit) {
