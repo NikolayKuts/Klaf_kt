@@ -75,7 +75,7 @@ class RepeatFragment : Fragment() {
             }
         }
 
-        setOnClickListenerOnCArdAdditionButton()
+        setOnClickListenerOnCardAdditionButton()
         setOnClickListenerOnCardEditionButton()
         setOnClickListenerOnCardRemovingButton()
     }
@@ -96,11 +96,10 @@ class RepeatFragment : Fragment() {
         }
     }
 
-    private fun setOnClickListenerOnCArdAdditionButton() {
+    private fun setOnClickListenerOnCardAdditionButton() {
         binding.repeatCardAdditionButton.setOnClickListener {
             RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(
-                deckId = args.deckId,
-                deckName = args.deckName
+                deckId = args.deckId
             )
                 .also { findNavController().navigate(it) }
         }

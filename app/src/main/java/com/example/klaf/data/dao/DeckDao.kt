@@ -19,4 +19,7 @@ interface DeckDao {
 
     @Query("SELECT * FROM $DECK_TABLE_NAME WHERE id = :deckId")
     fun getDeckById(deckId: Int): Deck
+
+    @Query("SELECT * FROM $DECK_TABLE_NAME WHERE id = :deckId")
+    fun getObservableDeckById(deckId: Int): LiveData<Deck?>
 }

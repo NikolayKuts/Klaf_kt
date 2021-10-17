@@ -41,11 +41,11 @@ class CardAdditionFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         activity?.let { activity ->
             with(binding) {
-                cardAdditionDeckName.text = args.deckName
 
                 val adapter = LetterBarAdapter(letterInfos = letterInfos) { uncompletedIpaCouples ->
                     ipaEditText.setText(uncompletedIpaCouples)
                 }
+
                 letterBarRecyclerView.layoutManager = LinearLayoutManager(
                     activity.applicationContext,
                     LinearLayoutManager.HORIZONTAL,
@@ -75,8 +75,11 @@ class CardAdditionFragment : Fragment() {
                     )
                 )[CardAdditionViewModel::class.java]
 
-                viewModel?.cardQuantity?.observe(viewLifecycleOwner) { quantity ->
-                    cardQuantityTextView.text = quantity.toString()
+                viewModel?.deck?.observe(viewLifecycleOwner) { deck ->
+                    deck?.let {
+                        cardAdditionDeckName.text = deck.name
+                        cardQuantityTextView.text = deck.cardQuantity.toString()
+                    }
                 }
 
                 applyCardAdditionButton.setOnClickListener { onConfirmCardAddition() }

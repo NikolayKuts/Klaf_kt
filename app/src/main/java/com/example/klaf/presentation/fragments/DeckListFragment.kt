@@ -80,6 +80,7 @@ class DeckListFragment : Fragment() {
             show()
             setOnMenuItemClickListener { item ->
                 val navController = findNavController()
+
                 when (item.itemId) {
                     R.id.item_deck_deleting -> {
                         DeckListFragmentDirections
@@ -118,6 +119,10 @@ class DeckListFragment : Fragment() {
                         true
                     }
                     R.id.item_card_addition -> {
+                        DeckListFragmentDirections.actionDeckListFragmentToCardAdditionFragment(
+                            deckId = deck.id
+                        )
+                            .also { navController.navigate(it) }
                         true
                     }
                     else -> false
