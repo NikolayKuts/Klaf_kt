@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.klaf.R
 import com.example.klaf.databinding.DialogDeckCreationBinding
+import com.example.klaf.domain.auxiliary.DateAssistant
 import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.presentation.view_models.MainViewModel
 
@@ -39,7 +40,7 @@ class DeckCreationDialogFragment : DialogFragment() {
 
             buttonConfirmDeckCreation.setOnClickListener {
                 val deckName = editTextDeckName.text.toString().trim()
-                
+
                 viewModel.deckSource.observe(viewLifecycleOwner) { receivedDecks ->
                     val deckNames = receivedDecks?.map { deck -> deck.name }
                     when {
@@ -49,7 +50,12 @@ class DeckCreationDialogFragment : DialogFragment() {
                             ).show()
                         }
                         else -> {
-                            viewModel.addNewDeck(Deck(deckName))
+                            viewModel.addNewDeck(
+                                Deck(
+                                    name = deckName,
+                                    creationData = DateAssistant().getCurrentDateLong()
+                                )
+                            )
                             navController.navigate(
                                 R.id.action_deckCreationDialogFragment_to_deckListFragment
                             )
