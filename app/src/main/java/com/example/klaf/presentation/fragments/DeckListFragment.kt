@@ -1,11 +1,11 @@
 package com.example.klaf.presentation.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -52,17 +52,13 @@ class DeckListFragment : Fragment() {
                 adapter.decks = decks
             }
 
-            val navController = findNavController()
-            binding.createDeckActionButton.setOnClickListener {
-                navController.navigate(
-                    DeckListFragmentDirections.actionDeckListFragmentToDeckCreationDialogFragment()
-                )
-            }
+            setOnCreateDeckClickListener()
+
             adapter.onClick = { deck ->
                 DeckListFragmentDirections.actionDeckListFragmentToRepeatFragment(
                     deckId = deck.id,
                     deckName = deck.name
-                ).also { navController.navigate(it) }
+                ).also { findNavController().navigate(it) }
             }
 
             adapter.onPopupMenuClick = { view, deck -> showDeckPopupMenu(view, deck) }
@@ -87,7 +83,10 @@ class DeckListFragment : Fragment() {
                 when (item.itemId) {
                     R.id.item_deck_deleting -> {
                         DeckListFragmentDirections
-                            .actionDeckListFragmentToDeckRemovingDialogFragment(deckId = deck.id)
+                            .actionDeckListFragmentToDeckRemovingDialogFragment(
+                                deckId = deck.id,
+                                deckName = deck.name
+                            )
                             .also { navController.navigate(it) }
                         true
                     }
@@ -98,12 +97,24 @@ class DeckListFragment : Fragment() {
                         true
                     }
                     R.id.item_card_showing -> {
-                        DeckListFragmentDirections
-                            .actionDeckListFragmentToCardViewerFragment(
-                                deckId = deck.id,
-                                deckName = deck.name
-                            )
-                            .also { navController.navigate(it) }
+                        viewModel.isDeckNotEmpty(deckId = deck.id) { isNotEmpty ->
+                            if (isNotEmpty) {
+                                DeckListFragmentDirections
+                                    .actionDeckListFragmentToCardViewerFragment(
+                                        deckId = deck.id,
+                                        deckName = deck.name
+                                    )
+                                    .also { navController.navigate(it) }
+
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "There are no cards in the deck",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            }
+                        }
                         true
                     }
                     R.id.item_card_addition -> {
@@ -112,6 +123,14 @@ class DeckListFragment : Fragment() {
                     else -> false
                 }
             }
+        }
+    }
+
+    private fun setOnCreateDeckClickListener() {
+        binding.createDeckActionButton.setOnClickListener {
+            findNavController().navigate(
+                DeckListFragmentDirections.actionDeckListFragmentToDeckCreationDialogFragment()
+            )
         }
     }
 }

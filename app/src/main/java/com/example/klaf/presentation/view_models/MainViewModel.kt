@@ -33,4 +33,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun isDeckNotEmpty(deckId: Int, onResponse: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val cardQuantity = repository.getCardQuantityInDeck(deckId)
+            onResponse(cardQuantity > 0)
+        }
+    }
+
 }

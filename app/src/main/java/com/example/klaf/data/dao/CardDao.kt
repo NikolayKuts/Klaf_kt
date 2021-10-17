@@ -34,4 +34,7 @@ interface CardDao {
 
     @Query("DELETE FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
     fun deleteCardsByDeckId(deckId: Int)
+
+    @Query("SELECT COUNT(*) FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
+    fun getCardQuantityInDeck(deckId: Int): Int
 }

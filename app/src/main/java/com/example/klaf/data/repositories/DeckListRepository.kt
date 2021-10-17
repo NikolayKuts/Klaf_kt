@@ -14,4 +14,6 @@ interface DeckListRepository {
     suspend fun getDeckById(deckId: Int): Deck
 
     suspend fun removeCardsOfDeck(deckId: Int)
+
+    suspend fun getCardQuantityInDeck(deckId: Int): Int
 }

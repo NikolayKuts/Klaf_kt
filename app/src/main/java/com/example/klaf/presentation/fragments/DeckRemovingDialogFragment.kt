@@ -30,6 +30,9 @@ class DeckRemovingDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.deckRemovingDialogTitleTextView.text =
+            "Would you like to remove the deck \"${args.deckName}\"?"
+
         binding.buttonCancelDeckRemoving.setOnClickListener {
             findNavController().navigate(R.id.action_deckRemovingDialogFragment_to_deckListFragment)
         }
