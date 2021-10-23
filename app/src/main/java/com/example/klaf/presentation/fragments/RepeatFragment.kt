@@ -17,6 +17,7 @@ import com.example.klaf.domain.pojo.Card
 import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.domain.update
 import com.example.klaf.presentation.adapters.IpaPromptAdapter
+import com.example.klaf.presentation.auxiliary.RepeatTimer
 import com.example.klaf.presentation.view_model_factories.RepetitionViewModelFactory
 import com.example.klaf.presentation.view_models.RepetitionViewModel
 
@@ -169,6 +170,8 @@ class RepeatFragment : Fragment() {
         binding.startRepetitionButton.setOnClickListener {
             if (cards.isNotEmpty()) {
                 setButtonVisibilities(true)
+
+                RepeatTimer(binding.repeatTimerTextView).runCounting()
             }
         }
     }
