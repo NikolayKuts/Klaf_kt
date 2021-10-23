@@ -75,9 +75,12 @@ class RepeatFragment : Fragment() {
             }
         }
 
+        setButtonVisibilities(false)
+
         setOnClickListenerOnCardAdditionButton()
         setOnClickListenerOnCardEditionButton()
         setOnClickListenerOnCardRemovingButton()
+        setOnClickListenerOnStartButton()
     }
 
     override fun onDestroy() {
@@ -159,6 +162,31 @@ class RepeatFragment : Fragment() {
                 }
             }
             adapter.setData(ipaPrompts)
+        }
+    }
+
+    private fun setOnClickListenerOnStartButton() {
+        binding.startRepetitionButton.setOnClickListener {
+            if (cards.isNotEmpty()) {
+                setButtonVisibilities(true)
+            }
+        }
+    }
+
+    private fun setButtonVisibilities(visible: Boolean) {
+        with(binding) {
+            val visibility = if (visible) {
+                startRepetitionButton.visibility = View.INVISIBLE
+                View.VISIBLE
+            } else {
+                startRepetitionButton.visibility = View.VISIBLE
+                View.INVISIBLE
+            }
+
+            easyButton.visibility = visibility
+            goodButton.visibility = visibility
+            hardButton.visibility = visibility
+            turnButton.visibility = visibility
         }
     }
 
