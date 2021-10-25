@@ -79,7 +79,8 @@
         android:id="@+id/front_side_pointer_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="F"
+        android:text="N"
+        android:textColor="@color/front_side_pointer_color"
         app:layout_constraintTop_toBottomOf="@id/repeat_deck_name_text_view"
         app:layout_constraintStart_toStartOf="@id/addition_content_start"
         />
@@ -97,19 +98,18 @@
         android:id="@+id/back_side_pointer_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="N"
+        android:text="F"
+        android:textColor="@color/back_side_pointer_color"
         app:layout_constraintTop_toTopOf="@id/front_side_pointer_text_view"
         app:layout_constraintStart_toEndOf="@id/arrow_text_view"
         />
 
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/repeat_order_switch"
-        android:checked="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/front_side_pointer_text_view"
         app:layout_constraintStart_toStartOf="@id/front_side_pointer_text_view"
-
         />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

@@ -8,4 +8,7 @@
     <color name="empty_card_content_color">#9C9A9A</color>
     <color name="front_card_content_color">#CFD685</color>
     <color name="back_card_content_color">#81B7BD</color>
+
+    <color name="back_side_pointer_color">#81B7BD</color>
+    <color name="front_side_pointer_color">#CFD685</color>
 </resources>

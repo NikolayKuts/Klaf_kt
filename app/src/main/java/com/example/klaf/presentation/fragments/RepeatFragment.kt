@@ -27,6 +27,7 @@ class RepeatFragment : Fragment() {
 
     private var _binding: FragmentRepeatBinding? = null
     private val binding get() = _binding!!
+
     private val args by navArgs<RepeatFragmentArgs>()
     private var viewModel: RepetitionViewModel? = null
     private val cards: MutableList<Card> = ArrayList()
@@ -60,7 +61,7 @@ class RepeatFragment : Fragment() {
                 cards.update(receivedCards)
                 setCardViewContent()
                 setCardContentColor()
-                setIpaPromptAdapterContent()
+                setIpaPromptContent()
             }
         }
 
@@ -77,6 +78,7 @@ class RepeatFragment : Fragment() {
         setOnCardRemovingButtonClickListener()
         setOnStartButtonClickListener()
         setOnTurnButtonClickListener()
+        setOnRepeatOrderSwitchCheckedChangedListener()
     }
 
     override fun onDestroy() {
@@ -137,7 +139,7 @@ class RepeatFragment : Fragment() {
         }
     }
 
-    private fun setIpaPromptAdapterContent() {
+    private fun setIpaPromptContent() {
         if (cards.isNotEmpty()) {
             val card = cards[0]
             val ipaProcessor = IpaProcessor()
@@ -172,7 +174,7 @@ class RepeatFragment : Fragment() {
             isFrontSide = !isFrontSide
             setCardViewContent()
             setCardContentColor()
-            setIpaPromptAdapterContent()
+            setIpaPromptContent()
         }
     }
 
@@ -244,6 +246,28 @@ class RepeatFragment : Fragment() {
             goodButton.visibility = visibility
             hardButton.visibility = visibility
             turnButton.visibility = visibility
+        }
+    }
+
+    private fun setOnRepeatOrderSwitchCheckedChangedListener() {
+        binding.repeatOrderSwitch.setOnCheckedChangeListener { _, isChecked ->
+            setCardViewContent()
+            setCardContentColor()
+            setIpaPromptContent()
+            setLessonOrderPointers(isChecked)
+//            binding.cardSideTextView.isClickable = isChecked
+        }
+    }
+
+    private fun setLessonOrderPointers(isChecked: Boolean) {
+        with (binding) {
+            if (isChecked) {
+                frontSidePointerTextView.text = "F"
+                backSidePointerTextView.text = "N"
+            } else {
+                frontSidePointerTextView.text = "N"
+                backSidePointerTextView.text = "F"
+            }
         }
     }
 
