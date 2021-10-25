@@ -8,7 +8,7 @@ import com.example.klaf.domain.pojo.Card
 import com.example.klaf.domain.pojo.Deck
 import kotlinx.coroutines.launch
 
-class RepetitionViewModel(context: Context, private val deckId: Int) : ViewModel() {
+class RepetitionViewModel(context: Context, deckId: Int) : ViewModel() {
 
     private val repository: RepetitionRepository = RepetitionRepositoryRoomImp(context)
 

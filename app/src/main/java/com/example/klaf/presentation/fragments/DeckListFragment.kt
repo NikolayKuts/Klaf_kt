@@ -1,6 +1,7 @@
 package com.example.klaf.presentation.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.klaf.R
 import com.example.klaf.databinding.FragmentDeckListBinding
 import com.example.klaf.domain.pojo.Deck
+import com.example.klaf.domain.update
 import com.example.klaf.presentation.adapters.DeckAdapter
 import com.example.klaf.presentation.view_models.MainViewModel
 
@@ -47,17 +49,16 @@ class DeckListFragment : Fragment() {
             }
 
             viewModel.deckSource.observe(viewLifecycleOwner) { receivedDecks ->
-                decks.clear()
-                decks.addAll(receivedDecks)
+                decks.update(receivedDecks)
                 adapter.decks = decks
             }
 
             setOnCreateDeckClickListener()
 
             adapter.onClick = { deck ->
+                Log.i("klaf_log", "deckId -> ${deck.id}")
                 DeckListFragmentDirections.actionDeckListFragmentToRepeatFragment(
-                    deckId = deck.id,
-                    deckName = deck.name
+                    deckId = deck.id
                 ).also { findNavController().navigate(it) }
             }
 

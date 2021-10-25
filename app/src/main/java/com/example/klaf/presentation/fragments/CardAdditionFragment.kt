@@ -42,15 +42,16 @@ class CardAdditionFragment : Fragment() {
         activity?.let { activity ->
             with(binding) {
 
-                val adapter = LetterBarAdapter(letterInfos = letterInfos) { uncompletedIpaCouples ->
-                    ipaEditText.setText(uncompletedIpaCouples)
-                }
-
                 letterBarRecyclerView.layoutManager = LinearLayoutManager(
                     activity.applicationContext,
                     LinearLayoutManager.HORIZONTAL,
                     false
                 )
+
+                val adapter = LetterBarAdapter(letterInfos = letterInfos) { uncompletedIpaCouples ->
+                    ipaEditText.setText(uncompletedIpaCouples)
+                }
+
                 letterBarRecyclerView.adapter = adapter
 
                 foreignWordEditText.doOnTextChanged { text, _, _, _ ->

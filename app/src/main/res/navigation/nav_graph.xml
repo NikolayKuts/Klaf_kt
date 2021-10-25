@@ -37,14 +37,10 @@
             android:name="deckId"
             app:argType="integer"
             android:defaultValue="-1" />
-        <argument
-            android:name="deckName"
-            app:argType="string"
-            android:defaultValue="empty" />
-        <argument
-            android:name="cardId"
-            app:argType="integer"
-            android:defaultValue="-1" />
+<!--        <argument-->
+<!--            android:name="cardId"-->
+<!--            app:argType="integer"-->
+<!--            android:defaultValue="-1" />-->
         <action
             android:id="@+id/action_repeatFragment_to_cardEditingFragment"
             app:destination="@id/cardEditingFragment"/>

@@ -5,11 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.klaf.R
 import com.example.klaf.databinding.FragmentRepeatBinding
 import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.LetterInfo
@@ -46,8 +48,6 @@ class RepeatFragment : Fragment() {
         activity?.let { activity ->
             initializeViewModel()
 
-//            val adapter = IpaPromptAdapter()
-
             binding.ipaRecyclerView.layoutManager = LinearLayoutManager(
                 activity.applicationContext,
                 LinearLayoutManager.HORIZONTAL,
@@ -58,15 +58,9 @@ class RepeatFragment : Fragment() {
 
             viewModel?.cardSource?.observe(viewLifecycleOwner) { receivedCards ->
                 cards.update(receivedCards)
-                when {
-                    cards.isNotEmpty() -> {
-                        binding.cardSideTextView.text = cards[0].nativeWord
-                        setIpaPromptAdapterContent()
-                    }
-                    else -> {
-                        binding.cardSideTextView.text = "empty"
-                    }
-                }
+                setCardViewContent()
+                setCardContentColor()
+                setIpaPromptAdapterContent()
             }
         }
 
@@ -78,10 +72,11 @@ class RepeatFragment : Fragment() {
 
         setButtonVisibilities(false)
 
-        setOnClickListenerOnCardAdditionButton()
-        setOnClickListenerOnCardEditionButton()
-        setOnClickListenerOnCardRemovingButton()
-        setOnClickListenerOnStartButton()
+        setOnCardAdditionButtonClickListener()
+        setOnCardEditionButtonClickListener()
+        setOnCardRemovingButtonClickListener()
+        setOnStartButtonClickListener()
+        setOnTurnButtonClickListener()
     }
 
     override fun onDestroy() {
@@ -92,7 +87,7 @@ class RepeatFragment : Fragment() {
     private fun initializeViewModel() {
         activity?.let { activity ->
             viewModel = ViewModelProvider(
-                owner = activity,
+                owner = this,
                 factory = RepetitionViewModelFactory(
                     context = activity.applicationContext,
                     deckId = args.deckId)
@@ -100,7 +95,7 @@ class RepeatFragment : Fragment() {
         }
     }
 
-    private fun setOnClickListenerOnCardAdditionButton() {
+    private fun setOnCardAdditionButtonClickListener() {
         binding.repeatCardAdditionButton.setOnClickListener {
             RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(
                 deckId = args.deckId
@@ -109,14 +104,13 @@ class RepeatFragment : Fragment() {
         }
     }
 
-    private fun setOnClickListenerOnCardEditionButton() {
+    private fun setOnCardEditionButtonClickListener() {
         context?.let {
             binding.repeatCardEditingActionButton.setOnClickListener {
                 if (cards.isNotEmpty()) {
                     RepeatFragmentDirections.actionRepeatFragmentToCardEditingFragment(
                         cardId = cards[0].id,
-                        deckId = args.deckId,
-                        deckName = args.deckName
+                        deckId = args.deckId
                     )
                         .also { findNavController().navigate(it) }
                 } else {
@@ -131,7 +125,7 @@ class RepeatFragment : Fragment() {
         }
     }
 
-    private fun setOnClickListenerOnCardRemovingButton() {
+    private fun setOnCardRemovingButtonClickListener() {
         binding.repeatCardRemovingActionButton.setOnClickListener {
             if (cards.isNotEmpty()) {
                 RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
@@ -148,30 +142,90 @@ class RepeatFragment : Fragment() {
             val card = cards[0]
             val ipaProcessor = IpaProcessor()
 
-            when {
-                (binding.repeatOrderSwitch.isChecked) -> {
-                    when {
-                        isFrontSide -> ipaPrompts.update(ipaProcessor.getIpaPrompts(card.ipa))
-                        else -> ipaPrompts.clear()
-                    }
+            if (binding.repeatOrderSwitch.isChecked) {
+                when (isFrontSide) {
+                    true -> ipaPrompts.update(ipaProcessor.getIpaPrompts(card.ipa))
+                    else -> ipaPrompts.clear()
                 }
-                else -> {
-                    when {
-                        isFrontSide -> ipaPrompts.clear()
-                        else -> ipaPrompts.update(ipaProcessor.getIpaPrompts(card.ipa))
-                    }
+            } else {
+                when (isFrontSide) {
+                    true -> ipaPrompts.clear()
+                    else -> ipaPrompts.update(ipaProcessor.getIpaPrompts(card.ipa))
                 }
             }
-            adapter.setData(ipaPrompts)
         }
+        adapter.setData(ipaPrompts)
     }
 
-    private fun setOnClickListenerOnStartButton() {
+    private fun setOnStartButtonClickListener() {
         binding.startRepetitionButton.setOnClickListener {
             if (cards.isNotEmpty()) {
                 setButtonVisibilities(true)
 
                 RepeatTimer(binding.repeatTimerTextView).runCounting()
+            }
+        }
+    }
+
+    private fun setOnTurnButtonClickListener() {
+        binding.turnButton.setOnClickListener {
+            isFrontSide = !isFrontSide
+            setCardViewContent()
+            setCardContentColor()
+            setIpaPromptAdapterContent()
+        }
+    }
+
+    private fun setCardContentColor() {
+        if (cards.isNotEmpty()) {
+            setCardContentColorBySide()
+        } else {
+            binding.cardSideTextView.setTextColor(
+                ContextCompat.getColor(
+                    binding.cardSideTextView.context,
+                    R.color.empty_card_content_color
+                )
+            )
+        }
+    }
+
+    private fun setCardContentColorBySide() {
+        with(binding) {
+            if (isFrontSide) {
+                cardSideTextView.setTextColor(
+                    ContextCompat.getColor(
+                        cardSideTextView.context,
+                        R.color.front_card_content_color
+                    )
+                )
+            } else {
+                cardSideTextView.setTextColor(
+                    ContextCompat.getColor(
+                        cardSideTextView.context,
+                        R.color.back_card_content_color
+                    )
+                )
+            }
+        }
+    }
+
+    private fun setCardViewContent() {
+        with(binding) {
+            if (cards.isEmpty()) {
+                cardSideTextView.text = "The deck is empty"
+            } else {
+                val card = cards[0]
+                if (repeatOrderSwitch.isChecked) {
+                    when (isFrontSide) {
+                        true -> cardSideTextView.text = card.foreignWord
+                        else -> cardSideTextView.text = card.nativeWord
+                    }
+                } else {
+                    when (isFrontSide) {
+                        true -> cardSideTextView.text = card.nativeWord
+                        else -> cardSideTextView.text = card.foreignWord
+                    }
+                }
             }
         }
     }
