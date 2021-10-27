@@ -26,7 +26,11 @@ class CardAdditionFragment : Fragment() {
     private var viewModel: CardAdditionViewModel? = null
     private val letterInfos: MutableList<LetterInfo> = ArrayList()
 
-    // TODO: 10/10/2021 implement card passing as args but not only a card id
+    private val adapter: LetterBarAdapter by lazy {
+        LetterBarAdapter(letterInfos = letterInfos) { uncompletedIpaCouples ->
+            binding.ipaEditText.setText(uncompletedIpaCouples)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,6 +45,7 @@ class CardAdditionFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         activity?.let { activity ->
             with(binding) {
+                initializeViewModel()
 
                 letterBarRecyclerView.layoutManager = LinearLayoutManager(
                     activity.applicationContext,
@@ -48,33 +53,7 @@ class CardAdditionFragment : Fragment() {
                     false
                 )
 
-                val adapter = LetterBarAdapter(letterInfos = letterInfos) { uncompletedIpaCouples ->
-                    ipaEditText.setText(uncompletedIpaCouples)
-                }
-
                 letterBarRecyclerView.adapter = adapter
-
-                foreignWordEditText.doOnTextChanged { text, _, _, _ ->
-                    val foreignWord = text.toString().trim()
-
-                    val letterInfos = when {
-                        foreignWord.isNotEmpty() -> {
-                            foreignWord.split("")
-                                .drop(1)
-                                .dropLast(1)
-                                .map { letter -> LetterInfo(letter = letter, isChecked = false) }
-                        }
-                        else -> ArrayList()
-                    }
-                    adapter.setData(letterInfos)
-                }
-                viewModel = ViewModelProvider(
-                    owner = activity,
-                    factory = CardAdditionViewModelFactory(
-                        context = activity.applicationContext,
-                        deckId = args.deckId
-                    )
-                )[CardAdditionViewModel::class.java]
 
                 viewModel?.deck?.observe(viewLifecycleOwner) { deck ->
                     deck?.let {
@@ -84,6 +63,9 @@ class CardAdditionFragment : Fragment() {
                 }
 
                 applyCardAdditionButton.setOnClickListener { onConfirmCardAddition() }
+
+                foreignWordEditText.doOnTextChanged { text, _, _, _ ->
+                    setLetterBarAdapterData(text) }
             }
         }
     }
@@ -138,4 +120,30 @@ class CardAdditionFragment : Fragment() {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
+    private fun initializeViewModel() {
+        activity?.let { activity ->
+            viewModel = ViewModelProvider(
+                owner = this,
+                factory = CardAdditionViewModelFactory(
+                    context = activity.applicationContext,
+                    deckId = args.deckId
+                )
+            )[CardAdditionViewModel::class.java]
+        }
+    }
+
+    private fun setLetterBarAdapterData(text: CharSequence?) {
+        val foreignWord = text.toString().trim()
+
+        val letterInfos = when {
+            foreignWord.isNotEmpty() -> {
+                foreignWord.split("")
+                    .drop(1)
+                    .dropLast(1)
+                    .map { letter -> LetterInfo(letter = letter, isChecked = false) }
+            }
+            else -> ArrayList()
+        }
+        adapter.setData(letterInfos)
+    }
 }

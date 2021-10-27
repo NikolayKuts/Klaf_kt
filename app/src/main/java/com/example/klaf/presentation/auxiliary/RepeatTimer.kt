@@ -50,7 +50,7 @@ class RepeatTimer(private val timerTextView: TextView) {
         return TIME_FORMAT_TEMPLATE.format(minutes, seconds)
     }
 
-    fun setColorByTimerState() {
+    private fun setColorByTimerState() {
         val context = timerTextView.context
         if (isRunning) {
             timerTextView.setTextColor(ContextCompat.getColor(context, R.color.timer_is_running))

@@ -29,6 +29,12 @@ class CardEditingFragment : Fragment() {
     private var cardForChanging: Card? = null
     private var letterInfos: MutableList<LetterInfo> = ArrayList()
 
+    private val adapter: LetterBarAdapter by lazy {
+        LetterBarAdapter(letterInfos = letterInfos) { uncompletedIpaCouples ->
+            binding.ipaEditText.setText(uncompletedIpaCouples)
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -42,24 +48,15 @@ class CardEditingFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         activity?.let { activity ->
             with(binding) {
-                viewModel = ViewModelProvider(
-                    owner = activity,
-                    factory = CardEditingViewModelFactory(
-                        context = activity.applicationContext,
-                        cardId = args.cardId
-                    )
-                )[CardEditingViewModel::class.java]
+                initializeViewModel()
 
                 viewModel?.onGetCardById(args.cardId) { card ->
                     cardForChanging = card
+
                     if (card != null) {
                         setContentToEditTexts(card)
                         letterInfos.update(IpaProcessor().getLetterInfos(card.ipa))
                     }
-                }
-
-                val adapter = LetterBarAdapter(letterInfos = letterInfos) { uncompletedIpa ->
-                    ipaEditText.setText(uncompletedIpa)
                 }
 
                 letterBarRecyclerView.layoutManager = LinearLayoutManager(
@@ -71,43 +68,10 @@ class CardEditingFragment : Fragment() {
                 letterBarRecyclerView.adapter = adapter
 
                 foreignWordEditText.doOnTextChanged { text, _, _, _ ->
-                    val foreignWord = text.toString().trim()
-
-                    val letterInfos = when {
-                        foreignWord.isNotEmpty() -> {
-                            foreignWord.split("")
-                                .drop(1)
-                                .dropLast(1)
-                                .map { letter -> LetterInfo(letter = letter, isChecked = false) }
-                        }
-                        else -> ArrayList()
-                    }
-                    adapter.setData(letterInfos)
+                    setLetterBarAdapterData(text)
                 }
 
-                applyCardChangesButton.setOnClickListener {
-                    cardForChanging?.let {
-                        val changedCard = getChangedCard()
-                        when {
-                            changedCard.nativeWord.isEmpty()
-                                    || changedCard.foreignWord.isEmpty() -> {
-                                showToast(
-                                    "The \"native word\" and \"foreign word\" fields must be filled"
-                                )
-                            }
-                            changedCard == cardForChanging -> {
-                                showToast("The card hasn't been changed")
-                            }
-                            else -> {
-                                viewModel?.insertChangedCard(changedCard)
-
-                                CardEditingFragmentDirections
-                                    .actionCardEditingFragmentToRepeatFragment(deckId = args.deckId)
-                                    .also { findNavController().navigate(it) }
-                            }
-                        }
-                    }
-                }
+                applyCardChangesButton.setOnClickListener { onConfirmCardChange() }
             }
         }
     }
@@ -143,5 +107,54 @@ class CardEditingFragment : Fragment() {
 
     private fun showToast(message: String) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun initializeViewModel() {
+        activity?.let { activity ->
+            viewModel = ViewModelProvider(
+                owner = this,
+                factory = CardEditingViewModelFactory(
+                    context = activity.applicationContext,
+                    cardId = args.cardId
+                )
+            )[CardEditingViewModel::class.java]
+        }
+    }
+
+    private fun setLetterBarAdapterData(text: CharSequence?) {
+        val foreignWord = text.toString().trim()
+
+        val letterInfos = when {
+            foreignWord.isNotEmpty() -> {
+                foreignWord.split("")
+                    .drop(1)
+                    .dropLast(1)
+                    .map { letter -> LetterInfo(letter = letter, isChecked = false) }
+            }
+            else -> ArrayList()
+        }
+        adapter.setData(letterInfos)
+    }
+
+    private fun onConfirmCardChange() {
+        cardForChanging?.let {
+            val changedCard = getChangedCard()
+
+            when {
+                changedCard.nativeWord.isEmpty() || changedCard.foreignWord.isEmpty() -> {
+                    showToast("The \"native word\" and \"foreign word\" fields must be filled")
+                }
+                changedCard == cardForChanging -> {
+                    showToast("The card hasn't been changed")
+                }
+                else -> {
+                    viewModel?.insertChangedCard(changedCard)
+
+                    CardEditingFragmentDirections
+                        .actionCardEditingFragmentToRepeatFragment(deckId = args.deckId)
+                        .also { findNavController().navigate(it) }
+                }
+            }
+        }
     }
 }

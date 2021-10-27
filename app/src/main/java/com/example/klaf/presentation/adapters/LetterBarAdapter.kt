@@ -15,6 +15,8 @@ class LetterBarAdapter(
 ) :
     RecyclerView.Adapter<LetterBarAdapter.LetterInfoViewHolder>() {
 
+    private val updateIpa: (uncompletedIpa: String?) -> Unit = onItemClickListener
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LetterInfoViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding = LetterBarItemBinding.inflate(inflater, parent, false)
@@ -67,6 +69,7 @@ class LetterBarAdapter(
     fun setData(letters: List<LetterInfo>) {
         this.letterInfos.clear()
         this.letterInfos.addAll(letters)
+        updateIpa(IpaProcessor().getUncompletedIpa(letterInfos))
         notifyDataSetChanged()
     }
 

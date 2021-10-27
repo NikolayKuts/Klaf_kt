@@ -1,6 +1,7 @@
 package com.example.klaf.presentation.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,6 +35,7 @@ class RepeatFragment : Fragment() {
     private var isFrontSide: Boolean = true
     private val ipaPrompts = ArrayList<LetterInfo>()
     private val adapter: IpaPromptAdapter by lazy { IpaPromptAdapter() }
+    private val timer: RepeatTimer by lazy { RepeatTimer(binding.repeatTimerTextView) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,6 +48,7 @@ class RepeatFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.i("klaf_log", "onViewCreated: ")
         activity?.let { activity ->
             initializeViewModel()
 
@@ -81,9 +84,21 @@ class RepeatFragment : Fragment() {
         setOnRepeatOrderSwitchCheckedChangedListener()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (timer.isPaused) { timer.runCounting() }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (timer.isRunning) { timer.pauseCounting() }
+        Log.i("klaf_log", "onPause: ")
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+        Log.i("klaf_log", "onDestroy: ")
     }
 
     private fun initializeViewModel() {
@@ -164,7 +179,7 @@ class RepeatFragment : Fragment() {
             if (cards.isNotEmpty()) {
                 setButtonVisibilities(true)
 
-                RepeatTimer(binding.repeatTimerTextView).runCounting()
+                timer.runCounting()
             }
         }
     }
