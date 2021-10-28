@@ -65,7 +65,8 @@ class CardAdditionFragment : Fragment() {
                 applyCardAdditionButton.setOnClickListener { onConfirmCardAddition() }
 
                 foreignWordEditText.doOnTextChanged { text, _, _, _ ->
-                    setLetterBarAdapterData(text) }
+                    setLetterBarAdapterData(text)
+                }
             }
         }
     }

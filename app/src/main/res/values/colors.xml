@@ -15,7 +15,7 @@
     <color name="ipa_prompt_transparent">#1B8A8989</color>
 
     <color name="timer_is_running">#ffffff</color>
-    <color name="timer_is_not_running">#1DFFFFFF</color>
+    <color name="timer_is_not_running">#5ECAC8C8</color>
     <color name="empty_card_content_color">#9C9A9A</color>
     <color name="front_card_content_color">#03A9F4</color>
     <color name="back_card_content_color">#CDDC39</color>

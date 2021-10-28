@@ -1,5 +1,6 @@
 package com.example.klaf.presentation.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -35,7 +36,7 @@ class RepeatFragment : Fragment() {
     private var isFrontSide: Boolean = true
     private val ipaPrompts = ArrayList<LetterInfo>()
     private val adapter: IpaPromptAdapter by lazy { IpaPromptAdapter() }
-    private val timer: RepeatTimer by lazy { RepeatTimer(binding.repeatTimerTextView) }
+    private var timer: RepeatTimer? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,50 +51,81 @@ class RepeatFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.i("klaf_log", "onViewCreated: ")
         activity?.let { activity ->
-            initializeViewModel()
+            with(binding) {
 
-            binding.ipaRecyclerView.layoutManager = LinearLayoutManager(
-                activity.applicationContext,
-                LinearLayoutManager.HORIZONTAL,
-                false
-            )
+                initializeViewModel()
 
-            binding.ipaRecyclerView.adapter = adapter
+                timer = RepeatTimer(binding.repeatTimerTextView, activity.applicationContext)
 
-            viewModel?.cardSource?.observe(viewLifecycleOwner) { receivedCards ->
-                cards.update(receivedCards)
-                setCardViewContent()
-                setCardContentColor()
-                setIpaPromptContent()
+                ipaRecyclerView.layoutManager = LinearLayoutManager(
+                    activity.applicationContext,
+                    LinearLayoutManager.HORIZONTAL,
+                    false
+                )
+
+                ipaRecyclerView.adapter = adapter
+
+                viewModel?.cardSource?.observe(viewLifecycleOwner) { receivedCards ->
+                    cards.update(receivedCards)
+                    setCardViewContent()
+                    setCardContentColor()
+                    setIpaPromptContent()
+                }
+
+                viewModel?.onGetDeck(args.deckId) { deck: Deck? ->
+                    if (deck != null) {
+                        repeatDeckNameTextView.text = deck.name
+                    }
+                }
+
+                setButtonVisibilities(false)
+
+                repeatCardAdditionButton.setOnClickListener { navigateToAdditionFragment() }
+                repeatCardEditingActionButton.setOnClickListener { onClickCardEditingButton() }
+                repeatCardRemovingActionButton.setOnClickListener { onClickCardRemovingButton() }
+                startRepetitionButton.setOnClickListener { onClickStartButton() }
+                turnButton.setOnClickListener { onClickTurnButton() }
+                repeatOrderSwitch.setOnCheckedChangeListener { _, isChecked ->
+                    onRepeatOrderSwitchCheckedChanged(isChecked)
+                }
+                timer?.let { lifecycle.addObserver(it) }
+
+
             }
         }
+    }
 
-        viewModel?.onGetDeck(args.deckId) { deck: Deck? ->
-            if (deck != null) {
-                binding.repeatDeckNameTextView.text = deck.name
-            }
-        }
-
-        setButtonVisibilities(false)
-
-        setOnCardAdditionButtonClickListener()
-        setOnCardEditionButtonClickListener()
-        setOnCardRemovingButtonClickListener()
-        setOnStartButtonClickListener()
-        setOnTurnButtonClickListener()
-        setOnRepeatOrderSwitchCheckedChangedListener()
+    override fun onStart() {
+        super.onStart()
+        Log.i("klaf_log", "onStart: ")
     }
 
     override fun onResume() {
         super.onResume()
-        if (timer.isPaused) { timer.runCounting() }
+//        if (timer.isPaused) {
+//            timer.runCounting()
+//        }
+        Log.i("klaf_log", "onResume: ")
     }
 
     override fun onPause() {
         super.onPause()
-        if (timer.isRunning) { timer.pauseCounting() }
+//        if (timer.isRunning) {
+//            timer.pauseCounting()
+//        }
         Log.i("klaf_log", "onPause: ")
     }
+
+    override fun onStop() {
+        super.onStop()
+        Log.i("klaf_log", "onStop: ")
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        Log.i("klaf_log", "onSaveInstanceState: ")
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()
@@ -112,45 +144,35 @@ class RepeatFragment : Fragment() {
         }
     }
 
-    private fun setOnCardAdditionButtonClickListener() {
-        binding.repeatCardAdditionButton.setOnClickListener {
-            RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(
-                deckId = args.deckId
-            )
-                .also { findNavController().navigate(it) }
-        }
+    private fun navigateToAdditionFragment() {
+        RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(
+            deckId = args.deckId
+        )
+            .also { findNavController().navigate(it) }
     }
 
-    private fun setOnCardEditionButtonClickListener() {
+    private fun onClickCardEditingButton() {
         context?.let {
-            binding.repeatCardEditingActionButton.setOnClickListener {
-                if (cards.isNotEmpty()) {
-                    RepeatFragmentDirections.actionRepeatFragmentToCardEditingFragment(
-                        cardId = cards[0].id,
-                        deckId = args.deckId
-                    )
-                        .also { findNavController().navigate(it) }
-                } else {
-                    Toast.makeText(
-                        context,
-                        "There is nothing to change",
-                        Toast.LENGTH_SHORT
-                    )
-                        .show()
-                }
-            }
-        }
-    }
-
-    private fun setOnCardRemovingButtonClickListener() {
-        binding.repeatCardRemovingActionButton.setOnClickListener {
             if (cards.isNotEmpty()) {
-                RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
-                    deckId = args.deckId,
-                    cardId = cards[0].id
+                RepeatFragmentDirections.actionRepeatFragmentToCardEditingFragment(
+                    cardId = cards[0].id,
+                    deckId = args.deckId
                 )
                     .also { findNavController().navigate(it) }
+            } else {
+                Toast.makeText(context, "There is nothing to change", Toast.LENGTH_SHORT)
+                    .show()
             }
+        }
+    }
+
+    private fun onClickCardRemovingButton() {
+        if (cards.isNotEmpty()) {
+            RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
+                deckId = args.deckId,
+                cardId = cards[0].id
+            )
+                .also { findNavController().navigate(it) }
         }
     }
 
@@ -174,23 +196,18 @@ class RepeatFragment : Fragment() {
         adapter.setData(ipaPrompts)
     }
 
-    private fun setOnStartButtonClickListener() {
-        binding.startRepetitionButton.setOnClickListener {
-            if (cards.isNotEmpty()) {
-                setButtonVisibilities(true)
-
-                timer.runCounting()
-            }
+    private fun onClickStartButton() {
+        if (cards.isNotEmpty()) {
+            setButtonVisibilities(true)
+            timer?.runCounting()
         }
     }
 
-    private fun setOnTurnButtonClickListener() {
-        binding.turnButton.setOnClickListener {
-            isFrontSide = !isFrontSide
-            setCardViewContent()
-            setCardContentColor()
-            setIpaPromptContent()
-        }
+    private fun onClickTurnButton() {
+        isFrontSide = !isFrontSide
+        setCardViewContent()
+        setCardContentColor()
+        setIpaPromptContent()
     }
 
     private fun setCardContentColor() {
@@ -264,18 +281,16 @@ class RepeatFragment : Fragment() {
         }
     }
 
-    private fun setOnRepeatOrderSwitchCheckedChangedListener() {
-        binding.repeatOrderSwitch.setOnCheckedChangeListener { _, isChecked ->
-            setCardViewContent()
-            setCardContentColor()
-            setIpaPromptContent()
-            setLessonOrderPointers(isChecked)
+    private fun onRepeatOrderSwitchCheckedChanged(isChecked: Boolean) {
+        setCardViewContent()
+        setCardContentColor()
+        setIpaPromptContent()
+        setLessonOrderPointers(isChecked)
 //            binding.cardSideTextView.isClickable = isChecked
-        }
     }
 
     private fun setLessonOrderPointers(isChecked: Boolean) {
-        with (binding) {
+        with(binding) {
             if (isChecked) {
                 frontSidePointerTextView.text = "F"
                 backSidePointerTextView.text = "N"

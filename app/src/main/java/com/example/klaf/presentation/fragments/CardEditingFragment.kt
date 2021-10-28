@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.klaf.R
 import com.example.klaf.databinding.FragmentCardEditingBinding
 import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.LetterInfo
@@ -149,10 +150,10 @@ class CardEditingFragment : Fragment() {
                 }
                 else -> {
                     viewModel?.insertChangedCard(changedCard)
-
-                    CardEditingFragmentDirections
-                        .actionCardEditingFragmentToRepeatFragment(deckId = args.deckId)
-                        .also { findNavController().navigate(it) }
+                    findNavController().popBackStack()
+//                    CardEditingFragmentDirections
+//                        .actionCardEditingFragmentToRepeatFragment(deckId = args.deckId)
+//                        .also { findNavController().navigate(it) }
                 }
             }
         }
