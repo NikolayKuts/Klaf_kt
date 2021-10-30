@@ -1,6 +1,5 @@
 package com.example.klaf.presentation.fragments
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -36,7 +36,7 @@ class RepeatFragment : Fragment() {
     private var isFrontSide: Boolean = true
     private val ipaPrompts = ArrayList<LetterInfo>()
     private val adapter: IpaPromptAdapter by lazy { IpaPromptAdapter() }
-    private var timer: RepeatTimer? = null
+    private val timer by viewModels<RepeatTimer>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,7 +55,11 @@ class RepeatFragment : Fragment() {
 
                 initializeViewModel()
 
-                timer = RepeatTimer(binding.repeatTimerTextView, activity.applicationContext)
+                timer.onAction = { setColorTimerByTimerState(timer.isRunning) }
+                lifecycle.addObserver(timer)
+                timer.time.observe(viewLifecycleOwner) { time: String ->
+                    repeatTimerTextView.text = time
+                }
 
                 ipaRecyclerView.layoutManager = LinearLayoutManager(
                     activity.applicationContext,
@@ -88,49 +92,15 @@ class RepeatFragment : Fragment() {
                 repeatOrderSwitch.setOnCheckedChangeListener { _, isChecked ->
                     onRepeatOrderSwitchCheckedChanged(isChecked)
                 }
-                timer?.let { lifecycle.addObserver(it) }
 
 
             }
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        Log.i("klaf_log", "onStart: ")
-    }
-
-    override fun onResume() {
-        super.onResume()
-//        if (timer.isPaused) {
-//            timer.runCounting()
-//        }
-        Log.i("klaf_log", "onResume: ")
-    }
-
-    override fun onPause() {
-        super.onPause()
-//        if (timer.isRunning) {
-//            timer.pauseCounting()
-//        }
-        Log.i("klaf_log", "onPause: ")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.i("klaf_log", "onStop: ")
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        Log.i("klaf_log", "onSaveInstanceState: ")
-    }
-
-
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
-        Log.i("klaf_log", "onDestroy: ")
     }
 
     private fun initializeViewModel() {
@@ -199,7 +169,7 @@ class RepeatFragment : Fragment() {
     private fun onClickStartButton() {
         if (cards.isNotEmpty()) {
             setButtonVisibilities(true)
-            timer?.runCounting()
+            timer.runCounting()
         }
     }
 
@@ -301,4 +271,17 @@ class RepeatFragment : Fragment() {
         }
     }
 
+    private fun setColorTimerByTimerState(isRunning: Boolean) {
+        with(binding) {
+            val context = repeatTimerTextView.context
+            if (isRunning) {
+                repeatTimerTextView.setTextColor(ContextCompat.getColor(context,
+                    R.color.timer_is_running))
+            } else {
+                repeatTimerTextView.setTextColor(
+                    ContextCompat.getColor(context, R.color.timer_is_not_running)
+                )
+            }
+        }
+    }
 }

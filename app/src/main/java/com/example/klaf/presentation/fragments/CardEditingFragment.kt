@@ -151,9 +151,6 @@ class CardEditingFragment : Fragment() {
                 else -> {
                     viewModel?.insertChangedCard(changedCard)
                     findNavController().popBackStack()
-//                    CardEditingFragmentDirections
-//                        .actionCardEditingFragmentToRepeatFragment(deckId = args.deckId)
-//                        .also { findNavController().navigate(it) }
                 }
             }
         }

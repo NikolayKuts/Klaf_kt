@@ -56,7 +56,6 @@ class DeckListFragment : Fragment() {
             setOnCreateDeckClickListener()
 
             adapter.onClick = { deck ->
-                Log.i("klaf_log", "deckId -> ${deck.id}")
                 DeckListFragmentDirections.actionDeckListFragmentToRepeatFragment(
                     deckId = deck.id
                 ).also { findNavController().navigate(it) }
