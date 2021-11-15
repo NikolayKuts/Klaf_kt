@@ -1,7 +1,6 @@
 package com.example.klaf.presentation.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +23,11 @@ import com.example.klaf.presentation.adapters.IpaPromptAdapter
 import com.example.klaf.presentation.auxiliary.RepeatTimer
 import com.example.klaf.presentation.view_model_factories.RepetitionViewModelFactory
 import com.example.klaf.presentation.view_models.RepetitionViewModel
+import kotlin.collections.ArrayList
+
+private const val EASY_DIFFICULTY_LEVEL_MEMORIES = 0
+private const val GOOD_DIFFICULTY_LEVEL_MEMORIES = 1
+private const val HARD_DIFFICULTY_LEVEL_MEMORIES = 2
 
 class RepeatFragment : Fragment() {
 
@@ -38,6 +42,10 @@ class RepeatFragment : Fragment() {
     private val adapter: IpaPromptAdapter by lazy { IpaPromptAdapter() }
     private val timer by viewModels<RepeatTimer>()
 
+    private var startElement: Card? = null
+    private var goodElement: Card? = null
+    private var hardElement: Card? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -49,7 +57,6 @@ class RepeatFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.i("klaf_log", "onViewCreated: ")
         activity?.let { activity ->
             with(binding) {
 
@@ -66,34 +73,52 @@ class RepeatFragment : Fragment() {
                     LinearLayoutManager.HORIZONTAL,
                     false
                 )
-
                 ipaRecyclerView.adapter = adapter
 
-                viewModel?.cardSource?.observe(viewLifecycleOwner) { receivedCards ->
-                    cards.update(receivedCards)
-                    setCardViewContent()
-                    setCardContentColor()
-                    setIpaPromptContent()
-                }
+                viewModel?.let { viewModel ->
 
-                viewModel?.onGetDeck(args.deckId) { deck: Deck? ->
-                    if (deck != null) {
-                        repeatDeckNameTextView.text = deck.name
+                    viewModel.cardSource.observe(viewLifecycleOwner) { receivedCards ->
+                        cards.update(receivedCards)
+
+                        if (cards.isEmpty()) {
+                            viewModel.clearProgress()
+                            startElement = null
+                            goodElement = null
+                            hardElement = null
+                            timer.stopCounting()
+                        }
+
+                        if (viewModel.savedProgressCards.isNotEmpty()) {
+                            cards.update(viewModel.getCardsByProgress(receivedCards))
+                            viewModel.saveRepetitionProgress(cards)
+                        }
+
+                        setCardViewContent()
+                        setCardContentColor()
+                        setIpaPromptContent()
                     }
+
+                    viewModel.onGetDeck(args.deckId) { deck: Deck? ->
+                        if (deck != null) {
+                            repeatDeckNameTextView.text = deck.name
+                        }
+                    }
+
+                    setButtonVisibilities(false)
+
+                    repeatCardAdditionButton.setOnClickListener { navigateToAdditionFragment() }
+                    repeatCardEditingActionButton.setOnClickListener { onClickCardEditingButton() }
+                    repeatCardRemovingActionButton.setOnClickListener { onClickCardRemovingButton() }
+                    startRepetitionButton.setOnClickListener { onClickStartButton() }
+                    turnButton.setOnClickListener { onClickTurnButton() }
+                    repeatOrderSwitch.setOnCheckedChangeListener { _, isChecked ->
+                        onRepeatOrderSwitchCheckedChanged(isChecked)
+                    }
+
+                    easyButton.setOnClickListener { onClickEasyButton() }
+                    goodButton.setOnClickListener { onClickGoodButton() }
+                    hardButton.setOnClickListener { onHardButtonClick() }
                 }
-
-                setButtonVisibilities(false)
-
-                repeatCardAdditionButton.setOnClickListener { navigateToAdditionFragment() }
-                repeatCardEditingActionButton.setOnClickListener { onClickCardEditingButton() }
-                repeatCardRemovingActionButton.setOnClickListener { onClickCardRemovingButton() }
-                startRepetitionButton.setOnClickListener { onClickStartButton() }
-                turnButton.setOnClickListener { onClickTurnButton() }
-                repeatOrderSwitch.setOnCheckedChangeListener { _, isChecked ->
-                    onRepeatOrderSwitchCheckedChanged(isChecked)
-                }
-
-
             }
         }
     }
@@ -281,6 +306,77 @@ class RepeatFragment : Fragment() {
                 repeatTimerTextView.setTextColor(
                     ContextCompat.getColor(context, R.color.timer_is_not_running)
                 )
+            }
+        }
+    }
+
+    private fun onClickEasyButton() {
+        if (cards.isNotEmpty()) {
+            val card = cards[0]
+            if (startElement == null) {
+                startElement = card
+            } else if (startElement?.id == card.id) {
+                startElement = Card(-1, "", "", "")
+            }
+            if (goodElement != null && goodElement?.id == card.id) {
+                goodElement = null
+            }
+            if (hardElement != null && hardElement?.id == card.id) {
+                hardElement = null
+            }
+
+            moveCardByDifficultyLevelMemories(EASY_DIFFICULTY_LEVEL_MEMORIES)
+            viewModel?.saveRepetitionProgress(cards)
+            // TODO: 11/8/2021  implement onFinishLesson()
+            isFrontSide = true
+            setCardViewContent()
+            setIpaPromptContent()
+            // TODO: 11/8/2021 implement setOnTextViewWordClickable(switchRepetitionOrder.isChecked())
+        }
+        // TODO: 11/8/2021 implement closeFloatingButtonIfOpened()
+    }
+
+    private fun onClickGoodButton() {
+        if (cards.isNotEmpty()) {
+            goodElement = cards[0]
+            moveCardByDifficultyLevelMemories(GOOD_DIFFICULTY_LEVEL_MEMORIES)
+            viewModel?.saveRepetitionProgress(cards)
+            isFrontSide = true
+            setCardViewContent()
+            setIpaPromptContent()
+//            setOnTextViewWordClickable(switchRepetitionOrder.isChecked())
+        }
+//        closeFloatingButtonIfOpened()
+    }
+
+    private fun onHardButtonClick() {
+        if (cards.isNotEmpty()) {
+            hardElement = cards[0]
+            moveCardByDifficultyLevelMemories(HARD_DIFFICULTY_LEVEL_MEMORIES)
+            viewModel?.saveRepetitionProgress(cards)
+            isFrontSide = true
+            setCardViewContent()
+            setIpaPromptContent()
+//            setOnTextViewWordClickable(switchRepetitionOrder.isChecked())
+        }
+//        closeFloatingButtonIfOpened()
+    }
+
+    private fun moveCardByDifficultyLevelMemories(difficultyLevelMemories: Int) {
+        val cardForMoving = cards[0]
+        cards.removeAt(0)
+
+        when (difficultyLevelMemories) {
+            EASY_DIFFICULTY_LEVEL_MEMORIES -> {
+                cards.add(cardForMoving)
+            }
+            GOOD_DIFFICULTY_LEVEL_MEMORIES -> {
+                val newPosition = cards.size * 3 / 4
+                cards.add(newPosition, cardForMoving)
+            }
+            HARD_DIFFICULTY_LEVEL_MEMORIES -> {
+                val newPosition = cards.size / 4
+                cards.add(newPosition, cardForMoving)
             }
         }
     }

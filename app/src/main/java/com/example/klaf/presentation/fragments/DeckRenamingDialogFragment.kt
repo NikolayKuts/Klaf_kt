@@ -56,6 +56,7 @@ class DeckRenamingDialogFragment : DialogFragment() {
                     else -> {
                         val newDeck = deck.copy(name = newName)
                         viewModel.addNewDeck(newDeck)
+//                        findNavController().popBackStack()
                         navController.navigate(R.id.action_deckRenamingDialogFragment_to_deckListFragment)
                     }
                 }

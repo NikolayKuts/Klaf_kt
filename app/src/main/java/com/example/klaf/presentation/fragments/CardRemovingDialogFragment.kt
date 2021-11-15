@@ -5,11 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
 import com.example.klaf.databinding.DialogCardRemovingBinding
+import com.example.klaf.presentation.view_model_factories.RepetitionViewModelFactory
 import com.example.klaf.presentation.view_models.RepetitionViewModel
 
 class CardRemovingDialogFragment : DialogFragment() {
@@ -31,7 +33,13 @@ class CardRemovingDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         activity?.let { activity ->
-            viewModel = ViewModelProvider(owner = activity)[RepetitionViewModel::class.java]
+
+            viewModel = ViewModelProvider(
+                owner = this,
+                factory = RepetitionViewModelFactory(
+                    context = activity.applicationContext,
+                    deckId = args.deckId)
+            )[RepetitionViewModel::class.java]
 
             binding.cancelCardRemovingButton.setOnClickListener { navigateToRepeatFragment() }
 
@@ -48,9 +56,11 @@ class CardRemovingDialogFragment : DialogFragment() {
     }
 
     private fun navigateToRepeatFragment() {
-        CardRemovingDialogFragmentDirections.actionCardRemovingDialogFragmentToRepeatFragment(
-            deckId = args.deckId
-        )
-            .also { findNavController().navigate(it) }
+//        CardRemovingDialogFragmentDirections.actionCardRemovingDialogFragmentToRepeatFragment(
+//            deckId = args.deckId
+//        )
+//            .also { findNavController().navigate(it) }
+//        findNavController().popBackStack()
+        this.dismiss()
     }
 }

@@ -6,12 +6,12 @@ import androidx.room.PrimaryKey
 const val CARD_TABLE_NAME = "cards"
 
 @Entity(tableName = CARD_TABLE_NAME)
-data class Card(
+data class Card (
     val deckId: Int,
     val nativeWord: String,
     val foreignWord: String,
     val ipa: String,
     @PrimaryKey(autoGenerate = true) val id: Int = 0
 ) {
-
+    override fun toString(): String = nativeWord
 }
