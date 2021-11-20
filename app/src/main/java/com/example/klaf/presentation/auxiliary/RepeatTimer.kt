@@ -12,11 +12,15 @@ class RepeatTimer : DefaultLifecycleObserver, ViewModel() {
     var isRunning = false
     var onAction: () -> Unit = {}
     val time: LiveData<String> get() = _time
+    val savedTotalTime get() = _savedTotalTime
 
     private val isNotRunning get() = !isRunning
     private var isPaused = false
     private val _time = MutableLiveData<String>()
     private var totalSeconds: Long = 0
+    private var _savedTotalTime: Long = 0
+    private val scope = CoroutineScope(Dispatchers.IO)
+    private var job: Job? = null
 
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
@@ -30,12 +34,17 @@ class RepeatTimer : DefaultLifecycleObserver, ViewModel() {
         pauseCounting()
     }
 
+    override fun onDestroy(owner: LifecycleOwner) {
+        super.onDestroy(owner)
+        scope.cancel()
+    }
+
     fun runCounting() {
         if (isNotRunning) {
             isRunning = true
             isPaused = false
             onAction()
-            CoroutineScope(Dispatchers.IO).launch {
+            job = scope.launch {
                 while (isRunning) {
                     delay(DELAY_INTERVAL)
                     totalSeconds++
@@ -46,13 +55,17 @@ class RepeatTimer : DefaultLifecycleObserver, ViewModel() {
     }
 
     fun stopCounting() {
+        job?.cancel()
         isRunning = false
         isPaused = false
+        _savedTotalTime = totalSeconds
         totalSeconds = 0
         onAction()
+        _time.postValue(getTimeAsString())
     }
 
     private fun pauseCounting() {
+        job?.cancel()
         isRunning = false
         isPaused = true
         onAction()
