@@ -53,7 +53,7 @@ class DeckCreationDialogFragment : DialogFragment() {
                             viewModel.addNewDeck(
                                 Deck(
                                     name = deckName,
-                                    creationData = DateAssistant().getCurrentDateLong()
+                                    creationDate = DateAssistant().getCurrentDateAsLong()
                                 )
                             )
                             navController.navigate(

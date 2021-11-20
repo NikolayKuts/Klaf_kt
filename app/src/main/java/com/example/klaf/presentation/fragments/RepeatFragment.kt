@@ -14,6 +14,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.klaf.R
 import com.example.klaf.databinding.FragmentRepeatBinding
+import com.example.klaf.domain.auxiliary.DateAssistant
 import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.pojo.Card
@@ -41,6 +42,7 @@ class RepeatFragment : Fragment() {
     private val ipaPrompts = ArrayList<LetterInfo>()
     private val adapter: IpaPromptAdapter by lazy { IpaPromptAdapter() }
     private val timer by viewModels<RepeatTimer>()
+    private var repeatDeck: Deck? = null
 
     private var startElement: Card? = null
     private var goodElement: Card? = null
@@ -100,6 +102,7 @@ class RepeatFragment : Fragment() {
 
                     viewModel.onGetDeck(args.deckId) { deck: Deck? ->
                         if (deck != null) {
+                            repeatDeck = deck
                             repeatDeckNameTextView.text = deck.name
                         }
                     }
@@ -327,7 +330,7 @@ class RepeatFragment : Fragment() {
 
             moveCardByDifficultyLevelMemories(EASY_DIFFICULTY_LEVEL_MEMORIES)
             viewModel?.saveRepetitionProgress(cards)
-            // TODO: 11/8/2021  implement onFinishLesson()
+            onRepetitionFinished()        // TODO: 11/8/2021  implement onFinishLesson()
             isFrontSide = true
             setCardViewContent()
             setIpaPromptContent()
@@ -378,6 +381,77 @@ class RepeatFragment : Fragment() {
                 val newPosition = cards.size / 4
                 cards.add(newPosition, cardForMoving)
             }
+        }
+    }
+
+
+    private fun onRepetitionFinished() {
+        startElement?.let { _startElement ->
+
+            if (
+                (_startElement.id == cards[0].id || _startElement.id == -1)
+                && goodElement == null && hardElement == null
+            ) {
+
+                timer.stopCounting()
+                val updatedDeck = getUpdatedDesk()
+                if (updatedDeck != null) {
+
+                    setButtonVisibilities(false)
+                    startElement = null
+
+                    repeatDeck?.let { repeatDeck ->
+                        if (
+                            updatedDeck.scheduledDate > DateAssistant().getCurrentDateAsLong()
+                            && repeatDeck.repeatQuantity > 5
+                            && repeatDeck.repeatQuantity % 2 == 0
+                        ) {
+                            // TODO: 11/17/2021 implement repetition scheduling
+                        }
+                    }
+
+                } else {
+
+                }
+            }
+        }
+    }
+
+
+    private fun getUpdatedDesk(): Deck? {
+        return repeatDeck?.let { repeatDeck ->
+            val dateAssistant = DateAssistant()
+
+            val updatedLastRepetitionDate: Long
+            val currentRepetitionDuration: Long
+            val updatedLastSucceededRepetition: Boolean
+
+            if (repeatDeck.repeatQuantity % 2 != 0) {
+                updatedLastRepetitionDate = dateAssistant.getCurrentDateAsLong()
+                currentRepetitionDuration = timer.savedTotalTime
+                updatedLastSucceededRepetition =
+                    dateAssistant.isRepetitionSucceeded(repeatDeck, currentRepetitionDuration)
+            } else {
+                updatedLastRepetitionDate = repeatDeck.lastRepeatDate
+                currentRepetitionDuration = repeatDeck.lastRepeatDuration
+                updatedLastSucceededRepetition = repeatDeck.isLastRepetitionSucceeded
+            }
+
+            val newScheduledDate =
+                dateAssistant.getNextScheduledRepeatDate(repeatDeck, currentRepetitionDuration)
+
+            Deck(
+                name = repeatDeck.name,
+                creationDate = repeatDeck.creationDate,
+                id = repeatDeck.id,
+                cardQuantity = repeatDeck.cardQuantity,
+                repeatDay = dateAssistant.getUpdatedRepeatDay(repeatDeck),
+                scheduledDate = newScheduledDate,
+                lastRepeatDate = updatedLastRepetitionDate,
+                repeatQuantity = repeatDeck.repeatQuantity + 1,
+                lastRepeatDuration = currentRepetitionDuration,
+                isLastRepetitionSucceeded = updatedLastSucceededRepetition
+            )
         }
     }
 }
