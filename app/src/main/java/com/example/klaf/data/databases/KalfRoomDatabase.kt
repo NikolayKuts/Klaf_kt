@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import com.example.klaf.domain.pojo.Card
 import com.example.klaf.domain.pojo.Deck
 
-@Database(entities = [Deck::class, Card::class], version = 1, exportSchema = false)
+@Database(entities = [Deck::class, Card::class], version = 2, exportSchema = false)
 abstract class KlafRoomDatabase : RoomDatabase() {
 
     companion object {
@@ -16,13 +16,12 @@ abstract class KlafRoomDatabase : RoomDatabase() {
         private val LOCK = Any()
 
         fun getInstance(context: Context): KlafRoomDatabase {
-            synchronized(LOCK) {
-                database?.let { return it }
+            return database ?: synchronized(LOCK) {
                 val instance = Room.databaseBuilder(context, KlafRoomDatabase::class.java, DB_NAME)
                     .fallbackToDestructiveMigration()
                     .build()
                 database = instance
-                return instance
+                instance
             }
         }
     }

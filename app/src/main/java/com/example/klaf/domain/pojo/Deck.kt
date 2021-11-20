@@ -8,10 +8,10 @@ const val DECK_TABLE_NAME = "decks"
 @Entity(tableName = DECK_TABLE_NAME)
 data class Deck(
     val name: String,
-    val creationData: Long,
+    val creationDate: Long,
     @PrimaryKey(autoGenerate = true) var id: Int = 0,
     var cardQuantity: Int = 0,
-    val repeatDay: Long = 0,
+    val repeatDay: Int = 0,
     val scheduledDate: Long = 0,
     val lastRepeatDate: Long = 0,
     val repeatQuantity: Int = 0,
