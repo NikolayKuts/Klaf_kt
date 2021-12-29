@@ -30,7 +30,7 @@ class CardEditingFragment : Fragment() {
     private var letterInfos: MutableList<LetterInfo> = ArrayList()
 
     private val adapter: LetterBarAdapter by lazy {
-        LetterBarAdapter(letterInfos = letterInfos) { uncompletedIpaCouples ->
+        LetterBarAdapter { uncompletedIpaCouples ->
             binding.ipaEditText.setText(uncompletedIpaCouples)
         }
     }

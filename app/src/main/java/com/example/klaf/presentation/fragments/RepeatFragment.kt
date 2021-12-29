@@ -145,8 +145,12 @@ class RepeatFragment : Fragment() {
     private fun navigateToAdditionFragment() {
         RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(
             deckId = args.deckId
-        )
-            .also { findNavController().navigate(it) }
+        ).also { findNavController().navigate(it) }
+
+//        RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(
+//            deckId = args.deckId
+//        )
+//            .also { findNavController().navigate(it) }
     }
 
     private fun onClickCardEditingButton() {

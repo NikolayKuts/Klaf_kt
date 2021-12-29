@@ -10,10 +10,10 @@ import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.LetterInfo
 
 class LetterBarAdapter(
-    private val letterInfos: MutableList<LetterInfo>,
     private val onItemClickListener: (uncompletedIpa: String?) -> Unit,
-) :
-    RecyclerView.Adapter<LetterBarAdapter.LetterInfoViewHolder>() {
+) : RecyclerView.Adapter<LetterBarAdapter.LetterInfoViewHolder>() {
+
+    private val letterInfos: MutableList<LetterInfo> = mutableListOf()
 
     private val updateIpa: (uncompletedIpa: String?) -> Unit = onItemClickListener
 
