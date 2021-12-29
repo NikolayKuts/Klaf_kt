@@ -13,4 +13,6 @@
     <string name="deck_has_been_created">the deck has been created</string>
     <string name='would_you_like_to_remove_deck'>would you like to remove the deck \"%1$s\"</string>
     <string name="the_deck_has_been_removed">the deck has been removed</string>
+    <string name="type_new_deck_name">Type a new name</string>
+    <string name="deck_name_is_not_changed">The name isn\'t changed</string>
 </resources>
