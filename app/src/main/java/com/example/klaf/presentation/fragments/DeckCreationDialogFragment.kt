@@ -68,6 +68,7 @@ class DeckCreationDialogFragment : DialogFragment() {
         addNewDeck(deckName)
         navigateToDeckListFragment()
         getString(R.string.deck_has_been_created).showToast(requireContext())
+        // TODO: 12/29/2021 to translate toast shoeing to DeckListFragment
     }
 
     private fun addNewDeck(deckName: String) {

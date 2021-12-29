@@ -16,8 +16,9 @@ class DeckRemovingDialogFragment : DialogFragment() {
 
     private var _binding: DialogDeckRemovingBinding? = null
     private val binding get() = _binding!!
-    private val viewModel by activityViewModels<MainViewModel>()
+
     private val args by navArgs<DeckRemovingDialogFragmentArgs>()
+    private val viewModel by activityViewModels<MainViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,21 +31,33 @@ class DeckRemovingDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.deckRemovingDialogTitleTextView.text =
-            "Would you like to remove the deck \"${args.deckName}\"?"
 
-        binding.buttonCancelDeckRemoving.setOnClickListener {
-            findNavController().navigate(R.id.action_deckRemovingDialogFragment_to_deckListFragment)
-        }
-
-        binding.buttonConfirmDeckRemoving.setOnClickListener {
-            viewModel.onRemoveDeck(args.deckId)
-            findNavController().navigate(R.id.action_deckRemovingDialogFragment_to_deckListFragment)
-        }
+        setDialogTitle()
+        setListeners()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    private fun setDialogTitle() {
+        binding.deckRemovingDialogTitleTextView.text =
+            getString(R.string.would_you_like_to_remove_deck, args.deckName)
+    }
+
+    private fun setListeners() {
+        binding.buttonCancelDeckRemoving.setOnClickListener { navigateToDecListFragment() }
+
+        binding.buttonConfirmDeckRemoving.setOnClickListener { onConfirmDeckRemoving() }
+    }
+
+    private fun navigateToDecListFragment() {
+        findNavController().navigate(R.id.action_deckRemovingDialogFragment_to_deckListFragment)
+    }
+
+    private fun onConfirmDeckRemoving() {
+        viewModel.onRemoveDeck(args.deckId)
+        navigateToDecListFragment()
     }
 }

@@ -23,7 +23,7 @@ class DeckListFragment : Fragment() {
     private var _binding: FragmentDeckListBinding? = null
     private val binding get() = _binding!!
 
-    private val decks: MutableList<Deck> = ArrayList()
+    private val decks: MutableList<Deck> = mutableListOf()
     private val viewModel by activityViewModels<MainViewModel>()
     private val deckAdapter = DeckAdapter(
         onClick = ::onItemClick,
@@ -62,6 +62,7 @@ class DeckListFragment : Fragment() {
 
     private fun setDeckObserver() {
         viewModel.deckSource.observe(viewLifecycleOwner) { receivedDecks ->
+            // TODO: 12/29/2021 implement toast showing on deleting and creating deck
             decks.update(receivedDecks)
             deckAdapter.updateData(newDecks = decks)
         }
