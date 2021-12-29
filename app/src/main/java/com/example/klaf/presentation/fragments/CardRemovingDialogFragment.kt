@@ -4,10 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
 import com.example.klaf.databinding.DialogCardRemovingBinding
@@ -18,8 +17,9 @@ class CardRemovingDialogFragment : DialogFragment() {
 
     private var _binding: DialogCardRemovingBinding? = null
     private val binding get() = _binding!!
-    private var viewModel: RepetitionViewModel? = null
+
     private val args by navArgs<CardRemovingDialogFragmentArgs>()
+    private val viewModel: RepetitionViewModel by lazy { getRepetitionViewModel() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,22 +32,8 @@ class CardRemovingDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        activity?.let { activity ->
 
-            viewModel = ViewModelProvider(
-                owner = this,
-                factory = RepetitionViewModelFactory(
-                    context = activity.applicationContext,
-                    deckId = args.deckId)
-            )[RepetitionViewModel::class.java]
-
-            binding.cancelCardRemovingButton.setOnClickListener { navigateToRepeatFragment() }
-
-            binding.confirmCardRemovingButton.setOnClickListener {
-                viewModel?.removeCard(cardId = args.cardId)
-                navigateToRepeatFragment()
-            }
-        }
+        setListeners()
     }
 
     override fun onDestroy() {
@@ -55,12 +41,28 @@ class CardRemovingDialogFragment : DialogFragment() {
         _binding = null
     }
 
-    private fun navigateToRepeatFragment() {
-//        CardRemovingDialogFragmentDirections.actionCardRemovingDialogFragmentToRepeatFragment(
-//            deckId = args.deckId
-//        )
-//            .also { findNavController().navigate(it) }
-//        findNavController().popBackStack()
-        this.dismiss()
+    private fun getRepetitionViewModel(): RepetitionViewModel {
+        return ViewModelProvider(
+            owner = this,
+            factory = RepetitionViewModelFactory(
+                context = requireActivity().applicationContext,
+                deckId = args.deckId)
+        )[RepetitionViewModel::class.java]
+    }
+
+    private fun setListeners() {
+        binding.cancelCardRemovingButton.setOnClickListener { dismiss() }
+        binding.confirmCardRemovingButton.setOnClickListener { onConfirmCardRemoving() }
+    }
+
+    private fun onConfirmCardRemoving() {
+        viewModel.removeCard(cardId = args.cardId)
+        dismiss()
+
+        Toast.makeText(
+            context,
+            getString(R.string.card_has_been_deleted),
+            Toast.LENGTH_SHORT
+        ).show()
     }
 }

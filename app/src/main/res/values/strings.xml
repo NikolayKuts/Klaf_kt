@@ -8,4 +8,5 @@
     <string name="there_are_no_card_in_deck">There are no cards in the deck</string>
     <string name="card_has_been_added">the card has been added</string>
     <string name="deck_is_not_found">the deck isn\'t found</string>
+    <string name="card_has_been_deleted">The card has been deleted</string>
 </resources>
