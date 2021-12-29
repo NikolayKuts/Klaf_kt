@@ -31,7 +31,7 @@ class RepeatTimer : DefaultLifecycleObserver, ViewModel() {
 
     override fun onPause(owner: LifecycleOwner) {
         super.onPause(owner)
-        pauseCounting()
+        if (isRunning) { pauseCounting() }
     }
 
     override fun onDestroy(owner: LifecycleOwner) {
