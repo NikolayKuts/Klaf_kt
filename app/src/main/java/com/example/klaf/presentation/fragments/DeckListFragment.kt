@@ -13,7 +13,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.klaf.R
 import com.example.klaf.databinding.FragmentDeckListBinding
-import com.example.klaf.domain.THERE_ARE_NO_CARD_IN_THE_DECK
 import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.domain.update
 import com.example.klaf.presentation.adapters.DeckAdapter
@@ -135,7 +134,7 @@ class DeckListFragment : Fragment() {
             if (isNotEmpty) {
                 navigateToCardViewerFragment(deck, navController)
             } else {
-                showToast(THERE_ARE_NO_CARD_IN_THE_DECK)
+                showToast(getString(R.string.there_are_no_card_in_deck))
             }
         }
     }

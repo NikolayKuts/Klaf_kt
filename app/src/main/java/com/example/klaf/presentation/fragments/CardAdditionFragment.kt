@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.klaf.R
 import com.example.klaf.databinding.FragmentCardAdditionBinding
 import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.LetterInfo
@@ -24,11 +25,8 @@ class CardAdditionFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val args by navArgs<CardAdditionFragmentArgs>()
-
     private val viewModel: CardAdditionViewModel by lazy { getCardAdditionViewModel() }
-
     private val letterInfos: MutableList<LetterInfo> = ArrayList()
-
     private val letterBarAdapter: LetterBarAdapter by lazy {
         LetterBarAdapter { uncompletedIpaCouples ->
             binding.ipaEditText.setText(uncompletedIpaCouples)
@@ -49,27 +47,13 @@ class CardAdditionFragment : Fragment() {
 
         initLetterBarRecyclerView()
         setDeckObserver()
-
-        binding.applyCardAdditionButton.setOnClickListener { onConfirmCardAddition() }
-
-        binding.foreignWordEditText.doOnTextChanged { text, _, _, _ ->
-            setLetterBarAdapterData(text)
-        }
+        setListeners()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         binding.letterBarRecyclerView.adapter = null
         _binding = null
-    }
-
-    private fun setDeckObserver() {
-        viewModel.deck.observe(viewLifecycleOwner) { deck ->
-            deck?.let {
-                binding.cardAdditionDeckName.text = deck.name
-                binding.cardQuantityTextView.text = deck.cardQuantity.toString()
-            }
-        }
     }
 
     private fun initLetterBarRecyclerView() {
@@ -84,13 +68,30 @@ class CardAdditionFragment : Fragment() {
         }
     }
 
+    private fun setDeckObserver() {
+        viewModel.deck.observe(viewLifecycleOwner) { deck ->
+            deck?.let {
+                binding.cardAdditionDeckName.text = deck.name
+                binding.cardQuantityTextView.text = deck.cardQuantity.toString()
+            }
+        }
+    }
+
+    private fun setListeners() {
+        binding.applyCardAdditionButton.setOnClickListener { onConfirmCardAddition() }
+
+        binding.foreignWordEditText.doOnTextChanged { text, _, _, _ ->
+            setLetterBarAdapterData(text)
+        }
+    }
+
     private fun onConfirmCardAddition() {
         when (val newCard = getCardForAddition()) {
-            null -> showToast(message = "native and foreign words must be filled")
+            null -> showToast(message = getString(R.string.native_and_foreign_words_must_be_filled))
             else -> {
                 viewModel.onAddNewCard(newCard)
                 clearEditTextFields()
-                showToast(message = "the card has been added")
+                showToast(message = getString(R.string.card_has_been_added))
             }
         }
     }
@@ -140,17 +141,21 @@ class CardAdditionFragment : Fragment() {
     }
 
     private fun setLetterBarAdapterData(text: CharSequence?) {
-        val foreignWord = text.toString().trim()
+        letterBarAdapter.setData(getLetterInfoList(fromText = text))
+    }
 
-        val letterInfos = when {
-            foreignWord.isEmpty() -> ArrayList()
+    private fun getLetterInfoList(fromText: CharSequence?): List<LetterInfo> {
+        // TODO: 12/29/2021 there is duplicated implementation in CardAdditionFragment
+        return when (fromText) {
+            null -> emptyList()
             else -> {
-                foreignWord.split("")
+                fromText.toString()
+                    .trim()
+                    .split("")
                     .drop(1)
                     .dropLast(1)
                     .map { letter -> LetterInfo(letter = letter, isChecked = false) }
             }
         }
-        letterBarAdapter.setData(letterInfos)
     }
 }
