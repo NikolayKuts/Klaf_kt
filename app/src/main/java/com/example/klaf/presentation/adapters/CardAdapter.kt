@@ -5,14 +5,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.klaf.databinding.CardListItemBinding
 import com.example.klaf.domain.pojo.Card
+import com.example.klaf.domain.update
 
 class CardAdapter : RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
 
-    var cards: List<Card> = ArrayList()
-    set(value) {
-        field = value
-        notifyDataSetChanged()
-    }
+    private val cardList: MutableList<Card> = mutableListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -21,7 +18,7 @@ class CardAdapter : RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
-        val card = cards[position]
+        val card = cardList[position]
         with(holder.binding) {
             textViewCardNumber.text = "${position + 1}"
             textViewNativeWord.text = card.nativeWord
@@ -30,8 +27,12 @@ class CardAdapter : RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
         }
     }
 
-    override fun getItemCount(): Int = cards.size
+    override fun getItemCount(): Int = cardList.size
 
-    inner class CardViewHolder(val binding: CardListItemBinding):
-        RecyclerView.ViewHolder(binding.root)
+    fun updateData(cards: List<Card>) {
+        cardList.update(cards)
+        notifyDataSetChanged()
+    }
+
+    class CardViewHolder(val binding: CardListItemBinding): RecyclerView.ViewHolder(binding.root)
 }
