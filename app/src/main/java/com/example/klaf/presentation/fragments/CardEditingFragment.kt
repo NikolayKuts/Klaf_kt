@@ -16,6 +16,7 @@ import com.example.klaf.databinding.FragmentCardEditingBinding
 import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.pojo.Card
+import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.domain.update
 import com.example.klaf.presentation.adapters.LetterBarAdapter
 import com.example.klaf.presentation.view_model_factories.CardEditingViewModelFactory
@@ -45,10 +46,17 @@ class CardEditingFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        getCardEditingViewModel()
-        onGetCardById()
         initLetterBarRecyclerView()
+        onGetDeck()
+        onGetCardById()
         setListeners()
+    }
+
+    private fun onGetDeck() {
+        viewModel.deck.observe(viewLifecycleOwner) { deck: Deck? ->
+            binding.cardEditingDeckNameTextView.text = deck?.name
+                ?: getString(R.string.deck_is_not_found)
+        }
     }
 
     override fun onDestroy() {
@@ -123,6 +131,7 @@ class CardEditingFragment : Fragment() {
             owner = this,
             factory = CardEditingViewModelFactory(
                 context = requireActivity().applicationContext,
+                deckId = args.deckId,
                 cardId = args.cardId
             )
         )[CardEditingViewModel::class.java]
@@ -156,7 +165,7 @@ class CardEditingFragment : Fragment() {
                     showToast(getString(R.string.native_and_foreign_words_must_be_filled))
                 }
                 changedCard == cardForChanging -> {
-                    showToast(getString(R.string.card_hasn_not_been_changed))
+                    showToast(getString(R.string.card_has_not_been_changed))
                 }
                 else -> {
                     viewModel.insertChangedCard(changedCard)
