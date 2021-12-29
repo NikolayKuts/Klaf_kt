@@ -26,7 +26,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun onGetDeckById(deckId: Int, onDeckRetrieved: (Deck) -> Unit) {
+    fun onGetDeckById(deckId: Int, onDeckRetrieved: (Deck?) -> Unit) {
         viewModelScope.launch {
             val deck = repository.getDeckById(deckId)
             onDeckRetrieved(deck)

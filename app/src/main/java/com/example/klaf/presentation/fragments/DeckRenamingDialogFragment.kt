@@ -35,9 +35,11 @@ class DeckRenamingDialogFragment : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         val navController = findNavController()
         var oldDeck: Deck? = null
-        viewModel.onGetDeckById(args.deckId) { deck ->
+        viewModel.onGetDeckById(args.deckId) { deck: Deck? ->
             oldDeck = deck
-            binding.editTextDeckRenamingField.setText(deck.name)
+            binding.editTextDeckRenamingField.setText(
+                deck?.name ?: getString(R.string.deck_is_not_found)
+            )
         }
 
         binding.buttonCancelDeckRenaming.setOnClickListener {

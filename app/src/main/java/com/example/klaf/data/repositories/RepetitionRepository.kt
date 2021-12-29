@@ -10,5 +10,5 @@ interface RepetitionRepository {
 
     suspend fun deleteCard(cardId: Int)
 
-    suspend fun getDeckById(deckId: Int): Deck
+    suspend fun getDeckById(deckId: Int): Deck?
 }

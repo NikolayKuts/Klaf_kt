@@ -25,12 +25,15 @@ class RepetitionRepositoryRoomImp(context: Context) : RepetitionRepository {
 
             val updatedDeck = database.deckDao()
                 .getDeckById(cardForDeleting.deckId)
-                .apply { cardQuantity -= 1 }
+                ?.run {
+                    copy(cardQuantity = this.cardQuantity - 1)
+                } ?: throw RuntimeException("No found a deck for creating a new one")
+
             database.deckDao().insertDeck(updatedDeck)
         }
     }
 
-    override suspend fun getDeckById(deckId: Int): Deck = withContext(Dispatchers.IO) {
+    override suspend fun getDeckById(deckId: Int): Deck? = withContext(Dispatchers.IO) {
         database.deckDao().getDeckById(deckId)
     }
 }

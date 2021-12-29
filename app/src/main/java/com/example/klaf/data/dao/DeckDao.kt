@@ -18,7 +18,7 @@ interface DeckDao {
     fun deleteDeck(deckId: Int)
 
     @Query("SELECT * FROM $DECK_TABLE_NAME WHERE id = :deckId")
-    fun getDeckById(deckId: Int): Deck
+    fun getDeckById(deckId: Int): Deck?
 
     @Query("SELECT * FROM $DECK_TABLE_NAME WHERE id = :deckId")
     fun getObservableDeckById(deckId: Int): LiveData<Deck?>

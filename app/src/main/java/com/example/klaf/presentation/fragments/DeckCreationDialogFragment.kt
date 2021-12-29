@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -12,12 +11,14 @@ import com.example.klaf.R
 import com.example.klaf.databinding.DialogDeckCreationBinding
 import com.example.klaf.domain.auxiliary.DateAssistant
 import com.example.klaf.domain.pojo.Deck
+import com.example.klaf.domain.showToast
 import com.example.klaf.presentation.view_models.MainViewModel
 
 class DeckCreationDialogFragment : DialogFragment() {
 
     private var _binding: DialogDeckCreationBinding? = null
     private val binding get() = _binding!!
+
     private val viewModel by activityViewModels<MainViewModel>()
 
     override fun onCreateView(
@@ -31,46 +32,47 @@ class DeckCreationDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val navController = findNavController()
 
-        with(binding) {
-            buttonCancelDeckCreation.setOnClickListener {
-                navController.navigate(R.id.action_deckCreationDialogFragment_to_deckListFragment)
-            }
-
-            buttonConfirmDeckCreation.setOnClickListener {
-                val deckName = editTextDeckName.text.toString().trim()
-
-                viewModel.deckSource.observe(viewLifecycleOwner) { receivedDecks ->
-                    val deckNames = receivedDecks?.map { deck -> deck.name }
-                    when {
-                        (deckNames?.contains(deckName) == true) -> {
-                            Toast.makeText(
-                                context, "such name is already exist", Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                        else -> {
-                            viewModel.addNewDeck(
-                                Deck(
-                                    name = deckName,
-                                    creationDate = DateAssistant().getCurrentDateAsLong()
-                                )
-                            )
-                            navController.navigate(
-                                R.id.action_deckCreationDialogFragment_to_deckListFragment
-                            )
-                            Toast.makeText(context, "it's done", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-
-                }
-            }
-
-        }
+        setListeners()
     }
 
     override fun onDestroy() {
         _binding = null
         super.onDestroy()
+    }
+
+    private fun setListeners() {
+        binding.buttonCancelDeckCreation.setOnClickListener { navigateToDeckListFragment() }
+        binding.buttonConfirmDeckCreation.setOnClickListener { onConfirmDeckCreation() }
+    }
+
+    private fun navigateToDeckListFragment() {
+        findNavController().navigate(R.id.action_deckCreationDialogFragment_to_deckListFragment)
+    }
+
+    private fun onConfirmDeckCreation() {
+        viewModel.deckSource.observe(viewLifecycleOwner) { receivedDecks ->
+            val deckName = binding.editTextDeckName.text.toString().trim()
+            val deckNames = receivedDecks.map { deck -> deck.name }
+
+            when {
+                deckNames.contains(deckName) -> {
+                    getString(R.string.such_name_is_already_exist).showToast(requireContext())
+                }
+                else -> onAddNewDeck(deckName)
+            }
+        }
+    }
+
+    private fun onAddNewDeck(deckName: String) {
+        addNewDeck(deckName)
+        navigateToDeckListFragment()
+        getString(R.string.deck_has_been_created).showToast(requireContext())
+    }
+
+    private fun addNewDeck(deckName: String) {
+        viewModel.addNewDeck(
+            Deck(name = deckName, creationDate = DateAssistant().getCurrentDateAsLong())
+        )
     }
 }
