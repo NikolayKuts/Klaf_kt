@@ -3,13 +3,13 @@ package com.example.klaf.presentation.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.klaf.databinding.DeckListItemBinding
 import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.domain.update
 
 class DeckAdapter(
-
     private var onClick: (deck: Deck) -> Unit,
     private var onPopupMenuClick: (View, Deck) -> Unit,
 ) : RecyclerView.Adapter<DeckAdapter.DeckViewHolder>() {
@@ -23,32 +23,33 @@ class DeckAdapter(
     }
 
     override fun onBindViewHolder(holder: DeckViewHolder, position: Int) {
-        with(holder.binding) {
-            val deck = deckList[position]
-            textViewDeckName.text = deck.name
-            textViewRepeatDay.text = deck.repeatDay.toString()
-            textViewScheduledDate.text = deck.scheduledDate.toString()
-            textViewRepeatQuantity.text = deck.repeatQuantity.toString()
-            textViewCardQuantity.text = deck.cardQuantity.toString()
-
-            deckListItem.setOnClickListener { onClick(deckList[position]) }
-
-
-            popupMenuImageView.setOnClickListener { view ->
-                onPopupMenuClick(view, deck)
-//                true
-            }
-        }
+        holder.onBind()
     }
 
     override fun getItemCount(): Int = deckList.size
 
     fun updateData(newDecks: List<Deck>) {
+        val diffResult = DiffUtil.calculateDiff(DeckDiffUtilCallback(deckList, newDecks))
         deckList.update(newDecks)
-        notifyDataSetChanged()
-
-        // TODO: 12/29/2021 implement DiffUtilCallback
+        diffResult.dispatchUpdatesTo(this)
     }
 
-    class DeckViewHolder(val binding: DeckListItemBinding) : RecyclerView.ViewHolder(binding.root)
+    inner class DeckViewHolder(
+        private val binding: DeckListItemBinding,
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        fun onBind() {
+            val deck = deckList[adapterPosition]
+            binding.apply {
+                textViewDeckName.text = deck.name
+                textViewRepeatDay.text = deck.repeatDay.toString()
+                textViewScheduledDate.text = deck.scheduledDate.toString()
+                textViewRepeatQuantity.text = deck.repeatQuantity.toString()
+                textViewCardQuantity.text = deck.cardQuantity.toString()
+
+                deckListItem.setOnClickListener { onClick(deck) }
+                popupMenuImageView.setOnClickListener { view -> onPopupMenuClick(view, deck) }
+            }
+        }
+    }
 }
