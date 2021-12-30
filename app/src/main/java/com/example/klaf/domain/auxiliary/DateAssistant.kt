@@ -1,17 +1,14 @@
 package com.example.klaf.domain.auxiliary
 
+import com.example.klaf.domain.enums.DayFactor
+import com.example.klaf.domain.enums.DayFactor.*
 import com.example.klaf.domain.pojo.Deck
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-private const val FIRST_DAY_FACTOR = 0.4
-private const val SECOND_DAY_FACTOR = 0.6
-private const val THIRD_DAY_FACTOR = 0.8
-
 private const val DERATION_FACTOR = 0.07
-private const val WHOLE_DAY_FACTOR = 1.0
 private const val DECREASE_FACTOR = 0.1
 
 private const val DATE_FORMAT_PATTERN = "dd-MM-yy|HH:mm"
@@ -93,10 +90,10 @@ class DateAssistant {
 
     private fun getDayFactorByNumberDay(numberDay: Int): Double {
         return when (numberDay) {
-            1 -> FIRST_DAY_FACTOR
-            2-> SECOND_DAY_FACTOR
-            3-> THIRD_DAY_FACTOR
-            else -> WHOLE_DAY_FACTOR
+            1 -> FIRST_DAY_FACTOR.factor
+            2 -> SECOND_DAY_FACTOR.factor
+            3 -> THIRD_DAY_FACTOR.factor
+            else -> WHOLE_DAY_FACTOR.factor
         }
     }
 }

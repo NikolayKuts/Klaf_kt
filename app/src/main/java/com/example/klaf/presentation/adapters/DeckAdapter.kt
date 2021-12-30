@@ -9,6 +9,7 @@ import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.domain.update
 
 class DeckAdapter(
+
     private var onClick: (deck: Deck) -> Unit,
     private var onPopupMenuClick: (View, Deck) -> Unit,
 ) : RecyclerView.Adapter<DeckAdapter.DeckViewHolder>() {

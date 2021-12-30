@@ -18,9 +18,11 @@ class CardAdapter : RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
-        val card = cardList[position]
-        with(holder.binding) {
-            textViewCardNumber.text = "${position + 1}"
+        if (holder.adapterPosition == RecyclerView.NO_POSITION) return
+        holder.binding.apply {
+            val adapterPosition = holder.adapterPosition
+            val card = cardList[adapterPosition]
+            textViewCardNumber.text = (adapterPosition + 1).toString()
             textViewNativeWord.text = card.nativeWord
             textViewForeignWord.text = card.foreignWord
             textViewIpa.text = card.ipa
@@ -32,6 +34,7 @@ class CardAdapter : RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
     fun updateData(cards: List<Card>) {
         cardList.update(cards)
         notifyDataSetChanged()
+        // TODO: 12/30/2021 implement DiffUtilCallback
     }
 
     class CardViewHolder(val binding: CardListItemBinding): RecyclerView.ViewHolder(binding.root)
