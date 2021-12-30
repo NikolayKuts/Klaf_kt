@@ -70,6 +70,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="00:0"
+        android:textColor="@color/timer_is_not_running"
         app:layout_constraintTop_toBottomOf="@id/repeat_deck_name_text_view"
         app:layout_constraintStart_toStartOf="@id/addition_content_start"
         app:layout_constraintEnd_toEndOf="@id/addition_content_end"

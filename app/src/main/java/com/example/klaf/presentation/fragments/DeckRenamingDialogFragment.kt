@@ -54,7 +54,6 @@ class DeckRenamingDialogFragment : DialogFragment() {
 
     private fun setListeners() {
         binding.buttonCancelDeckRenaming.setOnClickListener { dismiss() }
-
         binding.buttonConfirmDeckRenaming.setOnClickListener { onConfirmDeckRenaming() }
     }
 

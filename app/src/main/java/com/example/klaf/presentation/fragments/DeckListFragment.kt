@@ -55,7 +55,7 @@ class DeckListFragment : Fragment() {
 
     private fun initDeckRecyclerView() {
         binding.deckRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireActivity().applicationContext)
+            layoutManager = LinearLayoutManager(requireContext())
             adapter = deckAdapter
         }
     }

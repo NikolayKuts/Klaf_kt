@@ -79,7 +79,7 @@ class CardEditingFragment : Fragment() {
     private fun initLetterBarRecyclerView() {
         binding.letterBarRecyclerView.apply {
             layoutManager = LinearLayoutManager(
-                requireActivity().applicationContext,
+                requireContext(),
                 LinearLayoutManager.HORIZONTAL,
                 false
             )

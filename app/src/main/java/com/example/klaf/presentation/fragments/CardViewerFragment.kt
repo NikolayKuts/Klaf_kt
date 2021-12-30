@@ -48,7 +48,7 @@ class CardViewerFragment : Fragment() {
 
     private fun initCarRecyclerView() {
         binding.cardRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireActivity().applicationContext)
+            layoutManager = LinearLayoutManager(requireContext())
             adapter = cardAdapter
         }
     }

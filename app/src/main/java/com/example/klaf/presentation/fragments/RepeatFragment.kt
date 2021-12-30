@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.widget.TextView
+import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -15,20 +17,19 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.klaf.R
 import com.example.klaf.databinding.FragmentRepeatBinding
 import com.example.klaf.domain.auxiliary.DateAssistant
+import com.example.klaf.domain.enums.DifficultyRecallingLevel
+import com.example.klaf.domain.enums.DifficultyRecallingLevel.*
 import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.pojo.Card
 import com.example.klaf.domain.pojo.Deck
+import com.example.klaf.domain.showToast
 import com.example.klaf.domain.update
 import com.example.klaf.presentation.adapters.IpaPromptAdapter
 import com.example.klaf.presentation.auxiliary.RepeatTimer
 import com.example.klaf.presentation.view_model_factories.RepetitionViewModelFactory
 import com.example.klaf.presentation.view_models.RepetitionViewModel
-import kotlin.collections.ArrayList
-
-private const val EASY_DIFFICULTY_LEVEL_MEMORIES = 0
-private const val GOOD_DIFFICULTY_LEVEL_MEMORIES = 1
-private const val HARD_DIFFICULTY_LEVEL_MEMORIES = 2
+import java.util.*
 
 class RepeatFragment : Fragment() {
 
@@ -36,12 +37,15 @@ class RepeatFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val args by navArgs<RepeatFragmentArgs>()
-    private var viewModel: RepetitionViewModel? = null
-    private val cards: MutableList<Card> = ArrayList()
-    private var isFrontSide: Boolean = true
-    private val ipaPrompts = ArrayList<LetterInfo>()
-    private val adapter: IpaPromptAdapter by lazy { IpaPromptAdapter() }
     private val timer by viewModels<RepeatTimer>()
+    private val viewModel: RepetitionViewModel by lazy { getRepetitionViewModel() }
+
+    private val ipaPromptAdapter: IpaPromptAdapter by lazy { IpaPromptAdapter() }
+
+    private val cards = LinkedList<Card>()
+    private val ipaPrompts = mutableListOf<LetterInfo>()
+
+    private var isFrontSide: Boolean = true
     private var repeatDeck: Deck? = null
 
     private var startElement: Card? = null
@@ -59,86 +63,136 @@ class RepeatFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        activity?.let { activity ->
-            with(binding) {
 
-                initializeViewModel()
-
-                timer.onAction = { setColorTimerByTimerState(timer.isRunning) }
-                lifecycle.addObserver(timer)
-                timer.time.observe(viewLifecycleOwner) { time: String ->
-                    repeatTimerTextView.text = time
-                }
-
-                ipaRecyclerView.layoutManager = LinearLayoutManager(
-                    activity.applicationContext,
-                    LinearLayoutManager.HORIZONTAL,
-                    false
-                )
-                ipaRecyclerView.adapter = adapter
-
-                viewModel?.let { viewModel ->
-
-                    viewModel.cardSource.observe(viewLifecycleOwner) { receivedCards ->
-                        cards.update(receivedCards)
-
-                        if (cards.isEmpty()) {
-                            viewModel.clearProgress()
-                            startElement = null
-                            goodElement = null
-                            hardElement = null
-                            timer.stopCounting()
-                        }
-
-                        if (viewModel.savedProgressCards.isNotEmpty()) {
-                            cards.update(viewModel.getCardsByProgress(receivedCards))
-                            viewModel.saveRepetitionProgress(cards)
-                        }
-
-                        setCardViewContent()
-                        setCardContentColor()
-                        setIpaPromptContent()
-                    }
-
-                    viewModel.onGetDeck(args.deckId) { deck: Deck? ->
-                        if (deck != null) {
-                            repeatDeck = deck
-                            repeatDeckNameTextView.text = deck.name
-                        }
-                    }
-
-                    setButtonVisibilities(false)
-
-                    repeatCardAdditionButton.setOnClickListener { navigateToAdditionFragment() }
-                    repeatCardEditingActionButton.setOnClickListener { onClickCardEditingButton() }
-                    repeatCardRemovingActionButton.setOnClickListener { onClickCardRemovingButton() }
-                    startRepetitionButton.setOnClickListener { onClickStartButton() }
-                    turnButton.setOnClickListener { onClickTurnButton() }
-                    repeatOrderSwitch.setOnCheckedChangeListener { _, isChecked ->
-                        onRepeatOrderSwitchCheckedChanged(isChecked)
-                    }
-
-                    easyButton.setOnClickListener { onClickEasyButton() }
-                    goodButton.setOnClickListener { onClickGoodButton() }
-                    hardButton.setOnClickListener { onHardButtonClick() }
-                }
-            }
-        }
+        setButtonVisibilities(false)
+        initIpaRecyclerView()
+        lifecycle.addObserver(timer)
+        timer.onAction = { setTimerColorByTimerState(timer.isRunning) }
+        onGetDeck()
+        onTimeObserving()
+        onCardObserving()
+        setListeners()
     }
 
     override fun onDestroy() {
-        super.onDestroy()
+        binding.ipaRecyclerView.adapter = null
         _binding = null
+        super.onDestroy()
     }
 
-    private fun initializeViewModel() {
-        activity?.let { activity ->
-            viewModel = ViewModelProvider(
-                owner = this,
-                factory = RepetitionViewModelFactory(
-                    context = activity.applicationContext,
-                    deckId = args.deckId)
-            )[RepetitionViewModel::class.java]
+    private fun setButtonVisibilities(visible: Boolean) {
+        binding.apply {
+            startRepetitionButton.isVisible = !visible
+            easyButton.isVisible = visible
+            goodButton.isVisible = visible
+            hardButton.isVisible = visible
+            turnButton.isVisible = visible
+        }
+    }
+
+    private fun initIpaRecyclerView() {
+        binding.ipaRecyclerView.apply {
+            layoutManager = LinearLayoutManager(
+                requireContext(),
+                LinearLayoutManager.HORIZONTAL,
+                false
+            )
+            adapter = ipaPromptAdapter
+        }
+    }
+
+    private fun onGetDeck() {
+        viewModel.onGetDeck(args.deckId) getDeck@{ deck: Deck? ->
+            deck ?: return@getDeck
+            repeatDeck = deck
+            binding.repeatDeckNameTextView.text = deck.name
+        }
+    }
+
+    private fun onTimeObserving() {
+        timer.time.observe(viewLifecycleOwner) { time: String ->
+            binding.repeatTimerTextView.text = time
+        }
+    }
+
+    private fun onCardObserving() {
+        viewModel.cardSource.observe(viewLifecycleOwner) { receivedCards ->
+            cards.update(receivedCards)
+            if (cards.isEmpty()) {
+                resetRepetitionProgress()
+            }
+
+            if (viewModel.savedProgressCards.isNotEmpty()) {
+                cards.update(viewModel.getCardsByProgress(receivedCards))
+                viewModel.saveRepetitionProgress(cards)
+            }
+
+            setCardViewContent()
+            setCardContentColor()
+            setIpaPromptContent()
+        }
+    }
+
+    private fun setListeners() {
+        binding.apply {
+            repeatCardAdditionButton.setOnClickListener { navigateToAdditionFragment() }
+            repeatCardEditingActionButton.setOnClickListener { onClickCardEditingButton() }
+            repeatCardRemovingActionButton.setOnClickListener { onClickCardRemovingButton() }
+            startRepetitionButton.setOnClickListener { onClickStartButton() }
+            turnButton.setOnClickListener { onClickTurnButton() }
+            repeatOrderSwitch.setOnCheckedChangeListener { _, isChecked ->
+                onRepeatOrderSwitchCheckedChanged(isChecked)
+            }
+
+            easyButton.setOnClickListener { onClickEasyButton() }
+            goodButton.setOnClickListener { onClickGoodButton() }
+            hardButton.setOnClickListener { onHardButtonClick() }
+        }
+    }
+
+    private fun resetRepetitionProgress() {
+        viewModel.clearProgress()
+        startElement = null
+        goodElement = null
+        hardElement = null
+        timer.stopCounting()
+    }
+
+    private fun getRepetitionViewModel(): RepetitionViewModel {
+        return ViewModelProvider(
+            owner = this,
+            factory = RepetitionViewModelFactory(
+                context = requireActivity().applicationContext,
+                deckId = args.deckId)
+        )[RepetitionViewModel::class.java]
+    }
+
+    private fun onClickStartButton() {
+        if (cards.isEmpty()) return
+        setButtonVisibilities(true)
+        timer.runCounting()
+    }
+
+    private fun onClickTurnButton() {
+        isFrontSide = !isFrontSide
+        setCardViewContent()
+        setCardContentColor()
+        setIpaPromptContent()
+    }
+
+    private fun onClickCardEditingButton() {
+        if (cards.isEmpty()) {
+            getString(R.string.there_is_nothing_to_change).showToast(requireContext())
+        } else {
+            navigateToCardEditingFragment()
+        }
+    }
+
+    private fun onClickCardRemovingButton() {
+        if (cards.isEmpty()) {
+            getString(R.string.there_are_no_cards_to_remove).showToast(requireContext())
+        } else {
+            navigateToCArdRemovingDialogFragment()
         }
     }
 
@@ -146,36 +200,20 @@ class RepeatFragment : Fragment() {
         RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(
             deckId = args.deckId
         ).also { findNavController().navigate(it) }
-
-//        RepeatFragmentDirections.actionRepeatFragmentToCardAdditionFragment(
-//            deckId = args.deckId
-//        )
-//            .also { findNavController().navigate(it) }
     }
 
-    private fun onClickCardEditingButton() {
-        context?.let {
-            if (cards.isNotEmpty()) {
-                RepeatFragmentDirections.actionRepeatFragmentToCardEditingFragment(
-                    cardId = cards[0].id,
-                    deckId = args.deckId
-                )
-                    .also { findNavController().navigate(it) }
-            } else {
-                Toast.makeText(context, "There is nothing to change", Toast.LENGTH_SHORT)
-                    .show()
-            }
-        }
+    private fun navigateToCardEditingFragment() {
+        RepeatFragmentDirections.actionRepeatFragmentToCardEditingFragment(
+            cardId = cards[0].id,
+            deckId = args.deckId
+        ).also { findNavController().navigate(it) }
     }
 
-    private fun onClickCardRemovingButton() {
-        if (cards.isNotEmpty()) {
-            RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
-                deckId = args.deckId,
-                cardId = cards[0].id
-            )
-                .also { findNavController().navigate(it) }
-        }
+    private fun navigateToCArdRemovingDialogFragment() {
+        RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
+            deckId = args.deckId,
+            cardId = cards[0].id
+        ).also { findNavController().navigate(it) }
     }
 
     private fun setIpaPromptContent() {
@@ -195,95 +233,44 @@ class RepeatFragment : Fragment() {
                 }
             }
         }
-        adapter.setData(ipaPrompts)
-    }
-
-    private fun onClickStartButton() {
-        if (cards.isNotEmpty()) {
-            setButtonVisibilities(true)
-            timer.runCounting()
-        }
-    }
-
-    private fun onClickTurnButton() {
-        isFrontSide = !isFrontSide
-        setCardViewContent()
-        setCardContentColor()
-        setIpaPromptContent()
+        ipaPromptAdapter.setData(ipaPrompts)
     }
 
     private fun setCardContentColor() {
         if (cards.isNotEmpty()) {
             setCardContentColorBySide()
         } else {
-            binding.cardSideTextView.setTextColor(
-                ContextCompat.getColor(
-                    binding.cardSideTextView.context,
-                    R.color.empty_card_content_color
-                )
-            )
+            binding.cardSideTextView.applyTextColor(colorId = R.color.empty_card_content_color)
         }
     }
 
     private fun setCardContentColorBySide() {
-        with(binding) {
-            if (isFrontSide) {
-                cardSideTextView.setTextColor(
-                    ContextCompat.getColor(
-                        cardSideTextView.context,
-                        R.color.front_card_content_color
-                    )
-                )
-            } else {
-                cardSideTextView.setTextColor(
-                    ContextCompat.getColor(
-                        cardSideTextView.context,
-                        R.color.back_card_content_color
-                    )
-                )
-            }
+        val colorId = if (isFrontSide) {
+            R.color.front_card_content_color
+        } else {
+            R.color.back_card_content_color
         }
+        binding.cardSideTextView.applyTextColor(colorId)
+    }
+
+    private fun TextView.applyTextColor(@ColorRes colorId: Int) {
+        setTextColor(ContextCompat.getColor(context, colorId))
     }
 
     private fun setCardViewContent() {
-        with(binding) {
-            if (cards.isEmpty()) {
-                cardSideTextView.text = "The deck is empty"
-            } else {
-                val card = cards[0]
-                if (repeatOrderSwitch.isChecked) {
-                    when (isFrontSide) {
-                        true -> cardSideTextView.text = card.foreignWord
-                        else -> cardSideTextView.text = card.nativeWord
-                    }
-                } else {
-                    when (isFrontSide) {
-                        true -> cardSideTextView.text = card.nativeWord
-                        else -> cardSideTextView.text = card.foreignWord
-                    }
-                }
-            }
+        if (cards.isEmpty()) {
+            binding.cardSideTextView.text = getString(R.string.deck_is_empty)
+        } else {
+            binding.cardSideTextView.text = getCardContentBySide(cards[0])
         }
     }
 
-    private fun setButtonVisibilities(visible: Boolean) {
-        with(binding) {
-            val visibility = if (visible) {
-                startRepetitionButton.visibility = View.INVISIBLE
-                View.VISIBLE
-            } else {
-                startRepetitionButton.visibility = View.VISIBLE
-                View.INVISIBLE
-            }
-
-            easyButton.visibility = visibility
-            goodButton.visibility = visibility
-            hardButton.visibility = visibility
-            turnButton.visibility = visibility
-        }
+    private fun getCardContentBySide(card: Card): String {
+        return if (isFrontSide) card.nativeWord else card.foreignWord
     }
 
     private fun onRepeatOrderSwitchCheckedChanged(isChecked: Boolean) {
+        isFrontSide = !isFrontSide
         setCardViewContent()
         setCardContentColor()
         setIpaPromptContent()
@@ -292,29 +279,16 @@ class RepeatFragment : Fragment() {
     }
 
     private fun setLessonOrderPointers(isChecked: Boolean) {
-        with(binding) {
-            if (isChecked) {
-                frontSidePointerTextView.text = "F"
-                backSidePointerTextView.text = "N"
-            } else {
-                frontSidePointerTextView.text = "N"
-                backSidePointerTextView.text = "F"
-            }
-        }
+        val native = getString(R.string.pointer_native)
+        val foreign = getString(R.string.pointer_foreign)
+
+        binding.frontSidePointerTextView.text = if (isChecked) foreign else native
+        binding.backSidePointerTextView.text = if (isChecked) native else foreign
     }
 
-    private fun setColorTimerByTimerState(isRunning: Boolean) {
-        with(binding) {
-            val context = repeatTimerTextView.context
-            if (isRunning) {
-                repeatTimerTextView.setTextColor(ContextCompat.getColor(context,
-                    R.color.timer_is_running))
-            } else {
-                repeatTimerTextView.setTextColor(
-                    ContextCompat.getColor(context, R.color.timer_is_not_running)
-                )
-            }
-        }
+    private fun setTimerColorByTimerState(isRunning: Boolean) {
+        val colorId = if (isRunning) R.color.timer_is_running else R.color.timer_is_not_running
+        binding.repeatTimerTextView.applyTextColor(colorId)
     }
 
     private fun onClickEasyButton() {
@@ -332,8 +306,8 @@ class RepeatFragment : Fragment() {
                 hardElement = null
             }
 
-            moveCardByDifficultyLevelMemories(EASY_DIFFICULTY_LEVEL_MEMORIES)
-            viewModel?.saveRepetitionProgress(cards)
+            moveCardByDifficultyRecallingLevel(EASY)
+            viewModel.saveRepetitionProgress(cards)
             onRepetitionFinished()        // TODO: 11/8/2021  implement onFinishLesson()
             isFrontSide = true
             setCardViewContent()
@@ -344,48 +318,39 @@ class RepeatFragment : Fragment() {
     }
 
     private fun onClickGoodButton() {
-        if (cards.isNotEmpty()) {
-            goodElement = cards[0]
-            moveCardByDifficultyLevelMemories(GOOD_DIFFICULTY_LEVEL_MEMORIES)
-            viewModel?.saveRepetitionProgress(cards)
-            isFrontSide = true
-            setCardViewContent()
-            setIpaPromptContent()
+        if (cards.isEmpty()) return
+        goodElement = cards[0]
+        moveCardByDifficultyRecallingLevel(GOOD)
+        viewModel.saveRepetitionProgress(cards)
+        isFrontSide = true
+        setCardViewContent()
+        setIpaPromptContent()
 //            setOnTextViewWordClickable(switchRepetitionOrder.isChecked())
-        }
 //        closeFloatingButtonIfOpened()
     }
 
     private fun onHardButtonClick() {
-        if (cards.isNotEmpty()) {
-            hardElement = cards[0]
-            moveCardByDifficultyLevelMemories(HARD_DIFFICULTY_LEVEL_MEMORIES)
-            viewModel?.saveRepetitionProgress(cards)
-            isFrontSide = true
-            setCardViewContent()
-            setIpaPromptContent()
+        if (cards.isEmpty()) return
+        hardElement = cards[0]
+        moveCardByDifficultyRecallingLevel(HARD)
+        viewModel.saveRepetitionProgress(cards)
+        isFrontSide = true
+        setCardViewContent()
+        setIpaPromptContent()
 //            setOnTextViewWordClickable(switchRepetitionOrder.isChecked())
-        }
 //        closeFloatingButtonIfOpened()
     }
 
-    private fun moveCardByDifficultyLevelMemories(difficultyLevelMemories: Int) {
+    private fun moveCardByDifficultyRecallingLevel(level: DifficultyRecallingLevel) {
         val cardForMoving = cards[0]
         cards.removeAt(0)
 
-        when (difficultyLevelMemories) {
-            EASY_DIFFICULTY_LEVEL_MEMORIES -> {
-                cards.add(cardForMoving)
-            }
-            GOOD_DIFFICULTY_LEVEL_MEMORIES -> {
-                val newPosition = cards.size * 3 / 4
-                cards.add(newPosition, cardForMoving)
-            }
-            HARD_DIFFICULTY_LEVEL_MEMORIES -> {
-                val newPosition = cards.size / 4
-                cards.add(newPosition, cardForMoving)
-            }
+        val newPosition = when (level) {
+            EASY -> cards.size
+            GOOD -> cards.size * 3 / 4
+            HARD -> cards.size / 4
         }
+        cards.add(newPosition, cardForMoving)
     }
 
 

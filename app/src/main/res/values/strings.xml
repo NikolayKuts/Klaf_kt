@@ -15,4 +15,9 @@
     <string name="the_deck_has_been_removed">the deck has been removed</string>
     <string name="type_new_deck_name">Type a new name</string>
     <string name="deck_name_is_not_changed">The name isn\'t changed</string>
+    <string name="there_is_nothing_to_change">There is nothing to change</string>
+    <string name="there_are_no_cards_to_remove">There are no cards to remove</string>
+    <string name="deck_is_empty">The deck is empty</string>
+    <string name="pointer_foreign">F</string>
+    <string name="pointer_native">N</string>
 </resources>
