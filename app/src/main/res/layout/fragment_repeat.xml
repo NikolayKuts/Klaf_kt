@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".presentation.fragments.RepeatFragment"
+    tools:context=".presentation.repeat_deck.RepeatFragment"
     >
 
     <androidx.constraintlayout.widget.Guideline
@@ -178,10 +178,12 @@
         android:id="@+id/ipa_recycler_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/card_side_text_view"
-        app:layout_constraintStart_toStartOf="@id/addition_content_start"
+        android:layout_marginTop="52dp"
         app:layout_constraintEnd_toEndOf="@id/addition_content_end"
-        />
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="@id/addition_content_start"
+        app:layout_constraintTop_toBottomOf="@id/card_side_text_view"
+        tools:itemCount="2" />
 
     <Button
         android:id="@+id/turn_button"

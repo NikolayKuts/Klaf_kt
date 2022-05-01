@@ -12,6 +12,4 @@ data class Card (
     val foreignWord: String,
     val ipa: String,
     @PrimaryKey(autoGenerate = true) val id: Int = 0
-) {
-    override fun toString(): String = nativeWord
-}
+)

@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.fragments
+package com.example.klaf.presentation.card_viewer
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,8 +10,6 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.klaf.databinding.FragmentCardViewerBinding
 import com.example.klaf.presentation.adapters.CardAdapter
-import com.example.klaf.presentation.view_model_factories.CardViewerViewModelFactory
-import com.example.klaf.presentation.view_models.CardViewerViewModel
 
 class CardViewerFragment : Fragment() {
 

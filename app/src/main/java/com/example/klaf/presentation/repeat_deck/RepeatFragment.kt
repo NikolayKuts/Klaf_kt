@@ -1,6 +1,7 @@
-package com.example.klaf.presentation.fragments
+package com.example.klaf.presentation.repeat_deck
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,8 +28,6 @@ import com.example.klaf.domain.showToast
 import com.example.klaf.domain.update
 import com.example.klaf.presentation.adapters.IpaPromptAdapter
 import com.example.klaf.presentation.auxiliary.RepeatTimer
-import com.example.klaf.presentation.view_model_factories.RepetitionViewModelFactory
-import com.example.klaf.presentation.view_models.RepetitionViewModel
 import java.util.*
 
 class RepeatFragment : Fragment() {
@@ -72,6 +71,8 @@ class RepeatFragment : Fragment() {
         onTimeObserving()
         onCardObserving()
         setListeners()
+
+        ipaPromptAdapter.setData(listOf(LetterInfo("L",true)))
     }
 
     override fun onDestroy() {
@@ -221,17 +222,24 @@ class RepeatFragment : Fragment() {
             val card = cards[0]
             val ipaProcessor = IpaProcessor()
 
-            if (binding.repeatOrderSwitch.isChecked) {
-                when (isFrontSide) {
-                    true -> ipaPrompts.update(ipaProcessor.getIpaPrompts(card.ipa))
-                    else -> ipaPrompts.clear()
-                }
+            if (isFrontSide) {
+                Log.i("app_log", "setIpaPromptContent: $card")
+                ipaPrompts.update(ipaProcessor.getIpaPrompts(card.ipa))
             } else {
-                when (isFrontSide) {
-                    true -> ipaPrompts.clear()
-                    else -> ipaPrompts.update(ipaProcessor.getIpaPrompts(card.ipa))
-                }
+                ipaPrompts.clear()
             }
+//
+//            if (binding.repeatOrderSwitch.isChecked) {
+//                when (isFrontSide) {
+//                    true -> ipaPrompts.update(ipaProcessor.getIpaPrompts(card.ipa))
+//                    else -> ipaPrompts.clear()
+//                }
+//            } else {
+//                when (isFrontSide) {
+//                    true -> ipaPrompts.clear()
+//                    else -> ipaPrompts.update(ipaProcessor.getIpaPrompts(card.ipa))
+//                }
+//            }
         }
         ipaPromptAdapter.setData(ipaPrompts)
     }

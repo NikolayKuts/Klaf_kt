@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.view_models
+package com.example.klaf.presentation.card_addition
 
 import android.content.Context
 import androidx.lifecycle.*

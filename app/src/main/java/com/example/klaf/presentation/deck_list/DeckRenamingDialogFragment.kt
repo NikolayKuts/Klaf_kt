@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.fragments
+package com.example.klaf.presentation.deck_list
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,7 +11,6 @@ import com.example.klaf.R
 import com.example.klaf.databinding.DialogDeckRenamingBinding
 import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.domain.showToast
-import com.example.klaf.presentation.view_models.MainViewModel
 
 class DeckRenamingDialogFragment : DialogFragment() {
 

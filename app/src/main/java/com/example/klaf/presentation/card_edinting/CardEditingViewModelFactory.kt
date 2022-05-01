@@ -1,9 +1,8 @@
-package com.example.klaf.presentation.view_model_factories
+package com.example.klaf.presentation.card_edinting
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.klaf.presentation.view_models.CardEditingViewModel
 
 class CardEditingViewModelFactory(
     private val context: Context,

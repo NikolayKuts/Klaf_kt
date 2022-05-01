@@ -12,7 +12,7 @@ import com.example.klaf.domain.update
 
 class IpaPromptAdapter : RecyclerView.Adapter<IpaPromptAdapter.IpaPromptViewHolder>() {
 
-    private val prompts = ArrayList<LetterInfo>()
+    private val prompts = mutableListOf<LetterInfo>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IpaPromptViewHolder {
         val inflater = LayoutInflater.from(parent.context)

@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.fragments
+package com.example.klaf.presentation.deck_list
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,7 +16,6 @@ import com.example.klaf.databinding.FragmentDeckListBinding
 import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.domain.update
 import com.example.klaf.presentation.adapters.DeckAdapter
-import com.example.klaf.presentation.view_models.MainViewModel
 
 class DeckListFragment : Fragment() {
 

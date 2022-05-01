@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.fragments
+package com.example.klaf.presentation.card_addition
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,8 +16,6 @@ import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.pojo.Card
 import com.example.klaf.presentation.adapters.LetterBarAdapter
-import com.example.klaf.presentation.view_model_factories.CardAdditionViewModelFactory
-import com.example.klaf.presentation.view_models.CardAdditionViewModel
 
 class CardAdditionFragment : Fragment() {
 

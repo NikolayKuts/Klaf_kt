@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".presentation.fragments.DeckListFragment">
+    tools:context=".presentation.deck_list.DeckListFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/deck_recycler_view"

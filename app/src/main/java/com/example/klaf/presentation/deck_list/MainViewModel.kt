@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.view_models
+package com.example.klaf.presentation.deck_list
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel

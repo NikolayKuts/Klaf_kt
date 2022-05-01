@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.fragments
+package com.example.klaf.presentation.card_edinting
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -19,8 +19,6 @@ import com.example.klaf.domain.pojo.Card
 import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.domain.update
 import com.example.klaf.presentation.adapters.LetterBarAdapter
-import com.example.klaf.presentation.view_model_factories.CardEditingViewModelFactory
-import com.example.klaf.presentation.view_models.CardEditingViewModel
 
 class CardEditingFragment : Fragment() {
 

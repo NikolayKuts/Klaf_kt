@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.fragments
+package com.example.klaf.presentation.deck_list
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,7 +10,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
 import com.example.klaf.databinding.DialogDeckRemovingBinding
-import com.example.klaf.presentation.view_models.MainViewModel
 
 class DeckRemovingDialogFragment : DialogFragment() {
 

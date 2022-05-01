@@ -6,7 +6,7 @@
     android:layout_gravity="center"
     android:background="#D3CACA"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".presentation.fragments.DeckCreationDialogFragment">
+    tools:context=".presentation.deck_list.DeckCreationDialogFragment">
 
     <EditText
         android:id="@+id/edit_text_deck_name"

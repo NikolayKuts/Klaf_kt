@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.fragments
+package com.example.klaf.presentation.card_removing_dialog
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,8 +10,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
 import com.example.klaf.databinding.DialogCardRemovingBinding
-import com.example.klaf.presentation.view_model_factories.RepetitionViewModelFactory
-import com.example.klaf.presentation.view_models.RepetitionViewModel
+import com.example.klaf.presentation.repeat_deck.RepetitionViewModelFactory
+import com.example.klaf.presentation.repeat_deck.RepetitionViewModel
 
 class CardRemovingDialogFragment : DialogFragment() {
 
