@@ -2,10 +2,11 @@ package com.example.klaf.data.repositories
 
 import androidx.lifecycle.LiveData
 import com.example.klaf.domain.pojo.Deck
+import kotlinx.coroutines.flow.Flow
 
 interface DeckListRepository {
 
-    fun getDeckSource(): LiveData<List<Deck>>
+    fun getDeckSource(): Flow<List<Deck>>
 
     suspend fun insertDeck(deck: Deck)
 

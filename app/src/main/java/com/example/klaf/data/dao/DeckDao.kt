@@ -4,12 +4,13 @@ import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.example.klaf.domain.pojo.Deck
 import com.example.klaf.domain.pojo.DECK_TABLE_NAME
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DeckDao {
 
     @Query("SELECT * FROM $DECK_TABLE_NAME")
-    fun getAllDecks(): LiveData<List<Deck>>
+    fun getAllDecks(): Flow<List<Deck>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertDeck(deck: Deck)

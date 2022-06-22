@@ -24,10 +24,10 @@ import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.pojo.Card
 import com.example.klaf.domain.pojo.Deck
-import com.example.klaf.domain.showToast
 import com.example.klaf.domain.update
 import com.example.klaf.presentation.adapters.IpaPromptAdapter
 import com.example.klaf.presentation.auxiliary.RepeatTimer
+import com.example.klaf.presentation.common.showToast
 import java.util.*
 
 class RepeatFragment : Fragment() {
@@ -183,7 +183,7 @@ class RepeatFragment : Fragment() {
 
     private fun onClickCardEditingButton() {
         if (cards.isEmpty()) {
-            getString(R.string.there_is_nothing_to_change).showToast(requireContext())
+            requireContext().showToast(message = getString(R.string.there_is_nothing_to_change))
         } else {
             navigateToCardEditingFragment()
         }
@@ -191,7 +191,7 @@ class RepeatFragment : Fragment() {
 
     private fun onClickCardRemovingButton() {
         if (cards.isEmpty()) {
-            getString(R.string.there_are_no_cards_to_remove).showToast(requireContext())
+            requireContext().showToast(message = getString(R.string.there_are_no_cards_to_remove))
         } else {
             navigateToCArdRemovingDialogFragment()
         }
@@ -379,7 +379,7 @@ class RepeatFragment : Fragment() {
 
                     repeatDeck?.let { repeatDeck ->
                         if (
-                            updatedDeck.scheduledDate > DateAssistant().getCurrentDateAsLong()
+                            updatedDeck.scheduledDate > DateAssistant.getCurrentDateAsLong()
                             && repeatDeck.repeatQuantity > 5
                             && repeatDeck.repeatQuantity % 2 == 0
                         ) {
@@ -397,7 +397,7 @@ class RepeatFragment : Fragment() {
 
     private fun getUpdatedDesk(): Deck? {
         return repeatDeck?.let { repeatDeck ->
-            val dateAssistant = DateAssistant()
+            val dateAssistant = DateAssistant
 
             val updatedLastRepetitionDate: Long
             val currentRepetitionDuration: Long

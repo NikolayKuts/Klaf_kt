@@ -17,7 +17,9 @@ class DeckRemovingDialogFragment : DialogFragment() {
     private val binding get() = _binding!!
 
     private val args by navArgs<DeckRemovingDialogFragmentArgs>()
-    private val viewModel by activityViewModels<MainViewModel>()
+    private val navController by lazy { findNavController() }
+
+    private val viewModel by activityViewModels<DeckListViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,17 +48,12 @@ class DeckRemovingDialogFragment : DialogFragment() {
     }
 
     private fun setListeners() {
-        binding.buttonCancelDeckRemoving.setOnClickListener { navigateToDecListFragment() }
-
+        binding.buttonCancelDeckRemoving.setOnClickListener { navController.popBackStack() }
         binding.buttonConfirmDeckRemoving.setOnClickListener { onConfirmDeckRemoving() }
     }
 
-    private fun navigateToDecListFragment() {
-        findNavController().navigate(R.id.action_deckRemovingDialogFragment_to_deckListFragment)
-    }
-
     private fun onConfirmDeckRemoving() {
-        viewModel.onRemoveDeck(args.deckId)
-        navigateToDecListFragment()
+        viewModel.removeDeck(args.deckId)
+        navController.popBackStack()
     }
 }

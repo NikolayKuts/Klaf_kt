@@ -5,28 +5,28 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.klaf.R
 import com.example.klaf.databinding.FragmentDeckListBinding
 import com.example.klaf.domain.pojo.Deck
-import com.example.klaf.domain.update
-import com.example.klaf.presentation.adapters.DeckAdapter
+import com.example.klaf.presentation.common.collectWhenStarted
+import com.example.klaf.presentation.common.showToast
 
 class DeckListFragment : Fragment() {
 
     private var _binding: FragmentDeckListBinding? = null
     private val binding get() = _binding!!
 
-    private val decks: MutableList<Deck> = mutableListOf()
-    private val viewModel by activityViewModels<MainViewModel>()
+    private val viewModel by activityViewModels<DeckListViewModel>()
+
     private val deckAdapter = DeckAdapter(
-        onClick = ::onItemClick,
-        onPopupMenuClick = ::onPopupMenuClick
+        onClick = ::navigateToRepeatFragment,
+        onItemMenuClick = ::showDeckPopupMenu
     )
 
     override fun onCreateView(
@@ -42,7 +42,7 @@ class DeckListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         initDeckRecyclerView()
-        setDeckObserver()
+        subscribeObservers()
         setOnCreateDeckClickListener()
     }
 
@@ -59,11 +59,21 @@ class DeckListFragment : Fragment() {
         }
     }
 
-    private fun setDeckObserver() {
-        viewModel.deckSource.observe(viewLifecycleOwner) { receivedDecks ->
+    private fun subscribeObservers() {
+        subscribeDeckObserver()
+        subscribeEventMessageObserver()
+    }
+
+    private fun subscribeDeckObserver() {
+        viewModel.deckSource.collectWhenStarted(lifecycleScope) { decks ->
             // TODO: 12/29/2021 implement toast showing on deleting and creating deck
-            decks.update(receivedDecks)
             deckAdapter.updateData(newDecks = decks)
+        }
+    }
+
+    private fun subscribeEventMessageObserver() {
+        viewModel.eventMessage.collectWhenStarted(lifecycleScope) { eventMessage ->
+            requireContext().showToast(messageId = eventMessage.resId)
         }
     }
 
@@ -75,14 +85,10 @@ class DeckListFragment : Fragment() {
         }
     }
 
-    private fun onItemClick(deck: Deck) {
+    private fun navigateToRepeatFragment(deck: Deck) {
         DeckListFragmentDirections.actionDeckListFragmentToRepeatFragment(
             deckId = deck.id
         ).also { findNavController().navigate(it) }
-    }
-
-    private fun onPopupMenuClick(view: View, deck: Deck) {
-        showDeckPopupMenu(view, deck)
     }
 
     private fun showDeckPopupMenu(view: View, deck: Deck) {
@@ -94,24 +100,22 @@ class DeckListFragment : Fragment() {
                 val navController = findNavController()
 
                 when (item.itemId) {
-                    R.id.item_deck_deleting -> {
+                    R.id.item_deleting_deck -> {
                         navigateToDeckRemovingDialogFragment(deck, navController)
-                        true
                     }
-                    R.id.item_deck_renaming -> {
+                    R.id.item_renaming_deck -> {
                         navigateToDeckRenamingDialogFragment(deck, navController)
-                        true
                     }
-                    R.id.item_card_showing -> {
-                        onIsDeckNotEmptyCheck(deck, navController)
-                        true
+                    R.id.item_browsing_deck_cards -> {
+                        performAccordingToDeckListState(deck, navController)
                     }
                     R.id.item_card_addition -> {
                         navigateToCardAdditionFragment(deck, navController)
-                        true
                     }
-                    else -> false
+                    else -> return@setOnMenuItemClickListener false
                 }
+
+                true
             }
         }
     }
@@ -124,18 +128,16 @@ class DeckListFragment : Fragment() {
     }
 
     private fun navigateToDeckRenamingDialogFragment(deck: Deck, navController: NavController) {
-        DeckListFragmentDirections
-            .actionDeckListFragmentToDeckRenamingDialogFragment(deckId = deck.id)
-            .also { navController.navigate(it) }
+        DeckListFragmentDirections.actionDeckListFragmentToDeckRenamingDialogFragment(
+            deckId = deck.id
+        ).also { navController.navigate(it) }
     }
 
-    private fun onIsDeckNotEmptyCheck(deck: Deck, navController: NavController) {
-        viewModel.isDeckNotEmpty(deckId = deck.id) { isNotEmpty ->
-            if (isNotEmpty) {
-                navigateToCardViewerFragment(deck, navController)
-            } else {
-                showToast(getString(R.string.there_are_no_card_in_deck))
-            }
+    private fun performAccordingToDeckListState(deck: Deck, navController: NavController) {
+        if (deck.cardQuantity > 0) {
+            navigateToCardViewerFragment(deck, navController)
+        } else {
+            requireContext().showToast(message = getString(R.string.there_are_no_card_in_deck))
         }
     }
 
@@ -143,14 +145,6 @@ class DeckListFragment : Fragment() {
         DeckListFragmentDirections.actionDeckListFragmentToCardAdditionFragment(
             deckId = deck.id
         ).also { navController.navigate(it) }
-    }
-
-    private fun showToast(message: String) {
-        Toast.makeText(
-            context,
-            message,
-            Toast.LENGTH_SHORT
-        ).show()
     }
 
     private fun navigateToCardViewerFragment(deck: Deck, navController: NavController) {

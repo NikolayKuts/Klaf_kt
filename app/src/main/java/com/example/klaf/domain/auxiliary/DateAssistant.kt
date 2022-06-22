@@ -13,7 +13,7 @@ private const val DECREASE_FACTOR = 0.1
 
 private const val DATE_FORMAT_PATTERN = "dd-MM-yy|HH:mm"
 
-class DateAssistant {
+object DateAssistant {
 
     fun getFormattedCurrentTime(): String {
         val date = Calendar.getInstance().time

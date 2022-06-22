@@ -9,7 +9,7 @@ const val DECK_TABLE_NAME = "decks"
 data class Deck(
     val name: String,
     val creationDate: Long,
-    @PrimaryKey(autoGenerate = true) var id: Int = 0,
+    @PrimaryKey(autoGenerate = true) var id: Int = 0, // TODO: replace to val
     val cardQuantity: Int = 0,
     val repeatDay: Int = 0,
     val scheduledDate: Long = 0,

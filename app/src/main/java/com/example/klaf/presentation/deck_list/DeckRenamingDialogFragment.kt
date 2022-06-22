@@ -6,11 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
 import com.example.klaf.databinding.DialogDeckRenamingBinding
 import com.example.klaf.domain.pojo.Deck
-import com.example.klaf.domain.showToast
+import com.example.klaf.presentation.common.showToast
 
 class DeckRenamingDialogFragment : DialogFragment() {
 
@@ -18,9 +19,10 @@ class DeckRenamingDialogFragment : DialogFragment() {
     private val binding get() = _binding!!
 
     private val args by navArgs<DeckRenamingDialogFragmentArgs>()
-    private val viewModel by activityViewModels<MainViewModel>()
+    private val navController by lazy { findNavController() }
 
-    private var deck: Deck? = null
+    private val viewModel by activityViewModels<DeckListViewModel>()
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,16 +36,13 @@ class DeckRenamingDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
-
-        viewModel.onGetDeckById(args.deckId) { receivedDeck: Deck? ->
-            deck = receivedDeck
+        viewModel.getDeckById(deckId = args.deckId).let { deck: Deck? ->
             binding.editTextDeckRenamingField.setText(
-                receivedDeck?.name ?: getString(R.string.deck_is_not_found)
+                deck?.name ?: getString(R.string.deck_is_not_found)
             )
-        }
 
-        setListeners()
+            setListeners(deck = deck)
+        }
     }
 
     override fun onDestroy() {
@@ -51,26 +50,31 @@ class DeckRenamingDialogFragment : DialogFragment() {
         super.onDestroy()
     }
 
-    private fun setListeners() {
-        binding.buttonCancelDeckRenaming.setOnClickListener { dismiss() }
-        binding.buttonConfirmDeckRenaming.setOnClickListener { onConfirmDeckRenaming() }
+    private fun setListeners(deck: Deck?) {
+        binding.buttonCancelDeckRenaming.setOnClickListener { navController.popBackStack() }
+        binding.buttonConfirmDeckRenaming.setOnClickListener { onConfirmDeckRenaming(deck = deck) }
     }
 
-    private fun onConfirmDeckRenaming() {
-        deck?.let { notNullableDeck ->
-            when (val newName = binding.editTextDeckRenamingField.text.toString().trim()) {
+    private fun onConfirmDeckRenaming(deck: Deck?) {
+        val newName = binding.editTextDeckRenamingField.text.toString().trim()
 
-                "" -> getString(R.string.type_new_deck_name).showToast(requireContext())
+        viewModel.renameDeck(deck = deck, newName = newName)
+        navController.popBackStack()
 
-                notNullableDeck.name -> {
-                    getString(R.string.deck_name_is_not_changed).showToast(requireContext())
-                }
-
-                else -> {
-                    viewModel.addNewDeck(notNullableDeck.copy(name = newName))
-                    dismiss()
-                }
-            }
-        }
+//        deck?.let { notNullableDeck ->
+//            when (val newName = binding.editTextDeckRenamingField.text.toString().trim()) {
+//
+//                "" -> requireContext().showToast(message = getString(R.string.type_new_deck_name))
+//
+//                notNullableDeck.name -> {
+//                    requireContext().showToast(message = getString(R.string.deck_name_is_not_changed))
+//                }
+//
+//                else -> {
+//                    viewModel.renameDeck(deck = deck, newName = newName)
+//                    navController.popBackStack()
+//                }
+//            }
+//        }
     }
 }

@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.adapters
+package com.example.klaf.presentation.deck_list
 
 import androidx.recyclerview.widget.DiffUtil
 import com.example.klaf.domain.pojo.Deck
@@ -12,7 +12,7 @@ class DeckDiffUtilCallback(
     override fun getNewListSize(): Int = newList.size
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return oldList[oldItemPosition] == newList[newItemPosition]
+        return oldList[oldItemPosition].id == newList[newItemPosition].id
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {

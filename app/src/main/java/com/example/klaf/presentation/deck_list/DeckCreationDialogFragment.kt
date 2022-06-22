@@ -7,18 +7,16 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.example.klaf.R
 import com.example.klaf.databinding.DialogDeckCreationBinding
-import com.example.klaf.domain.auxiliary.DateAssistant
-import com.example.klaf.domain.pojo.Deck
-import com.example.klaf.domain.showToast
 
 class DeckCreationDialogFragment : DialogFragment() {
 
     private var _binding: DialogDeckCreationBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel by activityViewModels<MainViewModel>()
+    private val viewModel by activityViewModels<DeckListViewModel>()
+
+    private val namController by lazy { findNavController() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,38 +39,14 @@ class DeckCreationDialogFragment : DialogFragment() {
     }
 
     private fun setListeners() {
-        binding.buttonCancelDeckCreation.setOnClickListener { navigateToDeckListFragment() }
-        binding.buttonConfirmDeckCreation.setOnClickListener { onConfirmDeckCreation() }
+        binding.buttonCancelDeckCreation.setOnClickListener { namController.popBackStack() }
+        binding.buttonConfirmDeckCreation.setOnClickListener { confirmDeckCreation() }
     }
 
-    private fun navigateToDeckListFragment() {
-        findNavController().navigate(R.id.action_deckCreationDialogFragment_to_deckListFragment)
-    }
+    private fun confirmDeckCreation() {
+        val deckName = binding.editTextDeckName.text.toString().trim()
 
-    private fun onConfirmDeckCreation() {
-        viewModel.deckSource.observe(viewLifecycleOwner) { receivedDecks ->
-            val deckName = binding.editTextDeckName.text.toString().trim()
-            val deckNames = receivedDecks.map { deck -> deck.name }
-
-            when {
-                deckNames.contains(deckName) -> {
-                    getString(R.string.such_name_is_already_exist).showToast(requireContext())
-                }
-                else -> onAddNewDeck(deckName)
-            }
-        }
-    }
-
-    private fun onAddNewDeck(deckName: String) {
-        addNewDeck(deckName)
-        navigateToDeckListFragment()
-        getString(R.string.deck_has_been_created).showToast(requireContext())
-        // TODO: 12/29/2021 to translate toast shoeing to DeckListFragment
-    }
-
-    private fun addNewDeck(deckName: String) {
-        viewModel.addNewDeck(
-            Deck(name = deckName, creationDate = DateAssistant().getCurrentDateAsLong())
-        )
+        viewModel.createNewDeck(deckName = deckName)
+        namController.popBackStack()
     }
 }
