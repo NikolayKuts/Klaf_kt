@@ -17,7 +17,6 @@ import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.pojo.Card
 import com.example.klaf.domain.pojo.Deck
-import com.example.klaf.domain.update
 import com.example.klaf.presentation.adapters.LetterBarAdapter
 
 class CardEditingFragment : Fragment() {
@@ -28,9 +27,8 @@ class CardEditingFragment : Fragment() {
     private val args by navArgs<CardEditingFragmentArgs>()
     private val viewModel: CardEditingViewModel by lazy { getCardEditingViewModel() }
     private var cardForChanging: Card? = null
-    private var letterInfos: MutableList<LetterInfo> = mutableListOf()
 
-    private val letterBarAdapter = LetterBarAdapter(::onItemClick)
+    private val letterBarAdapter = LetterBarAdapter(onItemClickListener = ::setIpaText)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,9 +65,9 @@ class CardEditingFragment : Fragment() {
         viewModel.onGetCardById(args.cardId) { card ->
             cardForChanging = card
 
-            if (card != null) {
+            card?.let {
                 setContentToEditTexts(card)
-                letterInfos.update(IpaProcessor().getLetterInfos(card.ipa))
+                letterBarAdapter.setData(letters = IpaProcessor().getLetterInfos(card.ipa))
             }
         }
     }
@@ -92,14 +90,14 @@ class CardEditingFragment : Fragment() {
             nativeWord = nativeWordEditText.text.trim().toString(),
             foreignWord = foreignWordEditText.text.trim().toString(),
             ipa = IpaProcessor().getEncodedIpa(
-                letterInfos = letterInfos,
+                letterInfos = letterBarAdapter.letterInfos,
                 ipaTemplate = ipaEditText.text.trim().toString()
             ),
             id = args.cardId
         )
     }
 
-    private fun onItemClick(uncompletedIpaCouples: String?) {
+    private fun setIpaText(uncompletedIpaCouples: String?) {
         binding.ipaEditText.setText(uncompletedIpaCouples)
     }
 

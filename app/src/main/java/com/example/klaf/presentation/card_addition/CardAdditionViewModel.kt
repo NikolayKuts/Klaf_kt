@@ -14,7 +14,7 @@ class CardAdditionViewModel(context: Context, deckId: Int) : ViewModel() {
 
     val deck: LiveData<Deck?> = repository.getObservableDeckById(deckId = deckId)
 
-    fun onAddNewCard(card: Card) {
-        viewModelScope.launch { repository.onInsertCard(card) }
+    fun addNewCard(card: Card) {
+        viewModelScope.launch { repository.insertCard(card) }
     }
 }

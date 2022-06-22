@@ -24,12 +24,9 @@ class CardAdditionFragment : Fragment() {
 
     private val args by navArgs<CardAdditionFragmentArgs>()
     private val viewModel: CardAdditionViewModel by lazy { getCardAdditionViewModel() }
-    private val letterInfos: MutableList<LetterInfo> = ArrayList()
-    private val letterBarAdapter: LetterBarAdapter by lazy {
-        LetterBarAdapter { uncompletedIpaCouples ->
-            binding.ipaEditText.setText(uncompletedIpaCouples)
-        }
-    }
+    private val letterBarAdapter: LetterBarAdapter =
+        LetterBarAdapter(onItemClickListener = ::setIpaText)
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,6 +49,10 @@ class CardAdditionFragment : Fragment() {
         super.onDestroy()
         binding.letterBarRecyclerView.adapter = null
         _binding = null
+    }
+
+    private fun setIpaText(uncompletedIpaCouples: String?) {
+        binding.ipaEditText.setText(uncompletedIpaCouples)
     }
 
     private fun initLetterBarRecyclerView() {
@@ -87,7 +88,7 @@ class CardAdditionFragment : Fragment() {
         when (val newCard = getCardForAddition()) {
             null -> showToast(message = getString(R.string.native_and_foreign_words_must_be_filled))
             else -> {
-                viewModel.onAddNewCard(newCard)
+                viewModel.addNewCard(newCard)
                 clearEditTextFields()
                 showToast(message = getString(R.string.card_has_been_added))
             }
@@ -115,7 +116,7 @@ class CardAdditionFragment : Fragment() {
                         nativeWord = nativeWord,
                         foreignWord = foreignWord,
                         ipa = IpaProcessor().getEncodedIpa(
-                            letterInfos = letterInfos,
+                            letterInfos = letterBarAdapter.letterInfos,
                             ipaTemplate = ipaEditText.text.toString()
                         )
                     )
