@@ -19,7 +19,7 @@ class CardAdditionRepositoryRoomImp(context: Context) : CardAdditionRepository {
         }
     }
 
-    override suspend fun onInsertCard(card: Card) {
+    override suspend fun insertCard(card: Card) {
         withContext(Dispatchers.IO) {
             database.cardDao().insetCard(card)
             val cardQuantity = database.cardDao().getCardQuantityAsInt(deckId = card.deckId)

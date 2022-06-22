@@ -13,9 +13,10 @@ class LetterBarAdapter(
     private val onItemClickListener: (uncompletedIpa: String?) -> Unit,
 ) : RecyclerView.Adapter<LetterBarAdapter.LetterInfoViewHolder>() {
 
-    private val letterInfos: MutableList<LetterInfo> = mutableListOf()
+    private val _letterInfos: MutableList<LetterInfo> = mutableListOf()
+    val letterInfos: List<LetterInfo> get() = _letterInfos
 
-    private val updateIpa: (uncompletedIpa: String?) -> Unit = onItemClickListener
+    private val onUpdateIpa: (uncompletedIpa: String?) -> Unit = onItemClickListener
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LetterInfoViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -24,7 +25,7 @@ class LetterBarAdapter(
     }
 
     override fun onBindViewHolder(holder: LetterInfoViewHolder, position: Int) {
-        val letterInfo = letterInfos[position]
+        val letterInfo = _letterInfos[position]
         with(holder.binding) {
             letterTextView.text = letterInfo.letter
 
@@ -59,17 +60,17 @@ class LetterBarAdapter(
                     letterInfo.isChecked = !letterInfo.isChecked
                     notifyItemChanged(position)
                 }
-                onItemClickListener(IpaProcessor().getUncompletedIpa(letterInfos))
+                onItemClickListener(IpaProcessor().getUncompletedIpa(_letterInfos))
             }
         }
     }
 
-    override fun getItemCount(): Int = letterInfos.size
+    override fun getItemCount(): Int = _letterInfos.size
 
     fun setData(letters: List<LetterInfo>) {
-        this.letterInfos.clear()
-        this.letterInfos.addAll(letters)
-        updateIpa(IpaProcessor().getUncompletedIpa(letterInfos))
+        this._letterInfos.clear()
+        this._letterInfos.addAll(letters)
+        onUpdateIpa(IpaProcessor().getUncompletedIpa(_letterInfos))
         notifyDataSetChanged()
     }
 

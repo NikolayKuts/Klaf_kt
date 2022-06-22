@@ -8,7 +8,7 @@ interface CardAdditionRepository {
 
     suspend fun getCardQuantityByDeckId(deckId: Int): LiveData<Int>
 
-    suspend fun onInsertCard(card: Card)
+    suspend fun insertCard(card: Card)
 
     fun getObservableDeckById(deckId: Int): LiveData<Deck?>
 }
