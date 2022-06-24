@@ -4,8 +4,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.klaf.databinding.CardListItemBinding
-import com.example.klaf.domain.pojo.Card
-import com.example.klaf.domain.update
+import com.example.klaf.domain.common.update
+import com.example.klaf.domain.entities.Card
 
 class CardAdapter : RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
 
@@ -37,5 +37,5 @@ class CardAdapter : RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
         // TODO: 12/30/2021 implement DiffUtilCallback
     }
 
-    class CardViewHolder(val binding: CardListItemBinding): RecyclerView.ViewHolder(binding.root)
+    class CardViewHolder(val binding: CardListItemBinding) : RecyclerView.ViewHolder(binding.root)
 }

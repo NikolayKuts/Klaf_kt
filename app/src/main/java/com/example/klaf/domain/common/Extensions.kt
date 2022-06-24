@@ -5,6 +5,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
+fun <T> MutableList<T>.update(newData: List<T>) {
+    this.clear()
+    this.addAll(newData)
+}
+
 fun CoroutineScope.launchWithExceptionHandler(
     onException: (CoroutineContext, Throwable) -> Unit,
     onCompletion: () -> Unit = {},

@@ -1,8 +1,7 @@
 package com.example.klaf.domain.auxiliary
 
-import com.example.klaf.domain.enums.DayFactor
+import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DayFactor.*
-import com.example.klaf.domain.pojo.Deck
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
