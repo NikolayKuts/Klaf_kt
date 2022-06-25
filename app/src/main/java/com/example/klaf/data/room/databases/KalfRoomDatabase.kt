@@ -18,12 +18,11 @@ abstract class KlafRoomDatabase : RoomDatabase() {
         private val LOCK = Any()
 
         fun getInstance(context: Context): KlafRoomDatabase {
-            return database ?: synchronized(LOCK) { // TODO refactor
-                val instance = Room.databaseBuilder(context, KlafRoomDatabase::class.java, DB_NAME)
+            return synchronized(LOCK) {
+                database ?: Room.databaseBuilder(context, KlafRoomDatabase::class.java, DB_NAME)
                     .fallbackToDestructiveMigration()
                     .build()
-                database = instance
-                instance
+                    .also { database = it }
             }
         }
     }

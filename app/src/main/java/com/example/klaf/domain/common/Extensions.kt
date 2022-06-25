@@ -2,6 +2,8 @@ package com.example.klaf.domain.common
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
@@ -25,5 +27,10 @@ fun CoroutineScope.launchWithExceptionHandler(
                 onCompletion()
             }
         }
+}
 
+fun <T, R> Flow<List<T>>.simplifiedMap(transform: suspend (T) -> R): Flow<List<R>> {
+    return this.map { list: List<T> ->
+        list.map { value: T -> transform(value) }
+    }
 }
