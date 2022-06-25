@@ -1,6 +1,9 @@
 package com.example.klaf.data.room
 
+import androidx.room.PrimaryKey
+import com.example.klaf.data.room.entities.RoomCard
 import com.example.klaf.data.room.entities.RoomDeck
+import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
 
 fun RoomDeck.mapToDeck(): Deck = Deck(
@@ -27,4 +30,20 @@ fun Deck.mapToRoomEntity(): RoomDeck = RoomDeck(
     repeatQuantity = repeatQuantity,
     lastRepeatDuration = lastRepeatDuration,
     isLastRepetitionSucceeded = isLastRepetitionSucceeded
+)
+
+fun RoomCard.mapToCard(): Card = Card(
+    deckId = deckId,
+    nativeWord = nativeWord,
+    foreignWord = foreignWord,
+    ipa = ipa,
+    id = id
+)
+
+fun Card.mapToCard(): RoomCard = RoomCard(
+    deckId = deckId,
+    nativeWord = nativeWord,
+    foreignWord = foreignWord,
+    ipa = ipa,
+    id = id
 )

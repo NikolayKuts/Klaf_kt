@@ -7,12 +7,13 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.klaf.data.room.entities.CARD_TABLE_NAME
 import com.example.klaf.data.room.entities.RoomCard
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CardDao {
 
     @Query("SELECT * FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
-    fun getAllCardByDeckId(deckId: Int): LiveData<List<RoomCard>>
+    fun getCardsByDeckId(deckId: Int): Flow<List<RoomCard>>
 
     @Query("SELECT * FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
     fun getCardListByDeckId(deckId: Int): List<RoomCard>

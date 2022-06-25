@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
 import com.example.klaf.databinding.DialogCardRemovingBinding
-import com.example.klaf.presentation.repeatDeck.RepetitionViewModelFactory
 import com.example.klaf.presentation.repeatDeck.RepetitionViewModel
 
 class CardRemovingDialogFragment : DialogFragment() {
@@ -44,9 +43,9 @@ class CardRemovingDialogFragment : DialogFragment() {
     private fun getRepetitionViewModel(): RepetitionViewModel {
         return ViewModelProvider(
             owner = this,
-            factory = RepetitionViewModelFactory(
-                context = requireActivity().applicationContext,
-                deckId = args.deckId)
+//            factory = RepetitionViewModelFactory(
+//                context = requireActivity().applicationContext,
+//                deckId = args.deckId)
         )[RepetitionViewModel::class.java]
     }
 
@@ -56,7 +55,7 @@ class CardRemovingDialogFragment : DialogFragment() {
     }
 
     private fun onConfirmCardRemoving() {
-        viewModel.removeCard(cardId = args.cardId)
+        viewModel.deleteCard(cardId = args.cardId)
         dismiss()
 
         Toast.makeText(
