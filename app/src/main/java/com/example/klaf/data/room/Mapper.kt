@@ -32,7 +32,7 @@ fun Deck.mapToRoomEntity(): RoomDeck = RoomDeck(
     isLastRepetitionSucceeded = isLastRepetitionSucceeded
 )
 
-fun RoomCard.mapToRoomEntity(): Card = Card(
+fun RoomCard.mapToCard(): Card = Card(
     deckId = deckId,
     nativeWord = nativeWord,
     foreignWord = foreignWord,

@@ -4,29 +4,43 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.klaf.R
 import com.example.klaf.databinding.FragmentCardEditingBinding
-import com.example.klaf.domain.ipa.IpaProcessor
-import com.example.klaf.domain.ipa.LetterInfo
+import com.example.klaf.domain.common.generateLetterInfos
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
+import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.presentation.adapters.LetterBarAdapter
+import com.example.klaf.presentation.common.collectWhenStarted
+import com.example.klaf.presentation.common.showToast
+import com.example.klaf.presentation.common.textAsString
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class CardEditingFragment : Fragment() {
 
     private var _binding: FragmentCardEditingBinding? = null
     private val binding get() = _binding!!
 
     private val args by navArgs<CardEditingFragmentArgs>()
-    private val viewModel: CardEditingViewModel by lazy { getCardEditingViewModel() }
-    private var cardForChanging: Card? = null
+
+    @Inject
+    lateinit var cardEditingAssistedViewModelFactory: CardEditingAssistedViewModelFactory
+    private val viewModel: CardEditingViewModel by viewModels {
+        CardEditingViewModelFactory(
+            assistedFactory = cardEditingAssistedViewModelFactory,
+            deckId = args.deckId,
+            cardId = args.cardId
+        )
+    }
 
     private val letterBarAdapter = LetterBarAdapter(onUpdate = ::setIpaText)
 
@@ -43,16 +57,8 @@ class CardEditingFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         initLetterBarRecyclerView()
-        onGetDeck()
-        onGetCardById()
+        setObserves()
         setListeners()
-    }
-
-    private fun onGetDeck() {
-//        viewModel.deck.observe(viewLifecycleOwner) { deck: Deck? ->
-//            binding.cardEditingDeckNameTextView.text = deck?.name
-//                ?: getString(R.string.deck_is_not_found)
-//        }
     }
 
     override fun onDestroy() {
@@ -61,11 +67,30 @@ class CardEditingFragment : Fragment() {
         super.onDestroy()
     }
 
-    private fun onGetCardById() {
-        viewModel.onGetCardById(args.cardId) { card ->
-            cardForChanging = card
+    private fun setObserves() {
+        setEventMessageObserver()
+        setDeckObserver()
+        setCardObserver()
+    }
 
-            card?.let {
+    private fun setEventMessageObserver() {
+        viewModel.eventMessage.collectWhenStarted(lifecycleScope) { eventMessage ->
+            requireContext().showToast(messageId = eventMessage.resId)
+        }
+    }
+
+    private fun setDeckObserver() {
+        viewModel.deck.collectWhenStarted(lifecycleScope) { deck: Deck? ->
+            binding.cardEditingDeckNameTextView.text = deck?.name
+                ?: getString(R.string.deck_is_not_found)
+        }
+    }
+
+    private fun setCardObserver() {
+        viewModel.card.collectWhenStarted(lifecycleScope) { card: Card? ->
+            if (card == null) {
+                requireContext().showToast(messageId = R.string.card_is_not_found)
+            } else {
                 setContentToEditTexts(card)
                 letterBarAdapter.setData(letters = IpaProcessor.getLetterInfos(card.ipa))
             }
@@ -84,19 +109,6 @@ class CardEditingFragment : Fragment() {
         }
     }
 
-    private fun getChangedCard(): Card = binding.run {
-        Card(
-            deckId = args.deckId,
-            nativeWord = nativeWordEditText.text.trim().toString(),
-            foreignWord = foreignWordEditText.text.trim().toString(),
-            ipa = IpaProcessor.getEncodedIpa(
-                letterInfos = letterBarAdapter.letterInfos,
-                ipaTemplate = ipaEditText.text.trim().toString()
-            ),
-            id = args.cardId
-        )
-    }
-
     private fun setIpaText(uncompletedIpaCouples: String?) {
         binding.ipaEditText.setText(uncompletedIpaCouples)
     }
@@ -111,63 +123,29 @@ class CardEditingFragment : Fragment() {
     }
 
     private fun setListeners() {
+        binding.applyCardChangesButton.setOnClickListener { confirmCardChange() }
         binding.foreignWordEditText.doOnTextChanged { text, _, _, _ ->
             setLetterBarAdapterData(text)
         }
-
-        binding.applyCardChangesButton.setOnClickListener { onConfirmCardChange() }
     }
 
-    private fun showToast(message: String) {
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-    }
-
-    private fun getCardEditingViewModel(): CardEditingViewModel {
-        return ViewModelProvider(
-            owner = this,
-            factory = CardEditingViewModelFactory(
-                context = requireActivity().applicationContext,
+    private fun confirmCardChange() {
+        with(binding) {
+            viewModel.updateCard(
                 deckId = args.deckId,
-                cardId = args.cardId
+                nativeWord = nativeWordEditText.textAsString.trim(),
+                foreignWord = foreignWordEditText.textAsString.trim(),
+                ipa = IpaProcessor.getEncodedIpa(
+                    letterInfos = letterBarAdapter.letterInfos,
+                    ipaTemplate = ipaEditText.textAsString.trim()
+                ),
+                id = args.cardId,
+                onFinish = { findNavController().popBackStack() }
             )
-        )[CardEditingViewModel::class.java]
+        }
     }
 
     private fun setLetterBarAdapterData(text: CharSequence?) {
-        letterBarAdapter.setData(getLetterInfoList(fromText = text))
-    }
-
-    private fun getLetterInfoList(fromText: CharSequence?): List<LetterInfo> {
-        // TODO: 12/29/2021 there is duplicated implementation in CardAdditionFragment
-        return when (fromText) {
-            null -> emptyList()
-            else -> {
-                fromText.toString()
-                    .trim()
-                    .split("")
-                    .drop(1)
-                    .dropLast(1)
-                    .map { letter -> LetterInfo(letter = letter, isChecked = false) }
-            }
-        }
-    }
-
-    private fun onConfirmCardChange() {
-        cardForChanging?.let {
-            val changedCard = getChangedCard()
-
-            when {
-                changedCard.nativeWord.isEmpty() || changedCard.foreignWord.isEmpty() -> {
-                    showToast(getString(R.string.native_and_foreign_words_must_be_filled))
-                }
-                changedCard == cardForChanging -> {
-                    showToast(getString(R.string.card_has_not_been_changed))
-                }
-                else -> {
-                    viewModel.insertChangedCard(changedCard)
-                    findNavController().popBackStack()
-                }
-            }
-        }
+        letterBarAdapter.setData(text.generateLetterInfos())
     }
 }

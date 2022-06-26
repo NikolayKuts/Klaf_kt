@@ -117,6 +117,7 @@ object IpaProcessor {
 
 
     fun getDecodedIpa(encodedIpa: String): String {
+        // TODO("refactore - there is a problem")
         val result = StringBuilder()
         val ipa = StringBuilder(encodedIpa)
 

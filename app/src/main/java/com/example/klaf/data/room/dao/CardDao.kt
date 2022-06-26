@@ -19,7 +19,7 @@ interface CardDao {
     fun getCardListByDeckId(deckId: Int): List<RoomCard>
 
     @Query("SELECT * FROM $CARD_TABLE_NAME WHERE id = :cardId")
-    fun getCardById(cardId: Int): RoomCard
+    fun getObservableCardById(cardId: Int): Flow<RoomCard?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insetCard(card: RoomCard)
