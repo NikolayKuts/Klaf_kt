@@ -25,7 +25,9 @@ class CardAdditionViewModel @AssistedInject constructor(
     private val _eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
     val eventMessage = _eventMessage.asSharedFlow()
 
-    val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId).shareIn(
+    val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
+        .catch { _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck) }
+        .shareIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
         replay = 0
@@ -38,26 +40,31 @@ class CardAdditionViewModel @AssistedInject constructor(
         letterInfos: List<LetterInfo>,
         ipaTemplate: String
     ) {
-        val newCard = Card(
-            deckId = deckId,
-            nativeWord = nativeWord,
-            foreignWord = foreignWord,
-            ipa = IpaProcessor.getEncodedIpa(
-                letterInfos = letterInfos,
-                ipaTemplate = ipaTemplate
+        if (nativeWord.isEmpty() || foreignWord.isEmpty()) {
+            _eventMessage.tryEmit(
+                messageId = R.string.native_and_foreign_words_must_be_filled
             )
-        )
+        } else {
+            val newCard = Card(
+                deckId = deckId,
+                nativeWord = nativeWord,
+                foreignWord = foreignWord,
+                ipa = IpaProcessor.getEncodedIpa(
+                    letterInfos = letterInfos,
+                    ipaTemplate = ipaTemplate
+                )
+            )
 
-
-        viewModelScope.launchWithExceptionHandler(
-            onException = { _, _ ->
-                _eventMessage.tryEmit(messageId = R.string.exception_adding_card)
-            },
-            onCompletion = {
-                _eventMessage.tryEmit(messageId = R.string.card_has_been_added)
+            viewModelScope.launchWithExceptionHandler(
+                onException = { _, _ ->
+                    _eventMessage.tryEmit(messageId = R.string.exception_adding_card)
+                },
+                onCompletion = {
+                    _eventMessage.tryEmit(messageId = R.string.card_has_been_added)
+                }
+            ) {
+                addNewCardIntoDeck(card = newCard)
             }
-        ) {
-            addNewCardIntoDeck(card = newCard)
         }
     }
 }

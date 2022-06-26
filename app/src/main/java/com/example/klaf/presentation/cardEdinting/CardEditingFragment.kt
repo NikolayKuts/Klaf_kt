@@ -135,10 +135,8 @@ class CardEditingFragment : Fragment() {
                 deckId = args.deckId,
                 nativeWord = nativeWordEditText.textAsString.trim(),
                 foreignWord = foreignWordEditText.textAsString.trim(),
-                ipa = IpaProcessor.getEncodedIpa(
-                    letterInfos = letterBarAdapter.letterInfos,
-                    ipaTemplate = ipaEditText.textAsString.trim()
-                ),
+                letterInfos = letterBarAdapter.letterInfos,
+                ipaTemplate = ipaEditText.textAsString.trim(),
                 id = args.cardId,
                 onFinish = { findNavController().popBackStack() }
             )

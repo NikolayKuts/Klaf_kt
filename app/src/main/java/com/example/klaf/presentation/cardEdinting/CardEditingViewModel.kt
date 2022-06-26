@@ -6,10 +6,14 @@ import com.example.klaf.R
 import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
+import com.example.klaf.domain.ipa.IpaProcessor
+import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.useCases.FetchCardUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.domain.useCases.UpdateCardUseCase
+import com.example.klaf.presentation.cardAddition.LetterInfoViewHolder
 import com.example.klaf.presentation.common.EventMessage
+import com.example.klaf.presentation.common.textAsString
 import com.example.klaf.presentation.common.tryEmit
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -52,7 +56,8 @@ class CardEditingViewModel @AssistedInject constructor(
         deckId: Int,
         nativeWord: String,
         foreignWord: String,
-        ipa: String,
+        letterInfos: List<LetterInfo>,
+        ipaTemplate: String,
         id: Int,
         onFinish: () -> Unit
     ) {
@@ -60,7 +65,10 @@ class CardEditingViewModel @AssistedInject constructor(
             deckId = deckId,
             nativeWord = nativeWord,
             foreignWord = foreignWord,
-            ipa = ipa,
+            ipa = IpaProcessor.getEncodedIpa(
+                letterInfos = letterInfos,
+                ipaTemplate = ipaTemplate
+            ),
             id = id
         )
 

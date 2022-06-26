@@ -111,22 +111,13 @@ class CardAdditionFragment : Fragment() {
 
     private fun confirmCardAddition() {
         with(binding) {
-            val nativeWord = nativeWordEditText.textAsString.trim()
-            val foreignWord = foreignWordEditText.textAsString.trim()
-
-            if (nativeWord.isEmpty() && foreignWord.isEmpty()) {
-                requireContext().showToast(
-                    messageId = R.string.native_and_foreign_words_must_be_filled
-                )
-            } else {
-                viewModel.addNewCard(
-                    deckId = args.deckId,
-                    nativeWord = nativeWord,
-                    foreignWord = foreignWord,
-                    letterInfos = letterBarAdapter.letterInfos,
-                    ipaTemplate = ipaEditText.textAsString
-                )
-            }
+            viewModel.addNewCard(
+                deckId = args.deckId,
+                nativeWord = nativeWordEditText.textAsString.trim(),
+                foreignWord = foreignWordEditText.textAsString.trim(),
+                letterInfos = letterBarAdapter.letterInfos,
+                ipaTemplate = ipaEditText.textAsString
+            )
         }
     }
 
