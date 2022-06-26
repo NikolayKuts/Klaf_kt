@@ -11,7 +11,7 @@ class DeckViewHolder(
     private val onItemMenuClick: (View, Deck) -> Unit
 ) : RecyclerView.ViewHolder(binding.root) {
 
-    fun onBind(deckList: List<Deck>) {
+    fun bind(deckList: List<Deck>) {
         val deck = deckList[adapterPosition]
 
         binding.apply {

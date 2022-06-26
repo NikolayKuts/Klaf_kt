@@ -1,6 +1,7 @@
 package com.example.klaf.presentation.common
 
 import android.content.Context
+import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.lifecycle.LifecycleCoroutineScope
@@ -8,6 +9,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
+
+val EditText.textAsString: String get() = this.text.toString()
 
 fun Context.showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(this, message, duration).show()

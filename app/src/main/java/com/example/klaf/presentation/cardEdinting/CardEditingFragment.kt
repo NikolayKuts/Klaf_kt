@@ -28,7 +28,7 @@ class CardEditingFragment : Fragment() {
     private val viewModel: CardEditingViewModel by lazy { getCardEditingViewModel() }
     private var cardForChanging: Card? = null
 
-    private val letterBarAdapter = LetterBarAdapter(onItemClickListener = ::setIpaText)
+    private val letterBarAdapter = LetterBarAdapter(onUpdate = ::setIpaText)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,7 +67,7 @@ class CardEditingFragment : Fragment() {
 
             card?.let {
                 setContentToEditTexts(card)
-                letterBarAdapter.setData(letters = IpaProcessor().getLetterInfos(card.ipa))
+                letterBarAdapter.setData(letters = IpaProcessor.getLetterInfos(card.ipa))
             }
         }
     }
@@ -89,7 +89,7 @@ class CardEditingFragment : Fragment() {
             deckId = args.deckId,
             nativeWord = nativeWordEditText.text.trim().toString(),
             foreignWord = foreignWordEditText.text.trim().toString(),
-            ipa = IpaProcessor().getEncodedIpa(
+            ipa = IpaProcessor.getEncodedIpa(
                 letterInfos = letterBarAdapter.letterInfos,
                 ipaTemplate = ipaEditText.text.trim().toString()
             ),
@@ -106,7 +106,7 @@ class CardEditingFragment : Fragment() {
             cardEditingDeckNameTextView.text = args.deckName
             nativeWordEditText.setText(card.nativeWord)
             foreignWordEditText.setText(card.foreignWord)
-            ipaEditText.setText(IpaProcessor().getDecodedIpa(encodedIpa = card.ipa))
+            ipaEditText.setText(IpaProcessor.getDecodedIpa(encodedIpa = card.ipa))
         }
     }
 

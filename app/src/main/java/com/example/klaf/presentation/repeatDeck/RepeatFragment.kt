@@ -255,26 +255,13 @@ class RepeatFragment : Fragment() {
     private fun setIpaPromptContent(cards: List<Card>) {
         if (cards.isNotEmpty()) {
             val card = cards[0]
-            val ipaProcessor = IpaProcessor()
 
             if (isFrontSide) {
                 Log.i("app_log", "setIpaPromptContent: $card")
-                ipaPrompts.update(ipaProcessor.getIpaPrompts(card.ipa))
+                ipaPrompts.update(IpaProcessor.getIpaPrompts(card.ipa))
             } else {
                 ipaPrompts.clear()
             }
-//
-//            if (binding.repeatOrderSwitch.isChecked) {
-//                when (isFrontSide) {
-//                    true -> ipaPrompts.update(ipaProcessor.getIpaPrompts(card.ipa))
-//                    else -> ipaPrompts.clear()
-//                }
-//            } else {
-//                when (isFrontSide) {
-//                    true -> ipaPrompts.clear()
-//                    else -> ipaPrompts.update(ipaProcessor.getIpaPrompts(card.ipa))
-//                }
-//            }
         }
         ipaPromptAdapter.setData(ipaPrompts)
     }

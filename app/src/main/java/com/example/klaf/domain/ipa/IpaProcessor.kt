@@ -2,7 +2,7 @@ package com.example.klaf.domain.ipa
 
 import java.lang.StringBuilder
 
-class IpaProcessor {
+object IpaProcessor {
 
     /**
      * first word
