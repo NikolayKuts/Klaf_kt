@@ -1,6 +1,5 @@
 package com.example.klaf.data.room
 
-import androidx.room.PrimaryKey
 import com.example.klaf.data.room.entities.RoomCard
 import com.example.klaf.data.room.entities.RoomDeck
 import com.example.klaf.domain.entities.Card
@@ -40,7 +39,7 @@ fun RoomCard.mapToCard(): Card = Card(
     id = id
 )
 
-fun Card.mapToCard(): RoomCard = RoomCard(
+fun Card.mapToRoomEntity(): RoomCard = RoomCard(
     deckId = deckId,
     nativeWord = nativeWord,
     foreignWord = foreignWord,

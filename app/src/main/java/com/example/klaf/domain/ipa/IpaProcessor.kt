@@ -2,7 +2,7 @@ package com.example.klaf.domain.ipa
 
 import java.lang.StringBuilder
 
-class IpaProcessor {
+object IpaProcessor {
 
     /**
      * first word
@@ -117,6 +117,7 @@ class IpaProcessor {
 
 
     fun getDecodedIpa(encodedIpa: String): String {
+        // TODO("refactore - there is a problem")
         val result = StringBuilder()
         val ipa = StringBuilder(encodedIpa)
 

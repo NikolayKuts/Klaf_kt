@@ -55,13 +55,14 @@ class CardRemovingDialogFragment : DialogFragment() {
     }
 
     private fun onConfirmCardRemoving() {
-        viewModel.deleteCard(cardId = args.cardId)
-        dismiss()
-
-        Toast.makeText(
-            context,
-            getString(R.string.card_has_been_deleted),
-            Toast.LENGTH_SHORT
-        ).show()
+//        viewModel.deleteCard(cardId = args.cardId)
+//        dismiss()
+//
+//        Toast.makeText(
+//            context,
+//            getString(R.string.card_has_been_deleted),
+//            Toast.LENGTH_SHORT
+//        ).show()
+//    }
     }
 }

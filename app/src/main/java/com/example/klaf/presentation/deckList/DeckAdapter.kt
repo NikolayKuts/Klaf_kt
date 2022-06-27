@@ -28,7 +28,7 @@ class DeckAdapter(
     }
 
     override fun onBindViewHolder(holder: DeckViewHolder, position: Int) {
-        holder.onBind(deckList = deckList)
+        holder.bind(deckList = deckList)
     }
 
     override fun getItemCount(): Int = deckList.size

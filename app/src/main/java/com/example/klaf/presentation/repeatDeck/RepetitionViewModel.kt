@@ -19,54 +19,33 @@ class RepetitionViewModel @AssistedInject constructor(
     @Assisted deckId: Int,
     private val removeCard: RemoveCardUseCase,
     fetchCards: FetchCardsUseCase,
-    fetchDeckByIdUseCase: FetchDeckByIdUseCase
+    fetchDeckById: FetchDeckByIdUseCase
 ) : ViewModel() {
 
-    val deck: SharedFlow<Deck?> = fetchDeckByIdUseCase(deckId = deckId).shareIn(
-        scope = viewModelScope,
-        started = SharingStarted.Eagerly,
-        replay = 0
-    )
+//    private val repository: RepetitionRepository = RepetitionRepositoryRoomImp(context)
 
     private val _savedProgressCards: MutableList<Card> = LinkedList()
     val savedProgressCards: List<Card> get() = _savedProgressCards
 
-    val cardSource: StateFlow<List<Card>> = fetchCards(deckId = deckId).stateIn(
+    val cardsSource: SharedFlow<List<Card>> = fetchCards(deckId).shareIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
-        initialValue = emptyList()
+        replay = 1
     )
 
-    private val _cards = MutableStateFlow<MutableList<Card>>(value = LinkedList())
-    val cards = _cards.asStateFlow()
+    val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId).shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        replay = 1
+    )
 
-    fun moveCardByDifficultyRecallingLevel(level: DifficultyRecallingLevel) {
-        val cardForMoving = cardSource.value[0]
-        _cards.value = LinkedList(cardSource.value).apply {
-            removeAt(0)
-
-            val newPosition = when (level) {
-                DifficultyRecallingLevel.EASY -> _cards.value.size
-                DifficultyRecallingLevel.GOOD -> _cards.value.size * 3 / 4
-                DifficultyRecallingLevel.HARD -> _cards.value.size / 4
-            }
-            add(newPosition, cardForMoving)
-        }
-
-//        cards.removeAt(0)
+    fun removeCard(cardId: Int) {
+//        viewModelScope.launch { repository.deleteCard(cardId = cardId) }
+    }
 //
-//        val newPosition = when (level) {
-//            DifficultyRecallingLevel.EASY -> cards.size
-//            DifficultyRecallingLevel.GOOD -> cards.size * 3 / 4
-//            DifficultyRecallingLevel.HARD -> cards.size / 4
-//        }
-//        cards.add(newPosition, cardForMoving)
-    }
-
-
-    fun deleteCard(cardId: Int) {
-        viewModelScope.launch { removeCard(cardId = cardId) }
-    }
+//    fun onGetDeck(deckId: Int, onDeckReceived: (Deck?) -> Unit) {
+//        viewModelScope.launch { onDeckReceived(repository.getDeckById(deckId = deckId)) }
+//    }
 
     fun saveRepetitionProgress(cards: List<Card>) {
         _savedProgressCards.update(cards)

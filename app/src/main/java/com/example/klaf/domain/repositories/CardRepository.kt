@@ -10,7 +10,7 @@ interface CardRepository {
 
     suspend fun insertCard(card: Card)
 
-    suspend fun getCardById(cardId: Int): Card
+    fun getObservableCardById(cardId: Int): Flow<Card?>
 
     fun getCardsByDeckId(deckId: Int): Flow<List<Card>>
 

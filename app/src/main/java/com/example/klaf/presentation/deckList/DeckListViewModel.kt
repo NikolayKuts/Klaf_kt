@@ -40,10 +40,10 @@ class DeckListViewModel @Inject constructor(
         } else {
             viewModelScope.launchWithExceptionHandler(
                 onException = { _, _ ->
-                    _eventMessage.tryEmit(messageId = R.string.message_deck_has_been_created)
+                    _eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
                 },
                 onCompletion = {
-                    _eventMessage.tryEmit(messageId = R.string.card_has_been_added)
+                    _eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
                     // TODO: 12/29/2021 to translate toast shoeing to DeckListFragment
                 },
             ) {
@@ -72,7 +72,7 @@ class DeckListViewModel @Inject constructor(
                             _eventMessage.tryEmit(messageId = R.string.exception_renaming_deck)
                         },
                         onCompletion = {
-                            _eventMessage.tryEmit(messageId = R.string.message_deck_has_been_renamed)
+                            _eventMessage.tryEmit(messageId = R.string.deck_has_been_renamed)
                         }
                     ) {
                         renameDeck(oldDeck = deck, name = newName)
