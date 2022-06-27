@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "469030463339",
+    "project_id": "klaf-2da7e",
+    "storage_bucket": "klaf-2da7e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:469030463339:android:50b42dd7d37c9e4fb28e2e",
+        "android_client_info": {
+          "package_name": "com.example.klaf"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "469030463339-qm93vv9hdjr6hpifpmnrbu36b5ei5squ.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.klaf",
+            "certificate_hash": "1a8aa21ce26f0cecb8c0c4dd013b98224e4b2b71"
+          }
+        },
+        {
+          "client_id": "469030463339-87rd02abicn626lavsol8c39rqn02oe3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGRCdiUjJkUYKssWF8kgJVXRBVXLiAnag"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "469030463339-87rd02abicn626lavsol8c39rqn02oe3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
