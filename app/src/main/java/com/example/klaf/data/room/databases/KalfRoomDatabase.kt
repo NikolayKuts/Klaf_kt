@@ -13,17 +13,15 @@ import com.example.klaf.data.room.entities.RoomDeck
 abstract class KlafRoomDatabase : RoomDatabase() {
 
     companion object {
-        private const val DB_NAME = "klaf.db"
+        private const val DB_NAME = "klaf_kt.db"
         private var database: KlafRoomDatabase? = null
         private val LOCK = Any()
 
-        fun getInstance(context: Context): KlafRoomDatabase {
-            return synchronized(LOCK) {
-                database ?: Room.databaseBuilder(context, KlafRoomDatabase::class.java, DB_NAME)
-                    .fallbackToDestructiveMigration()
-                    .build()
-                    .also { database = it }
-            }
+        fun getInstance(context: Context): KlafRoomDatabase = synchronized(LOCK) {
+            database ?: Room.databaseBuilder(context, KlafRoomDatabase::class.java, DB_NAME)
+                .fallbackToDestructiveMigration()
+                .build()
+                .also { database = it }
         }
     }
 
