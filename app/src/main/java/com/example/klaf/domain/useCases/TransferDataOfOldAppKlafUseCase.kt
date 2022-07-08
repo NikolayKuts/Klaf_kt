@@ -5,7 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class TransferDecksFromOldKlapAppUseCase @Inject constructor(
+class TransferDataOfOldAppKlafUseCase @Inject constructor(
     private val oldAppKlafDataTransferRepository: OldAppKlafDataTransferRepository,
 ) {
 

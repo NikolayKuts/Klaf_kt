@@ -28,6 +28,7 @@ class OldAppKlafDataTransferRepositoryImpl @Inject constructor(
 
     override suspend fun transferOldData() {
         transferDecks()
+        transferCards()
     }
 
     private suspend fun transferDecks() {

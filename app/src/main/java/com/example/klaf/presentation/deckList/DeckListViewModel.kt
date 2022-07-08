@@ -23,7 +23,6 @@ class DeckListViewModel @Inject constructor(
     private val renameDeck: RenameDeckUseCase,
     private val removeDeck: RemoveDeckUseCase,
     private val removeCardsOfDeck: RemoveCardsOfDeckUseCase,
-    private val transferDecksFromOldKlapApp: TransferDecksFromOldKlapAppUseCase,
 ) : ViewModel() {
 
     val deckSource: StateFlow<List<Deck>> = fetchDeckSource().stateIn(
@@ -34,14 +33,6 @@ class DeckListViewModel @Inject constructor(
 
     private val _eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
     val eventMessage = _eventMessage.asSharedFlow()
-
-    init {
-        viewModelScope.launch {
-            log(message = "transferring")
-            delay(3000)
-            transferDecksFromOldKlapApp()
-        }
-    }
 
     fun createNewDeck(deckName: String) {
         val deckNames = deckSource.value.map { deck -> deck.name }
