@@ -1,13 +1,9 @@
 package com.example.klaf.presentation.repeatDeck
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.annotation.ColorRes
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -17,21 +13,18 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.klaf.R
 import com.example.klaf.databinding.FragmentRepeatBinding
-import com.example.klaf.domain.auxiliary.DateAssistant
-import com.example.klaf.domain.common.update
-import com.example.klaf.domain.entities.Card
+import com.example.klaf.domain.common.CardRepetitionOrder
+import com.example.klaf.domain.common.CardSide
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
-import com.example.klaf.domain.enums.DifficultyRecallingLevel.*
 import com.example.klaf.domain.ipa.IpaProcessor
-import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.presentation.adapters.IpaPromptAdapter
 import com.example.klaf.presentation.auxiliary.RepeatTimer
 import com.example.klaf.presentation.common.applyTextColor
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showToast
+import com.example.klaf.presentation.repeatDeck.RepetitionScreenState.*
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -49,8 +42,7 @@ class RepeatFragment : Fragment() {
         RepetitionViewModelFactory(assistedFactory = assistedFactory, deckId = args.deckId)
     }
 
-    private val ipaPromptAdapter: IpaPromptAdapter by lazy { IpaPromptAdapter() }
-
+    private val ipaPromptAdapter: IpaPromptAdapter = IpaPromptAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,6 +57,8 @@ class RepeatFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         initIpaRecyclerView()
+        setObservers()
+        setListeners()
     }
 
     override fun onDestroy() {
@@ -85,6 +79,48 @@ class RepeatFragment : Fragment() {
         }
     }
 
+    private fun setObservers() {
+        setEventMessageObserver()
+        setScreenStateObserver()
+        setDeckObserver()
+//        setCurrentCardObserver()
+        setCardRepetitionSateObserver()
+    }
+
+    private fun setEventMessageObserver() {
+        viewModel.eventMessage.collectWhenStarted(lifecycleScope) { eventMessage ->
+            requireContext().showToast(messageId = eventMessage.resId)
+        }
+    }
+
+    private fun setScreenStateObserver() {
+        viewModel.screenState.collectWhenStarted(lifecycleScope) { screenState ->
+            when (screenState) {
+                StartState -> {
+                    binding.startRepetitionButton.isVisible = true
+                    binding.turnButton.isVisible = false
+                    binding.easyButton.isVisible = false
+                    binding.goodButton.isVisible = false
+                    binding.hardButton.isVisible = false
+                }
+                RepetitionState -> {
+                    binding.startRepetitionButton.isVisible = false
+                    binding.turnButton.isVisible = true
+                    binding.easyButton.isVisible = true
+                    binding.goodButton.isVisible = true
+                    binding.hardButton.isVisible = true
+                }
+                FinishState -> {
+                    binding.startRepetitionButton.isVisible = true
+                    binding.turnButton.isVisible = false
+                    binding.easyButton.isVisible = false
+                    binding.goodButton.isVisible = false
+                    binding.hardButton.isVisible = false
+                }
+            }
+        }
+    }
+
     private fun setDeckObserver() {
         viewModel.deck.collectWhenStarted(lifecycleScope) { deck: Deck? ->
             if (deck == null) {
@@ -101,9 +137,40 @@ class RepeatFragment : Fragment() {
 //        }
     }
 
-    private fun setCardsObserver() {
-        viewModel.cardsSource.collectWhenStarted(lifecycleScope) { receivedCards ->
+//    private fun setCurrentCardObserver() {
+//        viewModel.currentCard.collectWhenStarted(lifecycleScope) { currentCard ->
+////            setCardViewContent(card = currentCard)
+//            binding.turnButton.setOnClickListener { turnCard(card = currentCard) }
+//        }
+//    }
 
+    private fun setCardRepetitionSateObserver() {
+        viewModel.cardState.collectWhenStarted(lifecycleScope) { cardRepetitionState ->
+            when (cardRepetitionState.repetitionOrder) {
+                CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
+                    if (cardRepetitionState.side == CardSide.FRONT) {
+                        binding.cardSideTextView.text = cardRepetitionState.card.nativeWord
+                        ipaPromptAdapter.setData(letterInfos = emptyList())
+                    } else {
+                        binding.cardSideTextView.text = cardRepetitionState.card.foreignWord
+                        ipaPromptAdapter.setData(
+                            letterInfos = IpaProcessor.getLetterInfos(cardRepetitionState.card.ipa)
+                        )
+                    }
+                }
+                CardRepetitionOrder.FOREIGN_TO_NATIVE -> {
+                    if (cardRepetitionState.side == CardSide.FRONT) {
+                        binding.cardSideTextView.text = cardRepetitionState.card.foreignWord
+                        ipaPromptAdapter.setData(
+                            letterInfos = IpaProcessor.getLetterInfos(cardRepetitionState.card.ipa)
+                        )
+                    } else {
+                        binding.cardSideTextView.text = cardRepetitionState.card.nativeWord
+                        ipaPromptAdapter.setData(letterInfos = emptyList())
+                    }
+                }
+            }
+            setRepetitionOrderPointers(order = cardRepetitionState.repetitionOrder)
         }
     }
 
@@ -112,11 +179,12 @@ class RepeatFragment : Fragment() {
             repeatCardAdditionButton.setOnClickListener { navigateToAdditionFragment() }
             repeatCardEditingActionButton.setOnClickListener { onClickCardEditingButton() }
             repeatCardRemovingActionButton.setOnClickListener { onClickCardRemovingButton() }
-            startRepetitionButton.setOnClickListener { onClickStartButton() }
-//            turnButton.setOnClickListener { onClickTurnButton() }
-            repeatOrderSwitch.setOnCheckedChangeListener { _, isChecked ->
-                onRepeatOrderSwitchCheckedChanged(isChecked)
-            }
+
+            startRepetitionButton.setOnClickListener { startRepetition() }
+
+            repeatOrderSwitch.setOnCheckedChangeListener { _, _ -> changeRepetitionOrder() }
+
+            turnButton.setOnClickListener { turnCard() }
 
             easyButton.setOnClickListener { onClickEasyButton() }
             goodButton.setOnClickListener { onClickGoodButton() }
@@ -124,8 +192,12 @@ class RepeatFragment : Fragment() {
         }
     }
 
-    private fun onClickStartButton() {
+    private fun startRepetition() {
+        viewModel.startRepeating()
+    }
 
+    private fun turnCard() {
+        viewModel.turnCard()
     }
 
     private fun onClickCardEditingButton() {
@@ -175,24 +247,24 @@ class RepeatFragment : Fragment() {
 //        }
     }
 
-    private fun setCardViewContent() {
-//        if (cards.isEmpty()) {
-//            binding.cardSideTextView.text = getString(R.string.deck_is_empty)
-//        } else {
-//            binding.cardSideTextView.text = getCardContentBySide(cards[0])
-//        }
+    private fun changeRepetitionOrder() {
+        viewModel.changeRepetitionOrder()
     }
 
-    private fun onRepeatOrderSwitchCheckedChanged(isChecked: Boolean) {
-        setLessonOrderPointers(isChecked = isChecked)
-    }
-
-    private fun setLessonOrderPointers(isChecked: Boolean) {
+    private fun setRepetitionOrderPointers(order: CardRepetitionOrder) {
         val native = getString(R.string.pointer_native)
         val foreign = getString(R.string.pointer_foreign)
 
-        binding.frontSidePointerTextView.text = if (isChecked) foreign else native
-        binding.backSidePointerTextView.text = if (isChecked) native else foreign
+        when (order) {
+            CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
+                binding.frontSidePointerTextView.text = native
+                binding.backSidePointerTextView.text = foreign
+            }
+            CardRepetitionOrder.FOREIGN_TO_NATIVE -> {
+                binding.frontSidePointerTextView.text = foreign
+                binding.backSidePointerTextView.text = native
+            }
+        }
     }
 
     private fun setTimerColorByTimerState(isRunning: Boolean) {
@@ -205,6 +277,7 @@ class RepeatFragment : Fragment() {
     }
 
     private fun onClickGoodButton() {
+
     }
 
     private fun onHardButtonClick() {
