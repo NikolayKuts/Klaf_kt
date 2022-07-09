@@ -3,10 +3,8 @@ package com.example.klaf.presentation.repeatDeck
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.R
-import com.example.klaf.domain.common.CardRepetitionOrder
 import com.example.klaf.domain.common.CardRepetitionOrder.*
 import com.example.klaf.domain.common.CardRepetitionState
-import com.example.klaf.domain.common.CardSide
 import com.example.klaf.domain.common.CardSide.*
 import com.example.klaf.domain.common.update
 import com.example.klaf.domain.entities.Card
@@ -14,8 +12,8 @@ import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.FetchCardsUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.domain.useCases.RemoveCardUseCase
+import com.example.klaf.presentation.auxiliary.RepetitionTimer
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.repeatDeck.RepetitionScreenState.*
 import dagger.assisted.Assisted
@@ -30,6 +28,7 @@ class RepetitionViewModel @AssistedInject constructor(
     private val removeCard: RemoveCardUseCase,
     fetchCards: FetchCardsUseCase,
     fetchDeckById: FetchDeckByIdUseCase,
+    val timer: RepetitionTimer
 ) : ViewModel() {
 
     private val _eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
@@ -44,7 +43,7 @@ class RepetitionViewModel @AssistedInject constructor(
         replay = 1
     )
 
-    val cardsSource: SharedFlow<List<Card>> = fetchCards(deckId).shareIn(
+    private val cardsSource: SharedFlow<List<Card>> = fetchCards(deckId).shareIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily,
         replay = 1
@@ -55,26 +54,28 @@ class RepetitionViewModel @AssistedInject constructor(
     private val _screenState = MutableStateFlow<RepetitionScreenState>(StartState)
     val screenState = _screenState.asStateFlow()
 
-    private val _currentCard = MutableSharedFlow<Card>(extraBufferCapacity = 1)
-    val currentCard = _currentCard.asSharedFlow()
+    private val currentCard = MutableSharedFlow<Card>(extraBufferCapacity = 1)
 
     private val cardSide = MutableStateFlow(FRONT)
     private val repetitionOrder = MutableStateFlow(value = NATIVE_TO_FOREIGN)
 
-    val cardState =
-        combine(_currentCard, cardSide, repetitionOrder) { card, side, repetitionOrder ->
-            CardRepetitionState(card = card, side = side, repetitionOrder = repetitionOrder)
-        }.shareIn(
-            scope = viewModelScope,
-            started = SharingStarted.Lazily,
-        )
+    val cardState = combine(
+        currentCard,
+        cardSide,
+        repetitionOrder,
+    ) { card, side, repetitionOrder ->
+        CardRepetitionState(card = card, side = side, repetitionOrder = repetitionOrder)
+    }.shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.Lazily,
+        replay = 1
+    )
 
     init {
-        log(message = "init replay cash -> ${cardsSource.replayCache}")
         viewModelScope.launch {
             cardsSource.collect { cards ->
                 repetitionCards.addAll(cards)
-                _currentCard.emit(repetitionCards[0])
+                currentCard.emit(repetitionCards[0])
                 this.cancel()
             }
         }
@@ -87,6 +88,7 @@ class RepetitionViewModel @AssistedInject constructor(
             when (_screenState.value) {
                 StartState -> {
                     _screenState.value = RepetitionState
+                    timer.runCounting()
                 }
                 RepetitionState -> {
                     val cardForeTransferring = repetitionCards.first()
@@ -94,7 +96,7 @@ class RepetitionViewModel @AssistedInject constructor(
                     repetitionCards.add(cardForeTransferring)
                 }
                 FinishState -> {
-
+                    timer.stopCounting()
 
                 }
             }
