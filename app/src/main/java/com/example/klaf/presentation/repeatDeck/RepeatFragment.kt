@@ -19,7 +19,8 @@ import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.presentation.adapters.IpaPromptAdapter
-import com.example.klaf.presentation.auxiliary.RepeatTimer
+import com.example.klaf.presentation.auxiliary.TimerCountingState
+import com.example.klaf.presentation.auxiliary.TimerCountingState.*
 import com.example.klaf.presentation.common.applyTextColor
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showToast
@@ -34,7 +35,6 @@ class RepeatFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val args by navArgs<RepeatFragmentArgs>()
-    private val timer by viewModels<RepeatTimer>() // TODO rid viewModel implementation from Timer
 
     @Inject
     lateinit var assistedFactory: RepetitionViewModelAssistedFactory
@@ -59,11 +59,15 @@ class RepeatFragment : Fragment() {
         initIpaRecyclerView()
         setObservers()
         setListeners()
+
+        viewLifecycleOwner.lifecycle.addObserver(viewModel.timer)
     }
 
     override fun onDestroy() {
         binding.ipaRecyclerView.adapter = null
         _binding = null
+
+        viewLifecycleOwner.lifecycle.removeObserver(viewModel.timer)
         super.onDestroy()
     }
 
@@ -83,8 +87,8 @@ class RepeatFragment : Fragment() {
         setEventMessageObserver()
         setScreenStateObserver()
         setDeckObserver()
-//        setCurrentCardObserver()
-        setCardRepetitionSateObserver()
+        setCardRepetitionStateObserver()
+        setTimerObserver()
     }
 
     private fun setEventMessageObserver() {
@@ -95,27 +99,25 @@ class RepeatFragment : Fragment() {
 
     private fun setScreenStateObserver() {
         viewModel.screenState.collectWhenStarted(lifecycleScope) { screenState ->
+            val cardRepetitionControlButtons = setOf(
+                binding.turnButton,
+                binding.easyButton,
+                binding.goodButton,
+                binding.hardButton
+            )
+
             when (screenState) {
                 StartState -> {
                     binding.startRepetitionButton.isVisible = true
-                    binding.turnButton.isVisible = false
-                    binding.easyButton.isVisible = false
-                    binding.goodButton.isVisible = false
-                    binding.hardButton.isVisible = false
+                    cardRepetitionControlButtons.onEach { it.isVisible = false }
                 }
                 RepetitionState -> {
                     binding.startRepetitionButton.isVisible = false
-                    binding.turnButton.isVisible = true
-                    binding.easyButton.isVisible = true
-                    binding.goodButton.isVisible = true
-                    binding.hardButton.isVisible = true
+                    cardRepetitionControlButtons.onEach { it.isVisible = true }
                 }
                 FinishState -> {
                     binding.startRepetitionButton.isVisible = true
-                    binding.turnButton.isVisible = false
-                    binding.easyButton.isVisible = false
-                    binding.goodButton.isVisible = false
-                    binding.hardButton.isVisible = false
+                    cardRepetitionControlButtons.onEach { it.isVisible = false }
                 }
             }
         }
@@ -132,19 +134,15 @@ class RepeatFragment : Fragment() {
     }
 
     private fun setTimerObserver() {
-//        viewModel.time.observe(viewLifecycleOwner) { time: String ->
-//            binding.repeatTimerTextView.text = time
-//        }
+        viewModel.timer.timerState.collectWhenStarted(
+            lifecycleScope = viewLifecycleOwner.lifecycleScope,
+        ) { timerState ->
+            binding.repeatTimerTextView.text = timerState.time
+            setTimerColorByTimerState(countingState = timerState.countingState)
+        }
     }
 
-//    private fun setCurrentCardObserver() {
-//        viewModel.currentCard.collectWhenStarted(lifecycleScope) { currentCard ->
-////            setCardViewContent(card = currentCard)
-//            binding.turnButton.setOnClickListener { turnCard(card = currentCard) }
-//        }
-//    }
-
-    private fun setCardRepetitionSateObserver() {
+    private fun setCardRepetitionStateObserver() {
         viewModel.cardState.collectWhenStarted(lifecycleScope) { cardRepetitionState ->
             when (cardRepetitionState.repetitionOrder) {
                 CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
@@ -170,19 +168,27 @@ class RepeatFragment : Fragment() {
                     }
                 }
             }
+
             setRepetitionOrderPointers(order = cardRepetitionState.repetitionOrder)
+            setRepetitionOrderSwitchPosition(order = cardRepetitionState.repetitionOrder)
+
+            binding.repeatCardEditingActionButton.setOnClickListener {
+                navigateToCardEditingFragment(cardId = cardRepetitionState.card.id)
+            }
+
+            binding.repeatCardRemovingActionButton.setOnClickListener {
+                navigateToCArdRemovingDialogFragment(cardId = cardRepetitionState.card.id)
+            }
         }
     }
 
     private fun setListeners() {
         binding.apply {
             repeatCardAdditionButton.setOnClickListener { navigateToAdditionFragment() }
-            repeatCardEditingActionButton.setOnClickListener { onClickCardEditingButton() }
-            repeatCardRemovingActionButton.setOnClickListener { onClickCardRemovingButton() }
 
             startRepetitionButton.setOnClickListener { startRepetition() }
 
-            repeatOrderSwitch.setOnCheckedChangeListener { _, _ -> changeRepetitionOrder() }
+            repeatOrderSwitch.setOnClickListener { changeRepetitionOrder() }
 
             turnButton.setOnClickListener { turnCard() }
 
@@ -200,20 +206,11 @@ class RepeatFragment : Fragment() {
         viewModel.turnCard()
     }
 
-    private fun onClickCardEditingButton() {
-//        if (cards.isEmpty()) {
-//            requireContext().showToast(messageId = R.string.there_is_nothing_to_change)
-//        } else {
-//            navigateToCardEditingFragment()
-//        }
-    }
-
-    private fun onClickCardRemovingButton() {
-//        if (cards.isEmpty()) {
-//            requireContext().showToast(messageId = R.string.there_are_no_cards_to_remove)
-//        } else {
-//            navigateToCArdRemovingDialogFragment()
-//        }
+    private fun navigateToCardEditingFragment(cardId: Int) {
+        RepeatFragmentDirections.actionRepeatFragmentToCardEditingFragment(
+            cardId = cardId,
+            deckId = args.deckId
+        ).also { findNavController().navigate(it) }
     }
 
     private fun navigateToAdditionFragment() {
@@ -222,18 +219,11 @@ class RepeatFragment : Fragment() {
         ).also { findNavController().navigate(it) }
     }
 
-    private fun navigateToCardEditingFragment() {
-//        RepeatFragmentDirections.actionRepeatFragmentToCardEditingFragment(
-//            cardId = cards[0].id,
-//            deckId = args.deckId
-//        ).also { findNavController().navigate(it) }
-    }
-
-    private fun navigateToCArdRemovingDialogFragment() {
-//        RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
-//            deckId = args.deckId,
-//            cardId = cards[0].id
-//        ).also { findNavController().navigate(it) }
+    private fun navigateToCArdRemovingDialogFragment(cardId: Int) {
+        RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
+            deckId = args.deckId,
+            cardId = cardId
+        ).also { findNavController().navigate(it) }
     }
 
     private fun setIpaPromptContent() {
@@ -267,8 +257,23 @@ class RepeatFragment : Fragment() {
         }
     }
 
-    private fun setTimerColorByTimerState(isRunning: Boolean) {
-        val colorId = if (isRunning) R.color.timer_is_running else R.color.timer_is_not_running
+    private fun setRepetitionOrderSwitchPosition(order: CardRepetitionOrder) {
+        when (order) {
+            CardRepetitionOrder.FOREIGN_TO_NATIVE -> {
+                binding.repeatOrderSwitch.isChecked = true
+            }
+            CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
+                binding.repeatOrderSwitch.isChecked = false
+            }
+        }
+    }
+
+    private fun setTimerColorByTimerState(countingState: TimerCountingState) {
+        val colorId = when (countingState) {
+            STOPED, PAUSED -> R.color.timer_is_not_running
+            RUN -> R.color.timer_is_running
+        }
+
         binding.repeatTimerTextView.applyTextColor(colorId)
     }
 
