@@ -11,7 +11,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -31,7 +30,6 @@ import com.example.klaf.presentation.auxiliary.RepeatTimer
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showToast
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -373,7 +371,7 @@ class RepeatFragment : Fragment() {
 
     private fun moveCardByDifficultyRecallingLevel(
 //        cards: List<Card>,
-        level: DifficultyRecallingLevel
+        level: DifficultyRecallingLevel,
     ) {
 //        val cardForMoving = cards[0]
         viewModel.moveCardByDifficultyRecallingLevel(level = level)

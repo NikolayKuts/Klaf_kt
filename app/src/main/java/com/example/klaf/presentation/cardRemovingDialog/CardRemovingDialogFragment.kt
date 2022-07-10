@@ -4,21 +4,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.example.klaf.R
 import com.example.klaf.databinding.DialogCardRemovingBinding
-import com.example.klaf.presentation.repeatDeck.RepetitionViewModel
+import com.example.klaf.presentation.common.collectWhenStarted
+import com.example.klaf.presentation.common.showToast
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class CardRemovingDialogFragment : DialogFragment() {
 
     private var _binding: DialogCardRemovingBinding? = null
     private val binding get() = _binding!!
 
     private val args by navArgs<CardRemovingDialogFragmentArgs>()
-    private val viewModel: RepetitionViewModel by lazy { getRepetitionViewModel() }
+    private val viewModel: CardRemovingDialogViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,6 +36,7 @@ class CardRemovingDialogFragment : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setListeners()
+        setObservers()
     }
 
     override fun onDestroy() {
@@ -40,28 +44,35 @@ class CardRemovingDialogFragment : DialogFragment() {
         _binding = null
     }
 
-    private fun getRepetitionViewModel(): RepetitionViewModel {
-        return ViewModelProvider(
-            owner = this,
-//            factory = RepetitionViewModelFactory(
-//                context = requireActivity().applicationContext,
-//                deckId = args.deckId)
-        )[RepetitionViewModel::class.java]
+    private fun setObservers() {
+        setEventMessageObserver()
+        setCardRemovingStateObserver()
+    }
+
+    private fun setEventMessageObserver() {
+        viewModel.eventMessage.collectWhenStarted(viewLifecycleOwner.lifecycleScope) { eventMessage ->
+            requireContext().showToast(messageId = eventMessage.resId)
+        }
+    }
+
+    private fun setCardRemovingStateObserver() {
+        viewModel.isCardRemoved.collectWhenStarted(viewLifecycleOwner.lifecycleScope) { isCardRemoved ->
+            if (isCardRemoved) {
+                closeDialog()
+            }
+        }
     }
 
     private fun setListeners() {
-        binding.cancelCardRemovingButton.setOnClickListener { dismiss() }
-        binding.confirmCardRemovingButton.setOnClickListener { onConfirmCardRemoving() }
+        binding.cancelCardRemovingButton.setOnClickListener { closeDialog() }
+        binding.confirmCardRemovingButton.setOnClickListener { confirmCardRemoving() }
     }
 
-    private fun onConfirmCardRemoving() {
-        viewModel.deleteCard(cardId = args.cardId)
-        dismiss()
+    private fun closeDialog() {
+        findNavController().popBackStack()
+    }
 
-        Toast.makeText(
-            context,
-            getString(R.string.card_has_been_deleted),
-            Toast.LENGTH_SHORT
-        ).show()
+    private fun confirmCardRemoving() {
+        viewModel.removeCardFromDeck(cardId = args.cardId, deckId = args.deckId)
     }
 }

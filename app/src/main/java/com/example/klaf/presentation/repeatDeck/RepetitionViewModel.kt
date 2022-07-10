@@ -8,7 +8,7 @@ import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.domain.useCases.FetchCardsUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
-import com.example.klaf.domain.useCases.RemoveCardUseCase
+import com.example.klaf.domain.useCases.RemoveCardFromDeckUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
@@ -17,7 +17,7 @@ import java.util.*
 
 class RepetitionViewModel @AssistedInject constructor(
     @Assisted deckId: Int,
-    private val removeCard: RemoveCardUseCase,
+    private val removeCard: RemoveCardFromDeckUseCase,
     fetchCards: FetchCardsUseCase,
     fetchDeckByIdUseCase: FetchDeckByIdUseCase
 ) : ViewModel() {
@@ -61,11 +61,6 @@ class RepetitionViewModel @AssistedInject constructor(
 //            DifficultyRecallingLevel.HARD -> cards.size / 4
 //        }
 //        cards.add(newPosition, cardForMoving)
-    }
-
-
-    fun deleteCard(cardId: Int) {
-        viewModelScope.launch { removeCard(cardId = cardId) }
     }
 
     fun saveRepetitionProgress(cards: List<Card>) {
