@@ -5,6 +5,7 @@
 
     <string name="native_and_foreign_words_must_be_filled">The "native word" and "foreign words" fields must be filled</string>
 
+<!--card-->
     <string name="card_has_not_been_changed">The card hasn\'t been changed</string>
     <string name="there_are_no_card_in_deck">There are no cards in the deck</string>
     <string name="card_has_been_added">the card has been added</string>
@@ -13,8 +14,11 @@
     <string name="exception_adding_card">Adding card is failed</string>
     <string name="problem_with_fetching_card">There is a problem with fetching card</string>
     <string name="problem_with_updating_card">There is a problem with updating card</string>
+    <string name="card_is_not_found">The card is not found</string>
+    <string name="problem_with_fetching_cards">There is a problem with fetching cards</string>
+    <string name="problem_with_removing_card">There is a problem with removing card</string>
 
-
+<!--    deck-->
     <string name="deck_is_not_found">the deck isn\'t found</string>
     <string name="problem_with_fetching_deck">There is a problem with fetching deck</string>
     <string name="such_name_is_already_exist">such name is already exist</string>
@@ -32,6 +36,4 @@
 
     <string name="pointer_foreign">F</string>
     <string name="pointer_native">N</string>
-    <string name="card_is_not_found">The card is not found</string>
-    <string name="problem_with_fetching_cards">There is a problem with fething cards</string>
 </resources>
