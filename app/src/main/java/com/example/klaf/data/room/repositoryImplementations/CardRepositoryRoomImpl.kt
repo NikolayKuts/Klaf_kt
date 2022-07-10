@@ -20,8 +20,12 @@ class CardRepositoryRoomImpl @Inject constructor(
     private val roomDatabase: KlafRoomDatabase
 ) : CardRepository {
 
-    override suspend fun getCardQuantityByDeckId(deckId: Int): LiveData<Int> {
+    override suspend fun getObservableCardQuantityByDeckId(deckId: Int): LiveData<Int> {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun getCardQuantityByDeckId(deckId: Int): Int = withContext(Dispatchers.IO) {
+        roomDatabase.cardDao().getCardQuantityInDeckAsInt(deckId = deckId)
     }
 
     override suspend fun insertCard(card: Card) {
@@ -43,7 +47,9 @@ class CardRepositoryRoomImpl @Inject constructor(
     }
 
     override suspend fun deleteCard(cardId: Int) {
-        TODO("Not yet implemented")
+        withContext(Dispatchers.IO) {
+            roomDatabase.cardDao().deleteCard(cardId = cardId)
+        }
     }
 
     override suspend fun removeCardsOfDeck(deckId: Int) {

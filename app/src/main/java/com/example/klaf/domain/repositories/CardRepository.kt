@@ -6,7 +6,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface CardRepository {
 
-    suspend fun getCardQuantityByDeckId(deckId: Int): LiveData<Int>
+    suspend fun getObservableCardQuantityByDeckId(deckId: Int): LiveData<Int>
+
+    suspend fun getCardQuantityByDeckId(deckId: Int): Int
 
     suspend fun insertCard(card: Card)
 

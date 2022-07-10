@@ -63,11 +63,14 @@ class RepeatFragment : Fragment() {
         viewLifecycleOwner.lifecycle.addObserver(viewModel.timer)
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewLifecycleOwner.lifecycle.removeObserver(viewModel.timer)
+    }
+
     override fun onDestroy() {
         binding.ipaRecyclerView.adapter = null
         _binding = null
-
-        viewLifecycleOwner.lifecycle.removeObserver(viewModel.timer)
         super.onDestroy()
     }
 
@@ -118,6 +121,7 @@ class RepeatFragment : Fragment() {
                 FinishState -> {
                     binding.startRepetitionButton.isVisible = true
                     cardRepetitionControlButtons.onEach { it.isVisible = false }
+                    requireContext().showToast(message = "************************")
                 }
             }
         }
@@ -129,6 +133,9 @@ class RepeatFragment : Fragment() {
                 requireContext().showToast(messageId = R.string.problem_with_fetching_deck)
             } else {
                 binding.repeatDeckNameTextView.text = deck.name
+                if (deck.cardQuantity == 0) {
+                    requireContext().showToast(messageId = R.string.deck_is_empty)
+                }
             }
         }
     }
@@ -144,6 +151,8 @@ class RepeatFragment : Fragment() {
 
     private fun setCardRepetitionStateObserver() {
         viewModel.cardState.collectWhenStarted(lifecycleScope) { cardRepetitionState ->
+            if (cardRepetitionState.card == null) return@collectWhenStarted
+
             when (cardRepetitionState.repetitionOrder) {
                 CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
                     if (cardRepetitionState.side == CardSide.FRONT) {
@@ -278,69 +287,18 @@ class RepeatFragment : Fragment() {
     }
 
     private fun onClickEasyButton() {
-
+        moveCardByDifficultyRecallingLevel(level = DifficultyRecallingLevel.EASY)
     }
 
     private fun onClickGoodButton() {
-
+        moveCardByDifficultyRecallingLevel(level = DifficultyRecallingLevel.GOOD)
     }
 
     private fun onHardButtonClick() {
-
+        moveCardByDifficultyRecallingLevel(level = DifficultyRecallingLevel.HARD)
     }
 
     private fun moveCardByDifficultyRecallingLevel(level: DifficultyRecallingLevel) {
-//        val cardForMoving = cards[0]
-//        cards.removeAt(0)
-//
-//        val newPosition = when (level) {
-//            EASY -> cards.size
-//            GOOD -> cards.size * 3 / 4
-//            HARD -> cards.size / 4
-//        }
-//        cards.add(newPosition, cardForMoving)
-    }
-
-
-    private fun onRepetitionFinished() {
-        // TODO: 11/17/2021 implement repetition scheduling
-    }
-
-
-    private fun getUpdatedDesk(): Deck? {
-        TODO()
-//        return repeatDeck?.let { repeatDeck ->
-//
-//            val updatedLastRepetitionDate: Long
-//            val currentRepetitionDuration: Long
-//            val updatedLastSucceededRepetition: Boolean
-//
-//            if (repeatDeck.repeatQuantity % 2 != 0) {
-//                updatedLastRepetitionDate = DateAssistant.getCurrentDateAsLong()
-//                currentRepetitionDuration = timer.savedTotalTime
-//                updatedLastSucceededRepetition =
-//                    DateAssistant.isRepetitionSucceeded(repeatDeck, currentRepetitionDuration)
-//            } else {
-//                updatedLastRepetitionDate = repeatDeck.lastRepeatDate
-//                currentRepetitionDuration = repeatDeck.lastRepeatDuration
-//                updatedLastSucceededRepetition = repeatDeck.isLastRepetitionSucceeded
-//            }
-//
-//            val newScheduledDate =
-//                DateAssistant.getNextScheduledRepeatDate(repeatDeck, currentRepetitionDuration)
-//
-//            Deck(
-//                name = repeatDeck.name,
-//                creationDate = repeatDeck.creationDate,
-//                id = repeatDeck.id,
-//                cardQuantity = repeatDeck.cardQuantity,
-//                repeatDay = DateAssistant.getUpdatedRepeatDay(repeatDeck),
-//                scheduledDate = newScheduledDate,
-//                lastRepeatDate = updatedLastRepetitionDate,
-//                repeatQuantity = repeatDeck.repeatQuantity + 1,
-//                lastRepeatDuration = currentRepetitionDuration,
-//                isLastRepetitionSucceeded = updatedLastSucceededRepetition
-//            )
-//        }
+        viewModel.moveCardByDifficultyRecallingLevel(level = level)
     }
 }
