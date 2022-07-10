@@ -28,7 +28,7 @@ interface CardDao {
     fun getCardQuantityByDeckId(deckId: Int): LiveData<Int>
 
     @Query("SELECT COUNT(*) FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
-    fun getCardQuantityAsInt(deckId: Int): Int
+    fun getCardQuantityInDeckAsInt(deckId: Int): Int
 
     @Query("DELETE FROM $CARD_TABLE_NAME WHERE id = :cardId")
     fun deleteCard(cardId: Int)

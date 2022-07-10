@@ -33,4 +33,5 @@
     <string name="pointer_foreign">F</string>
     <string name="pointer_native">N</string>
     <string name="card_is_not_found">The card is not found</string>
+    <string name="problem_with_removing_card">There is a problem with removing card</string>
 </resources>
