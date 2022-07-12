@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.auxiliary
+package com.example.klaf.presentation.common
 
 data class RepetitionTimerState(
     val time: String,

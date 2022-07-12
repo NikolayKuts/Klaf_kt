@@ -9,6 +9,8 @@ import com.example.klaf.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN
 import com.example.klaf.domain.common.CardRepetitionState
 import com.example.klaf.domain.common.CardSide.BACK
 import com.example.klaf.domain.common.CardSide.FRONT
+import com.example.klaf.domain.common.MINIMUM_NUMBER_OF_FIRST_REPETITIONS
+import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.common.update
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
@@ -17,8 +19,9 @@ import com.example.klaf.domain.enums.DifficultyRecallingLevel.*
 import com.example.klaf.domain.useCases.FetchCardsUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.domain.useCases.UpdateDeckUseCase
-import com.example.klaf.presentation.auxiliary.RepetitionTimer
+import com.example.klaf.presentation.common.RepetitionTimer
 import com.example.klaf.presentation.common.EventMessage
+import com.example.klaf.presentation.common.timeAsString
 import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.repeatDeck.RepetitionScreenState.*
 import dagger.assisted.Assisted
@@ -26,6 +29,7 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
+import kotlin.coroutines.CoroutineContext
 
 
 class RepetitionViewModel @AssistedInject constructor(
@@ -36,22 +40,32 @@ class RepetitionViewModel @AssistedInject constructor(
     private val updateDeck: UpdateDeckUseCase,
 ) : ViewModel() {
 
+    companion object {
+
+        private const val ONE_QUARTER: Double = 1.0 / 4.0
+        private const val THREE_QUADS: Double = 3.0 / 4.0
+    }
+
     private val _eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
     val eventMessage = _eventMessage.asSharedFlow()
 
     private val _savedProgressCards: MutableList<Card> = LinkedList()
 
-    val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId).shareIn(
-        scope = viewModelScope,
-        started = SharingStarted.Eagerly,
-        replay = 1
-    )
+    val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
+        .catch { _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck) }
+        .shareIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            replay = 1
+        )
 
-    private val cardsSource: SharedFlow<List<Card>> = fetchCards(deckId).shareIn(
-        scope = viewModelScope,
-        started = SharingStarted.Lazily,
-        replay = 1
-    )
+    private val cardsSource: SharedFlow<List<Card>> = fetchCards(deckId)
+        .catch { _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards) }
+        .shareIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            replay = 1
+        )
 
     private val repetitionCards = MutableStateFlow<List<Card>>(LinkedList())
 
@@ -87,12 +101,16 @@ class RepetitionViewModel @AssistedInject constructor(
     )
 
     init {
-        viewModelScope.launch {
-            cardsSource.collect { cards ->
-                repetitionCards.value = getCardsByProgress(receivedCards = cards)
+        viewModelScope.launchWithExceptionHandler(
+            onException = { _, _ ->
+                _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
+            }
+        ) {
+            cardsSource.collect { receivedCards ->
+                repetitionCards.value = getCardsByProgress(receivedCards = receivedCards)
 
-                if (cards.isNotEmpty()) {
-                    startRepetitionCard = cards.first()
+                if (receivedCards.isNotEmpty()) {
+                    startRepetitionCard = receivedCards.first()
                 }
             }
         }
@@ -183,8 +201,8 @@ class RepetitionViewModel @AssistedInject constructor(
     ): Int {
         return when (level) {
             EASY -> updatedCards.size
-            GOOD -> updatedCards.size * 3 / 4
-            HARD -> updatedCards.size / 4
+            GOOD -> (updatedCards.size * ONE_QUARTER).toInt()
+            HARD -> (updatedCards.size / THREE_QUADS).toInt()
         }
     }
 
@@ -230,14 +248,39 @@ class RepetitionViewModel @AssistedInject constructor(
     private fun finishRepetition() {
         val repeatedDeck = deck.replayCache.firstOrNull()
             ?: throw Exception("The deck for updating is null")
+
         val updatedDeck = getUpdatedDesk(deckForUpdating = repeatedDeck)
 
-        _screenState.value = FinishState
         isWaitingForFinish = false
         clearRepetitionProgress()
         timer.stopCounting()
-        viewModelScope.launch { updateDeck(updatedDeck = updatedDeck) }
-        scheduleDeckRepetition(repeatedDeck = repeatedDeck, updatedDeck = updatedDeck)
+
+        viewModelScope.launchWithExceptionHandler(
+            onException = { _, _ ->
+                _eventMessage.tryEmit(messageId = R.string.problem_with_updating_deck)
+            },
+            onCompletion = {
+                scheduleDeckRepetition(repeatedDeck = repeatedDeck, updatedDeck = updatedDeck)
+
+                _screenState.value = FinishState(
+                    currentDuration = timer.savedTotalTimeAsString,
+                    lastDuration = repeatedDeck.lastRepeatDuration.timeAsString,
+                    newScheduledDate = DateAssistant.getFormattedDate(
+                        date = updatedDeck.scheduledDate
+                    ),
+                    lastScheduledDate = DateAssistant.getFormattedDate(
+                        date = repeatedDeck.scheduledDate
+                    ),
+                    lastRepetitionDate = DateAssistant.getFormattedDate(
+                        date = repeatedDeck.lastRepeatDate
+                    ),
+                    repetitionQuantity = updatedDeck.repeatQuantity.toString(),
+                    lastSuccessMark = repeatedDeck.isLastRepetitionSucceeded.toString()
+                )
+            }
+        ) {
+            updateDeck(updatedDeck = updatedDeck)
+        }
     }
 
     private fun getUpdatedDesk(deckForUpdating: Deck): Deck {
@@ -267,30 +310,14 @@ class RepetitionViewModel @AssistedInject constructor(
             lastRepeatDuration = currentRepetitionDuration,
             isLastRepetitionSucceeded = updatedLastSucceededRepetition
         )
-
-
-//        return repeatDeck?.let { repeatDeck ->
-//
-//            Deck(
-//                name = repeatDeck.name,
-//                creationDate = repeatDeck.creationDate,
-//                id = repeatDeck.id,
-//                cardQuantity = repeatDeck.cardQuantity,
-//                repeatDay = DateAssistant.getUpdatedRepeatDay(repeatDeck),
-//                scheduledDate = newScheduledDate,
-//                lastRepeatDate = updatedLastRepetitionDate,
-//                repeatQuantity = repeatDeck.repeatQuantity + 1,
-//                lastRepeatDuration = currentRepetitionDuration,
-//                isLastRepetitionSucceeded = updatedLastSucceededRepetition
-//            )
-//        }
     }
 
     private fun scheduleDeckRepetition(repeatedDeck: Deck, updatedDeck: Deck) {
         val currentTime = System.currentTimeMillis()
+
         if (
             updatedDeck.scheduledDate > currentTime
-            && repeatedDeck.repeatQuantity > 5
+            && repeatedDeck.repeatQuantity >= MINIMUM_NUMBER_OF_FIRST_REPETITIONS
             && repeatedDeck.repeatQuantity % 2 == 0
         ) {
             //TODO implement scheduling deck repetition

@@ -20,7 +20,7 @@ object DateAssistant {
         return dateFormat.format(date)
     }
 
-    fun getFormattedDate(date: Long): String? {
+    fun getFormattedDate(date: Long): String {
         val dateFormat: DateFormat = SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.getDefault())
         return dateFormat.format(date)
     }
