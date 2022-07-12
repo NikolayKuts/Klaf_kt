@@ -53,6 +53,9 @@
         <action
             android:id="@+id/action_repeatFragment_to_cardRemovingDialogFragment"
             app:destination="@id/cardRemovingDialogFragment" />
+        <action
+            android:id="@+id/action_repeatFragment_to_deckRepetitionInfoDialogFragment"
+            app:destination="@id/deckRepetitionInfoDialogFragment" />
     </fragment>
     <fragment
         android:id="@+id/cardEditingFragment"
@@ -148,7 +151,7 @@
     </fragment>
     <dialog
         android:id="@+id/cardRemovingDialogFragment"
-        android:name="com.example.klaf.presentation.cardRemovingDialog.CardRemovingDialogFragment"
+        android:name="com.example.klaf.presentation.cardRemoving.CardRemovingDialogFragment"
         android:label="dialog_card_removing"
         tools:layout="@layout/dialog_card_removing" >
         <argument
@@ -164,6 +167,31 @@
             app:destination="@id/repeatFragment"
             app:popUpTo="@id/repeatFragment"
             app:popUpToInclusive="true"/>
+    </dialog>
+    <dialog
+        android:id="@+id/deckRepetitionInfoDialogFragment"
+        android:name="com.example.klaf.presentation.deckRepetitionInfo.DeckRepetitionInfoDialogFragment"
+        android:label="dialog_deck_repetition_info"
+        tools:layout="@layout/dialog_deck_repetition_info" >
+        <argument
+            android:name="currentDuration"
+            app:argType="string" />
+        <argument android:name="lastDuration"
+            app:argType="string" />
+        <argument
+            android:name="newScheduledDate"
+            app:argType="string" />
+        <argument
+            android:name="lastScheduledDate"
+            app:argType="string" />
+        <argument android:name="lastRepetitionDate"
+            app:argType="string" />
+        <argument
+            android:name="repetitionQuantity"
+            app:argType="string" />
+        <argument
+            android:name="lastSuccessMark"
+            app:argType="string" />
     </dialog>
 
 </navigation>

@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.cardRemovingDialog
+package com.example.klaf.presentation.cardRemoving
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

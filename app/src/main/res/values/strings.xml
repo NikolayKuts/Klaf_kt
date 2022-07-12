@@ -3,9 +3,11 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
-    <string name="native_and_foreign_words_must_be_filled">The "native word" and "foreign words" fields must be filled</string>
+    <string name="native_and_foreign_words_must_be_filled">
+        The "native word" and "foreign words" fields must be filled
+    </string>
 
-<!--card-->
+    <!--card-->
     <string name="card_has_not_been_changed">The card hasn\'t been changed</string>
     <string name="there_are_no_card_in_deck">There are no cards in the deck</string>
     <string name="card_has_been_added">the card has been added</string>
@@ -18,7 +20,7 @@
     <string name="problem_with_fetching_cards">There is a problem with fetching cards</string>
     <string name="problem_with_removing_card">There is a problem with removing card</string>
 
-<!--    deck-->
+    <!--    deck-->
     <string name="deck_is_not_found">the deck isn\'t found</string>
     <string name="problem_with_fetching_deck">There is a problem with fetching deck</string>
     <string name="such_name_is_already_exist">such name is already exist</string>
@@ -30,9 +32,10 @@
     <string name="there_is_nothing_to_change">There is nothing to change</string>
     <string name="deck_is_empty">The deck is empty</string>
     <string name="deck_has_been_renamed">The deck has been renamed</string>
-    <string name="exception_renaming_deck">Renaming deck is faild</string>
-    <string name="exception_removing_deck">Removing deck is faild</string>
-    <string name="exception_creating_deck">Creating deck is faild</string>
+    <string name="problem_with_renaming_deck">There is a problem with renaming deck</string>
+    <string name="problem_with_removing_deck">There is a problem with  removing deck</string>
+    <string name="problem_with_creating_deck">There is a problem with creating deck</string>
+    <string name="problem_with_updating_deck">There is a problem with updating deck</string>
 
     <string name="pointer_foreign">F</string>
     <string name="pointer_native">N</string>

@@ -1,8 +1,8 @@
-package com.example.klaf.presentation.auxiliary
+package com.example.klaf.presentation.common
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.example.klaf.presentation.auxiliary.TimerCountingState.*
+import com.example.klaf.presentation.common.TimerCountingState.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -14,20 +14,20 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
 
     companion object {
 
-        private const val TIME_FORMAT_TEMPLATE = "%02d:%02d"
         private const val DELAY_INTERVAL: Long = 1000
-        private const val SECOND_QUANTITY_IN_MINUTE = 60
-        private const val INITIAL_TIME_VALUE = "00:00"
+        private const val INITIAL_TIME_VALUE: Long = 0
     }
 
     private val scope = CoroutineScope(Dispatchers.IO)
     private var job: Job? = null
 
     private var totalSeconds: Long = 0
+
     var savedTotalTime: Long = 0
         private set
+    val savedTotalTimeAsString get() = savedTotalTime.timeAsString
 
-    private val _time = MutableStateFlow(value = INITIAL_TIME_VALUE)
+    private val _time = MutableStateFlow(value = INITIAL_TIME_VALUE.timeAsString)
     private val timerCountingState = MutableStateFlow(STOPED)
 
     val timerState = combine(_time, timerCountingState) { time, countingState ->
@@ -68,7 +68,7 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
                 while (timerCountingState.value == RUN) {
                     delay(DELAY_INTERVAL)
                     totalSeconds++
-                    _time.value = getTimeAsString()
+                    _time.value = totalSeconds.timeAsString
                 }
             }
         }
@@ -79,17 +79,11 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
         timerCountingState.value = STOPED
         savedTotalTime = totalSeconds
         totalSeconds = 0
-        _time.value = getTimeAsString()
+        _time.value = totalSeconds.timeAsString
     }
 
     private fun pauseCounting() {
         job?.cancel()
         timerCountingState.value = PAUSED
-    }
-
-    private fun getTimeAsString(): String {
-        val seconds = totalSeconds % SECOND_QUANTITY_IN_MINUTE
-        val minutes = totalSeconds / SECOND_QUANTITY_IN_MINUTE
-        return TIME_FORMAT_TEMPLATE.format(minutes, seconds)
     }
 }

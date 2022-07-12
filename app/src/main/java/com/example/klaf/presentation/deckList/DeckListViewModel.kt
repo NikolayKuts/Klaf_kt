@@ -69,7 +69,7 @@ class DeckListViewModel @Inject constructor(
                 else -> {
                     viewModelScope.launchWithExceptionHandler(
                         onException = { _, _ ->
-                            _eventMessage.tryEmit(messageId = R.string.exception_renaming_deck)
+                            _eventMessage.tryEmit(messageId = R.string.problem_with_renaming_deck)
                         },
                         onCompletion = {
                             _eventMessage.tryEmit(messageId = R.string.deck_has_been_renamed)
@@ -86,7 +86,7 @@ class DeckListViewModel @Inject constructor(
     fun deleteDeck(deckId: Int) {
         viewModelScope.launchWithExceptionHandler(
             onException = { _, _ ->
-                _eventMessage.tryEmit(messageId = R.string.exception_removing_deck)
+                _eventMessage.tryEmit(messageId = R.string.problem_with_removing_deck)
             },
             onCompletion = {
                 _eventMessage.tryEmit(messageId = R.string.the_deck_has_been_removed)

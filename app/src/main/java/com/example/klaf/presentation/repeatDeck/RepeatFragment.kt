@@ -19,8 +19,8 @@ import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.presentation.adapters.IpaPromptAdapter
-import com.example.klaf.presentation.auxiliary.TimerCountingState
-import com.example.klaf.presentation.auxiliary.TimerCountingState.*
+import com.example.klaf.presentation.common.TimerCountingState
+import com.example.klaf.presentation.common.TimerCountingState.*
 import com.example.klaf.presentation.common.applyTextColor
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showToast
@@ -118,10 +118,21 @@ class RepeatFragment : Fragment() {
                     binding.startRepetitionButton.isVisible = false
                     cardRepetitionControlButtons.onEach { it.isVisible = true }
                 }
-                FinishState -> {
+                is FinishState -> {
                     binding.startRepetitionButton.isVisible = true
                     cardRepetitionControlButtons.onEach { it.isVisible = false }
-                    requireContext().showToast(message = "************************")
+
+                    with(screenState) {
+                        navigateToDeckRepetitionDialogFragment(
+                            currentDuration = currentDuration,
+                            lastDuration = lastDuration,
+                            newScheduledDate = newScheduledDate,
+                            lastScheduledDate = lastScheduledDate,
+                            lastRepetitionDate = lastRepetitionDate,
+                            repetitionQuantity = repetitionQuantity,
+                            lastSuccessMark = lastSuccessMark
+                        )
+                    }
                 }
             }
         }
@@ -186,7 +197,7 @@ class RepeatFragment : Fragment() {
             }
 
             binding.repeatCardRemovingActionButton.setOnClickListener {
-                navigateToCArdRemovingDialogFragment(cardId = cardRepetitionState.card.id)
+                navigateToCardRemovingDialogFragment(cardId = cardRepetitionState.card.id)
             }
         }
     }
@@ -228,11 +239,31 @@ class RepeatFragment : Fragment() {
         ).also { findNavController().navigate(it) }
     }
 
-    private fun navigateToCArdRemovingDialogFragment(cardId: Int) {
+    private fun navigateToCardRemovingDialogFragment(cardId: Int) {
         RepeatFragmentDirections.actionRepeatFragmentToCardRemovingDialogFragment(
             deckId = args.deckId,
             cardId = cardId
         ).also { findNavController().navigate(it) }
+    }
+
+    private fun navigateToDeckRepetitionDialogFragment(
+        currentDuration: String,
+        lastDuration: String,
+        newScheduledDate: String,
+        lastScheduledDate: String,
+        lastRepetitionDate: String,
+        repetitionQuantity: String,
+        lastSuccessMark: String,
+    ) {
+        RepeatFragmentDirections.actionRepeatFragmentToDeckRepetitionInfoDialogFragment(
+            currentDuration = currentDuration,
+            lastDuration = lastDuration,
+            newScheduledDate = newScheduledDate,
+            lastScheduledDate = lastScheduledDate,
+            lastRepetitionDate = lastRepetitionDate,
+            repetitionQuantity = repetitionQuantity,
+            lastSuccessMark = lastSuccessMark
+        ).also { findNavController().navigate(directions = it) }
     }
 
     private fun setIpaPromptContent() {

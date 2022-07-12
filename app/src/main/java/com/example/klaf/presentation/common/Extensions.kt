@@ -13,7 +13,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 
+
+private const val TIME_FORMAT_TEMPLATE = "%02d:%02d"
+private const val SECOND_QUANTITY_IN_MINUTE = 60
+
 val EditText.textAsString: String get() = this.text.toString()
+
+val Long.timeAsString: String
+    get() {
+        val seconds = this % SECOND_QUANTITY_IN_MINUTE
+        val minutes = this / SECOND_QUANTITY_IN_MINUTE
+
+        return TIME_FORMAT_TEMPLATE.format(minutes, seconds)
+    }
 
 fun Context.showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(this, message, duration).show()

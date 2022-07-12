@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.cardRemovingDialog
+package com.example.klaf.presentation.cardRemoving
 
 import android.os.Bundle
 import android.view.LayoutInflater
