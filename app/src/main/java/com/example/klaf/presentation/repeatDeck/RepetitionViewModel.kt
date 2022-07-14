@@ -1,8 +1,11 @@
 package com.example.klaf.presentation.repeatDeck
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkManager
 import com.example.klaf.R
+import com.example.klaf.data.DeckRepetitionReminder.Companion.scheduleDeckRepetition
 import com.example.klaf.domain.auxiliary.DateAssistant
 import com.example.klaf.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE
 import com.example.klaf.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN
@@ -26,6 +29,7 @@ import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.repeatDeck.RepetitionScreenState.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
@@ -33,6 +37,7 @@ import kotlin.coroutines.CoroutineContext
 
 
 class RepetitionViewModel @AssistedInject constructor(
+    @ApplicationContext private val context: Context,
     @Assisted deckId: Int,
     fetchCards: FetchCardsUseCase,
     fetchDeckById: FetchDeckByIdUseCase,
@@ -315,12 +320,17 @@ class RepetitionViewModel @AssistedInject constructor(
     private fun scheduleDeckRepetition(repeatedDeck: Deck, updatedDeck: Deck) {
         val currentTime = System.currentTimeMillis()
 
-        if (
-            updatedDeck.scheduledDate > currentTime
-            && repeatedDeck.repeatQuantity >= MINIMUM_NUMBER_OF_FIRST_REPETITIONS
-            && repeatedDeck.repeatQuantity % 2 == 0
-        ) {
-            //TODO implement scheduling deck repetition
-        }
+        WorkManager.getInstance(context).scheduleDeckRepetition(
+            deckName = repeatedDeck.name,
+            deckId = repeatedDeck.id
+        )
+
+//        if (
+//            updatedDeck.scheduledDate > currentTime
+//            && repeatedDeck.repeatQuantity >= MINIMUM_NUMBER_OF_FIRST_REPETITIONS
+//            && repeatedDeck.repeatQuantity % 2 == 0
+//        ) {
+//            //TODO implement scheduling deck repetition
+//        }
     }
 }
