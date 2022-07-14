@@ -8,6 +8,7 @@ import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
+import com.example.klaf.presentation.common.Notifier
 import com.example.klaf.presentation.common.tryEmit
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -21,6 +22,7 @@ class DeckListViewModel @Inject constructor(
     private val renameDeck: RenameDeckUseCase,
     private val removeDeck: RemoveDeckUseCase,
     private val removeCardsOfDeck: RemoveCardsOfDeckUseCase,
+    notifier: Notifier,
 ) : ViewModel() {
 
     val deckSource: StateFlow<List<Deck>> = fetchDeckSource().stateIn(
@@ -44,7 +46,6 @@ class DeckListViewModel @Inject constructor(
                 },
                 onCompletion = {
                     _eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
-                    // TODO: 12/29/2021 to translate toast shoeing to DeckListFragment
                 },
             ) {
                 createDeck(
@@ -55,6 +56,10 @@ class DeckListViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    init {
+        notifier.createDeckRepetitionNotificationChannel()
     }
 
     fun renameDeck(deck: Deck?, newName: String) {
@@ -76,7 +81,6 @@ class DeckListViewModel @Inject constructor(
                         }
                     ) {
                         renameDeck(oldDeck = deck, name = newName)
-//                        repository.insertDeck(deck = deck.copy(name = newName))
                     }
                 }
             }

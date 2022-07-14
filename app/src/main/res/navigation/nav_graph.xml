@@ -35,8 +35,7 @@
         tools:layout="@layout/fragment_repeat" >
         <argument
             android:name="deckId"
-            app:argType="integer"
-            android:defaultValue="-1" />
+            app:argType="integer" />
 <!--        <argument-->
 <!--            android:name="cardId"-->
 <!--            app:argType="integer"-->
