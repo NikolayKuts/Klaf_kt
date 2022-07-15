@@ -22,8 +22,8 @@ import com.example.klaf.domain.enums.DifficultyRecallingLevel.*
 import com.example.klaf.domain.useCases.FetchCardsUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.domain.useCases.UpdateDeckUseCase
-import com.example.klaf.presentation.common.RepetitionTimer
 import com.example.klaf.presentation.common.EventMessage
+import com.example.klaf.presentation.common.RepetitionTimer
 import com.example.klaf.presentation.common.timeAsString
 import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.repeatDeck.RepetitionScreenState.*
@@ -31,9 +31,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import java.util.*
-import kotlin.coroutines.CoroutineContext
 
 
 class RepetitionViewModel @AssistedInject constructor(
@@ -320,17 +318,16 @@ class RepetitionViewModel @AssistedInject constructor(
     private fun scheduleDeckRepetition(repeatedDeck: Deck, updatedDeck: Deck) {
         val currentTime = System.currentTimeMillis()
 
-        WorkManager.getInstance(context).scheduleDeckRepetition(
-            deckName = repeatedDeck.name,
-            deckId = repeatedDeck.id
-        )
-
-//        if (
-//            updatedDeck.scheduledDate > currentTime
-//            && repeatedDeck.repeatQuantity >= MINIMUM_NUMBER_OF_FIRST_REPETITIONS
-//            && repeatedDeck.repeatQuantity % 2 == 0
-//        ) {
-//            //TODO implement scheduling deck repetition
-//        }
+        if (
+            updatedDeck.scheduledDate > currentTime
+            && updatedDeck.repeatQuantity >= MINIMUM_NUMBER_OF_FIRST_REPETITIONS
+            && updatedDeck.repeatQuantity % 2 == 0
+        ) {
+            WorkManager.getInstance(context).scheduleDeckRepetition(
+                deckName = repeatedDeck.name,
+                deckId = repeatedDeck.id,
+                scheduledTime = updatedDeck.scheduledDate
+            )
+        }
     }
 }
