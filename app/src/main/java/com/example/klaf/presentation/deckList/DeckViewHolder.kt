@@ -3,6 +3,7 @@ package com.example.klaf.presentation.deckList
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.example.klaf.databinding.DeckListItemBinding
+import com.example.klaf.domain.auxiliary.DateAssistant
 import com.example.klaf.domain.entities.Deck
 
 class DeckViewHolder(
@@ -17,7 +18,7 @@ class DeckViewHolder(
         binding.apply {
             textViewDeckName.text = deck.name
             textViewRepeatDay.text = deck.repeatDay.toString()
-            textViewScheduledDate.text = deck.scheduledDate.toString()
+            textViewScheduledDate.text = DateAssistant.getFormattedDate(date =deck.scheduledDate)
             textViewRepeatQuantity.text = deck.repeatQuantity.toString()
             textViewCardQuantity.text = deck.cardQuantity.toString()
 

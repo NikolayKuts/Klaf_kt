@@ -11,6 +11,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.NavDeepLinkBuilder
 import com.example.klaf.R
+import com.example.klaf.domain.common.DECK_ID_KEY
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
@@ -133,7 +134,7 @@ class Notifier @Inject constructor(
             .setComponentName(MainActivity::class.java)
             .setGraph(R.navigation.nav_graph)
             .setDestination(R.id.repeatFragment)
-            .setArguments(bundleOf("deckId" to deckId))
+            .setArguments(bundleOf(DECK_ID_KEY to deckId))
             .createPendingIntent()
     }
 
