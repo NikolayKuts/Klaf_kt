@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".presentation.cardViewer.CardViewerFragment">
+    tools:context=".presentation.cardViewing.CardViewingFragment">
 
     <TextView
         android:id="@+id/text_view_item_deck_name"

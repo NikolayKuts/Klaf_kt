@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.repeatDeck
+package com.example.klaf.presentation.deckRepetition
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -28,7 +28,7 @@ import com.example.klaf.presentation.common.TimerCountingState.*
 import com.example.klaf.presentation.common.applyTextColor
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showToast
-import com.example.klaf.presentation.repeatDeck.RepetitionScreenState.*
+import com.example.klaf.presentation.deckRepetition.RepetitionScreenState.*
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -278,10 +278,12 @@ class RepeatFragment : Fragment() {
     }
 
     private fun setCardContentColor(cardSide: CardSide) {
-        when (cardSide) {
+        val colorId = when (cardSide) {
             BACK -> R.color.back_card_content_color
             FRONT -> R.color.front_card_content_color
         }
+
+        binding.cardSideTextView.applyTextColor(colorId = colorId)
     }
 
     private fun changeRepetitionOrder() {

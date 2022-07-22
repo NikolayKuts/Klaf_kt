@@ -1,6 +1,7 @@
 package com.example.klaf.presentation.common
 
 import android.content.Context
+import android.util.Log
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
@@ -48,4 +49,14 @@ fun MutableSharedFlow<EventMessage>.tryEmit(@StringRes messageId: Int) {
 
 fun TextView.applyTextColor(@ColorRes colorId: Int) {
     setTextColor(ContextCompat.getColor(context, colorId))
+}
+
+fun log(
+    message: String,
+    tag: String = "app_log",
+    pointerMessage: String = "",
+    pointer: String =
+        if (pointerMessage.isEmpty()) "***********" else  "****** $pointerMessage ******",
+) {
+    Log.i(tag, "$pointer $message")
 }

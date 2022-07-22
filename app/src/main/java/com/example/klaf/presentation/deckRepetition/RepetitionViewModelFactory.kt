@@ -1,13 +1,12 @@
-package com.example.klaf.presentation.repeatDeck
+package com.example.klaf.presentation.deckRepetition
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import dagger.assisted.AssistedFactory
-import javax.inject.Named
 
 class RepetitionViewModelFactory(
     private val assistedFactory: RepetitionViewModelAssistedFactory,
-    private val deckId: Int
+    private val deckId: Int,
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
