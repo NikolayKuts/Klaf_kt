@@ -30,7 +30,7 @@
     </fragment>
     <fragment
         android:id="@+id/repeatFragment"
-        android:name="com.example.klaf.presentation.repeatDeck.RepeatFragment"
+        android:name="com.example.klaf.presentation.deckRepetition.RepeatFragment"
         android:label="fragment_repeat"
         tools:layout="@layout/fragment_repeat" >
         <argument
@@ -81,9 +81,9 @@
     </fragment>
     <fragment
         android:id="@+id/cardViewerFragment"
-        android:name="com.example.klaf.presentation.cardViewer.CardViewerFragment"
+        android:name="com.example.klaf.presentation.cardViewing.CardViewingFragment"
         android:label="fragment_card_viewer"
-        tools:layout="@layout/fragment_card_viewer" >
+        tools:layout="@layout/fragment_card_viewing" >
         <argument
             android:name="deckId"
             app:argType="integer"

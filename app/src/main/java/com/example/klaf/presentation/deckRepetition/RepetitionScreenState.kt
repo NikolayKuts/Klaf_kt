@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.repeatDeck
+package com.example.klaf.presentation.deckRepetition
 
 sealed class RepetitionScreenState {
 

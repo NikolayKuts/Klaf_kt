@@ -1,38 +1,41 @@
-package com.example.klaf.presentation.cardViewer
+package com.example.klaf.presentation.cardViewing
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.klaf.databinding.FragmentCardViewerBinding
-import com.example.klaf.presentation.adapters.CardAdapter
+import com.example.klaf.databinding.FragmentCardViewingBinding
+import com.example.klaf.presentation.common.collectWhenStarted
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-class CardViewerFragment : Fragment() {
+@AndroidEntryPoint
+class CardViewingFragment : Fragment() {
 
-    private var _binding: FragmentCardViewerBinding? = null
+    private var _binding: FragmentCardViewingBinding? = null
     private val binding get() = _binding!!
 
-    private val args by navArgs<CardViewerFragmentArgs>()
-    private val viewModel: CardViewerViewModel by lazy { getCardViewerViewModel() }
-    private val cardAdapter = CardAdapter()
+    private val args by navArgs<CardViewingFragmentArgs>()
 
-    private fun getCardViewerViewModel(): CardViewerViewModel {
-        return ViewModelProvider(
-            owner = requireActivity(),
-            factory = CardViewerViewModelFactory(requireActivity().application, args.deckId)
-        )[CardViewerViewModel::class.java]
+    @Inject
+    lateinit var assistedFactory: CardViewingViewModelFactory.CardViewingViewModelAssistedFactory
+    private val viewModel: CardViewingViewModel by viewModels {
+        CardViewingViewModelFactory(assistedFactory = assistedFactory, deckId = args.deckId)
     }
+
+    private val cardAdapter = CardAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = FragmentCardViewerBinding.inflate(inflater, container, false)
+        _binding = FragmentCardViewingBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -52,9 +55,9 @@ class CardViewerFragment : Fragment() {
     }
 
     private fun setCardObserver() {
-//        viewModel.carsSours.observe(viewLifecycleOwner) { receivedCards ->
-//            cardAdapter.updateData(receivedCards)
-//        }
+        viewModel.cards.collectWhenStarted(lifecycleScope) { cards ->
+            cardAdapter.updateData(cards = cards)
+        }
     }
 
     override fun onDestroy() {

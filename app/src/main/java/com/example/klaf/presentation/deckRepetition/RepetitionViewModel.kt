@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.repeatDeck
+package com.example.klaf.presentation.deckRepetition
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -27,7 +27,7 @@ import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.RepetitionTimer
 import com.example.klaf.presentation.common.timeAsString
 import com.example.klaf.presentation.common.tryEmit
-import com.example.klaf.presentation.repeatDeck.RepetitionScreenState.*
+import com.example.klaf.presentation.deckRepetition.RepetitionScreenState.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
