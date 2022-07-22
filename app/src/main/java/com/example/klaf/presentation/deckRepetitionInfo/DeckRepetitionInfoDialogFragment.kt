@@ -57,7 +57,6 @@ class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_rep
         Card(
             shape = RoundedCornerShape(16.dp),
             elevation = 4.dp,
-//                modifier = Modifier.padding(30.dp).background(Color(0xFFC7B682)),
         ) {
             Column(
                 modifier = Modifier

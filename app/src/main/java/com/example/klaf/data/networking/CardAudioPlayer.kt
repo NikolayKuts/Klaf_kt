@@ -34,8 +34,6 @@ class CardAudioPlayer @Inject constructor(private val mediaPlayer: MediaPlayer) 
                 reset()
                 setDataSource(card.buildAudioUri())
                 prepare()
-                setOnPreparedListener { log("prepared") }
-                setOnCompletionListener { log("completion") }
             }
         }
     }

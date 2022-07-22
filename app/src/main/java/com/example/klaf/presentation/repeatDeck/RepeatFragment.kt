@@ -14,7 +14,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.klaf.R
 import com.example.klaf.databinding.FragmentRepeatBinding
 import com.example.klaf.domain.common.CardRepetitionOrder
+import com.example.klaf.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE
+import com.example.klaf.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN
 import com.example.klaf.domain.common.CardSide
+import com.example.klaf.domain.common.CardSide.BACK
+import com.example.klaf.domain.common.CardSide.FRONT
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.domain.ipa.IpaProcessor
@@ -61,10 +65,6 @@ class RepeatFragment : Fragment() {
         setListeners()
 
         viewLifecycleOwner.lifecycle.addObserver(viewModel.timer)
-
-        binding.cardSideTextView.setOnClickListener {
-            viewModel.pronounce()
-        }
     }
 
     override fun onDestroyView() {
@@ -169,8 +169,8 @@ class RepeatFragment : Fragment() {
             if (cardRepetitionState.card == null) return@collectWhenStarted
 
             when (cardRepetitionState.repetitionOrder) {
-                CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
-                    if (cardRepetitionState.side == CardSide.FRONT) {
+                NATIVE_TO_FOREIGN -> {
+                    if (cardRepetitionState.side == FRONT) {
                         binding.cardSideTextView.text = cardRepetitionState.card.nativeWord
                         ipaPromptAdapter.setData(letterInfos = emptyList())
                     } else {
@@ -180,8 +180,8 @@ class RepeatFragment : Fragment() {
                         )
                     }
                 }
-                CardRepetitionOrder.FOREIGN_TO_NATIVE -> {
-                    if (cardRepetitionState.side == CardSide.FRONT) {
+                FOREIGN_TO_NATIVE -> {
+                    if (cardRepetitionState.side == FRONT) {
                         binding.cardSideTextView.text = cardRepetitionState.card.foreignWord
                         ipaPromptAdapter.setData(
                             letterInfos = IpaProcessor.getLetterInfos(cardRepetitionState.card.ipa)
@@ -195,6 +195,8 @@ class RepeatFragment : Fragment() {
 
             setRepetitionOrderPointers(order = cardRepetitionState.repetitionOrder)
             setRepetitionOrderSwitchPosition(order = cardRepetitionState.repetitionOrder)
+
+            setCardContentColor(cardSide = cardRepetitionState.side)
 
             binding.repeatCardEditingActionButton.setOnClickListener {
                 navigateToCardEditingFragment(cardId = cardRepetitionState.card.id)
@@ -215,6 +217,8 @@ class RepeatFragment : Fragment() {
             repeatOrderSwitch.setOnClickListener { changeRepetitionOrder() }
 
             turnButton.setOnClickListener { turnCard() }
+
+            cardSideTextView.setOnClickListener { viewModel.pronounce() }
 
             easyButton.setOnClickListener { onClickEasyButton() }
             goodButton.setOnClickListener { onClickGoodButton() }
@@ -273,12 +277,11 @@ class RepeatFragment : Fragment() {
     private fun setIpaPromptContent() {
     }
 
-    private fun setCardContentColor() {
-//        if (cards.isNotEmpty()) {
-//            setCardContentColorBySide()
-//        } else {
-//            binding.cardSideTextView.applyTextColor(colorId = R.color.empty_card_content_color)
-//        }
+    private fun setCardContentColor(cardSide: CardSide) {
+        when (cardSide) {
+            BACK -> R.color.back_card_content_color
+            FRONT -> R.color.front_card_content_color
+        }
     }
 
     private fun changeRepetitionOrder() {
@@ -290,11 +293,11 @@ class RepeatFragment : Fragment() {
         val foreign = getString(R.string.pointer_foreign)
 
         when (order) {
-            CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
+            NATIVE_TO_FOREIGN -> {
                 binding.frontSidePointerTextView.text = native
                 binding.backSidePointerTextView.text = foreign
             }
-            CardRepetitionOrder.FOREIGN_TO_NATIVE -> {
+            FOREIGN_TO_NATIVE -> {
                 binding.frontSidePointerTextView.text = foreign
                 binding.backSidePointerTextView.text = native
             }
@@ -303,10 +306,10 @@ class RepeatFragment : Fragment() {
 
     private fun setRepetitionOrderSwitchPosition(order: CardRepetitionOrder) {
         when (order) {
-            CardRepetitionOrder.FOREIGN_TO_NATIVE -> {
+            FOREIGN_TO_NATIVE -> {
                 binding.repeatOrderSwitch.isChecked = true
             }
-            CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
+            NATIVE_TO_FOREIGN -> {
                 binding.repeatOrderSwitch.isChecked = false
             }
         }
