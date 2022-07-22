@@ -45,4 +45,5 @@
     <string name="deck_repetition_summery_notification_content_text">There are some decks to repeat</string>
     <string name="deck_repetition_summery_notification_big_content_title">%d notifications</string>
     <string name="deck_repetition_summery_notification_summery_text">It\'s time to repeat %s decks</string>
+    <string name="problem_with_playing_audio">problem with playing audio</string>
 </resources>

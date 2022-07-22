@@ -61,6 +61,10 @@ class RepeatFragment : Fragment() {
         setListeners()
 
         viewLifecycleOwner.lifecycle.addObserver(viewModel.timer)
+
+        binding.cardSideTextView.setOnClickListener {
+            viewModel.pronounce()
+        }
     }
 
     override fun onDestroyView() {
