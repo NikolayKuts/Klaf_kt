@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.example.klaf.R
 import com.example.klaf.data.DeckRepetitionReminder.Companion.scheduleDeckRepetition
+import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.domain.auxiliary.DateAssistant
 import com.example.klaf.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE
 import com.example.klaf.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN
@@ -30,7 +31,9 @@ import com.example.klaf.presentation.repeatDeck.RepetitionScreenState.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import java.io.IOException
 import java.util.*
 
 
@@ -41,6 +44,7 @@ class RepetitionViewModel @AssistedInject constructor(
     fetchDeckById: FetchDeckByIdUseCase,
     val timer: RepetitionTimer,
     private val updateDeck: UpdateDeckUseCase,
+    private val audioPlayer: CardAudioPlayer,
 ) : ViewModel() {
 
     companion object {
@@ -72,15 +76,16 @@ class RepetitionViewModel @AssistedInject constructor(
 
     private val repetitionCards = MutableStateFlow<List<Card>>(LinkedList())
 
-    private val _screenState = MutableStateFlow<RepetitionScreenState>(StartState)
-    val screenState = _screenState.asStateFlow()
-
     private val currentCard = repetitionCards.map { cards -> cards.firstOrNull() }
         .shareIn(
             scope = viewModelScope,
             started = SharingStarted.Lazily,
             replay = 1
         )
+
+    private val _screenState = MutableStateFlow<RepetitionScreenState>(StartState)
+    val screenState = _screenState.asStateFlow()
+
 
     private val cardSide = MutableStateFlow(FRONT)
     private val repetitionOrder = MutableStateFlow(value = NATIVE_TO_FOREIGN)
@@ -104,16 +109,19 @@ class RepetitionViewModel @AssistedInject constructor(
     )
 
     init {
-        viewModelScope.launchWithExceptionHandler(
-            onException = { _, _ ->
-                _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
-            }
-        ) {
-            cardsSource.collect { receivedCards ->
-                repetitionCards.value = getCardsByProgress(receivedCards = receivedCards)
+        observeCardSource()
+        observeCurrentCard()
+    }
 
-                if (receivedCards.isNotEmpty()) {
-                    startRepetitionCard = receivedCards.first()
+    fun pronounce() {
+        cardState.replayCache.firstOrNull()?.let { cardRepetitionState ->
+            val repetitionOrder = cardRepetitionState.repetitionOrder
+            val cardSide = cardRepetitionState.side
+
+            when {
+                (repetitionOrder == NATIVE_TO_FOREIGN && cardSide == BACK)
+                        || (repetitionOrder == FOREIGN_TO_NATIVE && cardSide == FRONT) -> {
+                    audioPlayer.play()
                 }
             }
         }
@@ -171,7 +179,50 @@ class RepetitionViewModel @AssistedInject constructor(
                 HARD -> hardCards.add(cardForMoving)
             }
 
+            manageCardSide()
             saveRepetitionProgress(cards = repetitionCards.value)
+        }
+    }
+
+    private fun manageCardSide() {
+        cardState.replayCache.firstOrNull()?.let { cardState ->
+            if (cardState.side == BACK) {
+                turnCard()
+            }
+        }
+    }
+
+    private fun observeCardSource() {
+        viewModelScope.launchWithExceptionHandler(
+            onException = { _, throwable ->
+                when (throwable) {
+                    is IOException, is IllegalArgumentException -> {
+                        _eventMessage.tryEmit(messageId = R.string.problem_with_playing_audio)
+                    }
+                }
+                _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
+            }
+        ) {
+            cardsSource.collect { receivedCards ->
+                repetitionCards.value = getCardsByProgress(receivedCards = receivedCards)
+
+                if (receivedCards.isNotEmpty()) {
+                    startRepetitionCard = receivedCards.first()
+                }
+            }
+        }
+    }
+
+    private fun observeCurrentCard() {
+        viewModelScope.launchWithExceptionHandler(
+            context = Dispatchers.IO,
+            onException = { _, _ ->
+                _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card)
+            }
+        ) {
+            currentCard.collect { card: Card? ->
+                card?.let { audioPlayer.prepare(card = card) }
+            }
         }
     }
 
