@@ -256,7 +256,7 @@ class RepetitionViewModel @AssistedInject constructor(
         return when (level) {
             EASY -> updatedCards.size
             GOOD -> (updatedCards.size * ONE_QUARTER).toInt()
-            HARD -> (updatedCards.size / THREE_QUADS).toInt()
+            HARD -> (updatedCards.size * THREE_QUADS).toInt()
         }
     }
 
