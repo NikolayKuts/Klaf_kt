@@ -1,6 +1,6 @@
 package com.example.klaf.di
 
-import com.example.klaf.data.OldAppKlafDataTransferRepositoryImpl
+import com.example.klaf.data.common.OldAppKlafDataTransferRepositoryImpl
 import com.example.klaf.data.room.repositoryImplementations.CardRepositoryRoomImpl
 import com.example.klaf.data.room.repositoryImplementations.DeckRepositoryRoomImp
 import com.example.klaf.domain.repositories.CardRepository

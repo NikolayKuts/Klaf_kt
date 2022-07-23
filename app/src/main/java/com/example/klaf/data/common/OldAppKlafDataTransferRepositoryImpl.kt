@@ -1,8 +1,7 @@
-package com.example.klaf.data
+package com.example.klaf.data.common
 
 import android.content.Context
 import android.net.Uri
-import androidx.room.util.CursorUtil.getColumnIndex
 import com.example.klaf.data.room.entities.CARD_TABLE_NAME
 import com.example.klaf.data.room.entities.DECK_TABLE_NAME
 import com.example.klaf.domain.entities.Card
@@ -34,7 +33,7 @@ class OldAppKlafDataTransferRepositoryImpl @Inject constructor(
     private suspend fun transferDecks() {
         withContext(Dispatchers.IO) {
             val cursor = context.contentResolver.query(
-                Uri.parse("content://${oldKlafAppAuthorities}/$DECK_TABLE_NAME"),
+                Uri.parse("content://$oldKlafAppAuthorities/$DECK_TABLE_NAME"),
                 null,
                 null,
                 null,
@@ -70,7 +69,7 @@ class OldAppKlafDataTransferRepositoryImpl @Inject constructor(
     private suspend fun transferCards() {
         withContext(Dispatchers.IO) {
             val cursor = context.contentResolver.query(
-                Uri.parse("content://${oldKlafAppAuthorities}/$CARD_TABLE_NAME"),
+                Uri.parse("content://$oldKlafAppAuthorities/$CARD_TABLE_NAME"),
                 null,
                 null,
                 null,
