@@ -1,10 +1,8 @@
-package com.example.klaf.data
+package com.example.klaf.data.common
 
 import android.content.Context
 import androidx.work.*
-import com.example.klaf.domain.auxiliary.DateAssistant
 import com.example.klaf.presentation.common.Notifier
-import com.example.klaf.presentation.common.log
 import java.util.concurrent.TimeUnit
 
 class DeckRepetitionReminder(
@@ -45,7 +43,6 @@ class DeckRepetitionReminder(
             )
 
             val currentTime = System.currentTimeMillis()
-            log(message = (DateAssistant.getFormattedDate(scheduleTime)))
 
             return OneTimeWorkRequestBuilder<DeckRepetitionReminder>()
                 .setInitialDelay(scheduleTime - currentTime, TimeUnit.MILLISECONDS)

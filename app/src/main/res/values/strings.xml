@@ -46,4 +46,12 @@
     <string name="deck_repetition_summery_notification_big_content_title">%d notifications</string>
     <string name="deck_repetition_summery_notification_summery_text">It\'s time to repeat %s decks</string>
     <string name="problem_with_playing_audio">problem with playing audio</string>
+
+    <string name="year_pointer">%dy</string>
+    <string name="month_pointer">%dm</string>
+    <string name="week_pointer">%dw</string>
+    <string name="day_pointer">%dd</string>
+    <string name="hour_pointer">%dh</string>
+    <string name="minute_pointer">%dmin</string>
+    <string name="time_pointer_now">now</string>
 </resources>

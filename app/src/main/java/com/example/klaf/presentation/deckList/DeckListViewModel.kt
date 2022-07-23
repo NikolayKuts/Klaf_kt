@@ -3,7 +3,7 @@ package com.example.klaf.presentation.deckList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.R
-import com.example.klaf.domain.auxiliary.DateAssistant
+import com.example.klaf.domain.common.getCurrentDateAsLong
 import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
@@ -51,7 +51,7 @@ class DeckListViewModel @Inject constructor(
                 createDeck(
                     deck = Deck(
                         name = deckName,
-                        creationDate = DateAssistant.getCurrentDateAsLong()
+                        creationDate = getCurrentDateAsLong()
                     )
                 )
             }

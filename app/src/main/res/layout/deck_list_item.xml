@@ -36,11 +36,11 @@
         android:paddingStart="1dp"
         android:text="d"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/text_view_scheduled_date"
+        app:layout_constraintEnd_toStartOf="@id/text_view_scheduled_range"
         />
 
     <TextView
-        android:id="@+id/text_view_scheduled_date"
+        android:id="@+id/text_view_scheduled_range"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"

@@ -5,17 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.example.klaf.R
-import com.example.klaf.data.DeckRepetitionReminder.Companion.scheduleDeckRepetition
+import com.example.klaf.data.common.DeckRepetitionReminder.Companion.scheduleDeckRepetition
 import com.example.klaf.data.networking.CardAudioPlayer
-import com.example.klaf.domain.auxiliary.DateAssistant
+import com.example.klaf.domain.common.*
 import com.example.klaf.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE
 import com.example.klaf.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN
-import com.example.klaf.domain.common.CardRepetitionState
 import com.example.klaf.domain.common.CardSide.BACK
 import com.example.klaf.domain.common.CardSide.FRONT
-import com.example.klaf.domain.common.MINIMUM_NUMBER_OF_FIRST_REPETITIONS
-import com.example.klaf.domain.common.launchWithExceptionHandler
-import com.example.klaf.domain.common.update
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
@@ -319,15 +315,9 @@ class RepetitionViewModel @AssistedInject constructor(
                 _screenState.value = FinishState(
                     currentDuration = timer.savedTotalTimeAsString,
                     lastDuration = repeatedDeck.lastRepeatDuration.timeAsString,
-                    newScheduledDate = DateAssistant.getFormattedDate(
-                        date = updatedDeck.scheduledDate
-                    ),
-                    lastScheduledDate = DateAssistant.getFormattedDate(
-                        date = repeatedDeck.scheduledDate
-                    ),
-                    lastRepetitionDate = DateAssistant.getFormattedDate(
-                        date = repeatedDeck.lastRepeatDate
-                    ),
+                    newScheduledDate = updatedDeck.scheduledDate.asFormattedDate(),
+                    lastScheduledDate = repeatedDeck.scheduledDate.asFormattedDate(),
+                    lastRepetitionDate = repeatedDeck.lastRepeatDate.asFormattedDate(),
                     repetitionQuantity = updatedDeck.repeatQuantity.toString(),
                     lastSuccessMark = repeatedDeck.isLastRepetitionSucceeded.toString()
                 )
@@ -343,10 +333,9 @@ class RepetitionViewModel @AssistedInject constructor(
         val updatedLastSucceededRepetition: Boolean
 
         if (deckForUpdating.repeatQuantity % 2 != 0) {
-            updatedLastRepetitionDate = DateAssistant.getCurrentDateAsLong()
+            updatedLastRepetitionDate = getCurrentDateAsLong()
             currentRepetitionDuration = timer.savedTotalTime
-            updatedLastSucceededRepetition = DateAssistant.isRepetitionSucceeded(
-                desk = deckForUpdating,
+            updatedLastSucceededRepetition = deckForUpdating.isRepetitionSucceeded(
                 currentRepetitionDuration = currentRepetitionDuration
             )
         } else {
@@ -356,9 +345,10 @@ class RepetitionViewModel @AssistedInject constructor(
         }
 
         return deckForUpdating.copy(
-            repeatDay = DateAssistant.getUpdatedRepeatDay(deckForUpdating),
-            scheduledDate = DateAssistant.getNextScheduledRepeatDate(deckForUpdating,
-                currentRepetitionDuration),
+            repeatDay = deckForUpdating.getUpdatedRepeatDay(),
+            scheduledDate = deckForUpdating.calculateNextScheduledRepeatDate(
+                currentRepetitionDuration
+            ),
             lastRepeatDate = updatedLastRepetitionDate,
             repeatQuantity = deckForUpdating.repeatQuantity + 1,
             lastRepeatDuration = currentRepetitionDuration,
