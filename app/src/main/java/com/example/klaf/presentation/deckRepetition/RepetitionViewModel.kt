@@ -315,8 +315,12 @@ class RepetitionViewModel @AssistedInject constructor(
                 _screenState.value = FinishState(
                     currentDuration = timer.savedTotalTimeAsString,
                     lastDuration = repeatedDeck.lastRepeatDuration.timeAsString,
-                    newScheduledDate = updatedDeck.scheduledDate.asFormattedDate(),
-                    lastScheduledDate = repeatedDeck.scheduledDate.asFormattedDate(),
+                    scheduledDate = updatedDeck.scheduledDate,
+//                    scheduledDate = updatedDeck.scheduledDate.calculateDetailedScheduledRange(),
+//                    scheduledDate = updatedDeck.scheduledDate.asFormattedDate(),
+                    previusScheduledDate = repeatedDeck.scheduledDate,
+//                    previusScheduledDate = repeatedDeck.scheduledDate.calculateDetailedScheduledRange(),
+//                    previusScheduledDate = repeatedDeck.scheduledDate.asFormattedDate(),
                     lastRepetitionDate = repeatedDeck.lastRepeatDate.asFormattedDate(),
                     repetitionQuantity = updatedDeck.repeatQuantity.toString(),
                     lastSuccessMark = repeatedDeck.isLastRepetitionSucceeded.toString()

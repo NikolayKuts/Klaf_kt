@@ -127,11 +127,11 @@ class RepeatFragment : Fragment() {
                     cardRepetitionControlButtons.onEach { it.isVisible = false }
 
                     with(screenState) {
-                        navigateToDeckRepetitionDialogFragment(
+                        navigateToDeckRepetitionInfoDialogFragment(
                             currentDuration = currentDuration,
                             lastDuration = lastDuration,
-                            newScheduledDate = newScheduledDate,
-                            lastScheduledDate = lastScheduledDate,
+                            scheduledDate = scheduledDate,
+                            previusScheduledDate = previusScheduledDate,
                             lastRepetitionDate = lastRepetitionDate,
                             repetitionQuantity = repetitionQuantity,
                             lastSuccessMark = lastSuccessMark
@@ -254,11 +254,11 @@ class RepeatFragment : Fragment() {
         ).also { findNavController().navigate(it) }
     }
 
-    private fun navigateToDeckRepetitionDialogFragment(
+    private fun navigateToDeckRepetitionInfoDialogFragment(
         currentDuration: String,
         lastDuration: String,
-        newScheduledDate: String,
-        lastScheduledDate: String,
+        scheduledDate: Long,
+        previusScheduledDate: Long,
         lastRepetitionDate: String,
         repetitionQuantity: String,
         lastSuccessMark: String,
@@ -266,8 +266,8 @@ class RepeatFragment : Fragment() {
         RepeatFragmentDirections.actionRepeatFragmentToDeckRepetitionInfoDialogFragment(
             currentDuration = currentDuration,
             lastDuration = lastDuration,
-            newScheduledDate = newScheduledDate,
-            lastScheduledDate = lastScheduledDate,
+            scheduledDate = scheduledDate,
+            previusScheduledDate = previusScheduledDate,
             lastRepetitionDate = lastRepetitionDate,
             repetitionQuantity = repetitionQuantity,
             lastSuccessMark = lastSuccessMark

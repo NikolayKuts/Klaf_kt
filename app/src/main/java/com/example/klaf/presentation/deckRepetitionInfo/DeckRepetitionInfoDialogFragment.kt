@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.DialogFragment
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
+import com.example.klaf.domain.common.calculateDetailedScheduledRange
 
 class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_repetition_info) {
 
@@ -35,8 +36,12 @@ class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_rep
             deckRepetitionInfoView(
                 currentDuration = args.currentDuration,
                 lastDuration = args.lastDuration,
-                newScheduledDate = args.newScheduledDate,
-                lastScheduledDate = args.lastScheduledDate,
+                newScheduledDate = args.scheduledDate.calculateDetailedScheduledRange(
+                    context = requireContext()
+                ),
+                lastScheduledDate = args.previusScheduledDate.calculateDetailedScheduledRange(
+                    context = requireContext()
+                ),
                 lastRepetitionDate = args.lastRepetitionDate,
                 repetitionQuantity = args.repetitionQuantity,
                 lastSuccessMark = args.lastSuccessMark
@@ -75,12 +80,16 @@ class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_rep
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Column() {
-                    InfoItem(textPointer = "current iteration duration:", infoValue = currentDuration)
+                    InfoItem(
+                        textPointer = "current iteration duration:",
+                        infoValue = currentDuration
+                    )
                     InfoItem(textPointer = "last iteration duration:", infoValue = lastDuration)
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    InfoItem(textPointer = "new scheduled date:", infoValue = newScheduledDate)
-                    InfoItem(textPointer = "last scheduled date:", infoValue = lastScheduledDate)
+                    InfoItem(textPointer = "scheduled date:", infoValue = newScheduledDate)
+                    InfoItem(textPointer = "previous scheduled date:",
+                        infoValue = lastScheduledDate)
                     Spacer(modifier = Modifier.height(16.dp))
 
                     InfoItem(textPointer = "last repetition date:", infoValue = lastRepetitionDate)
@@ -89,7 +98,10 @@ class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_rep
                     InfoItem(textPointer = "repetition quantity:", infoValue = repetitionQuantity)
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    InfoItem(textPointer = "last iteration success mark:", infoValue = lastSuccessMark)
+                    InfoItem(
+                        textPointer = "last iteration success mark:",
+                        infoValue = lastSuccessMark
+                    )
                 }
             }
         }

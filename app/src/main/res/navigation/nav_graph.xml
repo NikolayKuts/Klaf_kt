@@ -178,11 +178,11 @@
         <argument android:name="lastDuration"
             app:argType="string" />
         <argument
-            android:name="newScheduledDate"
-            app:argType="string" />
+            android:name="scheduledDate"
+            app:argType="long" />
         <argument
-            android:name="lastScheduledDate"
-            app:argType="string" />
+            android:name="previusScheduledDate"
+            app:argType="long" />
         <argument android:name="lastRepetitionDate"
             app:argType="string" />
         <argument

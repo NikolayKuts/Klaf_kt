@@ -138,11 +138,15 @@ fun Long.calculateScheduledRange(context: Context): String {
 }
 
 fun Deck.calculateDetailedScheduledRange(context: Context): String {
+    return this.scheduledDate.calculateDetailedScheduledRange(context = context)
+}
+
+fun Long.calculateDetailedScheduledRange(context: Context): String {
     val currentTime = System.currentTimeMillis()
 
-    if (this.scheduledDate <= 0L) return UNASSIGNED_DATE_SYMBOL
+    if (this <= 0L) return UNASSIGNED_DATE_SYMBOL
 
-    val range = this.scheduledDate - currentTime
+    val range = this - currentTime
 
     val years = range.calculateYearQuantity()
     val months = range.calculateMonthQuantity()
@@ -156,7 +160,9 @@ fun Deck.calculateDetailedScheduledRange(context: Context): String {
     val daysHoursMinutes =
         context.getDetailedDaysHoursMinutes(days = days, hours = hours, minutes = minutes)
 
-    return yearsMonthsWeeks.ifEmpty { daysHoursMinutes }
+    return yearsMonthsWeeks.ifEmpty {
+        daysHoursMinutes.ifEmpty { context.getString(R.string.time_pointer_now) }
+    }
 }
 
 private fun Long.calculateYearQuantity(): Long = this / yearInMillis
