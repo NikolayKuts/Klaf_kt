@@ -9,8 +9,8 @@ sealed class RepetitionScreenState {
     class FinishState(
         val currentDuration: String,
         val lastDuration: String,
-        val newScheduledDate: String,
-        val lastScheduledDate: String,
+        val scheduledDate: Long,
+        val previusScheduledDate: Long,
         val lastRepetitionDate: String,
         val repetitionQuantity: String,
         val lastSuccessMark: String,

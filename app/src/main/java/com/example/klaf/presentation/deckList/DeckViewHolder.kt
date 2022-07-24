@@ -18,9 +18,9 @@ class DeckViewHolder(
         binding.apply {
             textViewDeckName.text = deck.name
             textViewRepeatDay.text = deck.repeatDay.toString()
-            textViewScheduledRange.text = deck.calculateDetailedScheduledRange(
+            textViewScheduledRange.text = deck.scheduledDate.calculateDetailedScheduledRange(
                 context = textViewDeckName.context
-            ) //DateAssistant.getFormattedDate(date =deck.scheduledDate)
+            )
             textViewRepeatQuantity.text = deck.repeatQuantity.toString()
             textViewCardQuantity.text = deck.cardQuantity.toString()
 
