@@ -3,7 +3,6 @@ package com.example.klaf.data.networking
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import com.example.klaf.domain.entities.Card
-import com.example.klaf.presentation.common.log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -16,8 +15,6 @@ class CardAudioPlayer @Inject constructor(private val mediaPlayer: MediaPlayer) 
     }
 
     init {
-        log(mediaPlayer.toString())
-
         mediaPlayer.apply {
             setAudioAttributes(
                 AudioAttributes.Builder()

@@ -6,10 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.navigation.navGraphViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.klaf.R
 import com.example.klaf.databinding.FragmentRepeatBinding
@@ -42,7 +42,7 @@ class RepeatFragment : Fragment() {
 
     @Inject
     lateinit var assistedFactory: RepetitionViewModelAssistedFactory
-    private val viewModel: RepetitionViewModel by viewModels {
+    private val viewModel: RepetitionViewModel by navGraphViewModels(R.id.repeatFragment) {
         RepetitionViewModelFactory(assistedFactory = assistedFactory, deckId = args.deckId)
     }
 
@@ -61,10 +61,8 @@ class RepeatFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         initIpaRecyclerView()
-        setObservers()
+        subscribeObservers()
         setListeners()
-
-        viewLifecycleOwner.lifecycle.addObserver(viewModel.timer)
     }
 
     override fun onDestroyView() {
@@ -73,9 +71,9 @@ class RepeatFragment : Fragment() {
     }
 
     override fun onDestroy() {
+        super.onDestroy()
         binding.ipaRecyclerView.adapter = null
         _binding = null
-        super.onDestroy()
     }
 
 
@@ -90,22 +88,24 @@ class RepeatFragment : Fragment() {
         }
     }
 
-    private fun setObservers() {
+    private fun subscribeObservers() {
         setEventMessageObserver()
         setScreenStateObserver()
         setDeckObserver()
         setCardRepetitionStateObserver()
         setTimerObserver()
+
+        viewLifecycleOwner.lifecycle.addObserver(viewModel.timer)
     }
 
     private fun setEventMessageObserver() {
-        viewModel.eventMessage.collectWhenStarted(lifecycleScope) { eventMessage ->
+        viewModel.eventMessage.collectWhenStarted(viewLifecycleOwner.lifecycleScope) { eventMessage ->
             requireContext().showToast(messageId = eventMessage.resId)
         }
     }
 
     private fun setScreenStateObserver() {
-        viewModel.screenState.collectWhenStarted(lifecycleScope) { screenState ->
+        viewModel.screenState.collectWhenStarted(viewLifecycleOwner.lifecycleScope) { screenState ->
             val cardRepetitionControlButtons = setOf(
                 binding.turnButton,
                 binding.easyButton,
@@ -129,10 +129,10 @@ class RepeatFragment : Fragment() {
                     with(screenState) {
                         navigateToDeckRepetitionInfoDialogFragment(
                             currentDuration = currentDuration,
-                            lastDuration = lastDuration,
+                            lastDuration = previousDuration,
                             scheduledDate = scheduledDate,
-                            previusScheduledDate = previusScheduledDate,
-                            lastRepetitionDate = lastRepetitionDate,
+                            previousScheduledDate = previousScheduledDate,
+                            lastRepetitionIterationDate = lastRepetitionIterationDate,
                             repetitionQuantity = repetitionQuantity,
                             lastSuccessMark = lastSuccessMark
                         )
@@ -143,7 +143,7 @@ class RepeatFragment : Fragment() {
     }
 
     private fun setDeckObserver() {
-        viewModel.deck.collectWhenStarted(lifecycleScope) { deck: Deck? ->
+        viewModel.deck.collectWhenStarted(viewLifecycleOwner.lifecycleScope) { deck: Deck? ->
             if (deck == null) {
                 requireContext().showToast(messageId = R.string.problem_with_fetching_deck)
             } else {
@@ -165,7 +165,9 @@ class RepeatFragment : Fragment() {
     }
 
     private fun setCardRepetitionStateObserver() {
-        viewModel.cardState.collectWhenStarted(lifecycleScope) { cardRepetitionState ->
+        viewModel.cardState.collectWhenStarted(
+            viewLifecycleOwner.lifecycleScope
+        ) { cardRepetitionState ->
             if (cardRepetitionState.card == null) return@collectWhenStarted
 
             when (cardRepetitionState.repetitionOrder) {
@@ -223,6 +225,8 @@ class RepeatFragment : Fragment() {
             easyButton.setOnClickListener { onClickEasyButton() }
             goodButton.setOnClickListener { onClickGoodButton() }
             hardButton.setOnClickListener { onHardButtonClick() }
+
+//            setDeckRepetitionInfoDialogResultListener()
         }
     }
 
@@ -258,8 +262,8 @@ class RepeatFragment : Fragment() {
         currentDuration: String,
         lastDuration: String,
         scheduledDate: Long,
-        previusScheduledDate: Long,
-        lastRepetitionDate: String,
+        previousScheduledDate: Long,
+        lastRepetitionIterationDate: String?,
         repetitionQuantity: String,
         lastSuccessMark: String,
     ) {
@@ -267,8 +271,8 @@ class RepeatFragment : Fragment() {
             currentDuration = currentDuration,
             lastDuration = lastDuration,
             scheduledDate = scheduledDate,
-            previusScheduledDate = previusScheduledDate,
-            lastRepetitionDate = lastRepetitionDate,
+            previusScheduledDate = previousScheduledDate,
+            lastRepetitionIterationDate = lastRepetitionIterationDate,
             repetitionQuantity = repetitionQuantity,
             lastSuccessMark = lastSuccessMark
         ).also { findNavController().navigate(directions = it) }
@@ -308,12 +312,8 @@ class RepeatFragment : Fragment() {
 
     private fun setRepetitionOrderSwitchPosition(order: CardRepetitionOrder) {
         when (order) {
-            FOREIGN_TO_NATIVE -> {
-                binding.repeatOrderSwitch.isChecked = true
-            }
-            NATIVE_TO_FOREIGN -> {
-                binding.repeatOrderSwitch.isChecked = false
-            }
+            FOREIGN_TO_NATIVE -> binding.repeatOrderSwitch.isChecked = true
+            NATIVE_TO_FOREIGN -> binding.repeatOrderSwitch.isChecked = false
         }
     }
 

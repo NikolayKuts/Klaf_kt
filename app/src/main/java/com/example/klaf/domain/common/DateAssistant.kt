@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.klaf.R
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DayFactor.*
+import com.example.klaf.presentation.common.log
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -24,21 +25,15 @@ private val dayInMillis = TimeUnit.DAYS.toMillis(1)
 private val hourImMillis = TimeUnit.HOURS.toMillis(1)
 private val minuteINMillis = TimeUnit.MINUTES.toMillis(1)
 
-//object DateAssistant {
-
 fun getFormattedCurrentTime(): String {
     val date = Calendar.getInstance().time
     val dateFormat: DateFormat = SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.getDefault())
     return dateFormat.format(date)
 }
 
-//fun getFormattedDate(date: Long): String {
-//    val dateFormat: DateFormat = SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.getDefault())
-//    return dateFormat.format(date)
-//}
+fun Long?.asFormattedDate(): String? {
+    if (this == null) return null
 
-
-fun Long.asFormattedDate(): String {
     val dateFormat: DateFormat = SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.getDefault())
     return dateFormat.format(this)
 }
@@ -48,69 +43,45 @@ fun getCurrentDateAsLong(): Long {
     return Calendar.getInstance().time.time
 }
 
-fun Deck.calculateNextScheduledRepeatDate(currentRepeatDuration: Long): Long {
-    val lastRepeatInterval = getLastRepeatInterval(this)
-
-    return if (this.repeatQuantity >= 5) {
-
-        if (this.repeatQuantity % 2 != 0) {
-            val newInterval = getNewInterval(this, currentRepeatDuration, lastRepeatInterval)
-            getCurrentDateAsLong() + newInterval
-        } else {
-            this.scheduledDate
-        }
+fun Deck.calculateNextScheduledRepeatDate(currentRepetitionIterationDuration: Long): Long {
+    return if (repetitionQuantity >= 5) {
+        getCurrentDateAsLong() + getNewInterval(currentRepetitionIterationDuration)
     } else {
         getCurrentDateAsLong()
     }
 }
 
-private fun getLastRepeatInterval(deck: Deck): Long {
-    return if (deck.repeatQuantity == 5) {
-        TimeUnit.MINUTES.toMillis(15)
-    } else {
-        deck.scheduledDate - deck.lastRepeatDate
-    }
-}
-
-private fun getNewInterval(
-    deck: Deck,
-    currentRepeatDuration: Long,
-    lastRepeatInterval: Long,
-): Long {
-    val lastRepeatDuration = deck.lastRepeatDuration
+fun Deck.getNewInterval(currentIterationDuration: Long): Long {
+    if (repetitionQuantity < 5) return 0
+    if (scheduledDateInterval == 0L) return TimeUnit.MINUTES.toMillis(15)
 
     return if (
-        currentRepeatDuration <= lastRepeatDuration + lastRepeatDuration * DERATION_FACTOR
+        currentIterationDuration <=
+        lastRepetitionIterationDuration + lastRepetitionIterationDuration * DERATION_FACTOR
     ) {
-        lastRepeatInterval + (lastRepeatInterval * getDayFactorByNumberDay(deck.repeatDay)).toLong()
+        scheduledDateInterval + (scheduledDateInterval * getDayFactorByNumberDay(
+            dayQuantity = this.existenceDayQuantity
+        )).toLong()
     } else {
-
-        if (deck.isLastRepetitionSucceeded) {
-            lastRepeatInterval
+        if (isLastIterationSucceeded) {
+            scheduledDateInterval
         } else {
-            lastRepeatInterval - lastRepeatInterval * DECREASE_FACTOR.toLong()
+            scheduledDateInterval - scheduledDateInterval * DECREASE_FACTOR.toLong()
         }
     }
 }
 
 fun Deck.isRepetitionSucceeded(currentRepetitionDuration: Long): Boolean {
-    val lastRepetitionDuration: Long = this.lastRepeatDuration
-    return currentRepetitionDuration <= lastRepetitionDuration + lastRepetitionDuration * DERATION_FACTOR
+    val lastRepetitionDuration: Long = this.lastRepetitionIterationDuration
+    return currentRepetitionDuration <=
+            lastRepetitionDuration + lastRepetitionDuration * DERATION_FACTOR
 }
 
-fun Deck.getUpdatedRepeatDay(): Int {
-    var date: Int = this.repeatDay
-    val difference: Long = getCurrentDateAsLong() - this.creationDate
-    val differenceInDays = difference / TimeUnit.DAYS.toMillis(1)
-//        val differenceInDays = difference / 86400000
-    return if (date < differenceInDays) ++date else date
-}
-
-private fun getDayFactorByNumberDay(numberDay: Int): Double {
-    return when (numberDay) {
-        1 -> FIRST_DAY_FACTOR.factor
-        2 -> SECOND_DAY_FACTOR.factor
-        3 -> THIRD_DAY_FACTOR.factor
+private fun getDayFactorByNumberDay(dayQuantity: Long): Double {
+    return when (dayQuantity) {
+        1L -> FIRST_DAY_FACTOR.factor
+        2L -> SECOND_DAY_FACTOR.factor
+        3L -> THIRD_DAY_FACTOR.factor
         else -> WHOLE_DAY_FACTOR.factor
     }
 }
@@ -138,13 +109,15 @@ fun Long.calculateScheduledRange(context: Context): String {
 }
 
 fun Deck.calculateDetailedScheduledRange(context: Context): String {
-    return this.scheduledDate.calculateDetailedScheduledRange(context = context)
+//    return this.scheduledDate.calculateDetailedScheduledRange(context = context)
+    TODO()
 }
 
-fun Long.calculateDetailedScheduledRange(context: Context): String {
+fun Long?.calculateDetailedScheduledRange(context: Context): String {
+    if (this == null || this <= 0) return UNASSIGNED_DATE_SYMBOL
     val currentTime = System.currentTimeMillis()
 
-    if (this <= 0L) return UNASSIGNED_DATE_SYMBOL
+//    if (this <= 0L) return UNASSIGNED_DATE_SYMBOL
 
     val range = this - currentTime
 

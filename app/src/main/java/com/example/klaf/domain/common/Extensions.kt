@@ -49,3 +49,15 @@ fun CharSequence?.generateLetterInfos(): List<LetterInfo> {
         .dropLast(1)
         .map { letter -> LetterInfo(letter = letter, isChecked = false) }
 }
+
+fun <T> List<T>.addIntoNewInstance(newElement: T): List<T> {
+    return this.toMutableList().apply { add(element = newElement) }
+}
+
+fun Int.isEven(): Boolean = this % 2 == 0
+
+fun Int.isOdd(): Boolean = this % 2 != 0
+
+fun Long.isEven(): Boolean = this % 2 == 0L
+
+fun Long.isOdd(): Boolean = this % 2 != 0L
