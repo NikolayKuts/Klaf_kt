@@ -2,6 +2,7 @@ package com.example.klaf.di
 
 import android.content.Context
 import android.media.MediaPlayer
+import androidx.work.WorkManager
 import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.data.room.databases.KlafRoomDatabase
 import dagger.Module
@@ -23,4 +24,9 @@ class DataModule {
 
     @Provides
     fun provideMediaPlayer(): MediaPlayer = MediaPlayer()
+
+    @Provides
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
+        return WorkManager.getInstance(context)
+    }
 }

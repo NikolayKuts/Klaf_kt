@@ -1,6 +1,7 @@
 package com.example.klaf.presentation.deckRepetitionInfo
 
 import android.app.Dialog
+import android.content.DialogInterface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.View
@@ -16,12 +17,19 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.DialogFragment
 import androidx.navigation.fragment.navArgs
+import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.domain.common.calculateDetailedScheduledRange
+import com.example.klaf.presentation.deckRepetition.RepetitionViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_repetition_info) {
 
     private val args by navArgs<DeckRepetitionInfoDialogFragmentArgs>()
+
+    private val viewModel by navGraphViewModels<RepetitionViewModel>(R.id.repeatFragment)
+
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return super.onCreateDialog(savedInstanceState).apply {
@@ -42,11 +50,16 @@ class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_rep
                 lastScheduledDate = args.previusScheduledDate.calculateDetailedScheduledRange(
                     context = requireContext()
                 ),
-                lastRepetitionDate = args.lastRepetitionDate,
+                lastRepetitionIterationDate = args.lastRepetitionIterationDate,
                 repetitionQuantity = args.repetitionQuantity,
                 lastSuccessMark = args.lastSuccessMark
             )
         }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        viewModel.moveToStartScreenState()
     }
 
     @Composable
@@ -55,7 +68,7 @@ class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_rep
         lastDuration: String,
         newScheduledDate: String,
         lastScheduledDate: String,
-        lastRepetitionDate: String,
+        lastRepetitionIterationDate: String?,
         repetitionQuantity: String,
         lastSuccessMark: String,
     ) {
@@ -79,12 +92,12 @@ class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_rep
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Column() {
+                Column {
                     InfoItem(
                         textPointer = "current iteration duration:",
                         infoValue = currentDuration
                     )
-                    InfoItem(textPointer = "last iteration duration:", infoValue = lastDuration)
+                    InfoItem(textPointer = "previous iteration duration:", infoValue = lastDuration)
                     Spacer(modifier = Modifier.height(16.dp))
 
                     InfoItem(textPointer = "scheduled date:", infoValue = newScheduledDate)
@@ -92,7 +105,10 @@ class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_rep
                         infoValue = lastScheduledDate)
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    InfoItem(textPointer = "last repetition date:", infoValue = lastRepetitionDate)
+                    InfoItem(
+                        textPointer = "last iteration date:",
+                        infoValue = lastRepetitionIterationDate ?: "-- // --"
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
 
                     InfoItem(textPointer = "repetition quantity:", infoValue = repetitionQuantity)
@@ -111,7 +127,6 @@ class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_rep
     private fun InfoItem(
         textPointer: String,
         infoValue: String,
-//        content: @Composable() (RowScope.() -> Unit)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

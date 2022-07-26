@@ -67,14 +67,14 @@ class DeckListFragment : Fragment() {
     }
 
     private fun subscribeDeckObserver() {
-        viewModel.deckSource.collectWhenStarted(lifecycleScope) { decks ->
+        viewModel.deckSource.collectWhenStarted(viewLifecycleOwner.lifecycleScope) { decks ->
             // TODO: 12/29/2021 implement toast showing on deleting and creating deck
             deckAdapter.updateData(newDecks = decks)
         }
     }
 
     private fun subscribeEventMessageObserver() {
-        viewModel.eventMessage.collectWhenStarted(lifecycleScope) { eventMessage ->
+        viewModel.eventMessage.collectWhenStarted(viewLifecycleOwner.lifecycleScope) { eventMessage ->
             requireContext().showToast(messageId = eventMessage.resId)
         }
     }

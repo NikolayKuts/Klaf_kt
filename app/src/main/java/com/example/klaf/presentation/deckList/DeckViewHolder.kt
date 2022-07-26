@@ -17,11 +17,11 @@ class DeckViewHolder(
 
         binding.apply {
             textViewDeckName.text = deck.name
-            textViewRepeatDay.text = deck.repeatDay.toString()
+            textViewRepeatDay.text = deck.existenceDayQuantity.toString()
             textViewScheduledRange.text = deck.scheduledDate.calculateDetailedScheduledRange(
                 context = textViewDeckName.context
             )
-            textViewRepeatQuantity.text = deck.repeatQuantity.toString()
+            textViewRepeatQuantity.text = deck.repetitionQuantity.toString()
             textViewCardQuantity.text = deck.cardQuantity.toString()
 
             deckListItem.setOnClickListener { onItemClick(deck) }
