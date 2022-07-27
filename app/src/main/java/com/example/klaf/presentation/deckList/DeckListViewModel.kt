@@ -11,6 +11,7 @@ import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.Notifier
 import com.example.klaf.presentation.common.tryEmit
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -41,18 +42,14 @@ class DeckListViewModel @Inject constructor(
             _eventMessage.tryEmit(value = EventMessage(R.string.such_name_is_already_exist))
         } else {
             viewModelScope.launchWithExceptionHandler(
+                context = Dispatchers.IO,
                 onException = { _, _ ->
                     _eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
                 },
-                onCompletion = {
-                    _eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
-                },
+                onCompletion = { _eventMessage.tryEmit(messageId = R.string.deck_has_been_created) },
             ) {
                 createDeck(
-                    deck = Deck(
-                        name = deckName,
-                        creationDate = getCurrentDateAsLong()
-                    )
+                    deck = Deck(name = deckName, creationDate = getCurrentDateAsLong())
                 )
             }
         }

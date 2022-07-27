@@ -24,6 +24,8 @@ class DeckListFragment : Fragment() {
     private var _binding: FragmentDeckListBinding? = null
     private val binding get() = _binding!!
 
+    private val navController by lazy { findNavController() }
+
     private val viewModel by activityViewModels<DeckListViewModel>()
 
     private val deckAdapter = DeckAdapter(
@@ -81,16 +83,15 @@ class DeckListFragment : Fragment() {
 
     private fun setOnCreateDeckClickListener() {
         binding.createDeckActionButton.setOnClickListener {
-            findNavController().navigate(
-                DeckListFragmentDirections.actionDeckListFragmentToDeckCreationDialogFragment()
-            )
+            DeckListFragmentDirections.actionDeckListFragmentToDeckCreationDialogFragment()
+                .also { navController.navigate(directions = it) }
         }
     }
 
     private fun navigateToRepeatFragment(deck: Deck) {
         DeckListFragmentDirections.actionDeckListFragmentToRepeatFragment(
             deckId = deck.id
-        ).also { findNavController().navigate(it) }
+        ).also { navController.navigate(it) }
     }
 
     private fun showDeckPopupMenu(view: View, deck: Deck) {
@@ -99,7 +100,6 @@ class DeckListFragment : Fragment() {
             show()
 
             setOnMenuItemClickListener { item ->
-                val navController = findNavController()
 
                 when (item.itemId) {
                     R.id.item_deleting_deck -> {

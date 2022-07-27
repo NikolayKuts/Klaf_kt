@@ -12,7 +12,6 @@ import androidx.lifecycle.LifecycleCoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
 
 
 private const val TIME_FORMAT_TEMPLATE = "%02d:%02d"
@@ -56,7 +55,7 @@ fun log(
     tag: String = "app_log",
     pointerMessage: String = "",
     pointer: String =
-        if (pointerMessage.isEmpty()) "***********" else  "****** $pointerMessage ******",
+        if (pointerMessage.isEmpty()) "***********" else "****** $pointerMessage ******",
 ) {
     Log.i(tag, "$pointer $message")
 }
