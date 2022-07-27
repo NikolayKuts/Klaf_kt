@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -30,7 +29,7 @@ class DeckListFragment : Fragment() {
 
     private val deckAdapter = DeckAdapter(
         onClick = ::navigateToRepeatFragment,
-        onItemMenuClick = ::showDeckPopupMenu
+        onItemMenuClick = ::navigateToDeckNavigationDialog
     )
 
     override fun onCreateView(
@@ -94,65 +93,10 @@ class DeckListFragment : Fragment() {
         ).also { navController.navigate(it) }
     }
 
-    private fun showDeckPopupMenu(view: View, deck: Deck) {
-        PopupMenu(view.context, view).apply {
-            inflate(R.menu.deck_popup_menu)
-            show()
-
-            setOnMenuItemClickListener { item ->
-
-                when (item.itemId) {
-                    R.id.item_deleting_deck -> {
-                        navigateToDeckRemovingDialogFragment(deck, navController)
-                    }
-                    R.id.item_renaming_deck -> {
-                        navigateToDeckRenamingDialogFragment(deck, navController)
-                    }
-                    R.id.item_browsing_deck_cards -> {
-                        performAccordingToDeckListState(deck, navController)
-                    }
-                    R.id.item_card_addition -> {
-                        navigateToCardAdditionFragment(deck, navController)
-                    }
-                    else -> return@setOnMenuItemClickListener false
-                }
-
-                true
-            }
-        }
-    }
-
-    private fun navigateToDeckRemovingDialogFragment(deck: Deck, navController: NavController) {
-        DeckListFragmentDirections.actionDeckListFragmentToDeckRemovingDialogFragment(
+    private fun navigateToDeckNavigationDialog(deck: Deck) {
+        DeckListFragmentDirections.actionDeckListFragmentToDeckNavigationDialog(
             deckId = deck.id,
             deckName = deck.name
-        ).also { navController.navigate(it) }
-    }
-
-    private fun navigateToDeckRenamingDialogFragment(deck: Deck, navController: NavController) {
-        DeckListFragmentDirections.actionDeckListFragmentToDeckRenamingDialogFragment(
-            deckId = deck.id
-        ).also { navController.navigate(it) }
-    }
-
-    private fun performAccordingToDeckListState(deck: Deck, navController: NavController) {
-        if (deck.cardQuantity > 0) {
-            navigateToCardViewerFragment(deck, navController)
-        } else {
-            requireContext().showToast(message = getString(R.string.there_are_no_card_in_deck))
-        }
-    }
-
-    private fun navigateToCardAdditionFragment(deck: Deck, navController: NavController) {
-        DeckListFragmentDirections.actionDeckListFragmentToCardAdditionFragment(
-            deckId = deck.id
-        ).also { navController.navigate(it) }
-    }
-
-    private fun navigateToCardViewerFragment(deck: Deck, navController: NavController) {
-        DeckListFragmentDirections.actionDeckListFragmentToCardViewerFragment(
-            deckId = deck.id,
-            deckName = deck.name
-        ).also { navController.navigate(it) }
+        ).also { navController.navigate(directions = it) }
     }
 }
