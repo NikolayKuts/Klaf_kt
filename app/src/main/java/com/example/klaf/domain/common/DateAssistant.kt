@@ -109,8 +109,7 @@ fun Long.calculateScheduledRange(context: Context): String {
 }
 
 fun Deck.calculateDetailedScheduledRange(context: Context): String {
-//    return this.scheduledDate.calculateDetailedScheduledRange(context = context)
-    TODO()
+    return this.scheduledDate.calculateDetailedScheduledRange(context = context)
 }
 
 fun Long?.calculateDetailedScheduledRange(context: Context): String {
@@ -136,6 +135,15 @@ fun Long?.calculateDetailedScheduledRange(context: Context): String {
     return yearsMonthsWeeks.ifEmpty {
         daysHoursMinutes.ifEmpty { context.getString(R.string.time_pointer_now) }
     }
+}
+
+fun Deck.getScheduledDateStateByByCalculatedRange(context: Context): ScheduledDateState {
+    val range = this.calculateDetailedScheduledRange(context = context)
+    return ScheduledDateState(
+        range = range,
+        isOverdue = range.firstOrNull()?.toString() == MINUS_SYMBOL
+
+    )
 }
 
 private fun Long.calculateYearQuantity(): Long = this / yearInMillis

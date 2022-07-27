@@ -41,7 +41,7 @@ class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_rep
         super.onViewCreated(view, savedInstanceState)
 
         view.findViewById<ComposeView>(R.id.compose_view_repetition_info).setContent {
-            deckRepetitionInfoView(
+            DeckRepetitionInfoView(
                 currentDuration = args.currentDuration,
                 lastDuration = args.lastDuration,
                 newScheduledDate = args.scheduledDate.calculateDetailedScheduledRange(
@@ -63,7 +63,7 @@ class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_rep
     }
 
     @Composable
-    private fun deckRepetitionInfoView(
+    private fun DeckRepetitionInfoView(
         currentDuration: String,
         lastDuration: String,
         newScheduledDate: String,
