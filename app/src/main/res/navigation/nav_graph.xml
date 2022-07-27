@@ -13,20 +13,11 @@
             android:id="@+id/action_deckListFragment_to_repeatFragment"
             app:destination="@id/repeatFragment" />
         <action
-            android:id="@+id/action_deckListFragment_to_cardViewerFragment"
-            app:destination="@id/cardViewerFragment" />
-        <action
             android:id="@+id/action_deckListFragment_to_deckCreationDialogFragment"
             app:destination="@id/deckCreationDialogFragment" />
         <action
-            android:id="@+id/action_deckListFragment_to_deckRemovingDialogFragment"
-            app:destination="@id/deckRemovingDialogFragment" />
-        <action
-            android:id="@+id/action_deckListFragment_to_deckRenamingDialogFragment"
-            app:destination="@id/deckRenamingDialogFragment" />
-        <action
-            android:id="@+id/action_deckListFragment_to_cardAdditionFragment"
-            app:destination="@id/cardAdditionFragment" />
+            android:id="@+id/action_deckListFragment_to_deckNavigationDialog"
+            app:destination="@id/deckNavigationDialog" />
     </fragment>
     <fragment
         android:id="@+id/repeatFragment"
@@ -100,11 +91,7 @@
         android:id="@+id/deckCreationDialogFragment"
         android:name="com.example.klaf.presentation.deckList.DeckCreationDialogFragment"
         android:label="dialog_deck_creation"
-        tools:layout="@layout/dialog_deck_creation" >
-        <action
-            android:id="@+id/action_deckCreationDialogFragment_to_deckListFragment"
-            app:destination="@id/deckListFragment" />
-    </dialog>
+        tools:layout="@layout/dialog_deck_creation" />
     <dialog
         android:id="@+id/deckRemovingDialogFragment"
         android:name="com.example.klaf.presentation.deckList.DeckRemovingDialogFragment"
@@ -118,9 +105,6 @@
             android:name="deckName"
             app:argType="string"
             android:defaultValue="empty" />
-        <action
-            android:id="@+id/action_deckRemovingDialogFragment_to_deckListFragment"
-            app:destination="@id/deckListFragment" />
     </dialog>
     <dialog
         android:id="@+id/deckRenamingDialogFragment"
@@ -131,9 +115,6 @@
             android:name="deckId"
             app:argType="integer"
             android:defaultValue="-1" />
-        <action
-            android:id="@+id/action_deckRenamingDialogFragment_to_deckListFragment"
-            app:destination="@id/deckListFragment" />
     </dialog>
     <fragment
         android:id="@+id/cardAdditionFragment"
@@ -187,6 +168,34 @@
             app:argType="string" />
         <argument
             android:name="lastSuccessMark"
+            app:argType="string" />
+    </dialog>
+    <dialog
+        android:id="@+id/deckNavigationDialog"
+        android:name="com.example.klaf.presentation.deckList.DeckNavigationDialog"
+        android:label="dialog_deck_navigation"
+        tools:layout="@layout/dialog_deck_navigation" >
+        <argument
+            android:name="deckId"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_deckNavigationDialog_to_deckRenamingDialogFragment"
+            app:destination="@id/deckRenamingDialogFragment"
+            app:popUpTo="@id/deckListFragment" />
+        <action
+            android:id="@+id/action_deckNavigationDialog_to_deckRemovingDialogFragment"
+            app:destination="@id/deckRemovingDialogFragment"
+            app:popUpTo="@id/deckListFragment" />
+        <action
+            android:id="@+id/action_deckNavigationDialog_to_cardAdditionFragment"
+            app:destination="@id/cardAdditionFragment"
+            app:popUpTo="@id/deckListFragment" />
+        <action
+            android:id="@+id/action_deckNavigationDialog_to_cardViewerFragment"
+            app:destination="@id/cardViewerFragment"
+            app:popUpTo="@id/deckListFragment" />
+        <argument
+            android:name="deckName"
             app:argType="string" />
     </dialog>
 

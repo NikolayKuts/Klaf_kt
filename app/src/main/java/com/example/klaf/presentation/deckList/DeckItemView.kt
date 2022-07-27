@@ -1,6 +1,7 @@
 package com.example.klaf.presentation.deckList
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
 import androidx.compose.material.Text
@@ -22,17 +23,23 @@ import com.example.klaf.domain.common.isEven
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.presentation.theme.MainTheme
 
+@Suppress("OPT_IN_IS_NOT_ENABLED")
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DeckItemView(
     deck: Deck,
     position: Int,
     onItemClick: (Deck) -> Unit,
+    onLongItemClick: (Deck) -> Unit,
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(2.dp)
-            .clickable { onItemClick(deck) },
+            .combinedClickable(
+                onClick = { onItemClick(deck) },
+                onLongClick = { onLongItemClick(deck) }
+            ),
         backgroundColor = getCardBackgroundColorByPosition(position),
         elevation = 4.dp,
     ) {
