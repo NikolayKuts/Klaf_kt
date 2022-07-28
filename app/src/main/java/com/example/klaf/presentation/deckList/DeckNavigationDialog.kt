@@ -44,7 +44,7 @@ class DeckNavigationDialog : DialogFragment(R.layout.dialog_deck_navigation) {
 
 
     private fun navigateToDeckRemovingDialogFragment() {
-        DeckNavigationDialogDirections.actionDeckNavigationDialogToDeckRemovingDialogFragment(
+        DeckNavigationDialogDirections.actionDeckNavigationDialogToDeckDeletingDialogFragment(
             deckId = args.deckId,
             deckName = args.deckName
         ).also { navController.navigate(directions = it) }

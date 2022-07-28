@@ -5,8 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.navGraphViewModels
+import com.example.klaf.R
 import com.example.klaf.databinding.DialogDeckCreationBinding
 
 class DeckCreationDialogFragment : DialogFragment() {
@@ -14,7 +15,7 @@ class DeckCreationDialogFragment : DialogFragment() {
     private var _binding: DialogDeckCreationBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel by activityViewModels<DeckListViewModel>()
+    private val viewModel by navGraphViewModels<DeckListViewModel>(R.id.deckListFragment)
 
     private val namController by lazy { findNavController() }
 

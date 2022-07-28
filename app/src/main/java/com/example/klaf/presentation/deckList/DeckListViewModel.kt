@@ -10,14 +10,14 @@ import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.Notifier
 import com.example.klaf.presentation.common.tryEmit
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@HiltViewModel
-class DeckListViewModel @Inject constructor(
+class DeckListViewModel @AssistedInject constructor(
     fetchDeckSource: FetchDeckSourceUseCase,
     private val createDeck: CreateDeckUseCase,
     private val renameDeck: RenameDeckUseCase,
