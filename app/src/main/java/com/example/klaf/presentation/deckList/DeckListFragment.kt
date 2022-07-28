@@ -5,10 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.navGraphViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.klaf.R
 import com.example.klaf.databinding.FragmentDeckListBinding
@@ -16,6 +15,7 @@ import com.example.klaf.domain.entities.Deck
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showToast
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class DeckListFragment : Fragment() {
@@ -25,7 +25,11 @@ class DeckListFragment : Fragment() {
 
     private val navController by lazy { findNavController() }
 
-    private val viewModel by activityViewModels<DeckListViewModel>()
+    @Inject
+    lateinit var assistedFactory: DeckListViewModelAssistedFactory
+    private val viewModel: DeckListViewModel by navGraphViewModels(R.id.deckListFragment) {
+        DeckListViewModelFactory(assistedFactory = assistedFactory)
+    }
 
     private val deckAdapter = DeckAdapter(
         onClick = ::navigateToRepeatFragment,

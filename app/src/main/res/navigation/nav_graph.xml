@@ -92,20 +92,7 @@
         android:name="com.example.klaf.presentation.deckList.DeckCreationDialogFragment"
         android:label="dialog_deck_creation"
         tools:layout="@layout/dialog_deck_creation" />
-    <dialog
-        android:id="@+id/deckRemovingDialogFragment"
-        android:name="com.example.klaf.presentation.deckList.DeckRemovingDialogFragment"
-        android:label="dialog_deck_removing"
-        tools:layout="@layout/dialog_deck_removing" >
-        <argument
-            android:name="deckId"
-            app:argType="integer"
-            android:defaultValue="-1" />
-        <argument
-            android:name="deckName"
-            app:argType="string"
-            android:defaultValue="empty" />
-    </dialog>
+
     <dialog
         android:id="@+id/deckRenamingDialogFragment"
         android:name="com.example.klaf.presentation.deckList.DeckRenamingDialogFragment"
@@ -183,10 +170,6 @@
             app:destination="@id/deckRenamingDialogFragment"
             app:popUpTo="@id/deckListFragment" />
         <action
-            android:id="@+id/action_deckNavigationDialog_to_deckRemovingDialogFragment"
-            app:destination="@id/deckRemovingDialogFragment"
-            app:popUpTo="@id/deckListFragment" />
-        <action
             android:id="@+id/action_deckNavigationDialog_to_cardAdditionFragment"
             app:destination="@id/cardAdditionFragment"
             app:popUpTo="@id/deckListFragment" />
@@ -194,6 +177,22 @@
             android:id="@+id/action_deckNavigationDialog_to_cardViewerFragment"
             app:destination="@id/cardViewerFragment"
             app:popUpTo="@id/deckListFragment" />
+        <argument
+            android:name="deckName"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_deckNavigationDialog_to_deckDeletingDialogFragment"
+            app:destination="@id/deckDeletingDialogFragment"
+            app:popUpTo="@id/deckListFragment" />
+    </dialog>
+    <dialog
+        android:id="@+id/deckDeletingDialogFragment"
+        android:name="com.example.klaf.presentation.deckList.deckDeleting.DeckDeletingDialogFragment"
+        android:label="dialog_deck_deleting"
+        tools:layout="@layout/dialog_deck_deleting" >
+        <argument
+            android:name="deckId"
+            app:argType="integer" />
         <argument
             android:name="deckName"
             app:argType="string" />
