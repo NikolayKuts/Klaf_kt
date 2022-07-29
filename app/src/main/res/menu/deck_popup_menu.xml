@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/item_deck_deleting"
+    <item android:id="@+id/item_deleting_deck"
         android:title="Delete" />
-    <item android:id="@+id/item_deck_renaming"
+    <item android:id="@+id/item_renaming_deck"
         android:title="Rename" />
-    <item android:id="@+id/item_card_showing"
+    <item android:id="@+id/item_browsing_deck_cards"
         android:title="Show cards" />
     <item android:id="@+id/item_card_addition"
         android:title="Add cards" />
