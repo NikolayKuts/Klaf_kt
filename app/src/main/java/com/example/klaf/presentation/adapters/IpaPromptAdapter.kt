@@ -1,14 +1,13 @@
 package com.example.klaf.presentation.adapters
 
-import android.graphics.Color.red
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.klaf.R
 import com.example.klaf.databinding.IpaPromptItemBinding
+import com.example.klaf.domain.common.update
 import com.example.klaf.domain.ipa.LetterInfo
-import com.example.klaf.domain.update
 
 class IpaPromptAdapter : RecyclerView.Adapter<IpaPromptAdapter.IpaPromptViewHolder>() {
 
@@ -33,7 +32,8 @@ class IpaPromptAdapter : RecyclerView.Adapter<IpaPromptAdapter.IpaPromptViewHold
                 ipaPromptTextView.setTextColor(
                     ContextCompat.getColor(
                         ipaPromptTextView.context,
-                        R.color.ipa_prompt_transparent)
+                        R.color.ipa_prompt_transparent
+                    )
                 )
             }
         }
