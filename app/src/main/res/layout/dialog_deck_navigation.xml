@@ -4,6 +4,6 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/dialog_deck_navigation"
-    tools:context=".presentation.deckList.deckNavigation.DeckNavigationDialog">
+    tools:context=".presentation.deckList.deckNavigation.DeckNavigationDialogFragment">
 
 </androidx.compose.ui.platform.ComposeView>

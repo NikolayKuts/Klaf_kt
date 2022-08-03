@@ -1,34 +1,25 @@
 package com.example.klaf.presentation.deckList.deckRenaming
 
-import android.app.Dialog
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.View
 import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.domain.entities.Deck
+import com.example.klaf.presentation.common.TransparentDialogFragment
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.deckList.DeckListViewModel
 import com.example.klaf.presentation.theme.MainTheme
 
-class DeckRenamingDialogFragment : DialogFragment(R.layout.dialog_deck_renaming) {
+class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_deck_renaming) {
 
     private val args by navArgs<DeckRenamingDialogFragmentArgs>()
     private val navController by lazy { findNavController() }
 
     private val viewModel by navGraphViewModels<DeckListViewModel>(R.id.deckListFragment)
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return super.onCreateDialog(savedInstanceState).apply {
-            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        }
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

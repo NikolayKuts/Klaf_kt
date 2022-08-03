@@ -14,9 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.example.klaf.R
 import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
 import com.example.klaf.presentation.common.DialogButton
-import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.theme.MainTheme
-import com.example.klaf.presentation.theme.Typography
 
 
 @Composable
@@ -36,7 +34,7 @@ fun DeckDeletionDialogView(
                     style = MainTheme.typographies.dialogTextStyle,
                     text = buildAnnotatedString {
                         withStyle(style = SpanStyle()) {
-                            append(stringResource(R.string.deck_deleting_question))
+                            append(stringResource(R.string.deck_deleting_title))
                         }
                         withStyle(style = MainTheme.typographies.accentedDialogText) {
                             append(" \"${deckName}\"")

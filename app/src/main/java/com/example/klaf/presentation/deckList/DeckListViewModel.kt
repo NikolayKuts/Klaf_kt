@@ -10,9 +10,9 @@ import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.Notifier
 import com.example.klaf.presentation.common.tryEmit
+import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -34,30 +34,41 @@ class DeckListViewModel @AssistedInject constructor(
     private val _eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
     val eventMessage = _eventMessage.asSharedFlow()
 
+    private val _renamingState = MutableStateFlow(value = DeckRenamingState.NOT_RENAMED)
+    val renamingState = _renamingState.asStateFlow()
+
+    private val _deckCreationState = MutableStateFlow(value = DeckCreationState.NOT_CREATED)
+    val deckCreationState = _deckCreationState.asStateFlow()
 
     init {
         notifier.createDeckRepetitionNotificationChannel()
     }
 
-    private val _renamingState = MutableStateFlow(value = DeckRenamingState.NOT_RENAMED)
-    val renamingState = _renamingState.asStateFlow()
-
     fun createNewDeck(deckName: String) {
         val deckNames = deckSource.value.map { deck -> deck.name }
+        val trimmedDeckName = deckName.trim()
 
-        if (deckNames.contains(deckName)) {
-            _eventMessage.tryEmit(value = EventMessage(R.string.such_name_is_already_exist))
-        } else {
-            viewModelScope.launchWithExceptionHandler(
-                context = Dispatchers.IO,
-                onException = { _, _ ->
-                    _eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
-                },
-                onCompletion = { _eventMessage.tryEmit(messageId = R.string.deck_has_been_created) },
-            ) {
-                createDeck(
-                    deck = Deck(name = deckName, creationDate = getCurrentDateAsLong())
-                )
+        when {
+            deckNames.contains(deckName) -> {
+                _eventMessage.tryEmit(value = EventMessage(R.string.such_name_is_already_exist))
+            }
+            trimmedDeckName.isEmpty() -> {
+                _eventMessage.tryEmit(messageId = R.string.warning_deck_name_empty)
+            }
+            else -> {
+                viewModelScope.launchWithExceptionHandler(
+                    onException = { _, _ ->
+                        _eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
+                    },
+                    onCompletion = {
+                        _eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
+                        _deckCreationState.value = DeckCreationState.CREATED
+                    },
+                ) {
+                    createDeck(
+                        deck = Deck(name = deckName, creationDate = getCurrentDateAsLong())
+                    )
+                }
             }
         }
     }
