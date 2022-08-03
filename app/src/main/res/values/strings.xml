@@ -28,6 +28,7 @@
     <string name='would_you_like_to_remove_deck'>would you like to remove the deck \"%1$s\"</string>
     <string name="the_deck_has_been_removed">the deck has been removed</string>
     <string name="type_new_deck_name">Type a new name</string>
+    <string name="enter_deck_name">Enter deck name</string>
     <string name="deck_name_is_not_changed">The name isn\'t changed</string>
     <string name="there_is_nothing_to_change">There is nothing to change</string>
     <string name="deck_is_empty">The deck is empty</string>
@@ -36,6 +37,12 @@
     <string name="problem_with_removing_deck">There is a problem with  removing deck</string>
     <string name="problem_with_creating_deck">There is a problem with creating deck</string>
     <string name="problem_with_updating_deck">There is a problem with updating deck</string>
+    <string name="deck_deleting_title">Would you like to delete the deck</string>
+    <string name="deck_delete">Delete deck</string>
+    <string name="rename_deck">Rename deck</string>
+    <string name="deck_name_label">Deck name</string>
+    <string name="deck_creation_dialog_title">Create a deck</string>
+    <string name="warning_deck_name_empty">Deck name must not be empty</string>
 
     <string name="pointer_foreign">F</string>
     <string name="pointer_native">N</string>
@@ -56,10 +63,6 @@
     <string name="time_pointer_now">now</string>
     <string name="repetition_quantity_pointer">r</string>
     <string name="card_quantity_pointer">c</string>
-    <string name="deck_deleting_question">Would you like to delete the deck</string>
-    <string name="deck_delete">Delete deck</string>
-    <string name="rename_deck">Rename deck</string>
     <string name="browse_cards">Browse cards</string>
     <string name="add_cards">Add cards</string>
-    <string name="deck_name_label">Deck name</string>
 </resources>

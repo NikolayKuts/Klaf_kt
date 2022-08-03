@@ -89,7 +89,7 @@
     </fragment>
     <dialog
         android:id="@+id/deckCreationDialogFragment"
-        android:name="com.example.klaf.presentation.deckList.DeckCreationDialogFragment"
+        android:name="com.example.klaf.presentation.deckList.deckCreation.DeckCreationDialogFragment"
         android:label="dialog_deck_creation"
         tools:layout="@layout/dialog_deck_creation" />
 
@@ -159,7 +159,7 @@
     </dialog>
     <dialog
         android:id="@+id/deckNavigationDialog"
-        android:name="com.example.klaf.presentation.deckList.deckNavigation.DeckNavigationDialog"
+        android:name="com.example.klaf.presentation.deckList.deckNavigation.DeckNavigationDialogFragment"
         android:label="dialog_deck_navigation"
         tools:layout="@layout/dialog_deck_navigation" >
         <argument
