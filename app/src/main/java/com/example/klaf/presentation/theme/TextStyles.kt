@@ -2,6 +2,8 @@ package com.example.klaf.presentation.theme
 
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 
 val DarkEvenDeckItemNameTextStyle = TextStyle(
     color = DarkMainPalettes.evenDeckItemName,
@@ -27,12 +29,12 @@ val DarkScheduledDateTextStyle = TextStyle(
     color = DarkMainPalettes.scheduledDate
 )
 
-val DarkOverdueScheduledDateTextStyle = TextStyle(
-    color = DarkMainPalettes.overdueScheduledDate
-)
-
 val LightScheduledDateTextStyle = TextStyle(
     color = LightMainPalettes.scheduledDate
+)
+
+val DarkOverdueScheduledDateTextStyle = TextStyle(
+    color = DarkMainPalettes.overdueScheduledDate
 )
 
 val LightOverdueScheduledDateTextStyle = TextStyle(
@@ -63,4 +65,13 @@ val DarkDeckItemPointerTextStyle = SpanStyle(
 val LightDeckItemPointerTextStyle = SpanStyle(
     color = LightMainPalettes.deckItemPointer,
     fontSize = CommonDimension.deckItemPointer
+)
+
+val DialogTextStyle = Typography.body1.copy(
+    lineHeight = CommonDimension.dialogTextLineHeight
+)
+
+val AccentedDialogTextStyle = SpanStyle(
+    fontStyle = FontStyle.Italic,
+    fontWeight = FontWeight.Bold
 )

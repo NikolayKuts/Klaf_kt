@@ -1,24 +1,22 @@
 package com.example.klaf.presentation.deckList.deckDeleting
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.klaf.R
+import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
+import com.example.klaf.presentation.common.DialogButton
+import com.example.klaf.presentation.common.log
+import com.example.klaf.presentation.theme.MainTheme
+import com.example.klaf.presentation.theme.Typography
 
 
 @Composable
@@ -27,33 +25,27 @@ fun DeckDeletionDialogView(
     onCloseDialogButtonClick: () -> Unit,
     onConfirmDeckDeletingButtonClick: () -> Unit,
 ) {
-//    Column() {
-    Box {
-        val closeButtonSize = 50
 
+    log(message = Typography.body1.lineHeight.value.toString())
+
+    Box {
         Card(
             modifier = Modifier
                 .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
-//                    .background(Color(0xFF56BB51))
-                .padding(bottom = (closeButtonSize / 2).dp)
+                .padding(bottom = (DIALOG_BUTTON_SIZE / 2).dp)
         ) {
             Box(modifier = Modifier.padding(32.dp)) {
                 Text(
-//                        modifier = Modifier.background(Color(0xFF57A29E)),
+                    style = MainTheme.typographies.dialogTextStyle,
                     text = buildAnnotatedString {
                         withStyle(style = SpanStyle()) {
-                            append("Would you like to delete ")
+                            append(stringResource(R.string.deck_deleting_question))
                         }
-                        withStyle(SpanStyle(
-                            fontStyle = FontStyle.Italic,
-                            fontSize = 20.sp
-                        )) {
-                            append("\"${deckName}\"")
+                        withStyle(style = MainTheme.typographies.accentedDialogText) {
+                            append(" \"${deckName}\"")
                         }
-                        withStyle(SpanStyle()) {
-                            append("?")
-                        }
-                    }
+                        withStyle(style = SpanStyle()) { append("?") }
+                    },
                 )
             }
         }
@@ -68,44 +60,22 @@ fun DeckDeletionDialogView(
         }
 
     }
-//    }
 }
 
 @Composable
 private fun DeckDeletingConformationButton(onClick: () -> Unit) {
-    Card(
-        shape = RoundedCornerShape(50.dp),
-        modifier = Modifier
-            .size(50.dp),
-    ) {
-        Icon(
-            modifier = Modifier
-                .size(20.dp)
-                .background(Color(0xFFDB645B))
-                .clickable { onClick() }
-                .padding(8.dp),
-            painter = painterResource(id = R.drawable.ic_delete_24),
-            contentDescription = "",
-        )
-    }
+    DialogButton(
+        background = MainTheme.colors.negativeDialogButton,
+        iconId = R.drawable.ic_delete_24,
+        onClick = onClick
+    )
 }
 
 @Composable
 private fun DialogClosingButton(onClick: () -> Unit) {
-    Card(
-        shape = RoundedCornerShape(50.dp),
-        modifier = Modifier
-//            .align(alignment = Alignment.BottomCenter)
-            .size(50.dp),
-    ) {
-        Icon(
-            modifier = Modifier
-                .size(20.dp)
-                .background(Color(0xFF85B9C0))
-                .clickable { onClick() }
-                .padding(8.dp),
-            painter = painterResource(id = R.drawable.ic_close_24),
-            contentDescription = "",
-        )
-    }
+    DialogButton(
+        background = MainTheme.colors.neutralDialogButton,
+        iconId = R.drawable.ic_close_24,
+        onClick = onClick
+    )
 }
