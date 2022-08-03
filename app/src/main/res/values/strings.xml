@@ -57,4 +57,8 @@
     <string name="repetition_quantity_pointer">r</string>
     <string name="card_quantity_pointer">c</string>
     <string name="deck_deleting_question">Would you like to delete the deck</string>
+    <string name="deck_delete">Delete deck</string>
+    <string name="rename_deck">Rename deck</string>
+    <string name="browse_cards">Browse cards</string>
+    <string name="add_cards">Add cards</string>
 </resources>
