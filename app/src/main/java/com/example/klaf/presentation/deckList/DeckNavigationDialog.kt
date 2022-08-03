@@ -31,7 +31,6 @@ class DeckNavigationDialog : DialogFragment(R.layout.dialog_deck_navigation) {
             MainTheme() {
                 DeckNavigationDialogView(
                     deckName = args.deckName,
-                    deckId = args.deckId,
                     onDeleteDeckClick = ::navigateToDeckRemovingDialogFragment,
                     onRenameDeckClick = ::navigateToDeckRenamingDialogFragment,
                     onBrowseDeckClick = ::navigateToCardViewerFragment,

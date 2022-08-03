@@ -25,16 +25,13 @@ fun DeckDeletionDialogView(
     onCloseDialogButtonClick: () -> Unit,
     onConfirmDeckDeletingButtonClick: () -> Unit,
 ) {
-
-    log(message = Typography.body1.lineHeight.value.toString())
-
     Box {
         Card(
             modifier = Modifier
                 .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
                 .padding(bottom = (DIALOG_BUTTON_SIZE / 2).dp)
         ) {
-            Box(modifier = Modifier.padding(32.dp)) {
+            Box(modifier = Modifier.padding(MainTheme.dimensions.dialogContentPadding)) {
                 Text(
                     style = MainTheme.typographies.dialogTextStyle,
                     text = buildAnnotatedString {
