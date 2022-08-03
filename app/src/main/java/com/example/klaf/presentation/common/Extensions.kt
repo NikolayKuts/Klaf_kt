@@ -7,6 +7,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
+import androidx.compose.runtime.*
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleCoroutineScope
 import kotlinx.coroutines.Job
@@ -58,4 +59,9 @@ fun log(
         if (pointerMessage.isEmpty()) "***********" else "****** $pointerMessage ******",
 ) {
     Log.i(tag, "$pointer $message")
+}
+
+@Composable
+fun <T> rememberAsMutableStateOf(value: T): MutableState<T> {
+    return remember { mutableStateOf(value = value) }
 }

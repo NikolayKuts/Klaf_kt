@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.deckList
+package com.example.klaf.presentation.deckList.deckNavigation
 
 import android.app.Dialog
 import android.graphics.drawable.ColorDrawable
@@ -9,6 +9,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
+import com.example.klaf.presentation.deckList.DeckNavigationDialogView
 import com.example.klaf.presentation.theme.MainTheme
 import android.graphics.Color as AndroidColor
 

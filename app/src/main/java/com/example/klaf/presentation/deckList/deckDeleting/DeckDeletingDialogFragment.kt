@@ -1,6 +1,7 @@
 package com.example.klaf.presentation.deckList.deckDeleting
 
 import android.app.Dialog
+import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.View
@@ -22,7 +23,7 @@ class DeckDeletingDialogFragment : DialogFragment(R.layout.dialog_deck_deleting)
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return super.onCreateDialog(savedInstanceState).apply {
-            window?.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         }
     }
 

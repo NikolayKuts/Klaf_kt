@@ -95,7 +95,7 @@
 
     <dialog
         android:id="@+id/deckRenamingDialogFragment"
-        android:name="com.example.klaf.presentation.deckList.DeckRenamingDialogFragment"
+        android:name="com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingDialogFragment"
         android:label="dialog_deck_renaming"
         tools:layout="@layout/dialog_deck_renaming" >
         <argument
@@ -159,7 +159,7 @@
     </dialog>
     <dialog
         android:id="@+id/deckNavigationDialog"
-        android:name="com.example.klaf.presentation.deckList.DeckNavigationDialog"
+        android:name="com.example.klaf.presentation.deckList.deckNavigation.DeckNavigationDialog"
         android:label="dialog_deck_navigation"
         tools:layout="@layout/dialog_deck_navigation" >
         <argument

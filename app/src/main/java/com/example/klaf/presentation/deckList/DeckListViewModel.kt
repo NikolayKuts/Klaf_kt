@@ -10,12 +10,11 @@ import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.Notifier
 import com.example.klaf.presentation.common.tryEmit
+import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
 import dagger.assisted.AssistedInject
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 class DeckListViewModel @AssistedInject constructor(
     fetchDeckSource: FetchDeckSourceUseCase,
@@ -34,6 +33,14 @@ class DeckListViewModel @AssistedInject constructor(
 
     private val _eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
     val eventMessage = _eventMessage.asSharedFlow()
+
+
+    init {
+        notifier.createDeckRepetitionNotificationChannel()
+    }
+
+    private val _renamingState = MutableStateFlow(value = DeckRenamingState.NOT_RENAMED)
+    val renamingState = _renamingState.asStateFlow()
 
     fun createNewDeck(deckName: String) {
         val deckNames = deckSource.value.map { deck -> deck.name }
@@ -55,13 +62,10 @@ class DeckListViewModel @AssistedInject constructor(
         }
     }
 
-    init {
-        notifier.createDeckRepetitionNotificationChannel()
-    }
-
     fun renameDeck(deck: Deck?, newName: String) {
+        val updatedName = newName.trim()
         deck?.let { notNullableDeck ->
-            when (newName) {
+            when (updatedName) {
                 "" -> {
                     _eventMessage.tryEmit(messageId = R.string.type_new_deck_name)
                 }
@@ -75,13 +79,18 @@ class DeckListViewModel @AssistedInject constructor(
                         },
                         onCompletion = {
                             _eventMessage.tryEmit(messageId = R.string.deck_has_been_renamed)
+                            _renamingState.value = DeckRenamingState.RENAMED
                         }
                     ) {
-                        renameDeck(oldDeck = deck, name = newName)
+                        renameDeck(oldDeck = deck, name = updatedName)
                     }
                 }
             }
         }
+    }
+
+    fun resetRenamingState() {
+        _renamingState.value = DeckRenamingState.NOT_RENAMED
     }
 
     fun deleteDeck(deckId: Int) {
@@ -98,5 +107,11 @@ class DeckListViewModel @AssistedInject constructor(
         }
     }
 
-    fun getDeckById(deckId: Int): Deck? = deckSource.value.find { deck -> deck.id == deckId }
+    fun getDeckById(deckId: Int): Deck? {
+        val deck = deckSource.value.find { deck -> deck.id == deckId }
+        if (deck == null) {
+            _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck)
+        }
+        return deck
+    }
 }
