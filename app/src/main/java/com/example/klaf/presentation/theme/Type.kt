@@ -18,13 +18,15 @@ data class MainTopographies(
     val deckItemRepetitionQuantity: SpanStyle,
     val deckItemCardQuantity: SpanStyle,
     val deckItemPointer: SpanStyle,
+    val dialogTextStyle: TextStyle,
+    val accentedDialogText: SpanStyle
 )
 
-private val Typography = Typography(
+val Typography = Typography(
     body1 = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
+        fontSize = CommonDimension.mainTextSize,
     ),
     button = TextStyle(
         color = Color.White,
@@ -32,7 +34,7 @@ private val Typography = Typography(
         fontWeight = FontWeight.Bold,
         fontStyle = FontStyle.Italic,
         fontFamily = FontFamily.Serif,
-    ),
+    )
 )
 
 
@@ -46,6 +48,8 @@ val LightMainTypographies = MainTopographies(
     deckItemRepetitionQuantity = LightDeckItemRepetitionQuantitySpanStyle,
     deckItemCardQuantity = LightDeckItemCardQuantityTextStyle,
     deckItemPointer = LightDeckItemPointerTextStyle,
+    dialogTextStyle = DialogTextStyle,
+    accentedDialogText = AccentedDialogTextStyle,
 )
 
 val DarkMainTypographies = MainTopographies(
@@ -57,4 +61,6 @@ val DarkMainTypographies = MainTopographies(
     deckItemRepetitionQuantity = DarkDeckItemRepetitionQuantitySpanStyle,
     deckItemCardQuantity = DarkDeckItemCardQuantityTextStyle,
     deckItemPointer = DarkDeckItemPointerTextStyle,
+    dialogTextStyle = DialogTextStyle,
+    accentedDialogText = AccentedDialogTextStyle,
 )

@@ -5,6 +5,8 @@ import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.ui.graphics.Color
 
+private val DarkPrimaryColor = Color(0xFF5DA3AC)
+
 data class MainColors(
     val materialColors: Colors,
     val lightDeckItemBackground: Color,
@@ -16,6 +18,9 @@ data class MainColors(
     val deckItemRepetitionQuantity: Color,
     val deckItemCardQuantity: Color,
     val deckItemPointer: Color,
+    val positiveDialogButton: Color,
+    val negativeDialogButton: Color,
+    val neutralDialogButton: Color,
 )
 
 val LightMainPalettes = MainColors(
@@ -31,11 +36,14 @@ val LightMainPalettes = MainColors(
     deckItemRepetitionQuantity = Color(0xFF8BC34A),
     deckItemCardQuantity = Color(0xFF8BC34A),
     deckItemPointer = Color(0xFF8BC34A),
+    positiveDialogButton = Color(0xFF8BC34A),
+    negativeDialogButton = Color(0xFF8BC34A),
+    neutralDialogButton = Color(0xFF8BC34A),
 )
 
 val DarkMainPalettes = MainColors(
     materialColors = darkColors(
-//        primary = Color(0xFFC2665E),
+        primary = DarkPrimaryColor,
 //        onPrimary = Color(0xFFFFFFFF),
 //        primaryVariant = Color(0xFF89F53C),
 //        secondary = Color(0xFF4CAF50),
@@ -51,4 +59,7 @@ val DarkMainPalettes = MainColors(
     deckItemRepetitionQuantity = Color(0xFF56C2CF),
     deckItemCardQuantity = Color(0xFFD5C85B),
     deckItemPointer = Color(0xFF969696),
+    positiveDialogButton = Color(0xFF87B156),
+    negativeDialogButton = Color(0xFFD17670),
+    neutralDialogButton = DarkPrimaryColor,
 )
