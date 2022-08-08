@@ -2,6 +2,7 @@ package com.example.klaf.presentation.common
 
 import android.content.Context
 import android.util.Log
+import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
@@ -10,6 +11,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.*
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleCoroutineScope
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -34,6 +36,10 @@ fun Context.showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
 
 fun Context.showToast(@StringRes messageId: Int, duration: Int = Toast.LENGTH_SHORT) {
     showToast(message = getString(messageId), duration = duration)
+}
+
+fun View.showSnackBar(@StringRes messageId: Int, duration: Int = Snackbar.LENGTH_SHORT) {
+    Snackbar.make(this, messageId, duration).show()
 }
 
 inline fun <T> Flow<T>.collectWhenStarted(
