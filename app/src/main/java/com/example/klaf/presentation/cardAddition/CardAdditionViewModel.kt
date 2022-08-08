@@ -33,6 +33,9 @@ class CardAdditionViewModel @AssistedInject constructor(
         replay = 0
     )
 
+    private val _cardAdditionState = MutableStateFlow(value = CardAdditionState.NOT_ADDED)
+    val cardAdditionState = _cardAdditionState.asStateFlow()
+
     fun addNewCard(
         deckId: Int,
         nativeWord: String,
@@ -65,6 +68,12 @@ class CardAdditionViewModel @AssistedInject constructor(
             ) {
                 addNewCardIntoDeck(card = newCard)
             }
+
+            _cardAdditionState.value = CardAdditionState.ADDED
         }
+    }
+
+    fun resetCardAdditionState() {
+        _cardAdditionState.value = CardAdditionState.NOT_ADDED
     }
 }

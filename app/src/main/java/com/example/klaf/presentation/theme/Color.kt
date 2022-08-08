@@ -21,6 +21,9 @@ data class MainColors(
     val positiveDialogButton: Color,
     val negativeDialogButton: Color,
     val neutralDialogButton: Color,
+    val checkedLetterCell: Color,
+    val uncheckedLetterCell: Color,
+    val cardAdditionTextField: Color,
 )
 
 val LightMainPalettes = MainColors(
@@ -39,6 +42,9 @@ val LightMainPalettes = MainColors(
     positiveDialogButton = Color(0xFF8BC34A),
     negativeDialogButton = Color(0xFF8BC34A),
     neutralDialogButton = Color(0xFF8BC34A),
+    checkedLetterCell = Color(0xFF8BC34A),
+    uncheckedLetterCell = Color(0xFF8BC34A),
+    cardAdditionTextField = Color(0xFF8BC34A),
 )
 
 val DarkMainPalettes = MainColors(
@@ -62,4 +68,7 @@ val DarkMainPalettes = MainColors(
     positiveDialogButton = Color(0xFF87B156),
     negativeDialogButton = Color(0xFFD17670),
     neutralDialogButton = DarkPrimaryColor,
+    checkedLetterCell = Color(0xFF94B172),
+    uncheckedLetterCell = Color(0xFF63665F),
+    cardAdditionTextField = Color(0x000000),
 )
