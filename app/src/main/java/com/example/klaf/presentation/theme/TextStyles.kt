@@ -4,6 +4,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 val DarkEvenDeckItemNameTextStyle = TextStyle(
     color = DarkMainPalettes.evenDeckItemName,
@@ -74,4 +75,14 @@ val DialogTextStyle = Typography.body1.copy(
 val AccentedDialogTextStyle = SpanStyle(
     fontStyle = FontStyle.Italic,
     fontWeight = FontWeight.Bold
+)
+
+val CardAdditionPointerTextStyle = SpanStyle(
+    fontStyle = FontStyle.Italic,
+    fontSize = CommonDimension.cardAdditionPointerTextSize
+)
+
+val CardAdditionPointerValueTextStyle = SpanStyle(
+    fontWeight = FontWeight.Bold,
+    fontStyle = FontStyle.Italic,
 )

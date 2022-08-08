@@ -9,16 +9,20 @@ private const val MAIN_TEXT_SIZE_IN_PIXELS = 16
 
 data class MainDimensions(
     val mainTextSize: TextUnit,
+    val captionTextSize: TextUnit,
     val deckItemDeckName: TextUnit,
     val deckItemPointer: TextUnit,
     val dialogTextLineHeight: TextUnit,
     val dialogContentPadding: Dp,
+    val cardAdditionPointerTextSize: TextUnit
 )
 
 val CommonDimension = MainDimensions(
     mainTextSize = MAIN_TEXT_SIZE_IN_PIXELS.sp,
+    captionTextSize = 12.sp,
     deckItemDeckName = 18.sp,
     deckItemPointer = 10.sp,
     dialogTextLineHeight = (MAIN_TEXT_SIZE_IN_PIXELS + 10).sp,
-    dialogContentPadding = 32.dp
+    dialogContentPadding = 32.dp,
+    cardAdditionPointerTextSize = 12.sp,
 )

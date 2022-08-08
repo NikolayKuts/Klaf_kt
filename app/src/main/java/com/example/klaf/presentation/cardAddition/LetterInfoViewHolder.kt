@@ -50,12 +50,12 @@ class LetterInfoViewHolder(
         binding.letterTextView.setOnClickListener {
             val letterInfo = letterInfos[adapterPosition]
 
-            if (letterInfo.letter == " ") {
-                letterInfo.isChecked = false
-            } else {
-                letterInfo.isChecked = !letterInfo.isChecked
-                onLetterClick(adapterPosition)
-            }
+//            if (letterInfo.letter == " ") {
+//                letterInfo.isChecked = false
+//            } else {
+//                letterInfo.isChecked = !letterInfo.isChecked
+//                onLetterClick(adapterPosition)
+//            }
 
             onUpdate(IpaProcessor.getUncompletedIpa(letterInfos))
         }

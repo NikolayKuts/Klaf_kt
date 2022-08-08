@@ -19,11 +19,23 @@ data class MainTopographies(
     val deckItemCardQuantity: SpanStyle,
     val deckItemPointer: SpanStyle,
     val dialogTextStyle: TextStyle,
-    val accentedDialogText: SpanStyle
+    val accentedDialogText: SpanStyle,
+    val cardAdditionPointer: SpanStyle,
+    val cardAdditionPinterValue: SpanStyle,
 )
 
 val Typography = Typography(
     body1 = TextStyle(
+        fontFamily = FontFamily.Monospace,
+        fontWeight = FontWeight.Normal,
+        fontSize = CommonDimension.mainTextSize,
+    ),
+    caption = TextStyle(
+        fontFamily = FontFamily.Monospace,
+        fontWeight = FontWeight.Normal,
+        fontSize = CommonDimension.captionTextSize,
+    ),
+    subtitle1 = TextStyle(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Normal,
         fontSize = CommonDimension.mainTextSize,
@@ -34,14 +46,13 @@ val Typography = Typography(
         fontWeight = FontWeight.Bold,
         fontStyle = FontStyle.Italic,
         fontFamily = FontFamily.Serif,
-    )
+    ),
 )
-
 
 
 val LightMainTypographies = MainTopographies(
     materialTypographies = Typography,
-    evenDeckItemName =  LightEvenDeckItemNameTextStyle,
+    evenDeckItemName = LightEvenDeckItemNameTextStyle,
     oddDeckItemName = LightOddDeckItemNameTextStyle,
     scheduledDateRange = LightScheduledDateTextStyle,
     overdueScheduledDateRange = LightOverdueScheduledDateTextStyle,
@@ -50,6 +61,8 @@ val LightMainTypographies = MainTopographies(
     deckItemPointer = LightDeckItemPointerTextStyle,
     dialogTextStyle = DialogTextStyle,
     accentedDialogText = AccentedDialogTextStyle,
+    cardAdditionPointer = CardAdditionPointerTextStyle,
+    cardAdditionPinterValue = CardAdditionPointerValueTextStyle,
 )
 
 val DarkMainTypographies = MainTopographies(
@@ -63,4 +76,6 @@ val DarkMainTypographies = MainTopographies(
     deckItemPointer = DarkDeckItemPointerTextStyle,
     dialogTextStyle = DialogTextStyle,
     accentedDialogText = AccentedDialogTextStyle,
+    cardAdditionPointer = CardAdditionPointerTextStyle,
+    cardAdditionPinterValue = CardAdditionPointerValueTextStyle,
 )

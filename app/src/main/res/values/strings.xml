@@ -65,4 +65,9 @@
     <string name="card_quantity_pointer">c</string>
     <string name="browse_cards">Browse cards</string>
     <string name="add_cards">Add cards</string>
+    <string name="label_native_word">native word</string>
+    <string name="label_foreign_word">foreign</string>
+    <string name="label_ipa">ipa</string>
+    <string name="pointer_deck">deck</string>
+    <string name="pointer_card_quantity">card quantity</string>
 </resources>
