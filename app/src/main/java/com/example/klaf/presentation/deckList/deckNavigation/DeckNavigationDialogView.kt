@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.klaf.R
 import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
-import com.example.klaf.presentation.common.DialogButton
+import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.theme.MainTheme
 
 
@@ -59,7 +59,7 @@ fun DeckNavigationDialogView(
             }
         }
         Box(modifier = Modifier.align(alignment = Alignment.BottomCenter)) {
-            DialogButton(
+            RoundButton(
                 background = MainTheme.colors.neutralDialogButton,
                 iconId = R.drawable.ic_close_24,
                 onClick = onCloseDialogClick

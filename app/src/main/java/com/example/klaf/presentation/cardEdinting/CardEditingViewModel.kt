@@ -11,9 +11,7 @@ import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.useCases.FetchCardUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.domain.useCases.UpdateCardUseCase
-import com.example.klaf.presentation.cardAddition.LetterInfoViewHolder
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.textAsString
 import com.example.klaf.presentation.common.tryEmit
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -24,7 +22,7 @@ class CardEditingViewModel @AssistedInject constructor(
     @Assisted(CARD_ARGUMENT_NAME) cardId: Int,
     fetchDeckById: FetchDeckByIdUseCase,
     fetchCard: FetchCardUseCase,
-    private val updateCard: UpdateCardUseCase
+    private val updateCard: UpdateCardUseCase,
 ) : ViewModel() {
 
     companion object {
@@ -52,16 +50,18 @@ class CardEditingViewModel @AssistedInject constructor(
             replay = 1
         )
 
+    private val _cardEditingState = MutableStateFlow(value = CardEditingState.NOT_CHANGED)
+    val cardEditingState = _cardEditingState.asStateFlow()
+
     fun updateCard(
+        oldCard: Card,
         deckId: Int,
         nativeWord: String,
         foreignWord: String,
         letterInfos: List<LetterInfo>,
         ipaTemplate: String,
-        id: Int,
-        onFinish: () -> Unit
     ) {
-        val changedCard = Card(
+        val updatedCard = oldCard.copy(
             deckId = deckId,
             nativeWord = nativeWord,
             foreignWord = foreignWord,
@@ -69,19 +69,13 @@ class CardEditingViewModel @AssistedInject constructor(
                 letterInfos = letterInfos,
                 ipaTemplate = ipaTemplate
             ),
-            id = id
         )
 
-        val oldCard = card.replayCache.firstOrNull()
-
         when {
-            oldCard == null -> {
-                _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card)
-            }
-            changedCard.nativeWord.isEmpty() || changedCard.foreignWord.isEmpty() -> {
+            updatedCard.nativeWord.isEmpty() || updatedCard.foreignWord.isEmpty() -> {
                 _eventMessage.tryEmit(messageId = R.string.native_and_foreign_words_must_be_filled)
             }
-            changedCard == oldCard -> {
+            updatedCard == oldCard -> {
                 _eventMessage.tryEmit(messageId = R.string.card_has_not_been_changed)
             }
             else -> {
@@ -89,9 +83,12 @@ class CardEditingViewModel @AssistedInject constructor(
                     onException = { _, _ ->
                         _eventMessage.tryEmit(messageId = R.string.problem_with_updating_card)
                     },
-                    onCompletion = { onFinish() }
+                    onCompletion = {
+                        _eventMessage.tryEmit(R.string.card_has_been_changed)
+                        _cardEditingState.value = CardEditingState.CHANGED
+                    }
                 ) {
-                    updateCard(newCard = changedCard)
+                    updateCard(newCard = updatedCard)
                 }
             }
         }
