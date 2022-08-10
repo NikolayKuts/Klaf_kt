@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/card_addition_view"
+    android:id="@+id/compose_view_card_addition"
     tools:context=".presentation.cardAddition.CardAdditionFragment">
 
 </androidx.compose.ui.platform.ComposeView>

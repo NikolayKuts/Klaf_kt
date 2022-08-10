@@ -12,6 +12,7 @@
     <string name="there_are_no_card_in_deck">There are no cards in the deck</string>
     <string name="card_has_been_added">the card has been added</string>
     <string name="card_has_been_deleted">The card has been deleted</string>
+    <string name="card_has_been_changed">The card has been changed</string>
     <string name="there_are_no_cards_to_remove">There are no cards to remove</string>
     <string name="exception_adding_card">Adding card is failed</string>
     <string name="problem_with_fetching_card">There is a problem with fetching card</string>

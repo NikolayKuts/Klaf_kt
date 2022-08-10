@@ -33,7 +33,7 @@ class CardAdditionFragment : Fragment(R.layout.fragment_card_addition) {
         super.onViewCreated(view, savedInstanceState)
         setEventMessageObserver(view = view)
 
-        view.findViewById<ComposeView>(R.id.card_addition_view).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view_card_addition).setContent {
             MainTheme() {
                 Surface() {
                     CardAdditionFragmentView(viewModel = viewModel)

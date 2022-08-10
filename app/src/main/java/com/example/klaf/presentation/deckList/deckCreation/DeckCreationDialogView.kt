@@ -12,7 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
 import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
-import com.example.klaf.presentation.common.DialogButton
+import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
 import com.example.klaf.presentation.theme.MainTheme
 
@@ -73,7 +73,7 @@ private fun DeckNameTextField(deckNameState: MutableState<String>) {
 
 @Composable
 private fun ConformationButton(onClick: () -> Unit) {
-    DialogButton(
+    RoundButton(
         background = MainTheme.colors.positiveDialogButton,
         iconId = R.drawable.ic_comfirmation_24,
         onClick = onClick
@@ -82,7 +82,7 @@ private fun ConformationButton(onClick: () -> Unit) {
 
 @Composable
 private fun DialogClosingButton(onClick: () -> Unit) {
-    DialogButton(
+    RoundButton(
         background = MainTheme.colors.neutralDialogButton,
         iconId = R.drawable.ic_close_24,
         onClick = onClick

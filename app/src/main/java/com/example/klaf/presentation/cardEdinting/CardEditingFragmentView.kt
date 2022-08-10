@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.cardAddition
+package com.example.klaf.presentation.cardEdinting
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -31,106 +31,101 @@ import com.example.klaf.presentation.common.rememberAsMutableStateOf
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
-fun CardAdditionFragmentView(viewModel: CardAdditionViewModel) {
+fun CardEditingFragmentView(viewModel: CardEditingViewModel) {
     val deck by viewModel.deck.collectAsState(initial = null)
+    val card by viewModel.card.collectAsState(initial = null)
 
     deck?.let { receivedDeck ->
-        val letterInfos = rememberAsMutableStateOf(value = emptyList<LetterInfo>())
-        val nativeWordState = rememberAsMutableStateOf(value = "")
-        val foreignWordState = rememberAsMutableStateOf(value = "")
-        val ipaTemplateState = rememberAsMutableStateOf(value = "")
+        card?.let { receivedCard ->
+            val letterInfos = rememberAsMutableStateOf(
+                value = IpaProcessor.getLetterInfos(encodedIpaFromDB = receivedCard.ipa)
+            )
+            val nativeWordState = rememberAsMutableStateOf(value = receivedCard.nativeWord)
+            val foreignWordState = rememberAsMutableStateOf(value = receivedCard.foreignWord)
+            val ipaTemplateState = rememberAsMutableStateOf(
+                value = IpaProcessor.getDecodedIpa(encodedIpa = receivedCard.ipa)
+            )
 
-        val additionState = viewModel.cardAdditionState.collectAsState()
-
-        when (additionState.value) {
-            CardAdditionState.NOT_ADDED -> {}
-            CardAdditionState.ADDED -> {
-                letterInfos.value = emptyList()
-                nativeWordState.value = ""
-                foreignWordState.value = ""
-                ipaTemplateState.value = ""
-
-                viewModel.resetCardAdditionState()
-            }
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp)
-        ) {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(32.dp)
             ) {
-                Box(
+                Column(
                     modifier = Modifier
-                        .fillMaxHeight(0.3F)
-                        .fillMaxWidth(),
+                        .fillMaxSize()
                 ) {
-                    Column(
+                    Box(
                         modifier = Modifier
-                            .fillMaxSize(),
+                            .fillMaxHeight(0.3F)
+                            .fillMaxWidth(),
                     ) {
-                        DeckName(name = receivedDeck.name, cardQuantity = receivedDeck.cardQuantity)
-                        LazyRow(
+                        Column(
                             modifier = Modifier
-                                .weight(0.5F)
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
+                                .fillMaxSize(),
                         ) {
-                            itemsIndexed(items = letterInfos.value) { index, letterInfo ->
-                                LetterItem(
-                                    letterInfo = letterInfo,
-                                    onClick = {
-                                        val updatedIsChecked = if (letterInfo.letter == " ") {
-                                            false
-                                        } else {
-                                            !letterInfo.isChecked
-                                        }
-
-                                        letterInfos.value = letterInfos.value
-                                            .toMutableList()
-                                            .apply {
-                                                this[index] = letterInfo.copy(
-                                                    isChecked = updatedIsChecked
-                                                )
+                            DeckInfo(name = receivedDeck.name,
+                                cardQuantity = receivedDeck.cardQuantity)
+                            LazyRow(
+                                modifier = Modifier
+                                    .weight(0.5F)
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                            ) {
+                                itemsIndexed(items = letterInfos.value) { index, letterInfo ->
+                                    LetterItem(
+                                        letterInfo = letterInfo,
+                                        onClick = {
+                                            val updatedIsChecked = if (letterInfo.letter == " ") {
+                                                false
+                                            } else {
+                                                !letterInfo.isChecked
                                             }
 
-                                        ipaTemplateState.value =
-                                            IpaProcessor.getUncompletedIpa(letterInfos.value)
-                                    }
-                                )
+                                            letterInfos.value = letterInfos.value
+                                                .toMutableList()
+                                                .apply {
+                                                    this[index] = letterInfo.copy(
+                                                        isChecked = updatedIsChecked
+                                                    )
+                                                }
+
+                                            ipaTemplateState.value =
+                                                IpaProcessor.getUncompletedIpa(letterInfos.value)
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
-                }
-                Box(modifier = Modifier.fillMaxSize()) {
-                    CardFields(
-                        letterInfosState = letterInfos,
-                        nativeWordState = nativeWordState,
-                        foreignWordState = foreignWordState,
-                        ipaTemplate = ipaTemplateState,
-                    )
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(end = 32.dp, bottom = 32.dp)
-                    ) {
-                        RoundButton(
-                            background = MainTheme.colors.positiveDialogButton,
-                            iconId = R.drawable.ic_comfirmation_24,
-                            onClick = {
-                                viewModel.addNewCard(
-                                    deckId = receivedDeck.id,
-                                    nativeWord = nativeWordState.value,
-                                    foreignWord = foreignWordState.value,
-                                    letterInfos = letterInfos.value,
-                                    ipaTemplate = ipaTemplateState.value
-                                )
-                            }
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        CardFields(
+                            letterInfosState = letterInfos,
+                            nativeWordState = nativeWordState,
+                            foreignWordState = foreignWordState,
+                            ipaTemplate = ipaTemplateState,
                         )
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(end = 32.dp, bottom = 32.dp)
+                        ) {
+                            RoundButton(
+                                background = MainTheme.colors.positiveDialogButton,
+                                iconId = R.drawable.ic_comfirmation_24,
+                                onClick = {
+                                    viewModel.updateCard(
+                                        oldCard = receivedCard,
+                                        deckId = receivedDeck.id,
+                                        nativeWord = nativeWordState.value,
+                                        foreignWord = foreignWordState.value,
+                                        letterInfos = letterInfos.value,
+                                        ipaTemplate = ipaTemplateState.value,
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -139,7 +134,7 @@ fun CardAdditionFragmentView(viewModel: CardAdditionViewModel) {
 }
 
 @Composable
-private fun ColumnScope.DeckName(name: String, cardQuantity: Int) {
+private fun ColumnScope.DeckInfo(name: String, cardQuantity: Int) {
     Column(
         modifier = Modifier
             .weight(0.5F)

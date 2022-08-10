@@ -13,7 +13,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
 import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
-import com.example.klaf.presentation.common.DialogButton
+import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.theme.MainTheme
 
 
@@ -59,7 +59,7 @@ fun DeckDeletionDialogView(
 
 @Composable
 private fun DeckDeletingConformationButton(onClick: () -> Unit) {
-    DialogButton(
+    RoundButton(
         background = MainTheme.colors.negativeDialogButton,
         iconId = R.drawable.ic_delete_24,
         onClick = onClick
@@ -68,7 +68,7 @@ private fun DeckDeletingConformationButton(onClick: () -> Unit) {
 
 @Composable
 private fun DialogClosingButton(onClick: () -> Unit) {
-    DialogButton(
+    RoundButton(
         background = MainTheme.colors.neutralDialogButton,
         iconId = R.drawable.ic_close_24,
         onClick = onClick

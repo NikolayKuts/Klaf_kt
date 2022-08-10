@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 const val DIALOG_BUTTON_SIZE = 50
 
 @Composable
-fun DialogButton(
+fun RoundButton(
     background: Color,
     @DrawableRes iconId: Int,
     onClick: () -> Unit,
