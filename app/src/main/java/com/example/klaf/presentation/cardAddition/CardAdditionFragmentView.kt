@@ -24,8 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.klaf.R
 import com.example.klaf.domain.common.generateLetterInfos
-import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.LetterInfo
+import com.example.klaf.domain.ipa.convertUncompletedIpa
 import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
 import com.example.klaf.presentation.theme.MainTheme
@@ -99,7 +99,8 @@ fun CardAdditionFragmentView(viewModel: CardAdditionViewModel) {
                                             }
 
                                         ipaTemplateState.value =
-                                            IpaProcessor.getUncompletedIpa(letterInfos.value)
+                                            letterInfos.value.convertUncompletedIpa()
+//                                            IpaProcessor.getUncompletedIpa(letterInfos.value)
                                     }
                                 )
                             }
@@ -222,7 +223,7 @@ private fun BoxScope.CardFields(
             onValueChange = {
                 foreignWordState.value = it
                 letterInfosState.value = foreignWordState.value.generateLetterInfos()
-                ipaTemplate.value = IpaProcessor.getUncompletedIpa(letterInfosState.value)
+                ipaTemplate.value = letterInfosState.value.convertUncompletedIpa()
             },
         )
         WordTextField(

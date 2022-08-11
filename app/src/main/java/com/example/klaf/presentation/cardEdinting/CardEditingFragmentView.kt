@@ -24,8 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.klaf.R
 import com.example.klaf.domain.common.generateLetterInfos
-import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.LetterInfo
+import com.example.klaf.domain.ipa.convertUncompletedIpa
+import com.example.klaf.domain.ipa.decodeIpa
+import com.example.klaf.domain.ipa.decodeToInfos
 import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
 import com.example.klaf.presentation.theme.MainTheme
@@ -38,13 +40,11 @@ fun CardEditingFragmentView(viewModel: CardEditingViewModel) {
     deck?.let { receivedDeck ->
         card?.let { receivedCard ->
             val letterInfos = rememberAsMutableStateOf(
-                value = IpaProcessor.getLetterInfos(encodedIpaFromDB = receivedCard.ipa)
+                value = receivedCard.decodeToInfos()
             )
             val nativeWordState = rememberAsMutableStateOf(value = receivedCard.nativeWord)
             val foreignWordState = rememberAsMutableStateOf(value = receivedCard.foreignWord)
-            val ipaTemplateState = rememberAsMutableStateOf(
-                value = IpaProcessor.getDecodedIpa(encodedIpa = receivedCard.ipa)
-            )
+            val ipaTemplateState = rememberAsMutableStateOf(value = receivedCard.decodeIpa())
 
             Box(
                 modifier = Modifier
@@ -92,7 +92,7 @@ fun CardEditingFragmentView(viewModel: CardEditingViewModel) {
                                                 }
 
                                             ipaTemplateState.value =
-                                                IpaProcessor.getUncompletedIpa(letterInfos.value)
+                                                letterInfos.value.convertUncompletedIpa()
                                         }
                                     )
                                 }
@@ -217,7 +217,7 @@ private fun BoxScope.CardFields(
             onValueChange = {
                 foreignWordState.value = it
                 letterInfosState.value = foreignWordState.value.generateLetterInfos()
-                ipaTemplate.value = IpaProcessor.getUncompletedIpa(letterInfosState.value)
+                ipaTemplate.value = letterInfosState.value.convertUncompletedIpa()
             },
         )
         WordTextField(

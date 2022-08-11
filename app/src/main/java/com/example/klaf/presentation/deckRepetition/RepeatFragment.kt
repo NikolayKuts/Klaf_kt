@@ -22,6 +22,7 @@ import com.example.klaf.domain.common.CardSide.FRONT
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.domain.ipa.IpaProcessor
+import com.example.klaf.domain.ipa.decodeToIpaPrompts
 import com.example.klaf.presentation.adapters.IpaPromptAdapter
 import com.example.klaf.presentation.common.TimerCountingState
 import com.example.klaf.presentation.common.TimerCountingState.*
@@ -178,7 +179,7 @@ class RepeatFragment : Fragment() {
                     } else {
                         binding.cardSideTextView.text = cardRepetitionState.card.foreignWord
                         ipaPromptAdapter.setData(
-                            letterInfos = IpaProcessor.getLetterInfos(cardRepetitionState.card.ipa)
+                            letterInfos = cardRepetitionState.card.decodeToIpaPrompts()
                         )
                     }
                 }
@@ -186,7 +187,7 @@ class RepeatFragment : Fragment() {
                     if (cardRepetitionState.side == FRONT) {
                         binding.cardSideTextView.text = cardRepetitionState.card.foreignWord
                         ipaPromptAdapter.setData(
-                            letterInfos = IpaProcessor.getLetterInfos(cardRepetitionState.card.ipa)
+                            letterInfos = cardRepetitionState.card.decodeToIpaPrompts()
                         )
                     } else {
                         binding.cardSideTextView.text = cardRepetitionState.card.nativeWord
