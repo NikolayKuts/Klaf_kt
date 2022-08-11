@@ -6,8 +6,8 @@ import com.example.klaf.R
 import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
-import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.LetterInfo
+import com.example.klaf.domain.ipa.convertToEncodedIpa
 import com.example.klaf.domain.useCases.FetchCardUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.domain.useCases.UpdateCardUseCase
@@ -65,10 +65,7 @@ class CardEditingViewModel @AssistedInject constructor(
             deckId = deckId,
             nativeWord = nativeWord,
             foreignWord = foreignWord,
-            ipa = IpaProcessor.getEncodedIpa(
-                letterInfos = letterInfos,
-                ipaTemplate = ipaTemplate
-            ),
+            ipa = letterInfos.convertToEncodedIpa(ipaTemplate = ipaTemplate),
         )
 
         when {
