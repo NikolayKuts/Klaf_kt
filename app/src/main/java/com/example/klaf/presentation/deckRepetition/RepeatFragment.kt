@@ -21,7 +21,6 @@ import com.example.klaf.domain.common.CardSide.BACK
 import com.example.klaf.domain.common.CardSide.FRONT
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
-import com.example.klaf.domain.ipa.IpaProcessor
 import com.example.klaf.domain.ipa.decodeToIpaPrompts
 import com.example.klaf.presentation.adapters.IpaPromptAdapter
 import com.example.klaf.presentation.common.TimerCountingState
