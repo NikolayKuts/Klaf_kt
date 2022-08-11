@@ -77,12 +77,12 @@ val AccentedDialogTextStyle = SpanStyle(
     fontWeight = FontWeight.Bold
 )
 
-val CardAdditionPointerTextStyle = SpanStyle(
+val CardPointerTextStyle = SpanStyle(
     fontStyle = FontStyle.Italic,
     fontSize = CommonDimension.cardAdditionPointerTextSize
 )
 
-val CardAdditionPointerValueTextStyle = SpanStyle(
+val CardPointerValueTextStyle = SpanStyle(
     fontWeight = FontWeight.Bold,
     fontStyle = FontStyle.Italic,
 )

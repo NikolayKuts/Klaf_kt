@@ -20,8 +20,11 @@ data class MainTopographies(
     val deckItemPointer: SpanStyle,
     val dialogTextStyle: TextStyle,
     val accentedDialogText: SpanStyle,
-    val cardAdditionPointer: SpanStyle,
+    val cardPointer: SpanStyle,
     val cardAdditionPinterValue: SpanStyle,
+//    val cardNativeWord: SpanStyle,
+//    val cardForeignWord: SpanStyle,
+//    val cardIpa: SpanStyle,
 )
 
 val Typography = Typography(
@@ -61,8 +64,12 @@ val LightMainTypographies = MainTopographies(
     deckItemPointer = LightDeckItemPointerTextStyle,
     dialogTextStyle = DialogTextStyle,
     accentedDialogText = AccentedDialogTextStyle,
-    cardAdditionPointer = CardAdditionPointerTextStyle,
-    cardAdditionPinterValue = CardAdditionPointerValueTextStyle,
+    cardPointer = CardPointerTextStyle,
+    cardAdditionPinterValue = CardPointerValueTextStyle,
+//    cardNativeWord = ,
+//    cardForeignWord =,
+//    cardIpa =,
+
 )
 
 val DarkMainTypographies = MainTopographies(
@@ -76,6 +83,6 @@ val DarkMainTypographies = MainTopographies(
     deckItemPointer = DarkDeckItemPointerTextStyle,
     dialogTextStyle = DialogTextStyle,
     accentedDialogText = AccentedDialogTextStyle,
-    cardAdditionPointer = CardAdditionPointerTextStyle,
-    cardAdditionPinterValue = CardAdditionPointerValueTextStyle,
+    cardPointer = CardPointerTextStyle,
+    cardAdditionPinterValue = CardPointerValueTextStyle,
 )

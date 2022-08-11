@@ -23,7 +23,10 @@ data class MainColors(
     val neutralDialogButton: Color,
     val checkedLetterCell: Color,
     val uncheckedLetterCell: Color,
-    val cardAdditionTextField: Color,
+    val cardTextFieldBackground: Color,
+    val cardNativeWord: Color,
+    val cardForeignWord: Color,
+    val cardIpa: Color,
 )
 
 val LightMainPalettes = MainColors(
@@ -44,8 +47,11 @@ val LightMainPalettes = MainColors(
     neutralDialogButton = Color(0xFF8BC34A),
     checkedLetterCell = Color(0xFF8BC34A),
     uncheckedLetterCell = Color(0xFF8BC34A),
-    cardAdditionTextField = Color(0xFF8BC34A),
-)
+    cardTextFieldBackground = Color(0xFF8BC34A),
+    cardNativeWord = Color(0xFF8BC34A),
+    cardForeignWord = Color(0xFF8BC34A),
+    cardIpa = Color(0xFF8BC34A),
+    )
 
 val DarkMainPalettes = MainColors(
     materialColors = darkColors(
@@ -65,10 +71,13 @@ val DarkMainPalettes = MainColors(
     deckItemRepetitionQuantity = Color(0xFF56C2CF),
     deckItemCardQuantity = Color(0xFFD5C85B),
     deckItemPointer = Color(0xFF969696),
-    positiveDialogButton = Color(0xFF87B156),
+    positiveDialogButton = Color(0xFF96B671),
     negativeDialogButton = Color(0xFFD17670),
     neutralDialogButton = DarkPrimaryColor,
     checkedLetterCell = Color(0xFF94B172),
     uncheckedLetterCell = Color(0xFF63665F),
-    cardAdditionTextField = Color(0x000000),
+    cardTextFieldBackground = Color(0x000000),
+    cardNativeWord = Color(0xFFA9CA84),
+    cardForeignWord = Color(0xFFD3AA6E),
+    cardIpa = Color(0xFFB8ABD1),
 )
