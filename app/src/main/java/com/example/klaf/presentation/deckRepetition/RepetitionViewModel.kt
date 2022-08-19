@@ -57,7 +57,7 @@ class RepetitionViewModel @AssistedInject constructor(
         )
 
     private val cardsSource: SharedFlow<List<Card>> = fetchCards(deckId)
-        .catch { throwable ->
+        .catch {
             _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
         }
         .shareIn(
@@ -212,8 +212,7 @@ class RepetitionViewModel @AssistedInject constructor(
     private fun observeCurrentCard() {
         viewModelScope.launchWithExceptionHandler(
             context = Dispatchers.IO,
-            onException = { _, throwable ->
-                log(message = throwable.cause.toString())
+            onException = { _, _ ->
                 _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card)
             }
         ) {
@@ -390,7 +389,8 @@ class RepetitionViewModel @AssistedInject constructor(
             && updatedDeck.repetitionQuantity.isEven()
         ) {
             log(message = "scheduling")
-            log(message = scheduledDate.asFormattedDate() ?: "null", pointerMessage = "scheduled date")
+            log(message = scheduledDate.asFormattedDate() ?: "null",
+                pointerMessage = "scheduled date")
 
             workManager.scheduleDeckRepetition(
                 deckName = repeatedDeck.name,

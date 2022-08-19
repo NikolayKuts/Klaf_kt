@@ -28,7 +28,7 @@ class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_rep
 
     private val args by navArgs<DeckRepetitionInfoDialogFragmentArgs>()
 
-    private val viewModel by navGraphViewModels<RepetitionViewModel>(R.id.repeatFragment)
+    private val viewModel by navGraphViewModels<RepetitionViewModel>(R.id.deckRepetitionFragment)
 
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

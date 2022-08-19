@@ -4,7 +4,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
 
 val DarkEvenDeckItemNameTextStyle = TextStyle(
     color = DarkMainPalettes.evenDeckItemName,
@@ -85,4 +84,20 @@ val CardPointerTextStyle = SpanStyle(
 val CardPointerValueTextStyle = SpanStyle(
     fontWeight = FontWeight.Bold,
     fontStyle = FontStyle.Italic,
+)
+
+val LightFrondSideOrderPointer = TextStyle(
+    color = LightMainPalettes.frontSideOrderPointer
+)
+
+val LightBackSideOrderPointer = TextStyle(
+    color = LightMainPalettes.backSideOrderPointer
+)
+
+val DarkFrondSideOrderPointer = TextStyle(
+    color = DarkMainPalettes.frontSideOrderPointer
+)
+
+val DarkBackSideOrderPointer = TextStyle(
+    color = DarkMainPalettes.frontSideOrderPointer
 )
