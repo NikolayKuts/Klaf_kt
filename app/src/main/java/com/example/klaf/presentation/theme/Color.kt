@@ -27,6 +27,8 @@ data class MainColors(
     val cardNativeWord: Color,
     val cardForeignWord: Color,
     val cardIpa: Color,
+    val frontSideOrderPointer: Color,
+    val backSideOrderPointer: Color,
 )
 
 val LightMainPalettes = MainColors(
@@ -51,6 +53,8 @@ val LightMainPalettes = MainColors(
     cardNativeWord = Color(0xFF8BC34A),
     cardForeignWord = Color(0xFF8BC34A),
     cardIpa = Color(0xFF8BC34A),
+    frontSideOrderPointer = Color(0xFF8BC34A),
+    backSideOrderPointer = Color(0xFF8BC34A),
     )
 
 val DarkMainPalettes = MainColors(
@@ -80,4 +84,6 @@ val DarkMainPalettes = MainColors(
     cardNativeWord = Color(0xFFA9CA84),
     cardForeignWord = Color(0xFFD3AA6E),
     cardIpa = Color(0xFFB8ABD1),
+    frontSideOrderPointer = Color(0xFF8BC34A),
+    backSideOrderPointer = Color(0xFF81B7BD),
 )

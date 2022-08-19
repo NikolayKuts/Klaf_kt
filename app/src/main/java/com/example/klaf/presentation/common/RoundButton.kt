@@ -21,11 +21,12 @@ fun RoundButton(
     background: Color,
     @DrawableRes iconId: Int,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     contentDescription: String = "",
 ) {
     Card(
         shape = RoundedCornerShape(DIALOG_BUTTON_SIZE.dp),
-        modifier = Modifier
+        modifier = modifier
             .size(DIALOG_BUTTON_SIZE.dp),
     ) {
         Icon(

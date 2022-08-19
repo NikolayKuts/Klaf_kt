@@ -133,7 +133,7 @@ class Notifier @Inject constructor(
         return NavDeepLinkBuilder(context)
             .setComponentName(MainActivity::class.java)
             .setGraph(R.navigation.nav_graph)
-            .setDestination(R.id.repeatFragment)
+            .setDestination(R.id.deckRepetitionFragment)
             .setArguments(bundleOf(DECK_ID_KEY to deckId))
             .createPendingIntent()
     }

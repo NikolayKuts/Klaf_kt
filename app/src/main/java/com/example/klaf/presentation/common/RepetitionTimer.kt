@@ -4,10 +4,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.example.klaf.presentation.common.TimerCountingState.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
@@ -32,10 +29,10 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
 
     val timerState = combine(_time, timerCountingState) { time, countingState ->
         RepetitionTimerState(time = time, countingState = countingState)
-    }.shareIn(
+    }.stateIn(
         scope = scope,
         started = SharingStarted.Lazily,
-        replay = 1
+        initialValue = RepetitionTimerState(_time.value, countingState = timerCountingState.value)
     )
 
     override fun onResume(owner: LifecycleOwner) {

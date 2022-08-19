@@ -92,7 +92,7 @@ class DeckListFragment : Fragment() {
     }
 
     private fun navigateToRepeatFragment(deck: Deck) {
-        DeckListFragmentDirections.actionDeckListFragmentToRepeatFragment(
+        DeckListFragmentDirections.actionDeckListFragmentToDeckRepetitionFragment(
             deckId = deck.id
         ).also { navController.navigate(it) }
     }
