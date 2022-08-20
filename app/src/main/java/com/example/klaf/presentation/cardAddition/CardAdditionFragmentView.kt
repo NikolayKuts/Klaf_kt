@@ -8,12 +8,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
-import com.example.klaf.domain.common.CardFields
-import com.example.klaf.domain.common.DeckInfo
-import com.example.klaf.domain.common.ForeignWordLazyRow
 import com.example.klaf.domain.ipa.LetterInfo
-import com.example.klaf.presentation.common.RoundButton
-import com.example.klaf.presentation.common.rememberAsMutableStateOf
+import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable

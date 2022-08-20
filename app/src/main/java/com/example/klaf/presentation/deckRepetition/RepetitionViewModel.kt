@@ -93,7 +93,7 @@ class RepetitionViewModel @AssistedInject constructor(
         cardSide,
         repetitionOrder,
     ) { card, side, repetitionOrder ->
-        CardRepetitionState(card = card, side = side, repetitionOrder = repetitionOrder)
+        DeckRepetitionState(card = card, side = side, repetitionOrder = repetitionOrder)
     }.shareIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily,

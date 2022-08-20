@@ -14,7 +14,10 @@ data class MainDimensions(
     val deckItemPointer: TextUnit,
     val dialogTextLineHeight: TextUnit,
     val dialogContentPadding: Dp,
-    val cardAdditionPointerTextSize: TextUnit
+    val cardAdditionPointerTextSize: TextUnit,
+    val timerTextSize: TextUnit,
+    val cardWordTextSize: TextUnit,
+    val ipaPromptsTextSize: TextUnit,
 )
 
 val CommonDimension = MainDimensions(
@@ -25,4 +28,7 @@ val CommonDimension = MainDimensions(
     dialogTextLineHeight = (MAIN_TEXT_SIZE_IN_PIXELS + 10).sp,
     dialogContentPadding = 32.dp,
     cardAdditionPointerTextSize = 12.sp,
+    timerTextSize = 18.sp,
+    cardWordTextSize = 18.sp,
+    ipaPromptsTextSize = 18.sp,
 )

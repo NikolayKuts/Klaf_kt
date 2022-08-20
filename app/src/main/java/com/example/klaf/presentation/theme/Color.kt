@@ -29,6 +29,10 @@ data class MainColors(
     val cardIpa: Color,
     val frontSideOrderPointer: Color,
     val backSideOrderPointer: Color,
+    val timerActive: Color,
+    val timerInactive: Color,
+    val ipaPromptChecked: Color,
+    val ipaPromptUnchecked: Color,
 )
 
 val LightMainPalettes = MainColors(
@@ -55,6 +59,10 @@ val LightMainPalettes = MainColors(
     cardIpa = Color(0xFF8BC34A),
     frontSideOrderPointer = Color(0xFF8BC34A),
     backSideOrderPointer = Color(0xFF8BC34A),
+    timerActive = Color(0xFF8BC34A),
+    timerInactive = Color(0xFF8BC34A),
+    ipaPromptChecked = Color(0xFF8BC34A),
+    ipaPromptUnchecked = Color(0xFF8BC34A),
     )
 
 val DarkMainPalettes = MainColors(
@@ -84,6 +92,10 @@ val DarkMainPalettes = MainColors(
     cardNativeWord = Color(0xFFA9CA84),
     cardForeignWord = Color(0xFFD3AA6E),
     cardIpa = Color(0xFFB8ABD1),
-    frontSideOrderPointer = Color(0xFF8BC34A),
+    frontSideOrderPointer = Color(0xFF8CA86B),
     backSideOrderPointer = Color(0xFF81B7BD),
+    timerActive = Color(0xFFBDBDBD),
+    timerInactive = Color(0xFF7A7A7A),
+    ipaPromptChecked = Color(0xFFCF726B),
+    ipaPromptUnchecked = Color(0xFF585857),
 )

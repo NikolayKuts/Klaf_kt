@@ -9,6 +9,9 @@ import android.widget.Toast
 import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.*
+import androidx.constraintlayout.compose.ConstrainScope
+import androidx.constraintlayout.compose.ConstrainedLayoutReference
+import androidx.constraintlayout.compose.ConstraintSetScope
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleCoroutineScope
 import com.google.android.material.snackbar.Snackbar
@@ -70,4 +73,14 @@ fun log(
 @Composable
 fun <T> rememberAsMutableStateOf(value: T): MutableState<T> {
     return remember { mutableStateOf(value = value) }
+}
+
+fun ConstraintSetScope.constrainRefFor(
+    id: String,
+    constrainBlock: ConstrainScope.() -> Unit,
+): ConstrainedLayoutReference {
+    val reference = createRefFor(id = id)
+    constrain(ref = reference, constrainBlock = constrainBlock)
+
+    return reference
 }

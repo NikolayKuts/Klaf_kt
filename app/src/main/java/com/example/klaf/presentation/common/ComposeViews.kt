@@ -1,4 +1,4 @@
-package com.example.klaf.domain.common
+package com.example.klaf.presentation.common
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -18,10 +18,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.klaf.R
+import com.example.klaf.domain.common.generateLetterInfos
 import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.ipa.convertUncompletedIpa
 import com.example.klaf.presentation.theme.MainTheme
@@ -84,11 +86,13 @@ fun ColumnScope.DeckInfo(name: String, cardQuantity: Int) {
 }
 
 @Composable
-private fun Pointer(
+fun Pointer(
     pointerTextId: Int,
     valueText: String,
+    modifier: Modifier = Modifier
 ) {
     Text(
+        modifier = modifier,
         text = buildAnnotatedString {
             withStyle(style = MainTheme.typographies.cardPointer) {
                 append("${stringResource(id = pointerTextId)}: ")
@@ -97,7 +101,9 @@ private fun Pointer(
             withStyle(style = MainTheme.typographies.cardAdditionPinterValue) {
                 append(valueText)
             }
-        }
+        },
+        overflow = TextOverflow.Ellipsis,
+        maxLines = 1
     )
 }
 
