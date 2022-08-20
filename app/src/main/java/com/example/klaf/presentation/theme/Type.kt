@@ -24,9 +24,9 @@ data class MainTopographies(
     val cardAdditionPinterValue: SpanStyle,
     val frontSideOrderPointer: TextStyle,
     val backSideOrderPointer: TextStyle,
-//    val cardNativeWord: SpanStyle,
-//    val cardForeignWord: SpanStyle,
-//    val cardIpa: SpanStyle,
+    val timerTextStyle: TextStyle,
+    val cardWordTextStyle: TextStyle,
+    val cardIpaPromptsTextStyle: TextStyle,
 )
 
 val Typography = Typography(
@@ -47,13 +47,12 @@ val Typography = Typography(
     ),
     button = TextStyle(
         color = Color.White,
-        fontSize = 22.sp,
+        fontSize = 18.sp,
         fontWeight = FontWeight.Bold,
         fontStyle = FontStyle.Italic,
-        fontFamily = FontFamily.Serif,
+        fontFamily = FontFamily.Monospace,
     ),
 )
-
 
 val LightMainTypographies = MainTopographies(
     materialTypographies = Typography,
@@ -70,6 +69,9 @@ val LightMainTypographies = MainTopographies(
     cardAdditionPinterValue = CardPointerValueTextStyle,
     frontSideOrderPointer = LightFrondSideOrderPointer,
     backSideOrderPointer = LightBackSideOrderPointer,
+    timerTextStyle = TimerTextStile,
+    cardWordTextStyle = CardWordTextStyle,
+    cardIpaPromptsTextStyle = IpaPromptsTextStyle,
 )
 
 val DarkMainTypographies = MainTopographies(
@@ -87,4 +89,7 @@ val DarkMainTypographies = MainTopographies(
     cardAdditionPinterValue = CardPointerValueTextStyle,
     frontSideOrderPointer = DarkFrondSideOrderPointer,
     backSideOrderPointer = DarkBackSideOrderPointer,
+    timerTextStyle = TimerTextStile,
+    cardWordTextStyle = CardWordTextStyle,
+    cardIpaPromptsTextStyle = IpaPromptsTextStyle,
 )

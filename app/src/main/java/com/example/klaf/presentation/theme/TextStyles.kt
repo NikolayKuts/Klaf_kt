@@ -99,5 +99,20 @@ val DarkFrondSideOrderPointer = TextStyle(
 )
 
 val DarkBackSideOrderPointer = TextStyle(
-    color = DarkMainPalettes.frontSideOrderPointer
+    color = DarkMainPalettes.backSideOrderPointer
+)
+
+val TimerTextStile = TextStyle(
+    fontSize = CommonDimension.timerTextSize,
+    fontStyle = FontStyle.Italic
+)
+
+val CardWordTextStyle = Typography.body1.copy(
+    fontSize = CommonDimension.cardWordTextSize,
+    fontStyle = FontStyle.Italic
+)
+
+val IpaPromptsTextStyle = Typography.body1.copy(
+    fontSize = CommonDimension.ipaPromptsTextSize,
+    fontStyle = FontStyle.Italic
 )

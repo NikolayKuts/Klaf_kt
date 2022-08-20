@@ -71,4 +71,8 @@
     <string name="label_ipa">ipa</string>
     <string name="pointer_deck">deck</string>
     <string name="pointer_card_quantity">card quantity</string>
+    <string name="start">Start</string>
+    <string name="hard">hard</string>
+    <string name="good">good</string>
+    <string name="easy">easy</string>
 </resources>
