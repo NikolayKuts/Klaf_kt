@@ -1,19 +1,25 @@
 package com.example.klaf.presentation.deckRepetition
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -43,6 +49,11 @@ private const val TURN_BUTTON_ID = "turn_button"
 private const val HARD_BUTTON_ID = "hard_button"
 private const val GOOD_BUTTON_ID = "good_button"
 private const val EASY_BUTTON_ID = "easy_button"
+
+private const val MAIN_BUTTON_ID = "main_button"
+private const val DELETE_BUTTON_ID = "delete_button"
+private const val EDIT_BUTTON_ID = "edit_button"
+private const val ADD_BUTTON_ID = "add_button"
 
 @Composable
 fun DeckRepetitionScreen(
@@ -76,12 +87,13 @@ fun DeckRepetitionScreen(
         SwitchOrderButton(onClick = { viewModel.changeRepetitionOrder() })
         Time(timerState = timerState)
         DeckCard(deckRepetitionState = repetitionState)
-        ControlButtons(
+        RepetitionButtons(
             screenState = screenState,
             deckRepetitionState = repetitionState,
             viewModel = viewModel,
             onFinish = onFinishRepetition,
         )
+        AdditionalButtons()
     }
 }
 
@@ -168,6 +180,27 @@ private fun getConstraints(): ConstraintSet {
         }
 
         createHorizontalChain(hardButtonRef, goodButtonRef, easyButtonRef)
+
+        val mainButtonRef = constrainRefFor(id = MAIN_BUTTON_ID) {
+            top.linkTo(deckInfoRef.bottom, margin = 32.dp)
+            end.linkTo(parent.end)
+        }
+
+        val deleteButtonRef = constrainRefFor(id = DELETE_BUTTON_ID) {
+            top.linkTo(mainButtonRef.top)
+            end.linkTo(mainButtonRef.start, margin = 32.dp)
+        }
+
+        val addButtonRef = constrainRefFor(id = ADD_BUTTON_ID) {
+            top.linkTo(mainButtonRef.bottom, margin = 32.dp)
+            end.linkTo(parent.end)
+        }
+
+        val editButtonRef = constrainRefFor(id = EDIT_BUTTON_ID) {
+            top.linkTo(deleteButtonRef.bottom, margin = 8.dp)
+            end.linkTo(addButtonRef.start, margin = 8.dp)
+        }
+
     }
 }
 
@@ -299,7 +332,7 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState) {
 }
 
 @Composable
-private fun ControlButtons(
+private fun RepetitionButtons(
     screenState: RepetitionScreenState,
     deckRepetitionState: DeckRepetitionState,
     viewModel: RepetitionViewModel,
@@ -381,3 +414,169 @@ private fun ControlButtons(
         }
     }
 }
+
+@Composable
+private fun AdditionalButtons() {
+    val startAnimation = rememberAsMutableStateOf(value = false)
+
+    DeleteButton(animationState = startAnimation.value)
+    AddButton(animationState = startAnimation.value)
+    EditButton(animationState = startAnimation.value)
+    MainButton(animationState = startAnimation)
+
+}
+
+@Composable
+private fun DeleteButton(animationState: Boolean) {
+    val transition = updateTransition(targetState = animationState, label = "")
+
+    val xOffset by transition.animateFloat(
+        transitionSpec = {
+            spring(dampingRatio = Spring.DampingRatioLowBouncy,
+                stiffness = Spring.StiffnessVeryLow
+            )
+        },
+        label = ""
+    ) { if (it) 0F else 60F }
+
+    val alpha by transition.animateFloat(
+        transitionSpec = { tween(durationMillis = 500) },
+        label = ""
+    ) { if (it) 1F else 0F }
+
+    val degrees by transition.animateFloat(
+        transitionSpec = {
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessVeryLow
+            )
+        },
+        label = ""
+    ) { if (it) 0F else 360F }
+
+    RoundButton(
+        modifier = Modifier
+            .layoutId(DELETE_BUTTON_ID)
+            .offset(x = xOffset.dp)
+            .alpha(alpha)
+            .rotate(degrees = degrees),
+        background = Color(0xFF999999),
+        iconId = R.drawable.ic_delete_24,
+        onClick = { /*TODO*/ }
+    )
+}
+
+@Composable
+private fun AddButton(animationState: Boolean) {
+    val transition = updateTransition(targetState = animationState, label = "")
+
+    val yOffset by transition.animateFloat(
+        transitionSpec = {
+            spring(dampingRatio = Spring.DampingRatioLowBouncy,
+                stiffness = Spring.StiffnessVeryLow
+            )
+        },
+        label = ""
+    ) { if (it) 0F else -60F }
+
+    val alpha by transition.animateFloat(
+        transitionSpec = { tween(durationMillis = 500) },
+        label = ""
+    ) { if (it) 1F else 0F }
+
+    val degrees by transition.animateFloat(
+        transitionSpec = {
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessVeryLow
+            )
+        },
+        label = ""
+    ) { if (it) 0F else 360F }
+
+    RoundButton(
+        modifier = Modifier
+            .layoutId(ADD_BUTTON_ID)
+            .offset(y = yOffset.dp)
+            .alpha(alpha)
+            .rotate(degrees = degrees),
+        background = Color(0xFF999999),
+        iconId = R.drawable.ic_add_24,
+        onClick = { /*TODO*/ }
+    )
+}
+
+@Composable
+private fun EditButton(animationState: Boolean) {
+    val transition = updateTransition(targetState = animationState, label = "")
+
+    val xOffset by transition.animateFloat(
+        transitionSpec = {
+            spring(dampingRatio = Spring.DampingRatioLowBouncy,
+                stiffness = Spring.StiffnessVeryLow
+            )
+        },
+        label = ""
+    ) { if (it) 0F else 50F }
+
+    val yOffset by transition.animateFloat(
+        transitionSpec = {
+            spring(
+                dampingRatio = Spring.DampingRatioLowBouncy,
+                stiffness = Spring.StiffnessVeryLow
+            )
+        },
+        label = ""
+    ) { if (it) 0F else -50F }
+
+    val alpha by transition.animateFloat(
+        transitionSpec = { tween(durationMillis = 500) },
+        label = ""
+    ) { if (it) 1F else 0F }
+
+    val degrees by transition.animateFloat(
+        transitionSpec = {
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessVeryLow
+            )
+        },
+        label = ""
+    ) { if (it) 0F else 360F }
+
+    RoundButton(
+        modifier = Modifier
+            .layoutId(EDIT_BUTTON_ID)
+            .offset(x = xOffset.dp, y = yOffset.dp)
+            .alpha(alpha)
+            .rotate(degrees = degrees),
+        background = Color(0xFF999999),
+        iconId = R.drawable.ic_edit_24,
+        onClick = { /*TODO*/ }
+    )
+}
+
+@Composable
+private fun MainButton(animationState: MutableState<Boolean>) {
+    val transition = updateTransition(targetState = animationState, label = null)
+    val scale by transition.animateDp(
+        transitionSpec = {
+            spring(
+                dampingRatio = Spring.DampingRatioHighBouncy
+            )
+        },
+        label = ""
+    ) { if (it.value) 40.dp else 50.dp }
+
+    RoundButton(
+        modifier = Modifier
+            .layoutId(MAIN_BUTTON_ID)
+            .size(scale),
+        background = Color(0xFF999999),
+        iconId = R.drawable.fingerprint_button_icon_24,
+        onClick = {
+            animationState.value = !animationState.value
+        }
+    )
+}
+
