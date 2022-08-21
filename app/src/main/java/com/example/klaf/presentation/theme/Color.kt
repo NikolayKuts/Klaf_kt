@@ -33,6 +33,11 @@ data class MainColors(
     val timerInactive: Color,
     val ipaPromptChecked: Color,
     val ipaPromptUnchecked: Color,
+    val deckRepetitionMainButtonPressed: Color,
+    val deckRepetitionMainButtonUnpressed: Color,
+    val deckRepetitionDeleteButton: Color,
+    val deckRepetitionEditButton: Color,
+    val deckRepetitionAddButton: Color,
 )
 
 val LightMainPalettes = MainColors(
@@ -63,6 +68,11 @@ val LightMainPalettes = MainColors(
     timerInactive = Color(0xFF8BC34A),
     ipaPromptChecked = Color(0xFF8BC34A),
     ipaPromptUnchecked = Color(0xFF8BC34A),
+    deckRepetitionMainButtonPressed = Color(0xFF8BC34A),
+    deckRepetitionMainButtonUnpressed = Color(0xFF8BC34A),
+    deckRepetitionDeleteButton = Color(0xFF8BC34A),
+    deckRepetitionEditButton = Color(0xFF8BC34A),
+    deckRepetitionAddButton = Color(0xFF8BC34A),
     )
 
 val DarkMainPalettes = MainColors(
@@ -98,4 +108,9 @@ val DarkMainPalettes = MainColors(
     timerInactive = Color(0xFF7A7A7A),
     ipaPromptChecked = Color(0xFFCF726B),
     ipaPromptUnchecked = Color(0xFF585857),
+    deckRepetitionMainButtonPressed = Color(0xFF92AC75),
+    deckRepetitionMainButtonUnpressed = Color(0xFF888888),
+    deckRepetitionDeleteButton = Color(0xFFC97474),
+    deckRepetitionEditButton = Color(0xFFC29F63),
+    deckRepetitionAddButton = Color(0xFF88A568),
 )
