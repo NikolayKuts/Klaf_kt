@@ -27,7 +27,7 @@ The application allows you to create cards with the automatic creation of a tran
 * _**Theme**_: dark and light
 
 ## Compatibility
-From API level 21 to 34
+From API level 21 to 32
 
 ### Old version
 https://github.com/NikolayKuts/Klaf

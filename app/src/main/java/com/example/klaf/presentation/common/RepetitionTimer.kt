@@ -39,7 +39,6 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
         super.onResume(owner)
         if (timerCountingState.value == PAUSED) {
             runCounting()
-            timerCountingState.value = RUN
         }
     }
 
@@ -47,7 +46,6 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
         super.onPause(owner)
         if (timerCountingState.value == RUN) {
             pauseCounting()
-            timerCountingState.value = PAUSED
         }
     }
 
@@ -79,8 +77,16 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
         _time.value = totalSeconds.timeAsString
     }
 
-    private fun pauseCounting() {
-        job?.cancel()
-        timerCountingState.value = PAUSED
+    fun resumeCounting() {
+        if (timerCountingState.value == PAUSED) {
+            runCounting()
+        }
+    }
+
+    fun pauseCounting() {
+        if (timerCountingState.value == RUN) {
+            job?.cancel()
+            timerCountingState.value = PAUSED
+        }
     }
 }

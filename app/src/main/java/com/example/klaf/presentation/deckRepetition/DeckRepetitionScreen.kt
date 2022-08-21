@@ -1,6 +1,6 @@
 package com.example.klaf.presentation.deckRepetition
 
-import androidx.compose.animation.*
+import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,14 +12,15 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -55,9 +56,16 @@ private const val DELETE_BUTTON_ID = "delete_button"
 private const val EDIT_BUTTON_ID = "edit_button"
 private const val ADD_BUTTON_ID = "add_button"
 
+private const val OFFSET_VALUE = 60F
+private const val ANIMATION_DURATION = 500
+private const val ROTATION_DEGREES = 360F
+
 @Composable
 fun DeckRepetitionScreen(
     viewModel: RepetitionViewModel,
+    onDeleteCardClick: (cardId: Int) -> Unit,
+    onAddCardClick: () -> Unit,
+    onEditCardClick: (cardId: Int) -> Unit,
     onFinishRepetition: (
         currentDuration: String,
         lastDuration: String,
@@ -72,6 +80,7 @@ fun DeckRepetitionScreen(
     val deck by viewModel.deck.collectAsState(initial = null)
     val timerState by viewModel.timer.timerState.collectAsState()
     val screenState by viewModel.screenState.collectAsState()
+    val additionalButtonsEnabled = rememberAsMutableStateOf(value = false)
 
     val repetitionState = deckRepetitionState ?: return
     val receivedDeck = deck ?: return
@@ -93,7 +102,23 @@ fun DeckRepetitionScreen(
             viewModel = viewModel,
             onFinish = onFinishRepetition,
         )
-        AdditionalButtons()
+        AdditionalButtons(
+            additionalButtonsEnabledState = additionalButtonsEnabled,
+            onDeleteClick = {
+                repetitionState.card?.id?.let { cardId -> onDeleteCardClick(cardId) }
+            },
+            onAddClick = onAddCardClick,
+            onEditClick = {
+                repetitionState.card?.id?.let { cardId -> onEditCardClick(cardId) }
+            },
+            onMainButtonClick = {
+                if (additionalButtonsEnabled.value) {
+                    viewModel.pauseTimerCounting()
+                } else {
+                    viewModel.resumeTimerCounting()
+                }
+            }
+        )
     }
 }
 
@@ -416,31 +441,32 @@ private fun RepetitionButtons(
 }
 
 @Composable
-private fun AdditionalButtons() {
-    val startAnimation = rememberAsMutableStateOf(value = false)
-
-    DeleteButton(animationState = startAnimation.value)
-    AddButton(animationState = startAnimation.value)
-    EditButton(animationState = startAnimation.value)
-    MainButton(animationState = startAnimation)
-
+private fun AdditionalButtons(
+    additionalButtonsEnabledState: MutableState<Boolean>,
+    onDeleteClick: () -> Unit,
+    onAddClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onMainButtonClick: () -> Unit,
+) {
+    DeleteButton(enabled = additionalButtonsEnabledState.value, onClick = onDeleteClick)
+    AddButton(enabled = additionalButtonsEnabledState.value, onClick = onAddClick)
+    EditButton(enabled = additionalButtonsEnabledState.value, onClick = onEditClick)
+    MainButton(animationStateState = additionalButtonsEnabledState, onClick = onMainButtonClick)
 }
 
 @Composable
-private fun DeleteButton(animationState: Boolean) {
-    val transition = updateTransition(targetState = animationState, label = "")
+private fun DeleteButton(enabled: Boolean, onClick: () -> Unit) {
+    val transition = updateTransition(targetState = enabled, label = null)
 
     val xOffset by transition.animateFloat(
         transitionSpec = {
-            spring(dampingRatio = Spring.DampingRatioLowBouncy,
-                stiffness = Spring.StiffnessVeryLow
-            )
+            spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessVeryLow)
         },
         label = ""
-    ) { if (it) 0F else 60F }
+    ) { if (it) 0F else OFFSET_VALUE }
 
     val alpha by transition.animateFloat(
-        transitionSpec = { tween(durationMillis = 500) },
+        transitionSpec = { tween(durationMillis = ANIMATION_DURATION) },
         label = ""
     ) { if (it) 1F else 0F }
 
@@ -452,7 +478,7 @@ private fun DeleteButton(animationState: Boolean) {
             )
         },
         label = ""
-    ) { if (it) 0F else 360F }
+    ) { if (it) 0F else ROTATION_DEGREES }
 
     RoundButton(
         modifier = Modifier
@@ -460,15 +486,15 @@ private fun DeleteButton(animationState: Boolean) {
             .offset(x = xOffset.dp)
             .alpha(alpha)
             .rotate(degrees = degrees),
-        background = Color(0xFF999999),
+        background = MainTheme.colors.deckRepetitionDeleteButton,
         iconId = R.drawable.ic_delete_24,
-        onClick = { /*TODO*/ }
+        onClick = onClick
     )
 }
 
 @Composable
-private fun AddButton(animationState: Boolean) {
-    val transition = updateTransition(targetState = animationState, label = "")
+private fun AddButton(enabled: Boolean, onClick: () -> Unit) {
+    val transition = updateTransition(targetState = enabled, label = "")
 
     val yOffset by transition.animateFloat(
         transitionSpec = {
@@ -477,10 +503,10 @@ private fun AddButton(animationState: Boolean) {
             )
         },
         label = ""
-    ) { if (it) 0F else -60F }
+    ) { if (it) 0F else -OFFSET_VALUE }
 
     val alpha by transition.animateFloat(
-        transitionSpec = { tween(durationMillis = 500) },
+        transitionSpec = { tween(durationMillis = ANIMATION_DURATION) },
         label = ""
     ) { if (it) 1F else 0F }
 
@@ -492,7 +518,7 @@ private fun AddButton(animationState: Boolean) {
             )
         },
         label = ""
-    ) { if (it) 0F else 360F }
+    ) { if (it) 0F else ROTATION_DEGREES }
 
     RoundButton(
         modifier = Modifier
@@ -500,15 +526,15 @@ private fun AddButton(animationState: Boolean) {
             .offset(y = yOffset.dp)
             .alpha(alpha)
             .rotate(degrees = degrees),
-        background = Color(0xFF999999),
+        background = MainTheme.colors.deckRepetitionAddButton,
         iconId = R.drawable.ic_add_24,
-        onClick = { /*TODO*/ }
+        onClick = onClick
     )
 }
 
 @Composable
-private fun EditButton(animationState: Boolean) {
-    val transition = updateTransition(targetState = animationState, label = "")
+private fun EditButton(enabled: Boolean, onClick: () -> Unit) {
+    val transition = updateTransition(targetState = enabled, label = "")
 
     val xOffset by transition.animateFloat(
         transitionSpec = {
@@ -530,7 +556,7 @@ private fun EditButton(animationState: Boolean) {
     ) { if (it) 0F else -50F }
 
     val alpha by transition.animateFloat(
-        transitionSpec = { tween(durationMillis = 500) },
+        transitionSpec = { tween(durationMillis = ANIMATION_DURATION) },
         label = ""
     ) { if (it) 1F else 0F }
 
@@ -542,7 +568,7 @@ private fun EditButton(animationState: Boolean) {
             )
         },
         label = ""
-    ) { if (it) 0F else 360F }
+    ) { if (it) 0F else ROTATION_DEGREES }
 
     RoundButton(
         modifier = Modifier
@@ -550,32 +576,40 @@ private fun EditButton(animationState: Boolean) {
             .offset(x = xOffset.dp, y = yOffset.dp)
             .alpha(alpha)
             .rotate(degrees = degrees),
-        background = Color(0xFF999999),
+        background = MainTheme.colors.deckRepetitionEditButton,
         iconId = R.drawable.ic_edit_24,
-        onClick = { /*TODO*/ }
+        onClick = { onClick() }
     )
 }
 
 @Composable
-private fun MainButton(animationState: MutableState<Boolean>) {
-    val transition = updateTransition(targetState = animationState, label = null)
+private fun MainButton(animationStateState: MutableState<Boolean>, onClick: () -> Unit) {
+    val transition = updateTransition(targetState = animationStateState, label = null)
     val scale by transition.animateDp(
         transitionSpec = {
-            spring(
-                dampingRatio = Spring.DampingRatioHighBouncy
-            )
+            spring(dampingRatio = Spring.DampingRatioHighBouncy)
         },
         label = ""
     ) { if (it.value) 40.dp else 50.dp }
+    val color by transition.animateColor(
+        transitionSpec = { tween(durationMillis = 200) }, label = ""
+    ) {
+        if (it.value) {
+            MainTheme.colors.deckRepetitionMainButtonUnpressed
+        } else {
+            MainTheme.colors.deckRepetitionMainButtonPressed
+        }
+    }
 
     RoundButton(
         modifier = Modifier
             .layoutId(MAIN_BUTTON_ID)
             .size(scale),
-        background = Color(0xFF999999),
+        background = color,
         iconId = R.drawable.fingerprint_button_icon_24,
         onClick = {
-            animationState.value = !animationState.value
+            animationStateState.value = !animationStateState.value
+            onClick()
         }
     )
 }

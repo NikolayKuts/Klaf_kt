@@ -180,6 +180,15 @@ class RepetitionViewModel @AssistedInject constructor(
         }
     }
 
+    fun resumeTimerCounting() {
+        timer.resumeCounting()
+    }
+
+    fun pauseTimerCounting() {
+        timer.pauseCounting()
+    }
+
+
     private fun manageCardSide() {
         cardState.replayCache.firstOrNull()?.let { cardState ->
             if (cardState.side == BACK) {
