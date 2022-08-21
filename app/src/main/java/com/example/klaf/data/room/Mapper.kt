@@ -1,6 +1,5 @@
 package com.example.klaf.data.room
 
-import androidx.room.PrimaryKey
 import com.example.klaf.data.room.entities.RoomCard
 import com.example.klaf.data.room.entities.RoomDeck
 import com.example.klaf.domain.entities.Card
@@ -9,27 +8,30 @@ import com.example.klaf.domain.entities.Deck
 fun RoomDeck.mapToDeck(): Deck = Deck(
     name = name,
     creationDate = creationDate,
-    id = id,
+    repetitionIterationDates = repetitionDates,
+    scheduledIterationDates = scheduledDates,
+    scheduledDateInterval = scheduledDateInterval,
+    repetitionQuantity = repetitionQuantity,
     cardQuantity = cardQuantity,
-    repeatDay = repeatDay,
-    scheduledDate = scheduledDate,
-    lastRepeatDate = lastRepeatDate,
-    repeatQuantity = repeatQuantity,
-    lastRepeatDuration = lastRepeatDuration,
-    isLastRepetitionSucceeded = isLastRepetitionSucceeded
+    lastFirstRepetitionDuration = lastFirstRepetitionDuration,
+    lastSecondRepetitionDuration = lastSecondRepetitionDuration,
+    lastRepetitionIterationDuration = lastRepetitionIterationDuration,
+    isLastIterationSucceeded = isLastIterationSucceeded,
+    id = id
+
 )
 
 fun Deck.mapToRoomEntity(): RoomDeck = RoomDeck(
     name = name,
     creationDate = creationDate,
-    id = id,
+    repetitionDates = repetitionIterationDates,
+    scheduledDates = scheduledIterationDates,
+    scheduledDateInterval = scheduledDateInterval,
+    repetitionQuantity = repetitionQuantity,
     cardQuantity = cardQuantity,
-    repeatDay = repeatDay,
-    scheduledDate = scheduledDate,
-    lastRepeatDate = lastRepeatDate,
-    repeatQuantity = repeatQuantity,
-    lastRepeatDuration = lastRepeatDuration,
-    isLastRepetitionSucceeded = isLastRepetitionSucceeded
+    lastRepetitionIterationDuration = lastRepetitionIterationDuration,
+    isLastIterationSucceeded = isLastIterationSucceeded,
+    id = id
 )
 
 fun RoomCard.mapToCard(): Card = Card(
