@@ -5,7 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class RemoveCardsOfDeckUseCase @Inject constructor(private val cardRepository: CardRepository) {
+class DeleteAllCardsOfDeck @Inject constructor(private val cardRepository: CardRepository) {
 
     suspend operator fun invoke(deckId: Int) {
         withContext(Dispatchers.IO) {

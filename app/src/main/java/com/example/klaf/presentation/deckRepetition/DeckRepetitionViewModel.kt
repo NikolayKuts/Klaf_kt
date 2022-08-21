@@ -15,6 +15,7 @@ import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.domain.enums.DifficultyRecallingLevel.*
+import com.example.klaf.domain.useCases.DeleteCardFromDeckUseCase
 import com.example.klaf.domain.useCases.FetchCardsUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.domain.useCases.UpdateDeckUseCase
@@ -24,15 +25,17 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import java.io.IOException
 import java.util.*
 
-class RepetitionViewModel @AssistedInject constructor(
+class DeckRepetitionViewModel @AssistedInject constructor(
     @Assisted deckId: Int,
     fetchCards: FetchCardsUseCase,
     fetchDeckById: FetchDeckByIdUseCase,
     val timer: RepetitionTimer,
     private val updateDeck: UpdateDeckUseCase,
+    private val deleteCardFromDeck: DeleteCardFromDeckUseCase,
     private val audioPlayer: CardAudioPlayer,
     private val workManager: WorkManager,
 ) : ViewModel() {
@@ -188,6 +191,17 @@ class RepetitionViewModel @AssistedInject constructor(
         timer.pauseCounting()
     }
 
+    fun deleteCard(cardId: Int, deckId: Int) {
+        viewModelScope.launchWithExceptionHandler(
+            onException = { _, _ ->
+                _eventMessage.tryEmit(messageId = R.string.problem_with_removing_card)
+            },
+            onCompletion = { _eventMessage.tryEmit(messageId = R.string.card_has_been_deleted) }
+        ) {
+            deleteCardFromDeck(cardId = cardId, deckId = deckId)
+        }
+        viewModelScope.launch { deleteCardFromDeck(cardId = cardId, deckId = deckId) }
+    }
 
     private fun manageCardSide() {
         cardState.replayCache.firstOrNull()?.let { cardState ->
@@ -315,7 +329,7 @@ class RepetitionViewModel @AssistedInject constructor(
         timer.stopCounting()
 
         viewModelScope.launchWithExceptionHandler(
-            onException = { _, throwable ->
+            onException = { _, _ ->
                 _eventMessage.tryEmit(messageId = R.string.problem_with_updating_deck)
             },
             onCompletion = {

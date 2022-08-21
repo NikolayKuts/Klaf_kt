@@ -23,7 +23,7 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
 
     @Inject
     lateinit var assistedFactory: RepetitionViewModelAssistedFactory
-    private val viewModel: RepetitionViewModel by navGraphViewModels(R.id.deckRepetitionFragment) {
+    private val viewModel: DeckRepetitionViewModel by navGraphViewModels(R.id.deckRepetitionFragment) {
         RepetitionViewModelFactory(assistedFactory = assistedFactory, deckId = args.deckId)
     }
 
