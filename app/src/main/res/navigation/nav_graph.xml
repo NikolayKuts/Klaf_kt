@@ -84,9 +84,9 @@
     </fragment>
     <dialog
         android:id="@+id/cardRemovingDialogFragment"
-        android:name="com.example.klaf.presentation.cardRemoving.CardRemovingDialogFragment"
+        android:name="com.example.klaf.presentation.deckRepetition.cardDeleting.CardDeletingDialogFragment"
         android:label="dialog_card_removing"
-        tools:layout="@layout/dialog_card_removing" >
+        tools:layout="@layout/dialog_card_deleting" >
         <argument
             android:name="deckId"
             app:argType="integer"
@@ -95,9 +95,6 @@
             android:name="cardId"
             app:argType="integer"
             android:defaultValue="-1" />
-        <action
-            android:id="@+id/action_cardRemovingDialogFragment_to_deckRepetitionFragment"
-            app:destination="@id/deckRepetitionFragment" />
     </dialog>
     <dialog
         android:id="@+id/deckRepetitionInfoDialogFragment"

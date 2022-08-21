@@ -21,7 +21,7 @@ class DeckListViewModel @AssistedInject constructor(
     private val createDeck: CreateDeckUseCase,
     private val renameDeck: RenameDeckUseCase,
     private val removeDeck: RemoveDeckUseCase,
-    private val removeCardsOfDeck: RemoveCardsOfDeckUseCase,
+    private val deleteAllCardsOfDeck: DeleteAllCardsOfDeck,
     notifier: Notifier,
 ) : ViewModel() {
 
@@ -114,7 +114,7 @@ class DeckListViewModel @AssistedInject constructor(
             }
         ) {
             launch { removeDeck(deckId = deckId) }
-            launch { removeCardsOfDeck(deckId = deckId) }
+            launch { deleteAllCardsOfDeck(deckId = deckId) }
         }
     }
 

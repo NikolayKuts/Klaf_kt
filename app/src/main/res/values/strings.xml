@@ -20,6 +20,7 @@
     <string name="card_is_not_found">The card is not found</string>
     <string name="problem_with_fetching_cards">There is a problem with fetching cards</string>
     <string name="problem_with_removing_card">There is a problem with removing card</string>
+    <string name="card_deleting_dialog_title">Would you like to delete the card?</string>
 
     <!--    deck-->
     <string name="deck_is_not_found">the deck isn\'t found</string>

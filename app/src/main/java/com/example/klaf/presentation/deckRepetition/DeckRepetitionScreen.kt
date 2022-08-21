@@ -62,7 +62,7 @@ private const val ROTATION_DEGREES = 360F
 
 @Composable
 fun DeckRepetitionScreen(
-    viewModel: RepetitionViewModel,
+    viewModel: DeckRepetitionViewModel,
     onDeleteCardClick: (cardId: Int) -> Unit,
     onAddCardClick: () -> Unit,
     onEditCardClick: (cardId: Int) -> Unit,
@@ -360,7 +360,7 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState) {
 private fun RepetitionButtons(
     screenState: RepetitionScreenState,
     deckRepetitionState: DeckRepetitionState,
-    viewModel: RepetitionViewModel,
+    viewModel: DeckRepetitionViewModel,
     onFinish: (
         currentDuration: String,
         lastDuration: String,

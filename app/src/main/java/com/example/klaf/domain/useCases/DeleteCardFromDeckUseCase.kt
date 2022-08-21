@@ -6,7 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class RemoveCardFromDeckUseCase @Inject constructor(
+class DeleteCardFromDeckUseCase @Inject constructor(
     private val deckRepository: DeckRepository,
     private val cardRepository: CardRepository,
 ) {

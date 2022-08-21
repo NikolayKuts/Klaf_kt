@@ -20,7 +20,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.domain.common.calculateDetailedScheduledRange
-import com.example.klaf.presentation.deckRepetition.RepetitionViewModel
+import com.example.klaf.presentation.deckRepetition.DeckRepetitionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -28,7 +28,7 @@ class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_rep
 
     private val args by navArgs<DeckRepetitionInfoDialogFragmentArgs>()
 
-    private val viewModel by navGraphViewModels<RepetitionViewModel>(R.id.deckRepetitionFragment)
+    private val viewModel by navGraphViewModels<DeckRepetitionViewModel>(R.id.deckRepetitionFragment)
 
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
