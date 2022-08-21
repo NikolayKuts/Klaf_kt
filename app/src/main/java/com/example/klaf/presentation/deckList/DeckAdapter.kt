@@ -1,29 +1,24 @@
 package com.example.klaf.presentation.deckList
 
-import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.platform.ComposeView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.example.klaf.databinding.DeckListItemBinding
 import com.example.klaf.domain.common.update
 import com.example.klaf.domain.entities.Deck
 
 class DeckAdapter(
     private var onClick: (deck: Deck) -> Unit,
-    private var onItemMenuClick: (View, Deck) -> Unit,
+    private var onItemMenuClick: (Deck) -> Unit,
 ) : RecyclerView.Adapter<DeckViewHolder>() {
 
     private val deckList: MutableList<Deck> = mutableListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DeckViewHolder {
-        val inflater = LayoutInflater.from(parent.context)
-        val binding = DeckListItemBinding.inflate(inflater, parent, false)
-
         return DeckViewHolder(
-            binding = binding,
+            composeView = ComposeView(context = parent.context),
             onItemClick = onClick,
-            onItemMenuClick = onItemMenuClick
+            onLongItemClick = onItemMenuClick
         )
     }
 

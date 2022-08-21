@@ -39,6 +39,7 @@ class CardRepositoryRoomImpl @Inject constructor(
             .getObservableCardById(cardId = cardId)
             .map { roomCard: RoomCard? -> roomCard?.mapToCard() }
     }
+
     override fun getCardsByDeckId(deckId: Int): Flow<List<Card>> {
         return roomDatabase.cardDao()
             .getCardsByDeckId(deckId = deckId)
