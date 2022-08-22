@@ -62,8 +62,8 @@ fun TextView.applyTextColor(@ColorRes colorId: Int) {
 
 fun log(
     message: String,
-    tag: String = "app_log",
     pointerMessage: String = "",
+    tag: String = "app_log",
     pointer: String =
         if (pointerMessage.isEmpty()) "***********" else "****** $pointerMessage ******",
 ) {

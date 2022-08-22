@@ -33,7 +33,7 @@ fun CoroutineScope.launchWithExceptionHandler(
     }
 }
 
-fun <T, R> Flow<List<T>>.simplifiedMap(transform: suspend (T) -> R): Flow<List<R>> {
+fun <T, R> Flow<List<T>>.simplifiedItemMap(transform: suspend (T) -> R): Flow<List<R>> {
     return this.map { list: List<T> ->
         list.map { value: T -> transform(value) }
     }

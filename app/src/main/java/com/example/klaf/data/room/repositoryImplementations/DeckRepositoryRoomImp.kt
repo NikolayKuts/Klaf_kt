@@ -4,7 +4,7 @@ import com.example.klaf.data.room.databases.KlafRoomDatabase
 import com.example.klaf.data.room.entities.RoomDeck
 import com.example.klaf.data.room.mapToDeck
 import com.example.klaf.data.room.mapToRoomEntity
-import com.example.klaf.domain.common.simplifiedMap
+import com.example.klaf.domain.common.simplifiedItemMap
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.repositories.DeckRepository
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +22,7 @@ class DeckRepositoryRoomImp @Inject constructor(
     override fun fetchDeckSource(): Flow<List<Deck>> {
         return roomDatabase.deckDao()
             .getAllDecks()
-            .simplifiedMap { roomDeck -> roomDeck.mapToDeck() }
+            .simplifiedItemMap { roomDeck -> roomDeck.mapToDeck() }
     }
 
     override fun fetchObservableDeckById(deckId: Int): Flow<Deck?> {

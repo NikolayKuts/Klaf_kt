@@ -5,7 +5,7 @@ import com.example.klaf.data.room.databases.KlafRoomDatabase
 import com.example.klaf.data.room.entities.RoomCard
 import com.example.klaf.data.room.mapToCard
 import com.example.klaf.data.room.mapToRoomEntity
-import com.example.klaf.domain.common.simplifiedMap
+import com.example.klaf.domain.common.simplifiedItemMap
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.repositories.CardRepository
 import kotlinx.coroutines.Dispatchers
@@ -43,7 +43,7 @@ class CardRepositoryRoomImpl @Inject constructor(
     override fun getCardsByDeckId(deckId: Int): Flow<List<Card>> {
         return roomDatabase.cardDao()
             .getCardsByDeckId(deckId = deckId)
-            .simplifiedMap { roomCard: RoomCard -> roomCard.mapToCard() }
+            .simplifiedItemMap { roomCard: RoomCard -> roomCard.mapToCard() }
     }
 
     override suspend fun deleteCard(cardId: Int) {
