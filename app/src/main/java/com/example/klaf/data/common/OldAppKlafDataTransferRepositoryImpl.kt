@@ -5,6 +5,7 @@ import android.net.Uri
 import com.example.klaf.data.room.entities.CARD_TABLE_NAME
 import com.example.klaf.data.room.entities.RoomDeck.Companion.DECK_TABLE_NAME
 import com.example.klaf.domain.entities.Card
+import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.repositories.CardRepository
 import com.example.klaf.domain.repositories.DeckRepository
 import com.example.klaf.domain.repositories.OldAppKlafDataTransferRepository
@@ -44,25 +45,33 @@ class OldAppKlafDataTransferRepositoryImpl @Inject constructor(
                 "Transferring decks form old Klaf app is failed. Returned cursor is null"
             )
 
-            TODO("refactor")
-//            while (cursor.moveToNext()) {
-//                val deck = Deck(
-//                    name = cursor.getString(cursor.getColumnIndex(Deck::name.name)),
-//                    creationDate = cursor.getLong(cursor.getColumnIndex(Deck::creationDate.name)),
-//                    id = cursor.getInt(cursor.getColumnIndex(Deck::id.name)),
-//                    cardQuantity = cursor.getInt(cursor.getColumnIndex(Deck::cardQuantity.name)),
-//                    repeatDay = cursor.getInt(cursor.getColumnIndex(Deck::repeatDay.name)),
-//                    scheduledDate = cursor.getLong(cursor.getColumnIndex(Deck::scheduledDate.name)),
-//                    lastRepeatDate = cursor.getLong(cursor.getColumnIndex(Deck::lastRepeatDate.name)),
-//                    repeatQuantity = cursor.getInt(cursor.getColumnIndex(Deck::repeatQuantity.name)),
-//                    lastRepeatDuration =
-//                    cursor.getInt(cursor.getColumnIndex(Deck::lastRepeatDuration.name)).toLong(),
-//                    isLastRepetitionSucceeded =
-//                    cursor.getInt(cursor.getColumnIndex(Deck::isLastRepetitionSucceeded.name)) > 0
-//                )
-//
-//                deckRepository.insertDeck(deck = deck)
-//            }
+//            TODO("refactor")
+            while (cursor.moveToNext()) {
+                val scheduledDate = cursor.getLong(cursor.getColumnIndex(Deck::scheduledDate.name))
+                val lastRepeatDate = cursor.getLong(cursor.getColumnIndex("lastRepeatDate"))
+                val scheduledDateInterval = lastRepeatDate - scheduledDate
+
+                val deck = Deck(
+                    name = cursor.getString(cursor.getColumnIndex(Deck::name.name)),
+                    creationDate = cursor.getLong(cursor.getColumnIndex(Deck::creationDate.name)),
+                    repetitionIterationDates = listOf(),
+                    scheduledIterationDates = listOf(scheduledDate),
+                    scheduledDateInterval = scheduledDateInterval,
+                    repetitionQuantity = cursor.getInt(cursor.getColumnIndex("repeatQuantity")),
+                    cardQuantity = cursor.getInt(cursor.getColumnIndex(Deck::cardQuantity.name)),
+                    lastFirstRepetitionDuration = 0,
+                    lastSecondRepetitionDuration = 0,
+                    lastRepetitionIterationDuration =
+                    cursor.getInt(cursor.getColumnIndex("lastRepeatDuration")).toLong(),
+                    isLastIterationSucceeded =
+                    cursor.getInt(cursor.getColumnIndex("isLastRepetitionSucceeded")) > 0,
+                    id = cursor.getInt(cursor.getColumnIndex(Deck::id.name)),
+                )
+
+                deckRepository.insertDeck(deck = deck)
+            }
+
+            cursor.close()
         }
     }
 
@@ -93,6 +102,8 @@ class OldAppKlafDataTransferRepositoryImpl @Inject constructor(
 
                 cardRepository.insertCard(card = card)
             }
+
+            cursor.close()
         }
     }
 }
