@@ -1,14 +1,14 @@
 package com.example.klaf.domain.useCases
 
-import com.example.klaf.di.DeckRepositoryRoomImp
+import com.example.klaf.di.DeckRepositoryFirestoreImp
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.repositories.DeckRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class CreateDeckUseCase @Inject constructor(
-    @DeckRepositoryRoomImp
+class SaveDeckRemotelyUseCase @Inject constructor(
+    @DeckRepositoryFirestoreImp
     private val deckRepository: DeckRepository,
 ) {
 

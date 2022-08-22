@@ -9,6 +9,7 @@ import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.Notifier
+import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
@@ -23,6 +24,7 @@ class DeckListViewModel @AssistedInject constructor(
     private val removeDeck: RemoveDeckUseCase,
     private val deleteAllCardsOfDeck: DeleteAllCardsOfDeck,
     notifier: Notifier,
+    saveDeckRemotely: SaveDeckRemotelyUseCase
 ) : ViewModel() {
 
     val deckSource: StateFlow<List<Deck>> = fetchDeckSource().stateIn(
@@ -42,6 +44,11 @@ class DeckListViewModel @AssistedInject constructor(
 
     init {
         notifier.createDeckRepetitionNotificationChannel()
+        deckSource.onEach { decks ->
+            decks.onEach { deck -> saveDeckRemotely(deck = deck) }
+        }
+            .catch { log("", "error") }
+            .launchIn(viewModelScope)
     }
 
     fun createNewDeck(deckName: String) {

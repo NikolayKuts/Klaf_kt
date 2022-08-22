@@ -114,11 +114,7 @@ fun Deck.calculateDetailedScheduledRange(context: Context): String {
 
 fun Long?.calculateDetailedScheduledRange(context: Context): String {
     if (this == null || this <= 0) return UNASSIGNED_DATE_SYMBOL
-//    if (this == null) return UNASSIGNED_DATE_SYMBOL
     val currentTime = System.currentTimeMillis()
-
-//    if (this <= 0L) return UNASSIGNED_DATE_SYMBOL
-
     val range = this - currentTime
 
     val years = range.calculateYearQuantity()
