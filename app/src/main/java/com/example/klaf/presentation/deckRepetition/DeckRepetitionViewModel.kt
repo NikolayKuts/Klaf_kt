@@ -23,7 +23,6 @@ import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.deckRepetition.RepetitionScreenState.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.IOException
@@ -34,9 +33,9 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     fetchCards: FetchCardsUseCase,
     fetchDeckById: FetchDeckByIdUseCase,
     val timer: RepetitionTimer,
+    val audioPlayer: CardAudioPlayer,
     private val updateDeck: UpdateDeckUseCase,
     private val deleteCardFromDeck: DeleteCardFromDeckUseCase,
-    private val audioPlayer: CardAudioPlayer,
     private val workManager: WorkManager,
 ) : ViewModel() {
 
@@ -74,13 +73,12 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     private val currentCard = repetitionCards.map { cards -> cards.firstOrNull() }
         .shareIn(
             scope = viewModelScope,
-            started = SharingStarted.Lazily,
+            started = SharingStarted.Eagerly,
             replay = 1
         )
 
     private val _screenState = MutableStateFlow<RepetitionScreenState>(StartState)
     val screenState = _screenState.asStateFlow()
-
 
     private val cardSide = MutableStateFlow(FRONT)
     private val repetitionOrder = MutableStateFlow(value = NATIVE_TO_FOREIGN)
@@ -99,7 +97,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         DeckRepetitionState(card = card, side = side, repetitionOrder = repetitionOrder)
     }.shareIn(
         scope = viewModelScope,
-        started = SharingStarted.Lazily,
+        started = SharingStarted.Eagerly,
         replay = 1
     )
 
@@ -108,16 +106,15 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         observeCurrentCard()
     }
 
-    fun pronounce() {
+    fun pronounceWord() {
         cardState.replayCache.firstOrNull()?.let { cardRepetitionState ->
             val repetitionOrder = cardRepetitionState.repetitionOrder
             val cardSide = cardRepetitionState.side
 
-            when {
-                (repetitionOrder == NATIVE_TO_FOREIGN && cardSide == BACK)
-                        || (repetitionOrder == FOREIGN_TO_NATIVE && cardSide == FRONT) -> {
-                    audioPlayer.play()
-                }
+            if ((repetitionOrder == NATIVE_TO_FOREIGN && cardSide == BACK)
+                || (repetitionOrder == FOREIGN_TO_NATIVE && cardSide == FRONT)
+            ) {
+                audioPlayer.play()
             }
         }
     }
@@ -157,7 +154,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         if (repetitionCards.value.isEmpty()) {
             _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
         } else if (cardForMoving != null) {
-            val updatedCardList = getUpdatedCardList(cardForMoving = cardForMoving, level = level)
+            val updatedCardList =
+                getUpdatedCardList(cardForMoving = cardForMoving, level = level)
 
             repetitionCards.value = updatedCardList
             checkRepetitionStartPosition()
@@ -233,16 +231,10 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     private fun observeCurrentCard() {
-        viewModelScope.launchWithExceptionHandler(
-            context = Dispatchers.IO,
-            onException = { _, _ ->
-                _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card)
-            }
-        ) {
-            currentCard.collect { card: Card? ->
-                card?.let { audioPlayer.prepare(card = card) }
-            }
-        }
+        currentCard.onEach { card: Card? ->
+            card?.let { audioPlayer.preparePronunciation(card = card) }
+        }.catch { _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card) }
+            .launchIn(viewModelScope)
     }
 
     private fun clearRepetitionProgress() {
@@ -376,11 +368,12 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             val updatedLastRepetitionIterationDuration =
                 deckForUpdating.lastFirstRepetitionDuration + updatedLastSecondRepetitionDuration
 
-            val updatedScheduledDate = deckForUpdating.scheduledIterationDates.addIntoNewInstance(
-                newElement = deckForUpdating.calculateNextScheduledRepeatDate(
-                    currentRepetitionIterationDuration = updatedLastRepetitionIterationDuration
+            val updatedScheduledDate =
+                deckForUpdating.scheduledIterationDates.addIntoNewInstance(
+                    newElement = deckForUpdating.calculateNextScheduledRepeatDate(
+                        currentRepetitionIterationDuration = updatedLastRepetitionIterationDuration
+                    )
                 )
-            )
 
             val updatedScheduledDateInterval = deckForUpdating.getNewInterval(
                 currentIterationDuration = updatedLastRepetitionIterationDuration

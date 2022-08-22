@@ -95,7 +95,10 @@ fun DeckRepetitionScreen(
         OrderPointers(order = repetitionState.repetitionOrder)
         SwitchOrderButton(onClick = { viewModel.changeRepetitionOrder() })
         Time(timerState = timerState)
-        DeckCard(deckRepetitionState = repetitionState)
+        DeckCard(
+            deckRepetitionState = repetitionState,
+            onWordClick = { viewModel.pronounceWord() }
+        )
         RepetitionButtons(
             screenState = screenState,
             deckRepetitionState = repetitionState,
@@ -295,7 +298,7 @@ private fun Time(timerState: RepetitionTimerState) {
 }
 
 @Composable
-private fun DeckCard(deckRepetitionState: DeckRepetitionState) {
+private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -> Unit) {
     val card = deckRepetitionState.card ?: return
     val word: String
     var ipaPrompt = emptyList<LetterInfo>()
@@ -333,7 +336,9 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState) {
     }
 
     Text(
-        modifier = Modifier.layoutId(WORD_VIEW_ID),
+        modifier = Modifier
+            .layoutId(WORD_VIEW_ID)
+            .clickable { onWordClick() },
         text = word,
         style = MainTheme.typographies.cardWordTextStyle,
         color = wordColor
