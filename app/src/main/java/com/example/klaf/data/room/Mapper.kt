@@ -8,8 +8,8 @@ import com.example.klaf.domain.entities.Deck
 fun RoomDeck.mapToDeck(): Deck = Deck(
     name = name,
     creationDate = creationDate,
-    repetitionIterationDates = repetitionDates,
-    scheduledIterationDates = scheduledDates,
+    repetitionIterationDates = repetitionIterationDates,
+    scheduledIterationDates = scheduledIterationDates,
     scheduledDateInterval = scheduledDateInterval,
     repetitionQuantity = repetitionQuantity,
     cardQuantity = cardQuantity,
@@ -24,14 +24,16 @@ fun RoomDeck.mapToDeck(): Deck = Deck(
 fun Deck.mapToRoomEntity(): RoomDeck = RoomDeck(
     name = name,
     creationDate = creationDate,
-    repetitionDates = repetitionIterationDates,
-    scheduledDates = scheduledIterationDates,
+    repetitionIterationDates = repetitionIterationDates,
+    scheduledIterationDates = scheduledIterationDates,
     scheduledDateInterval = scheduledDateInterval,
     repetitionQuantity = repetitionQuantity,
     cardQuantity = cardQuantity,
+    lastFirstRepetitionDuration = lastFirstRepetitionDuration,
+    lastSecondRepetitionDuration = lastSecondRepetitionDuration,
     lastRepetitionIterationDuration = lastRepetitionIterationDuration,
     isLastIterationSucceeded = isLastIterationSucceeded,
-    id = id
+    id = id,
 )
 
 fun RoomCard.mapToCard(): Card = Card(
