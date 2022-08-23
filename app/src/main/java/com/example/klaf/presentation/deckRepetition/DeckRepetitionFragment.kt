@@ -46,20 +46,20 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
         subscribeObservers()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
+    override fun onDestroy() {
+        super.onDestroy()
         removeObservers()
     }
 
     private fun subscribeObservers() {
         setEventMessageObserver()
-        viewLifecycleOwner.lifecycle.addObserver(viewModel.timer)
-        viewLifecycleOwner.lifecycle.addObserver(viewModel.audioPlayer)
+        lifecycle.addObserver(viewModel.timer)
+        lifecycle.addObserver(viewModel.audioPlayer)
     }
 
     private fun removeObservers() {
-        viewLifecycleOwner.lifecycle.removeObserver(viewModel.timer)
-        viewLifecycleOwner.lifecycle.removeObserver(viewModel.audioPlayer)
+        lifecycle.removeObserver(viewModel.timer)
+        lifecycle.removeObserver(viewModel.audioPlayer)
     }
 
     private fun setEventMessageObserver() {

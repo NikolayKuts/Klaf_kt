@@ -21,7 +21,7 @@ class DeckRepositoryFirestoreImp @Inject constructor(
     }
 
     override suspend fun insertDeck(deck: Deck) {
-        firestore.collection("old_klaf_collection")
+        firestore.collection("klaf_collection")
             .document("decks")
             .collection("deck_collection")
             .document(deck.id.toString())

@@ -22,7 +22,7 @@ class CardRepositoryFirestoreImp @Inject constructor(
     }
 
     override suspend fun insertCard(card: Card) {
-        firestore.collection("old_klaf_collection")
+        firestore.collection("klaf_collection")
             .document("cards")
             .collection("card_collection")
             .document(card.id.toString())
