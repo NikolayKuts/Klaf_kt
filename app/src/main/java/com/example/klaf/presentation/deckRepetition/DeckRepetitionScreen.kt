@@ -12,10 +12,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
@@ -31,6 +28,7 @@ import com.example.klaf.R
 import com.example.klaf.domain.common.CardRepetitionOrder
 import com.example.klaf.domain.common.CardSide
 import com.example.klaf.domain.common.DeckRepetitionState
+import com.example.klaf.domain.common.ifFalse
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.ipa.decodeToIpaPrompts
@@ -78,8 +76,6 @@ fun DeckRepetitionScreen(
 ) {
     val deckRepetitionState by viewModel.cardState.collectAsState(initial = null)
     val deck by viewModel.deck.collectAsState(initial = null)
-    val timerState by viewModel.timer.timerState.collectAsState()
-    val screenState by viewModel.screenState.collectAsState()
     val additionalButtonsEnabled = rememberAsMutableStateOf(value = false)
 
     val repetitionState = deckRepetitionState ?: return
@@ -94,13 +90,12 @@ fun DeckRepetitionScreen(
         DeckInfo(deckName = receivedDeck.name)
         OrderPointers(order = repetitionState.repetitionOrder)
         SwitchOrderButton(onClick = { viewModel.changeRepetitionOrder() })
-        Time(timerState = timerState)
+        Time(viewModel = viewModel)
         DeckCard(
             deckRepetitionState = repetitionState,
             onWordClick = { viewModel.pronounceWord() }
         )
         RepetitionButtons(
-            screenState = screenState,
             deckRepetitionState = repetitionState,
             viewModel = viewModel,
             onFinish = onFinishRepetition,
@@ -283,7 +278,8 @@ private fun SwitchOrderButton(onClick: () -> Unit) {
 }
 
 @Composable
-private fun Time(timerState: RepetitionTimerState) {
+private fun Time(viewModel: DeckRepetitionViewModel) {
+    val timerState by viewModel.timer.timerState.collectAsState()
     val timerColor = when (timerState.countingState) {
         TimerCountingState.RUN -> MainTheme.colors.timerActive
         else -> MainTheme.colors.timerInactive
@@ -363,7 +359,6 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
 
 @Composable
 private fun RepetitionButtons(
-    screenState: RepetitionScreenState,
     deckRepetitionState: DeckRepetitionState,
     viewModel: DeckRepetitionViewModel,
     onFinish: (
@@ -376,13 +371,13 @@ private fun RepetitionButtons(
         lastSuccessMark: String,
     ) -> Unit,
 ) {
-    val roundButtonColor = when (deckRepetitionState.side) {
-        CardSide.FRONT -> MainTheme.colors.frontSideOrderPointer
-        CardSide.BACK -> MainTheme.colors.backSideOrderPointer
-    }
+    val screenStateState = viewModel.screenState.collectAsState()
+    var isOnFinishCalled by rememberAsMutableStateOf(value = false)
 
-    when (screenState) {
+    when (val screenState = screenStateState.value) {
         RepetitionScreenState.StartState -> {
+            isOnFinishCalled = false
+
             Button(
                 modifier = Modifier.layoutId(START_BUTTON_ID),
                 onClick = { viewModel.startRepeating() }
@@ -391,6 +386,13 @@ private fun RepetitionButtons(
             }
         }
         RepetitionScreenState.RepetitionState -> {
+            isOnFinishCalled = false
+
+            val roundButtonColor = when (deckRepetitionState.side) {
+                CardSide.FRONT -> MainTheme.colors.frontSideOrderPointer
+                CardSide.BACK -> MainTheme.colors.backSideOrderPointer
+            }
+
             RoundButton(
                 background = roundButtonColor,
                 iconId = R.drawable.ic_rotate_24,
@@ -430,16 +432,20 @@ private fun RepetitionButtons(
             }
         }
         is RepetitionScreenState.FinishState -> {
-            with(screenState) {
-                onFinish(
-                    currentDuration,
-                    previousDuration,
-                    scheduledDate,
-                    previousScheduledDate,
-                    lastRepetitionIterationDate,
-                    repetitionQuantity,
-                    lastSuccessMark
-                )
+            isOnFinishCalled.ifFalse {
+                isOnFinishCalled = true
+
+                with(screenState) {
+                    onFinish(
+                        currentDuration,
+                        previousDuration,
+                        scheduledDate,
+                        previousScheduledDate,
+                        lastRepetitionIterationDate,
+                        repetitionQuantity,
+                        lastSuccessMark
+                    )
+                }
             }
         }
     }
