@@ -6,6 +6,7 @@ import androidx.compose.material.lightColors
 import androidx.compose.ui.graphics.Color
 
 private val DarkPrimaryColor = Color(0xFF5DA3AC)
+private val DarkOnPrimaryColor = Color(0xFFE2E2E2)
 
 data class MainColors(
     val materialColors: Colors,
@@ -73,21 +74,21 @@ val LightMainPalettes = MainColors(
     deckRepetitionDeleteButton = Color(0xFF8BC34A),
     deckRepetitionEditButton = Color(0xFF8BC34A),
     deckRepetitionAddButton = Color(0xFF8BC34A),
-    )
+)
 
 val DarkMainPalettes = MainColors(
     materialColors = darkColors(
         primary = DarkPrimaryColor,
-//        onPrimary = Color(0xFFFFFFFF),
+        onPrimary = DarkOnPrimaryColor,
 //        primaryVariant = Color(0xFF89F53C),
 //        secondary = Color(0xFF4CAF50),
 //        onSecondary = Color(0xFFEFF53C)
     ),
 
-    lightDeckItemBackground = Color(0xFF525252),
-    darkDeckItemBackground = Color(0xFF3D3D3D),
-    evenDeckItemName = Color(0xFF8BC34A),
-    oddDeckItemName = Color(0xFFC9C9C9),
+    lightDeckItemBackground = Color(0xFF464646),
+    darkDeckItemBackground = Color(0xFF353535),
+    evenDeckItemName = Color(0xFF76A243),
+    oddDeckItemName = Color(0xFFB6B6B6),
     scheduledDate = Color(0xFFD69E4A),
     overdueScheduledDate = Color(0xFFDA8282),
     deckItemRepetitionQuantity = Color(0xFF56C2CF),

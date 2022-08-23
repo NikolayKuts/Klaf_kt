@@ -1,13 +1,8 @@
 package com.example.klaf.presentation.theme
 
 import androidx.compose.material.Typography
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
 
 data class MainTopographies(
     val materialTypographies: Typography,
@@ -30,36 +25,18 @@ data class MainTopographies(
 )
 
 val Typography = Typography(
-    body1 = TextStyle(
-        fontFamily = FontFamily.Monospace,
-        fontWeight = FontWeight.Normal,
-        fontSize = CommonDimension.mainTextSize,
-    ),
-    caption = TextStyle(
-        fontFamily = FontFamily.Monospace,
-        fontWeight = FontWeight.Normal,
-        fontSize = CommonDimension.captionTextSize,
-    ),
-    subtitle1 = TextStyle(
-        fontFamily = FontFamily.Monospace,
-        fontWeight = FontWeight.Normal,
-        fontSize = CommonDimension.mainTextSize,
-    ),
-    button = TextStyle(
-        color = Color.White,
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Bold,
-        fontStyle = FontStyle.Italic,
-        fontFamily = FontFamily.Monospace,
-    ),
+    body1 = Body1,
+    caption = Caption,
+    subtitle1 = Subtitle1,
+    button = Button,
 )
 
 val LightMainTypographies = MainTopographies(
     materialTypographies = Typography,
     evenDeckItemName = LightEvenDeckItemNameTextStyle,
     oddDeckItemName = LightOddDeckItemNameTextStyle,
-    scheduledDateRange = LightScheduledDateTextStyle,
-    overdueScheduledDateRange = LightOverdueScheduledDateTextStyle,
+    scheduledDateRange = LightDeckItemScheduledDateTextStyle,
+    overdueScheduledDateRange = LightDeckItemOverdueScheduledDateTextStyle,
     deckItemRepetitionQuantity = LightDeckItemRepetitionQuantitySpanStyle,
     deckItemCardQuantity = LightDeckItemCardQuantityTextStyle,
     deckItemPointer = LightDeckItemPointerTextStyle,
@@ -78,8 +55,8 @@ val DarkMainTypographies = MainTopographies(
     materialTypographies = Typography,
     evenDeckItemName = DarkEvenDeckItemNameTextStyle,
     oddDeckItemName = DarkOddDeckItemNameTextStyle,
-    scheduledDateRange = DarkScheduledDateTextStyle,
-    overdueScheduledDateRange = DarkOverdueScheduledDateTextStyle,
+    scheduledDateRange = DarkDeckItemScheduledDateTextStyle,
+    overdueScheduledDateRange = DarkDeckItemOverdueScheduledDateTextStyle,
     deckItemRepetitionQuantity = DarkDeckItemRepetitionQuantitySpanStyle,
     deckItemCardQuantity = DarkDeckItemCardQuantityTextStyle,
     deckItemPointer = DarkDeckItemPointerTextStyle,
