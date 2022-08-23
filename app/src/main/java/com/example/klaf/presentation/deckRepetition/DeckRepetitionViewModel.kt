@@ -404,10 +404,6 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             && updatedDeck.repetitionQuantity >= MINIMUM_NUMBER_OF_FIRST_REPETITIONS
             && updatedDeck.repetitionQuantity.isEven()
         ) {
-            log(message = "scheduling")
-            log(message = scheduledDate.asFormattedDate() ?: "null",
-                pointerMessage = "scheduled date")
-
             workManager.scheduleDeckRepetition(
                 deckName = repeatedDeck.name,
                 deckId = repeatedDeck.id,
