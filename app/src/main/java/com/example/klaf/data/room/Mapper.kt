@@ -36,7 +36,7 @@ fun Deck.mapToRoomEntity(): RoomDeck = RoomDeck(
     id = id,
 )
 
-fun RoomCard.mapToCard(): Card = Card(
+fun RoomCard.mapToDomainEntity(): Card = Card(
     deckId = deckId,
     nativeWord = nativeWord,
     foreignWord = foreignWord,

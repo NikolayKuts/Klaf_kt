@@ -1,6 +1,8 @@
 package com.example.klaf.data.firestore
 
+import com.example.klaf.data.firestore.entities.FirestoreCard
 import com.example.klaf.data.firestore.entities.FirestoreDeck
+import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
 
 fun FirestoreDeck.mapToDomainEntity(): Deck = Deck(
@@ -30,5 +32,21 @@ fun Deck.mapToFirestoreEntity(): FirestoreDeck = FirestoreDeck(
     lastSecondRepetitionDuration = lastSecondRepetitionDuration,
     lastRepetitionIterationDuration = lastRepetitionIterationDuration,
     isLastIterationSucceeded = isLastIterationSucceeded,
+    id = id
+)
+
+fun FirestoreCard.mapToDomainEntity(): Card = Card(
+    deckId = deckId,
+    nativeWord = nativeWord,
+    foreignWord = foreignWord,
+    ipa = ipa,
+    id = id
+)
+
+fun Card.mapToFirestoreEntity(): FirestoreCard = FirestoreCard(
+    deckId = deckId,
+    nativeWord = nativeWord,
+    foreignWord = foreignWord,
+    ipa = ipa,
     id = id
 )

@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import com.example.klaf.data.room.entities.CARD_TABLE_NAME
 import com.example.klaf.data.room.entities.RoomDeck.Companion.DECK_TABLE_NAME
+import com.example.klaf.di.CardRepositoryRoomImp
+import com.example.klaf.di.DeckRepositoryRoomImp
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.repositories.CardRepository
@@ -16,7 +18,9 @@ import javax.inject.Inject
 
 class OldAppKlafDataTransferRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
+    @DeckRepositoryRoomImp
     private val deckRepository: DeckRepository,
+    @CardRepositoryRoomImp
     private val cardRepository: CardRepository,
 ) : OldAppKlafDataTransferRepository {
 
@@ -49,7 +53,7 @@ class OldAppKlafDataTransferRepositoryImpl @Inject constructor(
             while (cursor.moveToNext()) {
                 val scheduledDate = cursor.getLong(cursor.getColumnIndex(Deck::scheduledDate.name))
                 val lastRepeatDate = cursor.getLong(cursor.getColumnIndex("lastRepeatDate"))
-                val scheduledDateInterval = lastRepeatDate - scheduledDate
+                val scheduledDateInterval = scheduledDate - lastRepeatDate
 
                 val deck = Deck(
                     name = cursor.getString(cursor.getColumnIndex(Deck::name.name)),
