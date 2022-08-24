@@ -19,7 +19,10 @@ import com.example.klaf.domain.useCases.DeleteCardFromDeckUseCase
 import com.example.klaf.domain.useCases.FetchCardsUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.domain.useCases.UpdateDeckUseCase
-import com.example.klaf.presentation.common.*
+import com.example.klaf.presentation.common.EventMessage
+import com.example.klaf.presentation.common.RepetitionTimer
+import com.example.klaf.presentation.common.timeAsString
+import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.deckRepetition.RepetitionScreenState.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -232,7 +235,9 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
     private fun observeCurrentCard() {
         currentCard.onEach { card: Card? ->
-            card?.let { audioPlayer.preparePronunciation(card = card) }
+            card?.let {
+                audioPlayer.preparePronunciation(card = card)
+            }
         }.catch { _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card) }
             .launchIn(viewModelScope)
     }
@@ -328,7 +333,6 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 scheduleDeckRepetition(repeatedDeck = repeatedDeck, updatedDeck = updatedDeck)
 
                 val currentIterationDuration = if (updatedDeck.repetitionQuantity.isEven()) {
-
                     updatedDeck.lastRepetitionIterationDuration.timeAsString
                 } else {
                     UNASSIGNED_STRING_VALUE
