@@ -1,7 +1,9 @@
 package com.example.klaf.presentation.deckRepetition
 
 import androidx.compose.animation.animateColor
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -9,7 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
+import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -17,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -388,15 +393,8 @@ private fun RepetitionButtons(
         RepetitionScreenState.RepetitionState -> {
             isOnFinishCalled = false
 
-            val roundButtonColor = when (deckRepetitionState.side) {
-                CardSide.FRONT -> MainTheme.colors.frontSideOrderPointer
-                CardSide.BACK -> MainTheme.colors.backSideOrderPointer
-            }
-
-            RoundButton(
-                background = roundButtonColor,
-                iconId = R.drawable.ic_rotate_24,
-                modifier = Modifier.layoutId(TURN_BUTTON_ID),
+            CardButton(
+                cardSide = deckRepetitionState.side,
                 onClick = { viewModel.turnCard() }
             )
 
@@ -623,5 +621,51 @@ private fun MainButton(animationStateState: MutableState<Boolean>, onClick: () -
             onClick()
         }
     )
+}
+
+@Composable
+fun CardButton(cardSide: CardSide, onClick: () -> Unit) {
+    val rotationValue: Float
+    val backgroundColor: Color
+    val animationDuration = 500
+
+    when (cardSide) {
+        CardSide.FRONT -> {
+            rotationValue = 180F
+            backgroundColor = MainTheme.colors.frontSideOrderPointer
+        }
+        CardSide.BACK -> {
+            rotationValue = 0F
+            backgroundColor = MainTheme.colors.backSideOrderPointer
+        }
+    }
+
+    val rotation by animateFloatAsState(
+        targetValue = rotationValue,
+        animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)
+    )
+
+    val color by animateColorAsState(
+        targetValue = backgroundColor,
+        tween(durationMillis = animationDuration, easing = LinearEasing)
+    )
+
+    Card(
+        modifier = Modifier
+            .size(width = 40.dp, height = 56.dp)
+            .layoutId(TURN_BUTTON_ID)
+            .graphicsLayer { rotationY = rotation },
+        shape = RoundedCornerShape(8.dp),
+        elevation = 4.dp,
+    ) {
+        Icon(
+            modifier = Modifier
+                .background(color)
+                .clickable { onClick() }
+                .padding(8.dp),
+            painter = painterResource(id = R.drawable.ic_rotate_24),
+            contentDescription = null,
+        )
+    }
 }
 
