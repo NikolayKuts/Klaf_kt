@@ -4,6 +4,7 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.example.klaf.domain.common.ifTrue
 import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Card
 import kotlinx.coroutines.*
@@ -14,7 +15,7 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
     private var mediaPlayer: MediaPlayer? = null
     private var isPrepared = false
     private var cardForPreparing: Card? = null
-    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+    private var coroutineScope: CoroutineScope? = null
     private var preparingJob: Job? = null
 
     companion object {
@@ -22,8 +23,14 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
         private const val AUDIO_URI_TEMPLATE = "https://wooordhunt.ru/data/sound/sow/us/%s.mp3"
     }
 
+    override fun onCreate(owner: LifecycleOwner) {
+        super.onCreate(owner)
+        coroutineScope = CoroutineScope(context = Dispatchers.IO + SupervisorJob())
+    }
+
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
+
         mediaPlayer = MediaPlayer().apply {
             setAudioAttributes(
                 AudioAttributes.Builder()
@@ -32,7 +39,7 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
                     .build()
             )
 
-            this.setOnPreparedListener { isPrepared = true }
+            setOnPreparedListener { isPrepared = true }
         }
 
         cardForPreparing?.let { preparePronunciation(card = it) }
@@ -48,13 +55,16 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
 
     override fun onDestroy(owner: LifecycleOwner) {
         super.onDestroy(owner)
-        coroutineScope.cancel()
+        coroutineScope?.cancel()
+        coroutineScope = null
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
     fun preparePronunciation(card: Card) {
-        coroutineScope.launchWithExceptionHandler(
-            onException = { _, _ -> }
+        preparingJob?.cancel()
+
+        preparingJob = coroutineScope?.launchWithExceptionHandler(
+            onException = { _, _ -> mediaPlayer?.reset() }
         ) {
             mediaPlayer?.apply {
                 preparingJob?.ensureActive()
@@ -68,9 +78,7 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
     }
 
     fun play() {
-        if (isPrepared) {
-            mediaPlayer?.start()
-        }
+        isPrepared.ifTrue { mediaPlayer?.start() }
     }
 
     private fun Card.buildAudioUri(): String {
