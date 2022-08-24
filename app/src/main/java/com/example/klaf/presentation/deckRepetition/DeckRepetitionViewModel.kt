@@ -28,7 +28,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.io.IOException
 import java.util.*
 
 class DeckRepetitionViewModel @AssistedInject constructor(
@@ -62,9 +61,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         )
 
     private val cardsSource: SharedFlow<List<Card>> = fetchCards(deckId)
-        .catch {
-            _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
-        }
+        .catch { _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards) }
         .shareIn(
             scope = viewModelScope,
             started = SharingStarted.Lazily,
@@ -214,29 +211,27 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
     private fun observeCardSource() {
         viewModelScope.launchWithExceptionHandler(
-            onException = { _, throwable ->
-                when (throwable) {
-                    is IOException, is IllegalArgumentException -> {
-                        _eventMessage.tryEmit(messageId = R.string.problem_with_playing_audio)
-                    }
-                }
+            onException = { _, _ ->
                 _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
             }
         ) {
             cardsSource.collect { receivedCards ->
-                repetitionCards.value = getCardsByProgress(receivedCards = receivedCards)
-
-                if (receivedCards.isNotEmpty()) {
-                    startRepetitionCard = receivedCards.first()
+                if (
+                    (screenState.value !is StartState)
+                    && (receivedCards.size != repetitionCards.value.size)
+                ) {
+                    _screenState.value = StartState
                 }
+
+                repetitionCards.value = getCardsByProgress(receivedCards = receivedCards)
             }
         }
     }
 
     private fun observeCurrentCard() {
         currentCard.onEach { card: Card? ->
-            card?.let {
-                audioPlayer.preparePronunciation(card = card)
+            card?.let { notNullCard ->
+                audioPlayer.preparePronunciation(card = notNullCard)
             }
         }.catch { _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card) }
             .launchIn(viewModelScope)
@@ -277,7 +272,10 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     private fun checkRepetitionStartPosition() {
-        if (repetitionCards.value.first() == startRepetitionCard) {
+        if (
+            repetitionCards.value.firstOrNull()?.id == startRepetitionCard?.id
+            && startRepetitionCard.isNotNull()
+        ) {
             isWaitingForFinish = true
         }
     }
