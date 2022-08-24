@@ -62,10 +62,12 @@ fun Long.isEven(): Boolean = this % 2 == 0L
 
 fun Long.isOdd(): Boolean = this % 2 != 0L
 
-fun Boolean.ifTrue(block: () -> Unit) {
+inline fun Boolean.ifTrue(block: () -> Unit) {
     if (this) block()
 }
 
-fun Boolean.ifFalse(block: () -> Unit) {
+inline fun Boolean.ifFalse(block: () -> Unit) {
     if (!this) block()
 }
+
+fun <T> T.isNotNull(): Boolean = this != null
