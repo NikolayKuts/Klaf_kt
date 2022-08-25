@@ -30,7 +30,7 @@ class CardAdditionViewModel @AssistedInject constructor(
         .shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
-            replay = 0
+            replay = 1
         )
 
     private val _cardAdditionState = MutableStateFlow(value = CardAdditionState.NOT_ADDED)

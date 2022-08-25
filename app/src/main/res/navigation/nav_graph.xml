@@ -77,10 +77,17 @@
         android:id="@+id/cardAdditionFragment"
         android:name="com.example.klaf.presentation.cardAddition.CardAdditionFragment"
         android:label="fragment_card_addition"
-        tools:layout="@layout/fragment_card_addition" >
+        tools:layout="@layout/fragment_card_addition">
         <argument
             android:name="deckId"
+            android:defaultValue="2"
             app:argType="integer" />
+        <deepLink
+            android:id="@+id/deepLink"
+            app:action="ACTION_PROCESS_TEXT"
+            app:mimeType="text/plain"
+            app:uri="app://com.example.klaf" />
+
     </fragment>
     <dialog
         android:id="@+id/cardRemovingDialogFragment"

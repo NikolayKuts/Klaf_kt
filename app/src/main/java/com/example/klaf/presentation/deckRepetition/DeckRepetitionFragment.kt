@@ -78,7 +78,7 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
 
     private fun navigateToCardAdditionFragment() {
         DeckRepetitionFragmentDirections.actionDeckRepetitionFragmentToCardAdditionFragment(
-            deckId = args.deckId
+            deckId = args.deckId,
         ).also { findNavController().navigate(it) }
     }
 

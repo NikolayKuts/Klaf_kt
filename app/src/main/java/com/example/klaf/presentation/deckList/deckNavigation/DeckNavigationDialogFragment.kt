@@ -48,7 +48,7 @@ class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.dialog_d
 
     private fun navigateToCardAdditionFragment() {
         DeckNavigationDialogFragmentDirections.actionDeckNavigationDialogToCardAdditionFragment(
-            deckId = args.deckId
+            deckId = args.deckId,
         ).also { navController.navigate(it) }
     }
 
