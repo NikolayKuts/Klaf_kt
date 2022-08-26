@@ -71,3 +71,7 @@ inline fun Boolean.ifFalse(block: () -> Unit) {
 }
 
 fun <T> T.isNotNull(): Boolean = this != null
+
+inline fun <T> T.ifNull(block: () -> Unit) {
+    if (this == null) block()
+}

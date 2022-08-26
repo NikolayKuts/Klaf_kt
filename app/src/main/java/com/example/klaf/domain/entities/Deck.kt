@@ -17,6 +17,12 @@ data class Deck(
     val id: Int = 0,
 ) {
 
+    companion object {
+
+        const val INTERIM_DECK_NAME = "interim deck"
+        const val INTERIM_DECK_ID = -1
+    }
+
     val lastRepetitionIterationDate: Long? get() = repetitionIterationDates.lastOrNull()
     val scheduledDate: Long? get() = scheduledIterationDates.lastOrNull()
     val existenceDayQuantity: Long get() {
