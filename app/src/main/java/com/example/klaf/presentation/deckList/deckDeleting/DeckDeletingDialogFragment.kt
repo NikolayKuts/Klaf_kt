@@ -1,8 +1,5 @@
 package com.example.klaf.presentation.deckList.deckDeleting
 
-import android.app.Dialog
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.View
 import androidx.compose.ui.platform.ComposeView

@@ -3,9 +3,13 @@ package com.example.klaf.presentation.deckList
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,12 +25,48 @@ import com.example.klaf.domain.common.ScheduledDateState
 import com.example.klaf.domain.common.getScheduledDateStateByByCalculatedRange
 import com.example.klaf.domain.common.isEven
 import com.example.klaf.domain.entities.Deck
+import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.theme.MainTheme
+
+@Composable
+fun DeckListScreen(
+    viewModel: DeckListViewModel,
+    onItemClick: (deck: Deck) -> Unit,
+    onLongItemClick: (deck: Deck) -> Unit,
+    onMainButtonClick: () -> Unit,
+) {
+    val decks by viewModel.deckSource.collectAsState()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 124.dp)
+
+        ) {
+            itemsIndexed(decks) { index, deck ->
+                DeckItemView(
+                    deck = deck,
+                    position = index,
+                    onItemClick = onItemClick,
+                    onLongItemClick = onLongItemClick
+                )
+            }
+        }
+        RoundButton(
+            background = MainTheme.colors.materialColors.primary,
+            iconId = R.drawable.ic_add_24,
+            onClick = onMainButtonClick,
+            modifier = Modifier
+                .align(alignment = Alignment.BottomEnd)
+                .padding(bottom = 48.dp, end = 48.dp)
+        )
+    }
+}
 
 @Suppress("OPT_IN_IS_NOT_ENABLED")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DeckItemView(
+private fun DeckItemView(
     deck: Deck,
     position: Int,
     onItemClick: (Deck) -> Unit,
@@ -67,8 +107,7 @@ fun DeckItemView(
 @Composable
 private fun RowScope.DeckNameView(deckName: String, position: Int) {
     Text(
-        modifier = Modifier
-            .weight(0.9F),
+        modifier = Modifier.weight(0.9F),
         style = getDeckNameStyleByPosition(position),
         text = deckName,
         maxLines = 1,

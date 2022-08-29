@@ -4,7 +4,6 @@ import android.content.Context
 import com.example.klaf.R
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DayFactor.*
-import com.example.klaf.presentation.common.log
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -15,7 +14,7 @@ private const val DECREASE_FACTOR = 0.1
 
 private const val DATE_FORMAT_PATTERN = "dd-MM-yy|HH:mm"
 
-private const val UNASSIGNED_DATE_SYMBOL = "-- // --"
+private const val UNASSIGNED_DATE_SYMBOL = "---"
 private const val MINUS_SYMBOL = "-"
 
 private val yearInMillis = TimeUnit.DAYS.toMillis(365)
@@ -115,9 +114,6 @@ fun Deck.calculateDetailedScheduledRange(context: Context): String {
 fun Long?.calculateDetailedScheduledRange(context: Context): String {
     if (this == null || this <= 0) return UNASSIGNED_DATE_SYMBOL
     val currentTime = System.currentTimeMillis()
-
-//    if (this <= 0L) return UNASSIGNED_DATE_SYMBOL
-
     val range = this - currentTime
 
     val years = range.calculateYearQuantity()

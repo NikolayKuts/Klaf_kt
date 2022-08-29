@@ -14,15 +14,15 @@ import kotlinx.serialization.json.Json
 data class RoomDeck(
     val name: String,
     val creationDate: Long,
-    val repetitionDates: List<Long>,
-    val scheduledDates: List<Long>,
+    val repetitionIterationDates: List<Long>,
+    val scheduledIterationDates: List<Long>,
     val scheduledDateInterval: Long,
     val repetitionQuantity: Int,
     val cardQuantity: Int,
-    val lastFirstRepetitionDuration: Long = 0,
-    val lastSecondRepetitionDuration: Long = 0,
+    val lastFirstRepetitionDuration: Long,
+    val lastSecondRepetitionDuration: Long,
     val lastRepetitionIterationDuration: Long,
-    val isLastIterationSucceeded: Boolean = true,
+    val isLastIterationSucceeded: Boolean,
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 ) {

@@ -1,7 +1,9 @@
 package com.example.klaf.presentation.deckRepetition
 
 import androidx.compose.animation.animateColor
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -9,17 +11,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
+import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -31,6 +33,7 @@ import com.example.klaf.R
 import com.example.klaf.domain.common.CardRepetitionOrder
 import com.example.klaf.domain.common.CardSide
 import com.example.klaf.domain.common.DeckRepetitionState
+import com.example.klaf.domain.common.ifFalse
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.ipa.decodeToIpaPrompts
@@ -62,7 +65,7 @@ private const val ROTATION_DEGREES = 360F
 
 @Composable
 fun DeckRepetitionScreen(
-    viewModel: RepetitionViewModel,
+    viewModel: DeckRepetitionViewModel,
     onDeleteCardClick: (cardId: Int) -> Unit,
     onAddCardClick: () -> Unit,
     onEditCardClick: (cardId: Int) -> Unit,
@@ -78,8 +81,6 @@ fun DeckRepetitionScreen(
 ) {
     val deckRepetitionState by viewModel.cardState.collectAsState(initial = null)
     val deck by viewModel.deck.collectAsState(initial = null)
-    val timerState by viewModel.timer.timerState.collectAsState()
-    val screenState by viewModel.screenState.collectAsState()
     val additionalButtonsEnabled = rememberAsMutableStateOf(value = false)
 
     val repetitionState = deckRepetitionState ?: return
@@ -94,10 +95,12 @@ fun DeckRepetitionScreen(
         DeckInfo(deckName = receivedDeck.name)
         OrderPointers(order = repetitionState.repetitionOrder)
         SwitchOrderButton(onClick = { viewModel.changeRepetitionOrder() })
-        Time(timerState = timerState)
-        DeckCard(deckRepetitionState = repetitionState)
+        Time(viewModel = viewModel)
+        DeckCard(
+            deckRepetitionState = repetitionState,
+            onWordClick = { viewModel.pronounceWord() }
+        )
         RepetitionButtons(
-            screenState = screenState,
             deckRepetitionState = repetitionState,
             viewModel = viewModel,
             onFinish = onFinishRepetition,
@@ -280,7 +283,8 @@ private fun SwitchOrderButton(onClick: () -> Unit) {
 }
 
 @Composable
-private fun Time(timerState: RepetitionTimerState) {
+private fun Time(viewModel: DeckRepetitionViewModel) {
+    val timerState by viewModel.timer.timerState.collectAsState()
     val timerColor = when (timerState.countingState) {
         TimerCountingState.RUN -> MainTheme.colors.timerActive
         else -> MainTheme.colors.timerInactive
@@ -295,15 +299,11 @@ private fun Time(timerState: RepetitionTimerState) {
 }
 
 @Composable
-private fun DeckCard(deckRepetitionState: DeckRepetitionState) {
+private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -> Unit) {
     val card = deckRepetitionState.card ?: return
     val word: String
     var ipaPrompt = emptyList<LetterInfo>()
 
-    val wordColor: Color = when (deckRepetitionState.side) {
-        CardSide.FRONT -> MainTheme.colors.frontSideOrderPointer
-        CardSide.BACK -> MainTheme.colors.backSideOrderPointer
-    }
 
     when (deckRepetitionState.repetitionOrder) {
         CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
@@ -332,11 +332,17 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState) {
         }
     }
 
+    val wordTextSyle = when (deckRepetitionState.side) {
+        CardSide.FRONT -> MainTheme.typographies.frontSideCardWordTextStyle
+        CardSide.BACK -> MainTheme.typographies.backSideCardWordTextStyle
+    }
+
     Text(
-        modifier = Modifier.layoutId(WORD_VIEW_ID),
+        modifier = Modifier
+            .layoutId(WORD_VIEW_ID)
+            .clickable { onWordClick() },
         text = word,
-        style = MainTheme.typographies.cardWordTextStyle,
-        color = wordColor
+        style = wordTextSyle,
     )
 
     LazyRow(modifier = Modifier.layoutId(IPA_PROMPTS_VIEW_ID)) {
@@ -358,9 +364,8 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState) {
 
 @Composable
 private fun RepetitionButtons(
-    screenState: RepetitionScreenState,
     deckRepetitionState: DeckRepetitionState,
-    viewModel: RepetitionViewModel,
+    viewModel: DeckRepetitionViewModel,
     onFinish: (
         currentDuration: String,
         lastDuration: String,
@@ -371,13 +376,13 @@ private fun RepetitionButtons(
         lastSuccessMark: String,
     ) -> Unit,
 ) {
-    val roundButtonColor = when (deckRepetitionState.side) {
-        CardSide.FRONT -> MainTheme.colors.frontSideOrderPointer
-        CardSide.BACK -> MainTheme.colors.backSideOrderPointer
-    }
+    val screenStateState = viewModel.screenState.collectAsState()
+    var isOnFinishCalled by rememberAsMutableStateOf(value = false)
 
-    when (screenState) {
+    when (val screenState = screenStateState.value) {
         RepetitionScreenState.StartState -> {
+            isOnFinishCalled = false
+
             Button(
                 modifier = Modifier.layoutId(START_BUTTON_ID),
                 onClick = { viewModel.startRepeating() }
@@ -386,10 +391,10 @@ private fun RepetitionButtons(
             }
         }
         RepetitionScreenState.RepetitionState -> {
-            RoundButton(
-                background = roundButtonColor,
-                iconId = R.drawable.ic_rotate_24,
-                modifier = Modifier.layoutId(TURN_BUTTON_ID),
+            isOnFinishCalled = false
+
+            CardButton(
+                cardSide = deckRepetitionState.side,
                 onClick = { viewModel.turnCard() }
             )
 
@@ -425,16 +430,20 @@ private fun RepetitionButtons(
             }
         }
         is RepetitionScreenState.FinishState -> {
-            with(screenState) {
-                onFinish(
-                    currentDuration,
-                    previousDuration,
-                    scheduledDate,
-                    previousScheduledDate,
-                    lastRepetitionIterationDate,
-                    repetitionQuantity,
-                    lastSuccessMark
-                )
+            isOnFinishCalled.ifFalse {
+                isOnFinishCalled = true
+
+                with(screenState) {
+                    onFinish(
+                        currentDuration,
+                        previousDuration,
+                        scheduledDate,
+                        previousScheduledDate,
+                        lastRepetitionIterationDate,
+                        repetitionQuantity,
+                        lastSuccessMark
+                    )
+                }
             }
         }
     }
@@ -595,9 +604,9 @@ private fun MainButton(animationStateState: MutableState<Boolean>, onClick: () -
         transitionSpec = { tween(durationMillis = 200) }, label = ""
     ) {
         if (it.value) {
-            MainTheme.colors.deckRepetitionMainButtonUnpressed
-        } else {
             MainTheme.colors.deckRepetitionMainButtonPressed
+        } else {
+            MainTheme.colors.deckRepetitionMainButtonUnpressed
         }
     }
 
@@ -612,5 +621,51 @@ private fun MainButton(animationStateState: MutableState<Boolean>, onClick: () -
             onClick()
         }
     )
+}
+
+@Composable
+fun CardButton(cardSide: CardSide, onClick: () -> Unit) {
+    val rotationValue: Float
+    val backgroundColor: Color
+    val animationDuration = 500
+
+    when (cardSide) {
+        CardSide.FRONT -> {
+            rotationValue = 180F
+            backgroundColor = MainTheme.colors.frontSideOrderPointer
+        }
+        CardSide.BACK -> {
+            rotationValue = 0F
+            backgroundColor = MainTheme.colors.backSideOrderPointer
+        }
+    }
+
+    val rotation by animateFloatAsState(
+        targetValue = rotationValue,
+        animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)
+    )
+
+    val color by animateColorAsState(
+        targetValue = backgroundColor,
+        tween(durationMillis = animationDuration, easing = LinearEasing)
+    )
+
+    Card(
+        modifier = Modifier
+            .size(width = 40.dp, height = 56.dp)
+            .layoutId(TURN_BUTTON_ID)
+            .graphicsLayer { rotationY = rotation },
+        shape = RoundedCornerShape(8.dp),
+        elevation = 4.dp,
+    ) {
+        Icon(
+            modifier = Modifier
+                .background(color)
+                .clickable { onClick() }
+                .padding(8.dp),
+            painter = painterResource(id = R.drawable.ic_rotate_24),
+            contentDescription = null,
+        )
+    }
 }
 

@@ -60,10 +60,10 @@ fun TextView.applyTextColor(@ColorRes colorId: Int) {
     setTextColor(ContextCompat.getColor(context, colorId))
 }
 
-fun log(
-    message: String,
-    tag: String = "app_log",
+fun <T> log(
+    message: T,
     pointerMessage: String = "",
+    tag: String = "app_log",
     pointer: String =
         if (pointerMessage.isEmpty()) "***********" else "****** $pointerMessage ******",
 ) {

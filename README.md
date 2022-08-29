@@ -20,6 +20,7 @@ The application allows you to create cards with the automatic creation of a tran
 
 ## Features
 * Single Activity pattern
+* Navigation to the app from Smart Text Seletion Menu
 * Ability to listen to the pronunciation of English words
 * Deck repeat alert by notifications
 * Creation of transcriptions
@@ -31,3 +32,19 @@ From API level 21 to 32
 
 ### Old version
 https://github.com/NikolayKuts/Klaf
+
+## Screen samples
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_list_screen_light_theme.png)
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_list_screen_dark_theme.png)
+
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_navigation_dialog_light_theme.png)
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_navigation_dialog_dark_theme.png)
+
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_repetition_screen_dark_theme.png)
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_repetition_screen_light_theme.png)
+
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/card_addition_screen_light_theme.png)
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/card_editing_screen_dark_theme.png)
+
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_deleting_dialog_dark_theme.png)
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_creating_dialog_light_theme.png)

@@ -1,5 +1,7 @@
 package com.example.klaf.domain.useCases
 
+import com.example.klaf.di.CardRepositoryRoomImp
+import com.example.klaf.di.DeckRepositoryRoomImp
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.repositories.CardRepository
 import com.example.klaf.domain.repositories.DeckRepository
@@ -8,7 +10,9 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class AddNewCardIntoDeckUseCase @Inject constructor(
+    @DeckRepositoryRoomImp
     private val deckRepository: DeckRepository,
+    @CardRepositoryRoomImp
     private val cardRepository: CardRepository,
 ) {
 
