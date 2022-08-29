@@ -1,27 +1,20 @@
 package com.example.klaf.presentation.deckList
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import androidx.compose.material.Surface
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.klaf.R
-import com.example.klaf.databinding.FragmentDeckListBinding
 import com.example.klaf.domain.entities.Deck
-import com.example.klaf.presentation.common.collectWhenStarted
-import com.example.klaf.presentation.common.showToast
+import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class DeckListFragment : Fragment() {
-
-    private var _binding: FragmentDeckListBinding? = null
-    private val binding get() = _binding!!
+class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
 
     private val navController by lazy { findNavController() }
 
@@ -31,64 +24,25 @@ class DeckListFragment : Fragment() {
         DeckListViewModelFactory(assistedFactory = assistedFactory)
     }
 
-    private val deckAdapter = DeckAdapter(
-        onClick = ::navigateToRepeatFragment,
-        onItemMenuClick = ::navigateToDeckNavigationDialog
-    )
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
-        _binding = FragmentDeckListBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        initDeckRecyclerView()
-        subscribeObservers()
-        setOnCreateDeckClickListener()
-    }
-
-    override fun onDestroy() {
-        binding.deckRecyclerView.adapter = null
-        _binding = null
-        super.onDestroy()
-    }
-
-    private fun initDeckRecyclerView() {
-        binding.deckRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = deckAdapter
+        view.findViewById<ComposeView>(R.id.compose_view_deck_list).setContent {
+            MainTheme {
+                Surface {
+                    DeckListScreen(
+                        viewModel = viewModel,
+                        onItemClick = ::navigateToRepeatFragment,
+                        onLongItemClick = ::navigateToDeckNavigationDialog,
+                        onMainButtonClick = ::navigateToDeckCreationDialog
+                    )
+                }
+            }
         }
     }
 
-    private fun subscribeObservers() {
-        subscribeDeckObserver()
-        subscribeEventMessageObserver()
-    }
-
-    private fun subscribeDeckObserver() {
-        viewModel.deckSource.collectWhenStarted(viewLifecycleOwner.lifecycleScope) { decks ->
-            // TODO: 12/29/2021 implement toast showing on deleting and creating deck
-            deckAdapter.updateData(newDecks = decks)
-        }
-    }
-
-    private fun subscribeEventMessageObserver() {
-        viewModel.eventMessage.collectWhenStarted(viewLifecycleOwner.lifecycleScope) { eventMessage ->
-            requireContext().showToast(messageId = eventMessage.resId)
-        }
-    }
-
-    private fun setOnCreateDeckClickListener() {
-        binding.createDeckActionButton.setOnClickListener {
-            DeckListFragmentDirections.actionDeckListFragmentToDeckCreationDialogFragment()
-                .also { navController.navigate(directions = it) }
-        }
+    private fun navigateToDeckCreationDialog() {
+        DeckListFragmentDirections.actionDeckListFragmentToDeckCreationDialogFragment()
+            .also { navController.navigate(directions = it) }
     }
 
     private fun navigateToRepeatFragment(deck: Deck) {

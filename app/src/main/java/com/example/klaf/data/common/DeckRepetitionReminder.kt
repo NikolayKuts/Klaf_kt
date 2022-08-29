@@ -23,7 +23,8 @@ class DeckRepetitionReminder(
             deckId: Int,
             atTime: Long = 0,
         ) {
-            this.enqueueUniqueWork(
+            cancelUniqueWork(deckId.toString())
+            enqueueUniqueWork(
                 deckId.toString(),
                 ExistingWorkPolicy.KEEP,
                 makeWorkRequest(deckName = deckName, deckId = deckId, atTime = atTime)

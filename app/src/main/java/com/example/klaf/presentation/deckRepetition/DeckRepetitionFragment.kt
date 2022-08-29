@@ -11,6 +11,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.presentation.common.collectWhenStarted
+import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.showToast
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,7 +24,7 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
 
     @Inject
     lateinit var assistedFactory: RepetitionViewModelAssistedFactory
-    private val viewModel: RepetitionViewModel by navGraphViewModels(R.id.deckRepetitionFragment) {
+    private val viewModel: DeckRepetitionViewModel by navGraphViewModels(R.id.deckRepetitionFragment) {
         RepetitionViewModelFactory(assistedFactory = assistedFactory, deckId = args.deckId)
     }
 
@@ -46,14 +47,20 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
         subscribeObservers()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        viewLifecycleOwner.lifecycle.removeObserver(viewModel.timer)
+    override fun onDestroy() {
+        super.onDestroy()
+        removeObservers()
     }
 
     private fun subscribeObservers() {
         setEventMessageObserver()
-        viewLifecycleOwner.lifecycle.addObserver(viewModel.timer)
+        lifecycle.addObserver(viewModel.timer)
+        lifecycle.addObserver(viewModel.audioPlayer)
+    }
+
+    private fun removeObservers() {
+        lifecycle.removeObserver(viewModel.timer)
+        lifecycle.removeObserver(viewModel.audioPlayer)
     }
 
     private fun setEventMessageObserver() {
@@ -71,7 +78,7 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
 
     private fun navigateToCardAdditionFragment() {
         DeckRepetitionFragmentDirections.actionDeckRepetitionFragmentToCardAdditionFragment(
-            deckId = args.deckId
+            deckId = args.deckId,
         ).also { findNavController().navigate(it) }
     }
 

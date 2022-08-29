@@ -90,6 +90,8 @@ dependencies {
     /** firebase **/
     implementation platform('com.google.firebase:firebase-bom:30.2.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.1"
 
     /** compose **/
     implementation "androidx.compose.runtime:runtime:1.1.1"

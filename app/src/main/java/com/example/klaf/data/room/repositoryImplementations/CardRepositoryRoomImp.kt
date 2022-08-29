@@ -3,9 +3,9 @@ package com.example.klaf.data.room.repositoryImplementations
 import androidx.lifecycle.LiveData
 import com.example.klaf.data.room.databases.KlafRoomDatabase
 import com.example.klaf.data.room.entities.RoomCard
-import com.example.klaf.data.room.mapToCard
+import com.example.klaf.data.room.mapToDomainEntity
 import com.example.klaf.data.room.mapToRoomEntity
-import com.example.klaf.domain.common.simplifiedMap
+import com.example.klaf.domain.common.simplifiedItemMap
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.repositories.CardRepository
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +16,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CardRepositoryRoomImpl @Inject constructor(
+class CardRepositoryRoomImp @Inject constructor(
     private val roomDatabase: KlafRoomDatabase
 ) : CardRepository {
 
@@ -37,13 +37,13 @@ class CardRepositoryRoomImpl @Inject constructor(
     override fun getObservableCardById(cardId: Int): Flow<Card?> {
         return roomDatabase.cardDao()
             .getObservableCardById(cardId = cardId)
-            .map { roomCard: RoomCard? -> roomCard?.mapToCard() }
+            .map { roomCard: RoomCard? -> roomCard?.mapToDomainEntity() }
     }
 
     override fun getCardsByDeckId(deckId: Int): Flow<List<Card>> {
         return roomDatabase.cardDao()
             .getCardsByDeckId(deckId = deckId)
-            .simplifiedMap { roomCard: RoomCard -> roomCard.mapToCard() }
+            .simplifiedItemMap { roomCard: RoomCard -> roomCard.mapToDomainEntity() }
     }
 
     override suspend fun deleteCard(cardId: Int) {

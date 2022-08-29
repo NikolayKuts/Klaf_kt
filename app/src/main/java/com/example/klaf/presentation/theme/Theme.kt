@@ -1,8 +1,8 @@
 package com.example.klaf.presentation.theme
 
-import androidx.annotation.Dimension
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.*
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Shapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf

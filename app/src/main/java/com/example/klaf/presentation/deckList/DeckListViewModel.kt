@@ -21,7 +21,8 @@ class DeckListViewModel @AssistedInject constructor(
     private val createDeck: CreateDeckUseCase,
     private val renameDeck: RenameDeckUseCase,
     private val removeDeck: RemoveDeckUseCase,
-    private val removeCardsOfDeck: RemoveCardsOfDeckUseCase,
+    private val deleteAllCardsOfDeck: DeleteAllCardsOfDeck,
+    createInterimDeck: CreateInterimDeckUseCase,
     notifier: Notifier,
 ) : ViewModel() {
 
@@ -42,6 +43,7 @@ class DeckListViewModel @AssistedInject constructor(
 
     init {
         notifier.createDeckRepetitionNotificationChannel()
+        viewModelScope.launch { createInterimDeck() }
     }
 
     fun createNewDeck(deckName: String) {
@@ -114,7 +116,7 @@ class DeckListViewModel @AssistedInject constructor(
             }
         ) {
             launch { removeDeck(deckId = deckId) }
-            launch { removeCardsOfDeck(deckId = deckId) }
+            launch { deleteAllCardsOfDeck(deckId = deckId) }
         }
     }
 

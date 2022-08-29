@@ -3,23 +3,23 @@ package com.example.klaf.presentation.cardAddition
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
-import com.example.klaf.domain.ipa.LetterInfo
+import com.example.klaf.domain.common.generateLetterInfos
 import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
-fun CardAdditionFragmentView(viewModel: CardAdditionViewModel) {
-    val deck by viewModel.deck.collectAsState(initial = null)
+fun CardAdditionFragmentView(viewModel: CardAdditionViewModel, smartSelectedWord: String? = null) {
+    val deck = viewModel.deck.collectAsState(initial = null)
 
-    deck?.let { receivedDeck ->
-        val letterInfosState = rememberAsMutableStateOf(value = emptyList<LetterInfo>())
+    deck.value?.let { receivedDeck ->
+        val foreignWord = smartSelectedWord ?: ""
+        val letterInfosState = rememberAsMutableStateOf(value = foreignWord.generateLetterInfos())
         val nativeWordState = rememberAsMutableStateOf(value = "")
-        val foreignWordState = rememberAsMutableStateOf(value = "")
+        val foreignWordState = rememberAsMutableStateOf(value = foreignWord)
         val ipaTemplateState = rememberAsMutableStateOf(value = "")
 
         val additionState = viewModel.cardAdditionState.collectAsState()

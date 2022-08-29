@@ -2,104 +2,154 @@ package com.example.klaf.presentation.theme
 
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 
-val DarkEvenDeckItemNameTextStyle = TextStyle(
+private val MainFontFamily = FontFamily.Monospace
+
+private val MainSpanStyle = SpanStyle(
+    fontFamily = MainFontFamily,
+    fontSize = CommonDimension.mainTextSize,
+    fontStyle = FontStyle.Italic
+)
+
+val Body1 = TextStyle(
+    fontFamily = MainFontFamily,
+    fontWeight = FontWeight.Normal,
+    fontSize = CommonDimension.mainTextSize,
+)
+
+val Caption = TextStyle(
+    fontFamily = FontFamily.Monospace,
+    fontWeight = FontWeight.Normal,
+    fontSize = CommonDimension.captionTextSize,
+)
+
+val Subtitle1 = TextStyle(
+    fontFamily = FontFamily.Monospace,
+    fontWeight = FontWeight.Normal,
+    fontSize = CommonDimension.mainTextSize,
+)
+
+val Button = TextStyle(
+    fontSize = CommonDimension.mainButtonTextSize,
+    fontWeight = FontWeight.Bold,
+    fontStyle = FontStyle.Italic,
+    fontFamily = FontFamily.Monospace,
+)
+
+val DarkEvenDeckItemNameTextStyle = Body1.copy(
     color = DarkMainPalettes.evenDeckItemName,
     fontSize = CommonDimension.deckItemDeckName,
+    fontStyle = FontStyle.Italic,
 )
 
-val DarkOddDeckItemNameTextStyle = TextStyle(
+val DarkOddDeckItemNameTextStyle = Body1.copy(
     color = DarkMainPalettes.oddDeckItemName,
     fontSize = CommonDimension.deckItemDeckName,
+    fontStyle = FontStyle.Italic,
 )
 
-val LightEvenDeckItemNameTextStyle = TextStyle(
+val LightEvenDeckItemNameTextStyle = Body1.copy(
     color = LightMainPalettes.evenDeckItemName,
     fontSize = CommonDimension.deckItemDeckName,
+    fontStyle = FontStyle.Italic,
 )
 
-val LightOddDeckItemNameTextStyle = TextStyle(
+val LightOddDeckItemNameTextStyle = Body1.copy(
     color = LightMainPalettes.oddDeckItemName,
     fontSize = CommonDimension.deckItemDeckName,
+    fontStyle = FontStyle.Italic,
 )
 
-val DarkScheduledDateTextStyle = TextStyle(
-    color = DarkMainPalettes.scheduledDate
+val DarkDeckItemScheduledDateTextStyle = Body1.copy(
+    color = DarkMainPalettes.scheduledDate,
+    fontStyle = FontStyle.Italic,
 )
 
-val LightScheduledDateTextStyle = TextStyle(
-    color = LightMainPalettes.scheduledDate
+val LightDeckItemScheduledDateTextStyle = Body1.copy(
+    color = LightMainPalettes.scheduledDate,
+    fontStyle = FontStyle.Italic,
 )
 
-val DarkOverdueScheduledDateTextStyle = TextStyle(
-    color = DarkMainPalettes.overdueScheduledDate
+val DarkDeckItemOverdueScheduledDateTextStyle = Body1.copy(
+    color = DarkMainPalettes.overdueScheduledDate,
+    fontStyle = FontStyle.Italic,
 )
 
-val LightOverdueScheduledDateTextStyle = TextStyle(
-    color = LightMainPalettes.overdueScheduledDate
+val LightDeckItemOverdueScheduledDateTextStyle = Body1.copy(
+    color = LightMainPalettes.overdueScheduledDate,
+    fontStyle = FontStyle.Italic,
 )
 
-val DarkDeckItemRepetitionQuantitySpanStyle = SpanStyle(
+val DarkDeckItemRepetitionQuantitySpanStyle = MainSpanStyle.copy(
     color = DarkMainPalettes.deckItemRepetitionQuantity
 )
 
-val LightDeckItemRepetitionQuantitySpanStyle = SpanStyle(
+val LightDeckItemRepetitionQuantitySpanStyle = MainSpanStyle.copy(
     color = LightMainPalettes.deckItemRepetitionQuantity
 )
 
-val DarkDeckItemCardQuantityTextStyle = SpanStyle(
+val DarkDeckItemCardQuantityTextStyle = MainSpanStyle.copy(
     color = DarkMainPalettes.deckItemCardQuantity,
 )
 
-val LightDeckItemCardQuantityTextStyle = SpanStyle(
+val LightDeckItemCardQuantityTextStyle = MainSpanStyle.copy(
     color = LightMainPalettes.deckItemCardQuantity,
 )
 
-val DarkDeckItemPointerTextStyle = SpanStyle(
+val DarkDeckItemPointerTextStyle = MainSpanStyle.copy(
     color = DarkMainPalettes.deckItemPointer,
     fontSize = CommonDimension.deckItemPointer
 )
 
-val LightDeckItemPointerTextStyle = SpanStyle(
+val LightDeckItemPointerTextStyle = MainSpanStyle.copy(
     color = LightMainPalettes.deckItemPointer,
     fontSize = CommonDimension.deckItemPointer
 )
 
-val DialogTextStyle = Typography.body1.copy(
+val DialogTextStyle = Body1.copy(
     lineHeight = CommonDimension.dialogTextLineHeight
 )
 
-val AccentedDialogTextStyle = SpanStyle(
+val AccentedDialogTextStyle = MainSpanStyle.copy(
     fontStyle = FontStyle.Italic,
     fontWeight = FontWeight.Bold
 )
 
-val CardPointerTextStyle = SpanStyle(
+val CardPointerTextStyle = MainSpanStyle.copy(
     fontStyle = FontStyle.Italic,
     fontSize = CommonDimension.cardAdditionPointerTextSize
 )
 
-val CardPointerValueTextStyle = SpanStyle(
+val CardPointerValueTextStyle = MainSpanStyle.copy(
     fontWeight = FontWeight.Bold,
     fontStyle = FontStyle.Italic,
 )
 
-val LightFrondSideOrderPointer = TextStyle(
-    color = LightMainPalettes.frontSideOrderPointer
+val LightFrondSideOrderPointer = Body1.copy(
+    color = LightMainPalettes.frontSideOrderPointer,
+    fontWeight = FontWeight.Bold,
+    fontStyle = FontStyle.Italic
 )
 
-val LightBackSideOrderPointer = TextStyle(
-    color = LightMainPalettes.backSideOrderPointer
+val LightBackSideOrderPointer = Body1.copy(
+    color = LightMainPalettes.backSideOrderPointer,
+    fontWeight = FontWeight.Bold,
+    fontStyle = FontStyle.Italic
 )
 
-val DarkFrondSideOrderPointer = TextStyle(
-    color = DarkMainPalettes.frontSideOrderPointer
+val DarkFrondSideOrderPointer = Body1.copy(
+    color = DarkMainPalettes.frontSideOrderPointer,
+    fontWeight = FontWeight.Bold,
+    fontStyle = FontStyle.Italic
 )
 
-val DarkBackSideOrderPointer = TextStyle(
-    color = DarkMainPalettes.backSideOrderPointer
+val DarkBackSideOrderPointer = Body1.copy(
+    color = DarkMainPalettes.backSideOrderPointer,
+    fontWeight = FontWeight.Bold,
+    fontStyle = FontStyle.Italic
 )
 
 val TimerTextStile = TextStyle(
@@ -107,12 +157,36 @@ val TimerTextStile = TextStyle(
     fontStyle = FontStyle.Italic
 )
 
-val CardWordTextStyle = Typography.body1.copy(
+val LightFrontSideCardWordTextStyle = Body1.copy(
     fontSize = CommonDimension.cardWordTextSize,
-    fontStyle = FontStyle.Italic
+    fontStyle = FontStyle.Italic,
+    fontWeight = FontWeight.Bold,
+    color = LightMainPalettes.frontSideCardWord,
 )
 
-val IpaPromptsTextStyle = Typography.body1.copy(
+val DarkFrontSideCardWordTextStyle = Body1.copy(
+    fontSize = CommonDimension.cardWordTextSize,
+    fontStyle = FontStyle.Italic,
+    fontWeight = FontWeight.Bold,
+    color = DarkMainPalettes.frontSideCardWord,
+)
+
+val LightBackSideCardWordTextStyle = Body1.copy(
+    fontSize = CommonDimension.cardWordTextSize,
+    fontStyle = FontStyle.Italic,
+    fontWeight = FontWeight.Bold,
+    color = LightMainPalettes.backSideCardWord,
+)
+
+val DarkBackSideCardWordTextStyle = Body1.copy(
+    fontSize = CommonDimension.cardWordTextSize,
+    fontStyle = FontStyle.Italic,
+    fontWeight = FontWeight.Bold,
+    color = DarkMainPalettes.backSideCardWord,
+)
+
+
+val IpaPromptsTextStyle = Body1.copy(
     fontSize = CommonDimension.ipaPromptsTextSize,
     fontStyle = FontStyle.Italic
 )
