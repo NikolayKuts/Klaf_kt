@@ -129,19 +129,27 @@ val CardPointerValueTextStyle = MainSpanStyle.copy(
 )
 
 val LightFrondSideOrderPointer = Body1.copy(
-    color = LightMainPalettes.frontSideOrderPointer
+    color = LightMainPalettes.frontSideOrderPointer,
+    fontWeight = FontWeight.Bold,
+    fontStyle = FontStyle.Italic
 )
 
 val LightBackSideOrderPointer = Body1.copy(
-    color = LightMainPalettes.backSideOrderPointer
+    color = LightMainPalettes.backSideOrderPointer,
+    fontWeight = FontWeight.Bold,
+    fontStyle = FontStyle.Italic
 )
 
 val DarkFrondSideOrderPointer = Body1.copy(
-    color = DarkMainPalettes.frontSideOrderPointer
+    color = DarkMainPalettes.frontSideOrderPointer,
+    fontWeight = FontWeight.Bold,
+    fontStyle = FontStyle.Italic
 )
 
 val DarkBackSideOrderPointer = Body1.copy(
-    color = DarkMainPalettes.backSideOrderPointer
+    color = DarkMainPalettes.backSideOrderPointer,
+    fontWeight = FontWeight.Bold,
+    fontStyle = FontStyle.Italic
 )
 
 val TimerTextStile = TextStyle(
@@ -149,10 +157,34 @@ val TimerTextStile = TextStyle(
     fontStyle = FontStyle.Italic
 )
 
-val CardWordTextStyle = Body1.copy(
+val LightFrontSideCardWordTextStyle = Body1.copy(
     fontSize = CommonDimension.cardWordTextSize,
-    fontStyle = FontStyle.Italic
+    fontStyle = FontStyle.Italic,
+    fontWeight = FontWeight.Bold,
+    color = LightMainPalettes.frontSideCardWord,
 )
+
+val DarkFrontSideCardWordTextStyle = Body1.copy(
+    fontSize = CommonDimension.cardWordTextSize,
+    fontStyle = FontStyle.Italic,
+    fontWeight = FontWeight.Bold,
+    color = DarkMainPalettes.frontSideCardWord,
+)
+
+val LightBackSideCardWordTextStyle = Body1.copy(
+    fontSize = CommonDimension.cardWordTextSize,
+    fontStyle = FontStyle.Italic,
+    fontWeight = FontWeight.Bold,
+    color = LightMainPalettes.backSideCardWord,
+)
+
+val DarkBackSideCardWordTextStyle = Body1.copy(
+    fontSize = CommonDimension.cardWordTextSize,
+    fontStyle = FontStyle.Italic,
+    fontWeight = FontWeight.Bold,
+    color = DarkMainPalettes.backSideCardWord,
+)
+
 
 val IpaPromptsTextStyle = Body1.copy(
     fontSize = CommonDimension.ipaPromptsTextSize,

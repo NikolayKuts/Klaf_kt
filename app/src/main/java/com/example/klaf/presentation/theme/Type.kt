@@ -20,7 +20,8 @@ data class MainTopographies(
     val frontSideOrderPointer: TextStyle,
     val backSideOrderPointer: TextStyle,
     val timerTextStyle: TextStyle,
-    val cardWordTextStyle: TextStyle,
+    val frontSideCardWordTextStyle: TextStyle,
+    val backSideCardWordTextStyle: TextStyle,
     val cardIpaPromptsTextStyle: TextStyle,
 )
 
@@ -47,7 +48,8 @@ val LightMainTypographies = MainTopographies(
     frontSideOrderPointer = LightFrondSideOrderPointer,
     backSideOrderPointer = LightBackSideOrderPointer,
     timerTextStyle = TimerTextStile,
-    cardWordTextStyle = CardWordTextStyle,
+    frontSideCardWordTextStyle = LightFrontSideCardWordTextStyle,
+    backSideCardWordTextStyle = LightBackSideCardWordTextStyle,
     cardIpaPromptsTextStyle = IpaPromptsTextStyle,
 )
 
@@ -67,6 +69,7 @@ val DarkMainTypographies = MainTopographies(
     frontSideOrderPointer = DarkFrondSideOrderPointer,
     backSideOrderPointer = DarkBackSideOrderPointer,
     timerTextStyle = TimerTextStile,
-    cardWordTextStyle = CardWordTextStyle,
+    frontSideCardWordTextStyle = DarkFrontSideCardWordTextStyle,
+    backSideCardWordTextStyle = DarkBackSideCardWordTextStyle,
     cardIpaPromptsTextStyle = IpaPromptsTextStyle,
 )

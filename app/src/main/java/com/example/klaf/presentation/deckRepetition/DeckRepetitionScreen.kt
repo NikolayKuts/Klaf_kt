@@ -304,10 +304,6 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
     val word: String
     var ipaPrompt = emptyList<LetterInfo>()
 
-    val wordColor: Color = when (deckRepetitionState.side) {
-        CardSide.FRONT -> MainTheme.colors.frontSideOrderPointer
-        CardSide.BACK -> MainTheme.colors.backSideOrderPointer
-    }
 
     when (deckRepetitionState.repetitionOrder) {
         CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
@@ -336,13 +332,17 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
         }
     }
 
+    val wordTextSyle = when (deckRepetitionState.side) {
+        CardSide.FRONT -> MainTheme.typographies.frontSideCardWordTextStyle
+        CardSide.BACK -> MainTheme.typographies.backSideCardWordTextStyle
+    }
+
     Text(
         modifier = Modifier
             .layoutId(WORD_VIEW_ID)
             .clickable { onWordClick() },
         text = word,
-        style = MainTheme.typographies.cardWordTextStyle,
-        color = wordColor
+        style = wordTextSyle,
     )
 
     LazyRow(modifier = Modifier.layoutId(IPA_PROMPTS_VIEW_ID)) {
@@ -604,9 +604,9 @@ private fun MainButton(animationStateState: MutableState<Boolean>, onClick: () -
         transitionSpec = { tween(durationMillis = 200) }, label = ""
     ) {
         if (it.value) {
-            MainTheme.colors.deckRepetitionMainButtonUnpressed
-        } else {
             MainTheme.colors.deckRepetitionMainButtonPressed
+        } else {
+            MainTheme.colors.deckRepetitionMainButtonUnpressed
         }
     }
 

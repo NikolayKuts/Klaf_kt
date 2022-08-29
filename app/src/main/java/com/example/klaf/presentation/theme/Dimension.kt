@@ -31,6 +31,6 @@ val CommonDimension = MainDimensions(
     dialogContentPadding = 32.dp,
     cardAdditionPointerTextSize = 12.sp,
     timerTextSize = 18.sp,
-    cardWordTextSize = 18.sp,
+    cardWordTextSize = 22.sp,
     ipaPromptsTextSize = 18.sp,
 )
