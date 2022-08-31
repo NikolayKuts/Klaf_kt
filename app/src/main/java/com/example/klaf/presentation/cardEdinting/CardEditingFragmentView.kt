@@ -8,7 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
-import com.example.klaf.domain.ipa.decodeIpa
+import com.example.klaf.domain.ipa.decodeToCompletedIpa
 import com.example.klaf.domain.ipa.decodeToInfos
 import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
@@ -25,7 +25,7 @@ fun CardEditingFragmentView(viewModel: CardEditingViewModel) {
             )
             val nativeWordState = rememberAsMutableStateOf(value = receivedCard.nativeWord)
             val foreignWordState = rememberAsMutableStateOf(value = receivedCard.foreignWord)
-            val ipaTemplateState = rememberAsMutableStateOf(value = receivedCard.decodeIpa())
+            val ipaTemplateState = rememberAsMutableStateOf(value = receivedCard.decodeToCompletedIpa())
 
             Box(
                 modifier = Modifier
