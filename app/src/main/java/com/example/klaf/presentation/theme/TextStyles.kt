@@ -190,3 +190,35 @@ val IpaPromptsTextStyle = Body1.copy(
     fontSize = CommonDimension.ipaPromptsTextSize,
     fontStyle = FontStyle.Italic
 )
+
+private val ViewingCardTextStyle = Body1.copy(fontSize = CommonDimension.viewingCardTextSize)
+
+val LightViewingCardNativeWord = ViewingCardTextStyle
+
+val LightViewingCardForeignWord = ViewingCardTextStyle.copy(
+    color = LightMainPalettes.viewingCardForeignWord
+)
+
+val LightViewingCardIpa = ViewingCardTextStyle.copy(
+    color = LightMainPalettes.viewingCardIpa
+)
+
+val LightViewingCardOrdinal = ViewingCardTextStyle.copy(
+    color = LightMainPalettes.viewingCardOrdinal,
+    fontStyle = FontStyle.Italic
+)
+
+val DarkViewingCardNativeWord = ViewingCardTextStyle
+
+val DarkViewingCardForeignWord = ViewingCardTextStyle.copy(
+    color = DarkMainPalettes.viewingCardForeignWord
+)
+
+val DarkViewingCardIpa = ViewingCardTextStyle.copy(
+    color = DarkMainPalettes.viewingCardIpa
+)
+
+val DarkViewingCardOrdinal = ViewingCardTextStyle.copy(
+    color = DarkMainPalettes.viewingCardOrdinal,
+    fontStyle = FontStyle.Italic
+)

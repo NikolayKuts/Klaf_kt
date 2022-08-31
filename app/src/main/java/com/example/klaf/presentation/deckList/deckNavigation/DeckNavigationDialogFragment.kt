@@ -7,7 +7,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
 import com.example.klaf.presentation.common.TransparentDialogFragment
-import com.example.klaf.presentation.deckList.DeckNavigationDialogView
+import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.theme.MainTheme
 
 class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.dialog_deck_navigation) {

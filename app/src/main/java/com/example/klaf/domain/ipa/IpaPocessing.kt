@@ -2,7 +2,7 @@ package com.example.klaf.domain.ipa
 
 import com.example.klaf.domain.entities.Card
 
-fun List<LetterInfo>.convertUncompletedIpa(): String {
+fun List<LetterInfo>.convertToUncompletedIpa(): String {
     val ipaTemplate: MutableList<String> = ArrayList()
     val result = StringBuilder()
 
@@ -22,64 +22,6 @@ fun List<LetterInfo>.convertUncompletedIpa(): String {
     ipaTemplate.forEach { item -> result.append(item) }
 
     return result.toString()
-}
-
-fun Card.decodeToInfos(): List<LetterInfo> {
-    return ArrayList<LetterInfo>().apply {
-
-        val foreignWordBuilder = java.lang.StringBuilder(ipa)
-        while (foreignWordBuilder.isNotEmpty()) {
-
-            if (foreignWordBuilder.substring(0, 1) == "/") {
-                foreignWordBuilder.delete(0, 1)
-                val equalsIndex = foreignWordBuilder.indexOf("=")
-                val letters = foreignWordBuilder.substring(0, equalsIndex)
-
-                for (index in letters.indices) {
-                    this.add(LetterInfo(letters.substring(index, index + 1), true))
-                }
-
-                if (foreignWordBuilder.toString().contains("/")) {
-                    foreignWordBuilder.delete(0, foreignWordBuilder.indexOf("/") + 1)
-                } else {
-                    foreignWordBuilder.delete(0, foreignWordBuilder.length)
-                }
-
-            } else {
-                this.add(LetterInfo(foreignWordBuilder.substring(0, 1), false))
-                foreignWordBuilder.delete(0, 1)
-            }
-        }
-    }
-}
-
-fun Card.decodeIpa(): String {
-    // TODO("refactore - there is a problem")
-    val result = java.lang.StringBuilder()
-    val ipa = java.lang.StringBuilder(this.ipa)
-
-    while (ipa.isNotEmpty()) {
-        if (ipa.substring(0, 1) == "/") {
-            ipa.delete(0, 1)
-            var couple: String
-            if (ipa.contains("/")) {
-                val index = ipa.indexOf("/")
-                couple = "${ipa.substring(0, index)}\n"
-                ipa.delete(0, index + 1)
-            } else {
-                couple = ipa.substring(0, ipa.length)
-                ipa.delete(0, ipa.length)
-            }
-            result.append(couple)
-        } else {
-            ipa.delete(0, 1)
-        }
-    }
-    if (result.endsWith("\n")) {
-        val resultLength = result.length
-        result.delete(resultLength - 1, resultLength)
-    }
-    return result.toString().replace("=", " = ")
 }
 
 fun List<LetterInfo>.convertToEncodedIpa(ipaTemplate: String): String {
@@ -120,7 +62,7 @@ fun List<LetterInfo>.convertToEncodedIpa(ipaTemplate: String): String {
                     ipaTemplateBuilder.substring(0)
                 }
             }
-//
+
             val replacedLetters: String =
                 ipaTemplateBuilder.substring(0, ipaTemplateBuilder.indexOf("="))
             index += replacedLetters.length - 1
@@ -137,6 +79,71 @@ fun List<LetterInfo>.convertToEncodedIpa(ipaTemplate: String): String {
     }
     return result.toString()
 }
+
+fun Card.decodeToInfos(): List<LetterInfo> {
+    return ArrayList<LetterInfo>().apply {
+
+        val foreignWordBuilder = java.lang.StringBuilder(ipa)
+        while (foreignWordBuilder.isNotEmpty()) {
+
+            if (foreignWordBuilder.substring(0, 1) == "/") {
+                foreignWordBuilder.delete(0, 1)
+                val equalsIndex = foreignWordBuilder.indexOf("=")
+                val letters = foreignWordBuilder.substring(0, equalsIndex)
+
+                for (index in letters.indices) {
+                    this.add(LetterInfo(letters.substring(index, index + 1), true))
+                }
+
+                if (foreignWordBuilder.toString().contains("/")) {
+                    foreignWordBuilder.delete(0, foreignWordBuilder.indexOf("/") + 1)
+                } else {
+                    foreignWordBuilder.delete(0, foreignWordBuilder.length)
+                }
+
+            } else {
+                this.add(LetterInfo(foreignWordBuilder.substring(0, 1), false))
+                foreignWordBuilder.delete(0, 1)
+            }
+        }
+    }
+}
+
+
+fun Card.decodeToCompletedViewingIpa(): String {
+    return decodeToCompletedIpa().replace("\n", ", ")
+}
+
+fun Card.decodeToCompletedIpa(): String {
+    // TODO("refactore - there is a problem")
+    val result = java.lang.StringBuilder()
+    val ipa = java.lang.StringBuilder(this.ipa)
+
+    while (ipa.isNotEmpty()) {
+        if (ipa.substring(0, 1) == "/") {
+            ipa.delete(0, 1)
+            var couple: String
+            if (ipa.contains("/")) {
+                val index = ipa.indexOf("/")
+                couple = "${ipa.substring(0, index)}\n"
+                ipa.delete(0, index + 1)
+            } else {
+                couple = ipa.substring(0, ipa.length)
+                ipa.delete(0, ipa.length)
+            }
+            result.append(couple)
+        } else {
+            ipa.delete(0, 1)
+        }
+    }
+    if (result.endsWith("\n")) {
+        val resultLength = result.length
+        result.delete(resultLength - 1, resultLength)
+    }
+
+    return result.toString().replace("=", " = ")
+}
+
 
 fun Card.decodeToIpaPrompts(): List<LetterInfo> {
     val ipa = java.lang.StringBuilder(this.ipa)
