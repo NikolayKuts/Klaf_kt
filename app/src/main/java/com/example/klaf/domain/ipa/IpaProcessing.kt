@@ -1,25 +1,26 @@
 package com.example.klaf.domain.ipa
 
+import com.example.klaf.domain.common.ifTrue
 import com.example.klaf.domain.entities.Card
 
 fun List<LetterInfo>.convertToUncompletedIpa(): String {
-    val ipaTemplate: MutableList<String> = ArrayList()
+    val equalsSign = " = "
     val result = StringBuilder()
 
     this.forEach { letterInfo ->
         if (letterInfo.isChecked) {
-            if (ipaTemplate.isNotEmpty() && ipaTemplate.last() == " = ") {
-                ipaTemplate.add("\n")
-            }
-            ipaTemplate.add(letterInfo.letter)
-        } else if (ipaTemplate.isNotEmpty() && ipaTemplate.last() != " = ") {
-            ipaTemplate.add(" = ")
+            result.endsWith(equalsSign)
+                .ifTrue { result.append("\n") }
+
+            result.append(letterInfo.letter)
+        } else if (result.isNotEmpty() && !result.endsWith(equalsSign)) {
+            result.append(equalsSign)
         }
     }
-    if (ipaTemplate.isNotEmpty() && ipaTemplate.last() != " = ") {
-        ipaTemplate.add(" = ")
+
+    if (result.isNotEmpty() && !result.endsWith(equalsSign)) {
+        result.append(equalsSign)
     }
-    ipaTemplate.forEach { item -> result.append(item) }
 
     return result.toString()
 }
