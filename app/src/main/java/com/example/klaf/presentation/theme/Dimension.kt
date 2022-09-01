@@ -19,7 +19,8 @@ data class MainDimensions(
     val timerTextSize: TextUnit,
     val cardWordTextSize: TextUnit,
     val ipaPromptsTextSize: TextUnit,
-    val viewingCardTextSize: TextUnit,
+    val viewingCardDeckNameTextSize: TextUnit,
+    val viewingCardContentTextSize: TextUnit,
 )
 
 val CommonDimension = MainDimensions(
@@ -32,7 +33,8 @@ val CommonDimension = MainDimensions(
     dialogContentPadding = 32.dp,
     cardAdditionPointerTextSize = 12.sp,
     timerTextSize = 18.sp,
+    viewingCardDeckNameTextSize = 28.sp,
     cardWordTextSize = 22.sp,
     ipaPromptsTextSize = 18.sp,
-    viewingCardTextSize =18.sp,
+    viewingCardContentTextSize =18.sp,
 )

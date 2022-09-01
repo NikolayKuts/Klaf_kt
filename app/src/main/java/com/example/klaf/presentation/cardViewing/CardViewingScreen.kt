@@ -10,11 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.ipa.decodeToCompletedViewingIpa
 import com.example.klaf.presentation.theme.MainTheme
@@ -24,20 +20,12 @@ fun CardViewingScreen(viewModel: CardViewingViewModel) {
     val cards by viewModel.cards.collectAsState()
     val deck by viewModel.deck.collectAsState(initial = null)
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(8.dp)) {
-        Text(
-            modifier = Modifier
-                .align(alignment = Alignment.CenterHorizontally)
-                .padding(top = 8.dp, bottom = 8.dp),
-            text = deck?.name ?: "",
-            style = TextStyle(
-                fontSize = 28.sp,
-                fontStyle = FontStyle.Italic,
-                fontWeight = FontWeight.Bold
-            )
-        )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+    ) {
+        DeckInfo(deckName = deck?.name)
         LazyColumn(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -47,6 +35,17 @@ fun CardViewingScreen(viewModel: CardViewingViewModel) {
             }
         }
     }
+}
+
+@Composable
+private fun ColumnScope.DeckInfo(deckName: String?) {
+    Text(
+        modifier = Modifier
+            .align(alignment = Alignment.CenterHorizontally)
+            .padding(top = 8.dp, bottom = 8.dp),
+        text = deckName ?: "",
+        style = MainTheme.typographies.viewingCardDeckName
+    )
 }
 
 @Composable
