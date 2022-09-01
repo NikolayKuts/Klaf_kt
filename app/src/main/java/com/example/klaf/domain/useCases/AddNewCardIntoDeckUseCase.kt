@@ -22,7 +22,7 @@ class AddNewCardIntoDeckUseCase @Inject constructor(
                 ?: throw Exception("Fetching deck is failed")
 
             cardRepository.insertCard(card = card)
-            val actualCardQuantity = cardRepository.getCardQuantityByDeckId(deckId = card.deckId)
+            val actualCardQuantity = cardRepository.fetchCardQuantityByDeckId(deckId = card.deckId)
             val updatedDeck = originalDeck.copy(cardQuantity = actualCardQuantity)
 
             deckRepository.insertDeck(deck = updatedDeck)

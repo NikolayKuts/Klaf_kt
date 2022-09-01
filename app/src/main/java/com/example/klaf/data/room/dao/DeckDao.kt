@@ -12,7 +12,10 @@ import kotlinx.coroutines.flow.Flow
 interface DeckDao {
 
     @Query("SELECT * FROM $DECK_TABLE_NAME")
-    fun getAllDecks(): Flow<List<RoomDeck>>
+    fun getObservableDecks(): Flow<List<RoomDeck>>
+
+    @Query("SELECT * FROM $DECK_TABLE_NAME")
+    fun getAllDecks(): List<RoomDeck>
 
     @Query("SELECT * FROM $DECK_TABLE_NAME WHERE id = :deckId")
     fun getObservableDeckById(deckId: Int): Flow<RoomDeck?>

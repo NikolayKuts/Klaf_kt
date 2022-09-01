@@ -1,7 +1,8 @@
-package com.example.klaf.presentation.deckList
+package com.example.klaf.presentation.deckList.common
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkManager
 import com.example.klaf.R
 import com.example.klaf.domain.common.getCurrentDateAsLong
 import com.example.klaf.domain.common.launchWithExceptionHandler
@@ -10,6 +11,7 @@ import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.Notifier
 import com.example.klaf.presentation.common.tryEmit
+import com.example.klaf.presentation.deckList.dataSynchronization.SynchronizationWorker.Companion.performSynchronization
 import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
 import dagger.assisted.AssistedInject
@@ -24,6 +26,7 @@ class DeckListViewModel @AssistedInject constructor(
     private val deleteAllCardsOfDeck: DeleteAllCardsOfDeck,
     createInterimDeck: CreateInterimDeckUseCase,
     notifier: Notifier,
+    private val workManager: WorkManager,
 ) : ViewModel() {
 
     val deckSource: StateFlow<List<Deck>> = fetchDeckSource().stateIn(
@@ -126,5 +129,9 @@ class DeckListViewModel @AssistedInject constructor(
             _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck)
         }
         return deck
+    }
+
+    fun synchronizeData() {
+        workManager.performSynchronization()
     }
 }

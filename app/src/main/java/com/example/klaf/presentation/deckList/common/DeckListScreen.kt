@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.deckList
+package com.example.klaf.presentation.deckList.common
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable

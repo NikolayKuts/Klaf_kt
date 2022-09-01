@@ -7,6 +7,8 @@ interface DeckRepository {
 
     fun fetchDeckSource(): Flow<List<Deck>>
 
+    suspend fun fetchAllDecks(): List<Deck>
+
     fun fetchObservableDeckById(deckId: Int): Flow<Deck?>
 
     suspend fun insertDeck(deck: Deck)

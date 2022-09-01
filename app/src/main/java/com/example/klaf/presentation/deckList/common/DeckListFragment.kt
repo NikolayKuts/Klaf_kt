@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.deckList
+package com.example.klaf.presentation.deckList.common
 
 import android.os.Bundle
 import android.view.View
