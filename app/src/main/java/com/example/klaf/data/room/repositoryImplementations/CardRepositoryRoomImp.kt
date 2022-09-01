@@ -20,11 +20,11 @@ class CardRepositoryRoomImp @Inject constructor(
     private val roomDatabase: KlafRoomDatabase
 ) : CardRepository {
 
-    override suspend fun getObservableCardQuantityByDeckId(deckId: Int): LiveData<Int> {
+    override suspend fun fetchObservableCardQuantityByDeckId(deckId: Int): LiveData<Int> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getCardQuantityByDeckId(deckId: Int): Int = withContext(Dispatchers.IO) {
+    override suspend fun fetchCardQuantityByDeckId(deckId: Int): Int = withContext(Dispatchers.IO) {
         roomDatabase.cardDao().getCardQuantityInDeckAsInt(deckId = deckId)
     }
 
@@ -34,16 +34,22 @@ class CardRepositoryRoomImp @Inject constructor(
         }
     }
 
-    override fun getObservableCardById(cardId: Int): Flow<Card?> {
+    override fun fetchObservableCardById(cardId: Int): Flow<Card?> {
         return roomDatabase.cardDao()
             .getObservableCardById(cardId = cardId)
             .map { roomCard: RoomCard? -> roomCard?.mapToDomainEntity() }
     }
 
-    override fun getCardsByDeckId(deckId: Int): Flow<List<Card>> {
+    override fun fetchObservableCardsByDeckId(deckId: Int): Flow<List<Card>> {
+        return roomDatabase.cardDao()
+            .getObservableCardsByDeckId(deckId = deckId)
+            .simplifiedItemMap { roomCard: RoomCard -> roomCard.mapToDomainEntity() }
+    }
+
+    override fun fetchCardsByDeckId(deckId: Int): List<Card> {
         return roomDatabase.cardDao()
             .getCardsByDeckId(deckId = deckId)
-            .simplifiedItemMap { roomCard: RoomCard -> roomCard.mapToDomainEntity() }
+            .map { roomCard -> roomCard.mapToDomainEntity() }
     }
 
     override suspend fun deleteCard(cardId: Int) {

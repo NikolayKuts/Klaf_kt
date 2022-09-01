@@ -22,7 +22,7 @@ class DeleteCardFromDeckUseCase @Inject constructor(
 
             cardRepository.deleteCard(cardId = cardId)
 
-            val actualCardQuantityInDeck = cardRepository.getCardQuantityByDeckId(deckId = deckId)
+            val actualCardQuantityInDeck = cardRepository.fetchCardQuantityByDeckId(deckId = deckId)
             val updatedDeck = originDeck.copy(cardQuantity = actualCardQuantityInDeck)
 
             deckRepository.insertDeck(deck = updatedDeck)

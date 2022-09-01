@@ -9,17 +9,21 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.work.WorkManager
 import com.example.klaf.R
 import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
 import com.example.klaf.presentation.common.RoundButton
+import com.example.klaf.presentation.deckList.dataSynchronization.SynchronizationWorker.Companion.performSynchronization
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
 fun DataSynchronizationDialogView(
     onClose: () -> Unit,
+    onConfirm: () -> Unit,
 ) {
     Box {
         Card(
@@ -49,10 +53,11 @@ fun DataSynchronizationDialogView(
                 .align(alignment = Alignment.BottomCenter),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
+            val context = LocalContext.current
             RoundButton(
                 background = MainTheme.colors.positiveDialogButton,
                 iconId = R.drawable.ic_comfirmation_24,
-                onClick = { }
+                onClick = onConfirm
             )
 
             RoundButton(

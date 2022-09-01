@@ -16,6 +16,10 @@ class DeckRepositoryFirestoreImp @Inject constructor(
         TODO("Not yet implemented")
     }
 
+    override suspend fun fetchAllDecks(): List<Deck> {
+        TODO("Not yet implemented")
+    }
+
     override fun fetchObservableDeckById(deckId: Int): Flow<Deck?> {
         TODO("Not yet implemented")
     }

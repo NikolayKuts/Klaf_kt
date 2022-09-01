@@ -13,10 +13,10 @@ import kotlinx.coroutines.flow.Flow
 interface CardDao {
 
     @Query("SELECT * FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
-    fun getCardsByDeckId(deckId: Int): Flow<List<RoomCard>>
+    fun getObservableCardsByDeckId(deckId: Int): Flow<List<RoomCard>>
 
     @Query("SELECT * FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
-    fun getCardListByDeckId(deckId: Int): List<RoomCard>
+    fun getCardsByDeckId(deckId: Int): List<RoomCard>
 
     @Query("SELECT * FROM $CARD_TABLE_NAME WHERE id = :cardId")
     fun getObservableCardById(cardId: Int): Flow<RoomCard?>

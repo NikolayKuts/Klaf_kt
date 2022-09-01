@@ -5,7 +5,7 @@ import com.example.klaf.data.room.entities.RoomDeck
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
 
-fun RoomDeck.mapToDeck(): Deck = Deck(
+fun RoomDeck.mapToDomainEntity(): Deck = Deck(
     name = name,
     creationDate = creationDate,
     repetitionIterationDates = repetitionIterationDates,
