@@ -46,6 +46,7 @@ data class MainColors(
     val viewingCardForeignWord: Color,
     val viewingCardIpa: Color,
     val viewingCardOrdinal: Color,
+    val dataSynchronizationLabelBackground: Color,
 )
 
 val LightMainPalettes = MainColors(
@@ -90,6 +91,7 @@ val LightMainPalettes = MainColors(
     viewingCardForeignWord = Color(0xFFCCEDF1),
     viewingCardIpa = Color(0xFFCCEDF1),
     viewingCardOrdinal = Color(0xFFCCEDF1),
+    dataSynchronizationLabelBackground = Color(0xFFFFFFFF),
 )
 
 val DarkMainPalettes = MainColors(
@@ -133,4 +135,5 @@ val DarkMainPalettes = MainColors(
     viewingCardForeignWord = Color(0xFFA5CA79),
     viewingCardIpa = Color(0xFF86BBC9),
     viewingCardOrdinal = Color(0xFF6B6B6B),
+    dataSynchronizationLabelBackground = Color(0xFF1F1F1F),
 )

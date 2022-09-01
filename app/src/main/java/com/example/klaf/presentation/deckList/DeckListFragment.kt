@@ -33,7 +33,8 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
                         viewModel = viewModel,
                         onItemClick = ::navigateToRepeatFragment,
                         onLongItemClick = ::navigateToDeckNavigationDialog,
-                        onMainButtonClick = ::navigateToDeckCreationDialog
+                        onMainButtonClick = ::navigateToDeckCreationDialog,
+                        onSwipeRefresh = ::navigateToDataSynchronizationDialog
                     )
                 }
             }
@@ -56,5 +57,9 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
             deckId = deck.id,
             deckName = deck.name
         ).also { navController.navigate(directions = it) }
+    }
+
+    private fun navigateToDataSynchronizationDialog() {
+        navController.navigate(R.id.action_deckListFragment_to_dataSynchronizationDialogFragment)
     }
 }

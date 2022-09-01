@@ -76,4 +76,5 @@
     <string name="hard">hard</string>
     <string name="good">good</string>
     <string name="easy">easy</string>
+    <string name="data_synchronization_dialog_title">Would you like to synchronize the data with the remote storage?</string>
 </resources>
