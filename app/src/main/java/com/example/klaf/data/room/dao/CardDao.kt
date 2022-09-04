@@ -5,8 +5,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.klaf.data.room.entities.CARD_TABLE_NAME
 import com.example.klaf.data.room.entities.RoomCard
+import com.example.klaf.data.room.entities.RoomCard.Companion.CARD_TABLE_NAME
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -18,6 +18,9 @@ interface CardDao {
     @Query("SELECT * FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
     fun getCardsByDeckId(deckId: Int): List<RoomCard>
 
+    @Query("SELECT * FROM $CARD_TABLE_NAME")
+    fun getAllCards(): List<RoomCard>
+
     @Query("SELECT * FROM $CARD_TABLE_NAME WHERE id = :cardId")
     fun getObservableCardById(cardId: Int): Flow<RoomCard?>
 
@@ -25,7 +28,7 @@ interface CardDao {
     fun insetCard(card: RoomCard)
 
     @Query("SELECT COUNT(*) FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
-    fun getCardQuantityByDeckId(deckId: Int): LiveData<Int>
+    fun getObservableCardQuantityByDeckId(deckId: Int): LiveData<Int>
 
     @Query("SELECT COUNT(*) FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
     fun getCardQuantityInDeckAsInt(deckId: Int): Int

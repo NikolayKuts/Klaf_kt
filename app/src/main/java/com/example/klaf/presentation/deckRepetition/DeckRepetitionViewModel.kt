@@ -352,8 +352,6 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     private fun getUpdatedDesk(deckForUpdating: Deck): Deck {
 
         return if (deckForUpdating.repetitionQuantity.isEven()) {
-            log(timer.savedTotalTime, "even first duration")
-
             deckForUpdating.copy(
                 repetitionQuantity = deckForUpdating.repetitionQuantity + 1,
                 lastFirstRepetitionDuration = timer.savedTotalTime,
@@ -365,13 +363,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
             val updatedLastSecondRepetitionDuration = timer.savedTotalTime
 
-            log(deckForUpdating.lastFirstRepetitionDuration, "odd first duration")
-            log(updatedLastSecondRepetitionDuration, "second duration")
-
             val updatedLastRepetitionIterationDuration =
                 deckForUpdating.lastFirstRepetitionDuration + updatedLastSecondRepetitionDuration
-
-            log(updatedLastRepetitionIterationDuration, "even iteration duration")
 
             val updatedScheduledDate =
                 deckForUpdating.scheduledIterationDates.addIntoNewInstance(

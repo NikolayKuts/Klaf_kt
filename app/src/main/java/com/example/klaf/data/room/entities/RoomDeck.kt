@@ -2,12 +2,8 @@ package com.example.klaf.data.room.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverter
 import com.example.klaf.data.room.entities.RoomDeck.Companion.DECK_TABLE_NAME
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 @Serializable
 @Entity(tableName = DECK_TABLE_NAME)

@@ -75,3 +75,5 @@ fun <T> T.isNotNull(): Boolean = this != null
 inline fun <T> T.ifNull(block: () -> Unit) {
     if (this == null) block()
 }
+
+fun Int.toFloatPercents(): Float = this / 100.0F

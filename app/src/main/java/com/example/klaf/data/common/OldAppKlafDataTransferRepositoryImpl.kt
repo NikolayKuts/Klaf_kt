@@ -2,7 +2,7 @@ package com.example.klaf.data.common
 
 import android.content.Context
 import android.net.Uri
-import com.example.klaf.data.room.entities.CARD_TABLE_NAME
+import com.example.klaf.data.room.entities.RoomCard.Companion.CARD_TABLE_NAME
 import com.example.klaf.data.room.entities.RoomDeck.Companion.DECK_TABLE_NAME
 import com.example.klaf.di.CardRepositoryRoomImp
 import com.example.klaf.di.DeckRepositoryRoomImp

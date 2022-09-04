@@ -1,6 +1,7 @@
 package com.example.klaf.data.firestore.repositoryImplementations
 
 import androidx.lifecycle.LiveData
+import com.example.klaf.data.firestore.MAIN_COLLECTION_NAME
 import com.example.klaf.data.firestore.mapToFirestoreEntity
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.repositories.CardRepository
@@ -10,12 +11,11 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class CardRepositoryFirestoreImp @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
 ) : CardRepository {
 
     companion object {
 
-        private const val MAIN_COLLECTION_NAME = "klaf_collection"
         private const val CARD_DOCUMENT_NAME = "cards"
         private const val CARD_SUB_COLLECTION_NAME = "card_collection"
     }
@@ -25,6 +25,10 @@ class CardRepositoryFirestoreImp @Inject constructor(
     }
 
     override suspend fun fetchCardQuantityByDeckId(deckId: Int): Int {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun fetchAllCards(): List<Card> {
         TODO("Not yet implemented")
     }
 

@@ -2,12 +2,15 @@ package com.example.klaf.data.common
 
 import android.content.Context
 import androidx.work.*
-import com.example.klaf.presentation.common.Notifier
+import com.example.klaf.presentation.deckRepetition.DeckRepetitionNotifier
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
 
-class DeckRepetitionReminder(
-    private val appContext: Context,
-    private val parameters: WorkerParameters,
+class DeckRepetitionReminder @AssistedInject constructor(
+    @Assisted private val appContext: Context,
+    @Assisted private val parameters: WorkerParameters,
+    private val deckRepetitionNotifier: DeckRepetitionNotifier
 ) : CoroutineWorker(
     appContext = appContext,
     params = parameters
@@ -51,7 +54,7 @@ class DeckRepetitionReminder(
     }
 
     override suspend fun doWork(): Result {
-        Notifier(context = appContext).showNotification(
+        deckRepetitionNotifier.showNotification(
             deckName = parameters.inputData.getString(DECK_NAME) ?: "",
             deckId = parameters.inputData.getInt(DECK_ID, -1)
         )

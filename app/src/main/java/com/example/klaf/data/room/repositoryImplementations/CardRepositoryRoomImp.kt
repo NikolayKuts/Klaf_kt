@@ -28,6 +28,12 @@ class CardRepositoryRoomImp @Inject constructor(
         roomDatabase.cardDao().getCardQuantityInDeckAsInt(deckId = deckId)
     }
 
+    override suspend fun fetchAllCards(): List<Card> {
+        return roomDatabase.cardDao()
+            .getAllCards()
+            .map { roomCard -> roomCard.mapToDomainEntity() }
+    }
+
     override suspend fun insertCard(card: Card) {
         withContext(Dispatchers.IO) {
             roomDatabase.cardDao().insetCard(card = card.mapToRoomEntity())

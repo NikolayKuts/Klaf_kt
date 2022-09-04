@@ -1,17 +1,19 @@
 package com.example.klaf.presentation.deckList.common
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.work.WorkManager
 import com.example.klaf.R
+import com.example.klaf.data.common.DataSynchronizationState
 import com.example.klaf.domain.common.getCurrentDateAsLong
 import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.Notifier
+import com.example.klaf.presentation.deckRepetition.DeckRepetitionNotifier
 import com.example.klaf.presentation.common.tryEmit
-import com.example.klaf.presentation.deckList.dataSynchronization.SynchronizationWorker.Companion.performSynchronization
+import com.example.klaf.data.common.DataSynchronizationWorker.Companion.getDataSynchronizationProgressState
+import com.example.klaf.data.common.DataSynchronizationWorker.Companion.performDataSynchronization
+import com.example.klaf.presentation.deckList.dataSynchronization.DataSynchronizationNotifier
 import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
 import dagger.assisted.AssistedInject
@@ -25,7 +27,8 @@ class DeckListViewModel @AssistedInject constructor(
     private val removeDeck: RemoveDeckUseCase,
     private val deleteAllCardsOfDeck: DeleteAllCardsOfDeck,
     createInterimDeck: CreateInterimDeckUseCase,
-    notifier: Notifier,
+    deckRepetitionNotifier: DeckRepetitionNotifier,
+    dataSynchronizationNotifier: DataSynchronizationNotifier,
     private val workManager: WorkManager,
 ) : ViewModel() {
 
@@ -44,9 +47,20 @@ class DeckListViewModel @AssistedInject constructor(
     private val _deckCreationState = MutableStateFlow(value = DeckCreationState.NOT_CREATED)
     val deckCreationState = _deckCreationState.asStateFlow()
 
+    private val _dataSynchronizationState =
+        MutableStateFlow<DataSynchronizationState>(DataSynchronizationState.InitialState)
+
+    val dataSynchronizationState = _dataSynchronizationState.asStateFlow()
+
+    fun resetSynchronizationState() {
+        _dataSynchronizationState.value = DataSynchronizationState.InitialState
+    }
+
     init {
-        notifier.createDeckRepetitionNotificationChannel()
+        deckRepetitionNotifier.createDeckRepetitionNotificationChannel()
+        dataSynchronizationNotifier.createSynchronizationNotificationChannel()
         viewModelScope.launch { createInterimDeck() }
+        observeDataSynchronizationStateWorker()
     }
 
     fun createNewDeck(deckName: String) {
@@ -132,6 +146,14 @@ class DeckListViewModel @AssistedInject constructor(
     }
 
     fun synchronizeData() {
-        workManager.performSynchronization()
+        workManager.performDataSynchronization()
+    }
+
+    private fun observeDataSynchronizationStateWorker() {
+        workManager.getDataSynchronizationProgressState()
+            .catch {  }
+            .filter { it !is DataSynchronizationState.UncertainState }
+            .onEach { _dataSynchronizationState.value = it }
+            .launchIn(scope = viewModelScope)
     }
 }

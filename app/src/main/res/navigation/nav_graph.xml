@@ -56,9 +56,6 @@
             android:name="deckName"
             android:defaultValue="empty"
             app:argType="string" />
-        <action
-            android:id="@+id/action_cardViewerFragment_to_deckListFragment"
-            app:destination="@id/deckListFragment" />
     </fragment>
     <dialog
         android:id="@+id/deckCreationDialogFragment"
