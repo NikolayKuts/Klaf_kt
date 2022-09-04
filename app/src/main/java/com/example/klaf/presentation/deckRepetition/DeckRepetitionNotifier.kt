@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.common
+package com.example.klaf.presentation.deckRepetition
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -12,11 +12,13 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavDeepLinkBuilder
 import com.example.klaf.R
 import com.example.klaf.domain.common.DECK_ID_KEY
+import com.example.klaf.presentation.common.MainActivity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-class Notifier @Inject constructor(
+class DeckRepetitionNotifier @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val notificationManager: NotificationManager
 ) {
 
     companion object {
@@ -26,9 +28,6 @@ class Notifier @Inject constructor(
         private const val SUMMERY_NOTIFICATION_ID = 435243543
         private const val MIN_NOTIFICATION_FOR_GROUP = 4
     }
-
-    private val notificationManager =
-        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     fun createDeckRepetitionNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -10,6 +10,8 @@ interface CardRepository {
 
     suspend fun fetchCardQuantityByDeckId(deckId: Int): Int
 
+    suspend fun fetchAllCards(): List<Card>
+
     suspend fun insertCard(card: Card)
 
     fun fetchObservableCardById(cardId: Int): Flow<Card?>
