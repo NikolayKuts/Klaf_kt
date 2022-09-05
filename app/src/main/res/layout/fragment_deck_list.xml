@@ -4,6 +4,6 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/compose_view_deck_list"
-    tools:context=".presentation.deckList.DeckListFragment">
+    tools:context=".presentation.deckList.common.DeckListFragment">
 
 </androidx.compose.ui.platform.ComposeView>

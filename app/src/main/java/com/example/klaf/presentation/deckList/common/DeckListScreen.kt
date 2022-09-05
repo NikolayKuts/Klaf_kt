@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.deckList
+package com.example.klaf.presentation.deckList.common
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -27,6 +27,8 @@ import com.example.klaf.domain.common.isEven
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.theme.MainTheme
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @Composable
 fun DeckListScreen(
@@ -34,32 +36,40 @@ fun DeckListScreen(
     onItemClick: (deck: Deck) -> Unit,
     onLongItemClick: (deck: Deck) -> Unit,
     onMainButtonClick: () -> Unit,
+    onSwipeRefresh: () -> Unit,
 ) {
     val decks by viewModel.deckSource.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 124.dp)
+    SwipeRefresh(
+        modifier = Modifier.fillMaxSize(),
+        state = rememberSwipeRefreshState(isRefreshing = false),
+        onRefresh = onSwipeRefresh
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 124.dp)
 
-        ) {
-            itemsIndexed(decks) { index, deck ->
-                DeckItemView(
-                    deck = deck,
-                    position = index,
-                    onItemClick = onItemClick,
-                    onLongItemClick = onLongItemClick
-                )
+            ) {
+                itemsIndexed(decks) { index, deck ->
+                    DeckItemView(
+                        deck = deck,
+                        position = index,
+                        onItemClick = onItemClick,
+                        onLongItemClick = onLongItemClick
+                    )
+                }
             }
+            RoundButton(
+                background = MainTheme.colors.materialColors.primary,
+                iconId = R.drawable.ic_add_24,
+                onClick = onMainButtonClick,
+                modifier = Modifier
+                    .align(alignment = Alignment.BottomEnd)
+                    .padding(bottom = 48.dp, end = 48.dp),
+                elevation = 4.dp
+            )
         }
-        RoundButton(
-            background = MainTheme.colors.materialColors.primary,
-            iconId = R.drawable.ic_add_24,
-            onClick = onMainButtonClick,
-            modifier = Modifier
-                .align(alignment = Alignment.BottomEnd)
-                .padding(bottom = 48.dp, end = 48.dp)
-        )
     }
 }
 

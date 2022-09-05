@@ -11,7 +11,7 @@ import com.example.klaf.R
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.presentation.common.TransparentDialogFragment
 import com.example.klaf.presentation.common.collectWhenStarted
-import com.example.klaf.presentation.deckList.DeckListViewModel
+import com.example.klaf.presentation.deckList.common.DeckListViewModel
 import com.example.klaf.presentation.theme.MainTheme
 
 class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_deck_renaming) {

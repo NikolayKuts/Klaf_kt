@@ -43,6 +43,12 @@ data class MainColors(
     val deckRepetitionDeleteButton: Color,
     val deckRepetitionEditButton: Color,
     val deckRepetitionAddButton: Color,
+    val viewingCardForeignWord: Color,
+    val viewingCardIpa: Color,
+    val viewingCardOrdinal: Color,
+    val dataSynchronizationLabelBackground: Color,
+    val dataSynchronizationLabelBackgroundSecond: Color,
+    val dataSynchronizationProgressIndicator: Color
 )
 
 val LightMainPalettes = MainColors(
@@ -84,6 +90,12 @@ val LightMainPalettes = MainColors(
     deckRepetitionDeleteButton = Color(0xFFEECBCB),
     deckRepetitionEditButton = Color(0xFFEEE7AA),
     deckRepetitionAddButton = Color(0xFFCCEDF1),
+    viewingCardForeignWord = Color(0xFFA078AA),
+    viewingCardIpa = Color(0xFF5E949C),
+    viewingCardOrdinal = Color(0xFFBEBEBE),
+    dataSynchronizationLabelBackground = Color(0xFFFFFFFF),
+    dataSynchronizationLabelBackgroundSecond = Color(0xFFE2F7D7),
+    dataSynchronizationProgressIndicator = Color(0xFF92CFC3),
 )
 
 val DarkMainPalettes = MainColors(
@@ -104,7 +116,7 @@ val DarkMainPalettes = MainColors(
     positiveDialogButton = Color(0xFF96B671),
     negativeDialogButton = Color(0xFFD17670),
     neutralDialogButton = DarkPrimaryColor,
-    deckNavigationDialogSeparator = Color(0xFF686868),
+    deckNavigationDialogSeparator = Color(0xFF4D4D4D),
     checkedLetterCell = Color(0xFF94B172),
     uncheckedLetterCell = Color(0xFF63665F),
     cardTextFieldBackground = Color(0x000000),
@@ -124,4 +136,10 @@ val DarkMainPalettes = MainColors(
     deckRepetitionDeleteButton = Color(0xFFC97474),
     deckRepetitionEditButton = Color(0xFFC29F63),
     deckRepetitionAddButton = Color(0xFF88A568),
+    viewingCardForeignWord = Color(0xFFA5CA79),
+    viewingCardIpa = Color(0xFF86BBC9),
+    viewingCardOrdinal = Color(0xFF6B6B6B),
+    dataSynchronizationLabelBackground = Color(0xFF1F1F1F),
+    dataSynchronizationLabelBackgroundSecond = Color(0xFF576F58),
+    dataSynchronizationProgressIndicator = Color(0xF0AC6761),
 )

@@ -12,6 +12,6 @@ class FetchCardsUseCase @Inject constructor(
 ) {
 
     operator fun invoke(deckId: Int): Flow<List<Card>> {
-        return cardRepository.getCardsByDeckId(deckId = deckId)
+        return cardRepository.fetchObservableCardsByDeckId(deckId = deckId)
     }
 }

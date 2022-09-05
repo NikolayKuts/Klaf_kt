@@ -23,6 +23,11 @@ data class MainTopographies(
     val frontSideCardWordTextStyle: TextStyle,
     val backSideCardWordTextStyle: TextStyle,
     val cardIpaPromptsTextStyle: TextStyle,
+    val viewingCardDeckName: TextStyle,
+    val viewingCardNativeWord: TextStyle,
+    val viewingCardForeignWord: TextStyle,
+    val viewingCardIpa: TextStyle,
+    val viewingCardOrdinal: TextStyle,
 )
 
 val Typography = Typography(
@@ -51,6 +56,11 @@ val LightMainTypographies = MainTopographies(
     frontSideCardWordTextStyle = LightFrontSideCardWordTextStyle,
     backSideCardWordTextStyle = LightBackSideCardWordTextStyle,
     cardIpaPromptsTextStyle = IpaPromptsTextStyle,
+    viewingCardDeckName = LightViewingCardDeckNameTextStyle,
+    viewingCardNativeWord = LightViewingCardNativeWord,
+    viewingCardForeignWord = LightViewingCardForeignWord,
+    viewingCardIpa = LightViewingCardIpa,
+    viewingCardOrdinal = LightViewingCardOrdinal,
 )
 
 val DarkMainTypographies = MainTopographies(
@@ -72,4 +82,9 @@ val DarkMainTypographies = MainTopographies(
     frontSideCardWordTextStyle = DarkFrontSideCardWordTextStyle,
     backSideCardWordTextStyle = DarkBackSideCardWordTextStyle,
     cardIpaPromptsTextStyle = IpaPromptsTextStyle,
+    viewingCardDeckName = DarkViewingCardDeckNameTextStyle,
+    viewingCardNativeWord = DarkViewingCardNativeWord,
+    viewingCardForeignWord = DarkViewingCardForeignWord,
+    viewingCardIpa = DarkViewingCardIpa,
+    viewingCardOrdinal = DarkViewingCardOrdinal,
 )
