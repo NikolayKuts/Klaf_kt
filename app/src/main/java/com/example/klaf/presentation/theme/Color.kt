@@ -47,6 +47,8 @@ data class MainColors(
     val viewingCardIpa: Color,
     val viewingCardOrdinal: Color,
     val dataSynchronizationLabelBackground: Color,
+    val dataSynchronizationLabelBackgroundSecond: Color,
+    val dataSynchronizationProgressIndicator: Color
 )
 
 val LightMainPalettes = MainColors(
@@ -92,6 +94,8 @@ val LightMainPalettes = MainColors(
     viewingCardIpa = Color(0xFFCCEDF1),
     viewingCardOrdinal = Color(0xFFCCEDF1),
     dataSynchronizationLabelBackground = Color(0xFFFFFFFF),
+    dataSynchronizationLabelBackgroundSecond = Color(0xFFE2F7D7),
+    dataSynchronizationProgressIndicator = Color(0xFF92CFC3),
 )
 
 val DarkMainPalettes = MainColors(
@@ -136,4 +140,6 @@ val DarkMainPalettes = MainColors(
     viewingCardIpa = Color(0xFF86BBC9),
     viewingCardOrdinal = Color(0xFF6B6B6B),
     dataSynchronizationLabelBackground = Color(0xFF1F1F1F),
+    dataSynchronizationLabelBackgroundSecond = Color(0xFF576F58),
+    dataSynchronizationProgressIndicator = Color(0xF0AC6761),
 )

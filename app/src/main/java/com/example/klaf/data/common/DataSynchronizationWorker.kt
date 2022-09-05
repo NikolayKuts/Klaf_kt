@@ -28,7 +28,7 @@ class DataSynchronizationWorker @AssistedInject constructor(
         private const val WORK_REQUEST_TAG = "request_tag"
         private const val PROGRESS_STATE_KEY = "sync_progress_key"
 
-        private const val PERCENTAGE_LIMIT = 100
+        private const val PERCENTAGE_LIMIT = 97
         private const val NOTIFICATION_ID = 43523
         private const val UNDEFINED_VALUE = -1
 
@@ -91,6 +91,4 @@ class DataSynchronizationWorker @AssistedInject constructor(
         NOTIFICATION_ID,
         dataSynchronizationNotifier.createNotification(progress = UNDEFINED_VALUE)
     )
-
-
 }

@@ -497,7 +497,8 @@ private fun DeleteButton(enabled: Boolean, onClick: () -> Unit) {
             .rotate(degrees = degrees),
         background = MainTheme.colors.deckRepetitionDeleteButton,
         iconId = R.drawable.ic_delete_24,
-        onClick = onClick
+        onClick = onClick,
+        elevation = 4.dp
     )
 }
 
@@ -537,7 +538,8 @@ private fun AddButton(enabled: Boolean, onClick: () -> Unit) {
             .rotate(degrees = degrees),
         background = MainTheme.colors.deckRepetitionAddButton,
         iconId = R.drawable.ic_add_24,
-        onClick = onClick
+        onClick = onClick,
+        elevation = 4.dp
     )
 }
 
@@ -587,7 +589,8 @@ private fun EditButton(enabled: Boolean, onClick: () -> Unit) {
             .rotate(degrees = degrees),
         background = MainTheme.colors.deckRepetitionEditButton,
         iconId = R.drawable.ic_edit_24,
-        onClick = { onClick() }
+        onClick = { onClick() },
+        elevation = 4.dp
     )
 }
 
@@ -619,7 +622,8 @@ private fun MainButton(animationStateState: MutableState<Boolean>, onClick: () -
         onClick = {
             animationStateState.value = !animationStateState.value
             onClick()
-        }
+        },
+        elevation = 4.dp
     )
 }
 

@@ -66,7 +66,8 @@ fun DeckListScreen(
                 onClick = onMainButtonClick,
                 modifier = Modifier
                     .align(alignment = Alignment.BottomEnd)
-                    .padding(bottom = 48.dp, end = 48.dp)
+                    .padding(bottom = 48.dp, end = 48.dp),
+                elevation = 4.dp
             )
         }
     }
