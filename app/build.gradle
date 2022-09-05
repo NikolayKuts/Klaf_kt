@@ -86,6 +86,8 @@ dependencies {
     /** hilt **/
     implementation "com.google.dagger:hilt-android:2.42"
     kapt "com.google.dagger:hilt-compiler:2.42"
+    kapt 'androidx.hilt:hilt-compiler:1.0.0'
+    implementation 'androidx.hilt:hilt-work:1.0.0'
 
     /** firebase **/
     implementation platform('com.google.firebase:firebase-bom:30.2.0')
@@ -104,6 +106,7 @@ dependencies {
     implementation "androidx.compose.compiler:compiler:1.2.0"
     implementation "com.google.android.material:compose-theme-adapter:1.1.14"
     implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
+    implementation "com.google.accompanist:accompanist-swiperefresh:0.19.0"
 
     /** work manager **/
     implementation "androidx.work:work-runtime-ktx:2.7.1"

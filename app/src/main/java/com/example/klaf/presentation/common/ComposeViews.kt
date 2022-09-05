@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.example.klaf.R
 import com.example.klaf.domain.common.generateLetterInfos
 import com.example.klaf.domain.ipa.LetterInfo
-import com.example.klaf.domain.ipa.convertUncompletedIpa
+import com.example.klaf.domain.ipa.convertToUncompletedIpa
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -59,7 +59,7 @@ fun ColumnScope.ForeignWordLazyRow(
                         }
 
                     ipaTemplateState.value =
-                        letterInfosState.value.convertUncompletedIpa()
+                        letterInfosState.value.convertToUncompletedIpa()
                 }
             )
         }
@@ -156,7 +156,7 @@ fun BoxScope.CardFields(
             onValueChange = {
                 foreignWordState.value = it
                 letterInfosState.value = foreignWordState.value.generateLetterInfos()
-                ipaTemplate.value = letterInfosState.value.convertUncompletedIpa()
+                ipaTemplate.value = letterInfosState.value.convertToUncompletedIpa()
             },
         )
         WordTextField(

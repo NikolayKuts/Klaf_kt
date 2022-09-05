@@ -6,7 +6,7 @@
     app:startDestination="@id/deckListFragment">
     <fragment
         android:id="@+id/deckListFragment"
-        android:name="com.example.klaf.presentation.deckList.DeckListFragment"
+        android:name="com.example.klaf.presentation.deckList.common.DeckListFragment"
         android:label="fragment_deck_list"
         tools:layout="@layout/fragment_deck_list">
         <action
@@ -18,6 +18,9 @@
         <action
             android:id="@+id/action_deckListFragment_to_deckRepetitionFragment"
             app:destination="@id/deckRepetitionFragment" />
+        <action
+            android:id="@+id/action_deckListFragment_to_dataSynchronizationDialogFragment"
+            app:destination="@id/dataSynchronizationDialogFragment" />
     </fragment>
     <fragment
         android:id="@+id/cardEditingFragment"
@@ -53,9 +56,6 @@
             android:name="deckName"
             android:defaultValue="empty"
             app:argType="string" />
-        <action
-            android:id="@+id/action_cardViewerFragment_to_deckListFragment"
-            app:destination="@id/deckListFragment" />
     </fragment>
     <dialog
         android:id="@+id/deckCreationDialogFragment"
@@ -194,5 +194,10 @@
             android:name="deckId"
             app:argType="integer" />
     </fragment>
+    <dialog
+        android:id="@+id/dataSynchronizationDialogFragment"
+        android:name="com.example.klaf.presentation.deckList.dataSynchronization.DataSynchronizationDialogFragment"
+        android:label="dialog_data_synchronization"
+        tools:layout="@layout/dialog_data_synchronization" />
 
 </navigation>

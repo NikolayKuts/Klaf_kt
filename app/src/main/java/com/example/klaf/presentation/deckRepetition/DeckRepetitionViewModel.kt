@@ -19,10 +19,7 @@ import com.example.klaf.domain.useCases.DeleteCardFromDeckUseCase
 import com.example.klaf.domain.useCases.FetchCardsUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.domain.useCases.UpdateDeckUseCase
-import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.RepetitionTimer
-import com.example.klaf.presentation.common.timeAsString
-import com.example.klaf.presentation.common.tryEmit
+import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.deckRepetition.RepetitionScreenState.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -317,11 +314,11 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         val repeatedDeck = deck.replayCache.firstOrNull()
             ?: throw Exception("The deck for updating is null")
 
-        val updatedDeck = getUpdatedDesk(deckForUpdating = repeatedDeck)
-
         isWaitingForFinish = false
         clearRepetitionProgress()
         timer.stopCounting()
+
+        val updatedDeck = getUpdatedDesk(deckForUpdating = repeatedDeck)
 
         viewModelScope.launchWithExceptionHandler(
             onException = { _, _ ->
@@ -360,7 +357,6 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 lastFirstRepetitionDuration = timer.savedTotalTime,
                 lastSecondRepetitionDuration = 0,
             )
-
         } else {
             val updatedIterationDates = deckForUpdating.repetitionIterationDates
                 .addIntoNewInstance(newElement = getCurrentDateAsLong())

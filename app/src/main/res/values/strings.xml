@@ -76,4 +76,9 @@
     <string name="hard">hard</string>
     <string name="good">good</string>
     <string name="easy">easy</string>
+    <string name="data_synchronization_dialog_title">Would you like to synchronize the data with the remote storage?</string>
+    <string name="data_synchronization_channel_description">This channel is required for data synchronization notification and execution</string>
+    <string name="data_synchronization_notifier_content_text">Local and remote data synchronization</string>
+    <string name="data_synchronization_dialog_sync_state_text">Local and remote data synchronization</string>
+    <string name="data_synchronization_dialog_finish_state_text">The local and the remote data are synchronized</string>
 </resources>

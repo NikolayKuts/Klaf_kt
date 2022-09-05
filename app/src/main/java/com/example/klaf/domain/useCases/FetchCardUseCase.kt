@@ -12,6 +12,6 @@ class FetchCardUseCase @Inject constructor(
 ) {
 
     operator fun invoke(cardId: Int): Flow<Card?> {
-        return cardRepository.getObservableCardById(cardId = cardId)
+        return cardRepository.fetchObservableCardById(cardId = cardId)
     }
 }
