@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 const val DIALOG_BUTTON_SIZE = 50
@@ -23,12 +24,13 @@ fun RoundButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     contentDescription: String = "",
+    elevation: Dp = 0.dp,
 ) {
     Card(
         shape = RoundedCornerShape(DIALOG_BUTTON_SIZE.dp),
         modifier = modifier
             .size(DIALOG_BUTTON_SIZE.dp),
-        elevation = 4.dp,
+        elevation = elevation,
     ) {
         Icon(
             modifier = Modifier

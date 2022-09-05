@@ -1,5 +1,7 @@
 package com.example.klaf.presentation.deckList.dataSynchronization
 
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,6 +15,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -32,25 +36,36 @@ fun DataSynchronizationDialogView(
     val synchronizationState by viewModel.dataSynchronizationState.collectAsState()
 
     Box {
+        val cardModifier = Modifier
+            .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
+            .padding(
+                top = (DIALOG_BUTTON_SIZE / 2).dp,
+                bottom = (DIALOG_BUTTON_SIZE / 2).dp
+            )
+
         when (synchronizationState) {
             UncertainState -> {}
             InitialState -> {
-                InitialStateView(onClose = onClose, onConfirm = { viewModel.synchronizeData() })
+                InitialStateView(
+                    modifier = cardModifier,
+                    onClose = onClose,
+                    onConfirm = { viewModel.synchronizeData() }
+                )
             }
             is SynchronizingState -> {
                 SynchronizationStateView(
-                    progress = (synchronizationState as? SynchronizingState)?.progress
-                        ?.toFloatPercents()
-                        ?: 0.0F
+                    modifier = cardModifier,
+                    progress = (synchronizationState as? SynchronizingState)?.progress ?: 0
                 )
             }
             FinishedState -> {
-                FinishStateView(onClose = onClose)
+                FinishStateView(modifier = cardModifier, onClose = onClose)
             }
         }
     }
     DisposableEffect(
-        key1 = null, effect = {
+        key1 = null,
+        effect = {
             onDispose { viewModel.resetSynchronizationState() }
         }
     )
@@ -58,17 +73,11 @@ fun DataSynchronizationDialogView(
 
 @Composable
 private fun BoxScope.InitialStateView(
+    modifier: Modifier,
     onClose: () -> Unit,
     onConfirm: () -> Unit,
 ) {
-    Card(
-        modifier = Modifier
-            .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
-            .padding(
-                top = (DIALOG_BUTTON_SIZE / 2).dp,
-                bottom = (DIALOG_BUTTON_SIZE / 2).dp
-            )
-    ) {
+    Card(modifier = modifier) {
         Box(
             modifier = Modifier
                 .padding(MainTheme.dimensions.dialogContentPadding)
@@ -81,7 +90,9 @@ private fun BoxScope.InitialStateView(
             )
         }
     }
+
     SynchronizationLabel()
+
     Row(
         modifier = Modifier
             .fillMaxWidth(0.5F)
@@ -103,47 +114,51 @@ private fun BoxScope.InitialStateView(
 }
 
 @Composable
-private fun BoxScope.SynchronizationStateView(progress: Float) {
-    Card(
-        modifier = Modifier
-            .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
-            .padding(
-                top = (DIALOG_BUTTON_SIZE / 2).dp,
-                bottom = (DIALOG_BUTTON_SIZE / 2).dp
-            )
-    ) {
-        Box(
+private fun BoxScope.SynchronizationStateView(
+    modifier: Modifier,
+    progress: Int,
+) {
+    Card(modifier = modifier) {
+        Column(
             modifier = Modifier
                 .padding(MainTheme.dimensions.dialogContentPadding)
                 .padding(top = 8.dp)
-                .padding(bottom = 16.dp)
         ) {
+            Text(
+                style = MainTheme.typographies.dialogTextStyle,
+                text = stringResource(R.string.data_synchronization_dialog_sync_state_text)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             LinearProgressIndicator(
-                modifier = Modifier.fillMaxWidth(),
-                progress = progress
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(shape = RoundedCornerShape(size = 4.dp)),
+                progress = progress.toFloatPercents(),
+                color = MainTheme.colors.dataSynchronizationProgressIndicator
             )
         }
     }
-    SynchronizationLabel()
+
+    AnimatedSynchronizationLabel()
 }
 
 @Composable
-private fun BoxScope.FinishStateView(onClose: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
-            .padding(
-                top = (DIALOG_BUTTON_SIZE / 2).dp,
-                bottom = (DIALOG_BUTTON_SIZE / 2).dp
-            )
-    ) {
+private fun BoxScope.FinishStateView(
+    modifier: Modifier,
+    onClose: () -> Unit,
+) {
+    Card(modifier = modifier) {
         Box(
             modifier = Modifier
                 .padding(MainTheme.dimensions.dialogContentPadding)
                 .padding(top = 8.dp)
                 .padding(bottom = 16.dp)
         ) {
-            Text(text = "finish")
+            Text(
+                style = MainTheme.typographies.dialogTextStyle,
+                text = stringResource(R.string.data_synchronization_dialog_finish_state_text)
+            )
         }
     }
     SynchronizationLabel()
@@ -157,7 +172,51 @@ private fun BoxScope.FinishStateView(onClose: () -> Unit) {
 }
 
 @Composable
-private fun BoxScope.SynchronizationLabel() {
+private fun BoxScope.SynchronizationLabel(iconModifier: Modifier = Modifier) {
+    Card(
+        modifier = Modifier
+            .size(DIALOG_BUTTON_SIZE.dp)
+            .align(alignment = Alignment.TopCenter),
+        shape = RoundedCornerShape(DIALOG_BUTTON_SIZE.dp),
+        elevation = 0.dp,
+    ) {
+        Icon(
+            modifier = iconModifier
+                .size(20.dp)
+                .background(MainTheme.colors.dataSynchronizationLabelBackground)
+                .padding(8.dp),
+            painter = painterResource(id = R.drawable.ic_sync_24),
+            contentDescription = null,
+        )
+    }
+}
+
+@Composable
+private fun BoxScope.AnimatedSynchronizationLabel() {
+    val animationDuration = 1000
+    val infiniteTransition = rememberInfiniteTransition()
+    val rotation by infiniteTransition.animateFloat(initialValue = 0F,
+        targetValue = 360F,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = animationDuration,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+    val color by infiniteTransition.animateColor(
+        initialValue = MainTheme.colors.dataSynchronizationLabelBackground,
+        targetValue = MainTheme.colors.dataSynchronizationLabelBackgroundSecond,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = animationDuration,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
     Card(
         modifier = Modifier
             .size(DIALOG_BUTTON_SIZE.dp)
@@ -167,8 +226,9 @@ private fun BoxScope.SynchronizationLabel() {
     ) {
         Icon(
             modifier = Modifier
+                .rotate(degrees = rotation)
+                .background(color = color)
                 .size(20.dp)
-                .background(MainTheme.colors.dataSynchronizationLabelBackground)
                 .padding(8.dp),
             painter = painterResource(id = R.drawable.ic_sync_24),
             contentDescription = null,
