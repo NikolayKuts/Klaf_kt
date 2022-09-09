@@ -1,17 +1,25 @@
 package com.example.klaf.data.room.databases
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
+import androidx.room.*
 import com.example.klaf.data.room.converters.RoomDateConverter
 import com.example.klaf.data.room.dao.CardDao
 import com.example.klaf.data.room.dao.DeckDao
+import com.example.klaf.data.room.dao.StorageSaveVersionDao
 import com.example.klaf.data.room.entities.RoomCard
 import com.example.klaf.data.room.entities.RoomDeck
+import com.example.klaf.data.room.entities.StorageSaveVersion
 
-@Database(entities = [RoomDeck::class, RoomCard::class], version = 1, exportSchema = false)
+@Database(
+    entities = [
+        RoomDeck::class,
+        RoomCard::class,
+        StorageSaveVersion::class
+    ],
+    version = 2,
+    exportSchema = true,
+    autoMigrations = [AutoMigration(from = 1, to = 2)]
+)
 @TypeConverters(RoomDateConverter::class)
 abstract class KlafRoomDatabase : RoomDatabase() {
 
@@ -22,7 +30,6 @@ abstract class KlafRoomDatabase : RoomDatabase() {
 
         fun getInstance(context: Context): KlafRoomDatabase = synchronized(LOCK) {
             database ?: Room.databaseBuilder(context, KlafRoomDatabase::class.java, DB_NAME)
-                .fallbackToDestructiveMigration()
                 .build()
                 .also { database = it }
         }
@@ -30,4 +37,5 @@ abstract class KlafRoomDatabase : RoomDatabase() {
 
     abstract fun deckDao(): DeckDao
     abstract fun cardDao(): CardDao
+    abstract fun storageSaveVersionDao(): StorageSaveVersionDao
 }

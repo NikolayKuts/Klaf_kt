@@ -196,7 +196,7 @@ private fun BoxScope.AnimatedSynchronizationLabel() {
     val animationDuration = 1000
     val infiniteTransition = rememberInfiniteTransition()
     val rotation by infiniteTransition.animateFloat(initialValue = 0F,
-        targetValue = 360F,
+        targetValue = -360F,
         animationSpec = infiniteRepeatable(
             animation = tween(
                 durationMillis = animationDuration,
