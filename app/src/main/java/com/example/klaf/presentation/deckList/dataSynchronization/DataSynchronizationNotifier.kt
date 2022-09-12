@@ -12,13 +12,14 @@ import javax.inject.Inject
 
 class DataSynchronizationNotifier @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val notificationManager: NotificationManager
+    private val notificationManager: NotificationManager,
 ) {
 
     companion object {
 
         private const val CHANNEL_ID = "synchronization_channel_id"
         private const val CHANNEL_NAME = "synchronization_channel_name"
+        private const val MAX_PROGRESS_VALUE = 100
     }
 
     fun createSynchronizationNotificationChannel() {
@@ -34,13 +35,22 @@ class DataSynchronizationNotifier @Inject constructor(
         }
     }
 
-    fun createNotification(progress: Int): Notification {
+    fun createNotification(progress: Int? = null): Notification {
         return NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_sync_24)
             .setContentTitle(context.getString(R.string.app_name))
             .setContentText(context.getString(R.string.data_synchronization_notifier_content_text))
-            .setProgress(100, progress, false)
+            .ifNotNullSetProgress(progress = progress)
             .setOnlyAlertOnce(true)
             .build()
+    }
+
+    private fun NotificationCompat.Builder.ifNotNullSetProgress(
+        progress: Int?,
+    ): NotificationCompat.Builder {
+        progress?.let { notNullableProgress ->
+            setProgress(MAX_PROGRESS_VALUE, notNullableProgress, false)
+        }
+        return this
     }
 }

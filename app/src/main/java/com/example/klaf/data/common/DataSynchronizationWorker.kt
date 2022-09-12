@@ -28,28 +28,38 @@ class DataSynchronizationWorker @AssistedInject constructor(
         private const val WORK_REQUEST_TAG = "request_tag"
         private const val PROGRESS_STATE_KEY = "sync_progress_key"
 
-        private const val PERCENTAGE_LIMIT = 97
         private const val NOTIFICATION_ID = 43523
-        private const val UNDEFINED_VALUE = -1
 
         fun WorkManager.getDataSynchronizationProgressState(): Flow<DataSynchronizationState> {
             val progressState = getWorkInfosByTagLiveData(WORK_REQUEST_TAG)
                 .asFlow()
                 .distinctUntilChanged()
 
-            return progressState.map { workInfos ->
-                val retrievedProgress: WorkInfo?.() -> Int? = {
-                    this?.progress?.getInt(PROGRESS_STATE_KEY, UNDEFINED_VALUE)
-                }
+            var wasRunning = false
 
-                val progress = workInfos.firstOrNull { workInfo: WorkInfo? ->
-                    workInfo.retrievedProgress() != UNDEFINED_VALUE
-                }.retrievedProgress()
+            return progressState.map { workInfos ->
+                val workInfo = workInfos.firstOrNull()
+                val synchronizationData = workInfo?.progress?.getString(PROGRESS_STATE_KEY)
+                val isWorkFinished = workInfos.firstOrNull()?.state?.isFinished ?: false
+
+                (workInfo?.state == WorkInfo.State.RUNNING).ifTrue { wasRunning = true }
 
                 when {
-                    progress == null -> UncertainState
-                    progress < PERCENTAGE_LIMIT -> SynchronizingState(progress = progress)
-                    else -> FinishedState
+                    isWorkFinished && wasRunning -> {
+                        wasRunning = false
+                        FinishedState
+                    }
+                    synchronizationData != null -> {
+                        wasRunning = true
+                        SynchronizingState(synchronizationData = synchronizationData)
+                    }
+                    !isWorkFinished && wasRunning -> {
+                        SynchronizingState(synchronizationData = "")
+                    }
+                    else -> {
+                        wasRunning = false
+                        UncertainState
+                    }
                 }
             }
         }
@@ -71,17 +81,10 @@ class DataSynchronizationWorker @AssistedInject constructor(
     }
 
     override suspend fun doWork(): Result = try {
-        synchronizeLocalAndRemoteData().distinctUntilChanged()
+        synchronizeLocalAndRemoteData()
             .collect { progress ->
-                val info = ForegroundInfo(
-                    NOTIFICATION_ID,
-                    dataSynchronizationNotifier.createNotification(progress = progress)
-                )
-
-                (progress % 4 == 0).ifTrue { setForeground(info) }
                 setProgress(workDataOf(PROGRESS_STATE_KEY to progress))
             }
-
         Result.success()
     } catch (exception: Exception) {
         Result.failure()
@@ -89,6 +92,6 @@ class DataSynchronizationWorker @AssistedInject constructor(
 
     override suspend fun getForegroundInfo(): ForegroundInfo = ForegroundInfo(
         NOTIFICATION_ID,
-        dataSynchronizationNotifier.createNotification(progress = UNDEFINED_VALUE)
+        dataSynchronizationNotifier.createNotification()
     )
 }
