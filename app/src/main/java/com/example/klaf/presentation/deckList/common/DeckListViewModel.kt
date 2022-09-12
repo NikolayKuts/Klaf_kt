@@ -1,21 +1,23 @@
 package com.example.klaf.presentation.deckList.common
 
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.example.klaf.R
 import com.example.klaf.data.common.DataSynchronizationState
+import com.example.klaf.data.common.DataSynchronizationWorker.Companion.getDataSynchronizationProgressState
+import com.example.klaf.data.common.DataSynchronizationWorker.Companion.performDataSynchronization
 import com.example.klaf.domain.common.getCurrentDateAsLong
 import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.deckRepetition.DeckRepetitionNotifier
+import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.tryEmit
-import com.example.klaf.data.common.DataSynchronizationWorker.Companion.getDataSynchronizationProgressState
-import com.example.klaf.data.common.DataSynchronizationWorker.Companion.performDataSynchronization
 import com.example.klaf.presentation.deckList.dataSynchronization.DataSynchronizationNotifier
 import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
+import com.example.klaf.presentation.deckRepetition.DeckRepetitionNotifier
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -49,7 +51,6 @@ class DeckListViewModel @AssistedInject constructor(
 
     private val _dataSynchronizationState =
         MutableStateFlow<DataSynchronizationState>(DataSynchronizationState.InitialState)
-
     val dataSynchronizationState = _dataSynchronizationState.asStateFlow()
 
     fun resetSynchronizationState() {
@@ -146,12 +147,13 @@ class DeckListViewModel @AssistedInject constructor(
     }
 
     fun synchronizeData() {
+        log("view model")
         workManager.performDataSynchronization()
     }
 
     private fun observeDataSynchronizationStateWorker() {
         workManager.getDataSynchronizationProgressState()
-            .catch {  }
+            .catch { }
             .filter { it !is DataSynchronizationState.UncertainState }
             .onEach { _dataSynchronizationState.value = it }
             .launchIn(scope = viewModelScope)

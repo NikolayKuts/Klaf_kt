@@ -16,7 +16,7 @@ import com.example.klaf.data.room.entities.StorageSaveVersion
         RoomCard::class,
         StorageSaveVersion::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
     autoMigrations = [AutoMigration(from = 1, to = 2)]
 )

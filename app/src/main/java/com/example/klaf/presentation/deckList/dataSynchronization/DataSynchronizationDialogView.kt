@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
-import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -15,14 +14,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
 import com.example.klaf.data.common.DataSynchronizationState.*
-import com.example.klaf.domain.common.toFloatPercents
 import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
 import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.deckList.common.DeckListViewModel
@@ -34,7 +32,6 @@ fun DataSynchronizationDialogView(
     onClose: () -> Unit,
 ) {
     val synchronizationState by viewModel.dataSynchronizationState.collectAsState()
-
     Box {
         val cardModifier = Modifier
             .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
@@ -55,7 +52,8 @@ fun DataSynchronizationDialogView(
             is SynchronizingState -> {
                 SynchronizationStateView(
                     modifier = cardModifier,
-                    progress = (synchronizationState as? SynchronizingState)?.progress ?: 0
+                    synchronizationData = (synchronizationState as? SynchronizingState)
+                        ?.synchronizationData ?: ""
                 )
             }
             FinishedState -> {
@@ -116,7 +114,7 @@ private fun BoxScope.InitialStateView(
 @Composable
 private fun BoxScope.SynchronizationStateView(
     modifier: Modifier,
-    progress: Int,
+    synchronizationData: String,
 ) {
     Card(modifier = modifier) {
         Column(
@@ -129,13 +127,11 @@ private fun BoxScope.SynchronizationStateView(
                 text = stringResource(R.string.data_synchronization_dialog_sync_state_text)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            LinearProgressIndicator(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(shape = RoundedCornerShape(size = 4.dp)),
-                progress = progress.toFloatPercents(),
-                color = MainTheme.colors.dataSynchronizationProgressIndicator
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = synchronizationData,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
             )
         }
     }
