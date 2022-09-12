@@ -3,11 +3,14 @@ package com.example.klaf.di
 import com.example.klaf.data.common.OldAppKlafDataTransferRepositoryImpl
 import com.example.klaf.data.firestore.repositoryImplementations.DeckRepositoryFirestoreImp
 import com.example.klaf.data.firestore.repositoryImplementations.CardRepositoryFirestoreImp
+import com.example.klaf.data.firestore.repositoryImplementations.StorageSaveVersionRepositoryFirestoreImp
 import com.example.klaf.data.room.repositoryImplementations.CardRepositoryRoomImp
 import com.example.klaf.data.room.repositoryImplementations.DeckRepositoryRoomImp
+import com.example.klaf.data.room.repositoryImplementations.StorageSaveVersionRepositoryRoomImp
 import com.example.klaf.domain.repositories.CardRepository
 import com.example.klaf.domain.repositories.DeckRepository
 import com.example.klaf.domain.repositories.OldAppKlafDataTransferRepository
+import com.example.klaf.domain.repositories.StorageSaveVersionRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -25,6 +28,12 @@ annotation class CardRepositoryRoomImp
 
 @Qualifier
 annotation class CardRepositoryFirestoreImp
+
+@Qualifier
+annotation class StorageSaveVersionRepositoryRoomImp
+
+@Qualifier
+annotation class StorageSaveVersionRepositoryFirestoreImp
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -47,7 +56,19 @@ interface DomainModule {
     fun bindFirestoreCardRepository(repository: CardRepositoryFirestoreImp): CardRepository
 
     @Binds
+    @com.example.klaf.di.StorageSaveVersionRepositoryRoomImp
+    fun bindRoomStorageSaveVersionRepository(
+        repository: StorageSaveVersionRepositoryRoomImp
+    ): StorageSaveVersionRepository
+
+    @Binds
+    @com.example.klaf.di.StorageSaveVersionRepositoryFirestoreImp
+    fun bindFirestoreStorageSaveVersionRepository(
+        repository: StorageSaveVersionRepositoryFirestoreImp
+    ): StorageSaveVersionRepository
+
+    @Binds
     fun bindOldAppKlafTransferRepository(
-        repository: OldAppKlafDataTransferRepositoryImpl
-    ) : OldAppKlafDataTransferRepository
+        repository: OldAppKlafDataTransferRepositoryImpl,
+    ): OldAppKlafDataTransferRepository
 }

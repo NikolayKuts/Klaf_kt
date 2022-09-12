@@ -1,21 +1,21 @@
 package com.example.klaf.data.firestore.repositoryImplementations
 
-import android.util.Log
 import com.example.klaf.data.firestore.MAIN_COLLECTION_NAME
 import com.example.klaf.data.firestore.entities.FirestoreDeck
 import com.example.klaf.data.firestore.mapToDomainEntity
 import com.example.klaf.data.firestore.mapToFirestoreEntity
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.repositories.DeckRepository
-import com.example.klaf.presentation.common.log
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class DeckRepositoryFirestoreImp @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
 ) : DeckRepository {
 
     companion object {
@@ -29,14 +29,12 @@ class DeckRepositoryFirestoreImp @Inject constructor(
     }
 
     override suspend fun fetchAllDecks(): List<Deck> {
-        return firestore.collection(MAIN_COLLECTION_NAME)
-            .document(DECK_DOCUMENT_NAME)
-            .collection(DECK_SUB_COLLECTION_NAME)
+        return getDeckSubCollection()
             .get()
             .await()
             .documents
             .mapNotNull { documentSnapshot -> documentSnapshot.toObject<FirestoreDeck>() }
-            .map { it.mapToDomainEntity()  }
+            .map { firestoreDeck -> firestoreDeck.mapToDomainEntity() }
     }
 
     override fun fetchObservableDeckById(deckId: Int): Flow<Deck?> {
@@ -44,18 +42,16 @@ class DeckRepositoryFirestoreImp @Inject constructor(
     }
 
     override suspend fun insertDeck(deck: Deck) {
-        firestore.collection(MAIN_COLLECTION_NAME)
-            .document(DECK_DOCUMENT_NAME)
-            .collection(DECK_SUB_COLLECTION_NAME)
+//        delay((1000..3000).random().toLong())
+        getDeckSubCollection()
             .document(deck.id.toString())
             .set(deck.mapToFirestoreEntity())
             .await()
     }
 
     override suspend fun removeDeck(deckId: Int) {
-        firestore.collection(MAIN_COLLECTION_NAME)
-            .document(DECK_DOCUMENT_NAME)
-            .collection(DECK_SUB_COLLECTION_NAME)
+//        delay((1000..3000).random().toLong())
+        getDeckSubCollection()
             .document(deckId.toString())
             .delete()
             .await()
@@ -67,5 +63,11 @@ class DeckRepositoryFirestoreImp @Inject constructor(
 
     override suspend fun getCardQuantityInDeck(deckId: Int): Int {
         TODO("Not yet implemented")
+    }
+
+    private fun getDeckSubCollection(): CollectionReference {
+        return firestore.collection(MAIN_COLLECTION_NAME)
+            .document(DECK_DOCUMENT_NAME)
+            .collection(DECK_SUB_COLLECTION_NAME)
     }
 }
