@@ -33,6 +33,10 @@ From API level 21 to 32
 ### Old version
 https://github.com/NikolayKuts/Klaf
 
+## Animation samples
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_list_screen_animation.gif)
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_repetition_screen_animation.gif)
+
 ## Screen samples
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_list_screen_light_theme.png)
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_list_screen_dark_theme.png)
