@@ -10,7 +10,8 @@ The application allows you to create cards with the automatic creation of a tran
 ## Technology stack
 * The code is written with _**Kotlin**_
 *  _**MVVM**_ + _**Clean Architecture**_
-* Access to storage via _**Room database**_
+* Access to local storage via _**Room database**_
+* Access to remote storage via _**Firebase**_
 * For asynchronous operations used _**Coroutines**_ and _**Coroutine flows**_
 * For Ui navigation used _**Navigation component**_
 * For dependency injection used _**Hilt**_
@@ -23,6 +24,8 @@ The application allows you to create cards with the automatic creation of a tran
 * Navigation to the app from Smart Text Seletion Menu
 * Ability to listen to the pronunciation of English words
 * Deck repeat alert by notifications
+* Ability to save data on remote storage
+* Animated UI
 * Creation of transcriptions
 * Automatic creation of a transcription template
 * _**Theme**_: dark and light
