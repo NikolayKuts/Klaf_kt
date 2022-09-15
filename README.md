@@ -39,6 +39,7 @@ https://github.com/NikolayKuts/Klaf
 ## Animation samples
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_list_screen_animation.gif)
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_repetition_screen_animation.gif)
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_list_item_animation_dark_them.gif)
 
 ## Screen samples
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_list_screen_light_theme.png)
