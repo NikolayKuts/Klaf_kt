@@ -59,6 +59,7 @@ class DeckCreationDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
     }
 
     private fun closeDialog() {
+        viewModel.resetDeckCreationState()
         navController.popBackStack()
     }
 }
