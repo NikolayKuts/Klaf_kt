@@ -1,17 +1,20 @@
 package com.example.klaf.presentation.deckList.common
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Card
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -26,6 +29,7 @@ import com.example.klaf.domain.common.getScheduledDateStateByByCalculatedRange
 import com.example.klaf.domain.common.isEven
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.presentation.common.RoundButton
+import com.example.klaf.presentation.common.rememberAsMutableStateOf
 import com.example.klaf.presentation.theme.MainTheme
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -51,7 +55,10 @@ fun DeckListScreen(
                 contentPadding = PaddingValues(bottom = 124.dp)
 
             ) {
-                itemsIndexed(decks) { index, deck ->
+                itemsIndexed(
+                    items = decks,
+                    key = { _, deck -> deck.id }
+                ) { index, deck ->
                     DeckItemView(
                         deck = deck,
                         position = index,
@@ -76,16 +83,27 @@ fun DeckListScreen(
 @Suppress("OPT_IN_IS_NOT_ENABLED")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DeckItemView(
+private fun LazyItemScope.DeckItemView(
     deck: Deck,
     position: Int,
     onItemClick: (Deck) -> Unit,
     onLongItemClick: (Deck) -> Unit,
 ) {
+    var animationFloat by rememberAsMutableStateOf(value = 0F)
+    val animationFloatState by animateFloatAsState(
+        targetValue = animationFloat,
+        animationSpec = tween(durationMillis = 150 + position * 5)
+    )
+
+    LaunchedEffect(key1 = null) { animationFloat = 1F }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(2.dp)
+            .animateItemPlacement()
+            .scale(animationFloatState)
+            .alpha(animationFloatState)
             .combinedClickable(
                 onClick = { onItemClick(deck) },
                 onLongClick = { onLongItemClick(deck) }
