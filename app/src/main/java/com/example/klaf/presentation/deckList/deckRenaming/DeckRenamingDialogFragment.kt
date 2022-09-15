@@ -52,7 +52,7 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
             when (renamingState) {
                 DeckRenamingState.NOT_RENAMED -> {}
                 DeckRenamingState.RENAMED -> {
-                    viewModel.resetRenamingState()
+                    viewModel.resetDeckRenamingState()
                     navController.popBackStack()
                 }
             }

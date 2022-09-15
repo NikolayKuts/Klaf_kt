@@ -12,7 +12,6 @@ import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.deckList.dataSynchronization.DataSynchronizationNotifier
 import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
@@ -93,6 +92,10 @@ class DeckListViewModel @AssistedInject constructor(
         }
     }
 
+    fun resetDeckCreationState() {
+        _deckCreationState.value = DeckCreationState.NOT_CREATED
+    }
+
     fun renameDeck(deck: Deck?, newName: String) {
         val updatedName = newName.trim()
         deck?.let { notNullableDeck ->
@@ -120,7 +123,7 @@ class DeckListViewModel @AssistedInject constructor(
         }
     }
 
-    fun resetRenamingState() {
+    fun resetDeckRenamingState() {
         _renamingState.value = DeckRenamingState.NOT_RENAMED
     }
 
@@ -147,7 +150,6 @@ class DeckListViewModel @AssistedInject constructor(
     }
 
     fun synchronizeData() {
-        log("view model")
         workManager.performDataSynchronization()
     }
 

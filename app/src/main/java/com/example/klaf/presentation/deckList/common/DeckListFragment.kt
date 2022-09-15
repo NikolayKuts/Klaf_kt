@@ -30,7 +30,7 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-       setEvenMessageObserver(view = view)
+        setEvenMessageObserver(view = view)
 
         view.findViewById<ComposeView>(R.id.compose_view_deck_list).setContent {
             MainTheme {
@@ -56,8 +56,7 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
     }
 
     private fun navigateToDeckCreationDialog() {
-        DeckListFragmentDirections.actionDeckListFragmentToDeckCreationDialogFragment()
-            .also { navController.navigate(directions = it) }
+        navController.navigate(R.id.action_deckListFragment_to_deckCreationDialogFragment)
     }
 
     private fun navigateToRepeatFragment(deck: Deck) {

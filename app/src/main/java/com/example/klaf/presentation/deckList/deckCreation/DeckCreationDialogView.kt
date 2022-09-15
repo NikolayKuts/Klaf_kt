@@ -1,11 +1,14 @@
 package com.example.klaf.presentation.deckList.deckCreation
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -24,7 +27,16 @@ fun DeckCreationDialog(
 ) {
     val deckNameState = rememberAsMutableStateOf(value = "")
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {
+                onCloseDialogClick()
+            }
+    ) {
         Box(modifier = Modifier.align(Alignment.Center)) {
             Card(
                 modifier = Modifier
