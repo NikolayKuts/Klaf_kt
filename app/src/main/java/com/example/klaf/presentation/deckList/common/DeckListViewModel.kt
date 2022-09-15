@@ -70,7 +70,7 @@ class DeckListViewModel @AssistedInject constructor(
 
         when {
             deckNames.contains(deckName) -> {
-                _eventMessage.tryEmit(value = EventMessage(R.string.such_name_is_already_exist))
+                _eventMessage.tryEmit(value = EventMessage(R.string.such_deck_is_already_exist))
             }
             trimmedDeckName.isEmpty() -> {
                 _eventMessage.tryEmit(messageId = R.string.warning_deck_name_empty)
