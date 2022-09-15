@@ -5,10 +5,13 @@ import android.view.View
 import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.domain.entities.Deck
+import com.example.klaf.presentation.common.collectWhenStarted
+import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -26,6 +29,9 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+       setEvenMessageObserver(view = view)
+
         view.findViewById<ComposeView>(R.id.compose_view_deck_list).setContent {
             MainTheme {
                 Surface {
@@ -38,6 +44,14 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
                     )
                 }
             }
+        }
+    }
+
+    private fun setEvenMessageObserver(view: View) {
+        viewModel.eventMessage.collectWhenStarted(
+            lifecycleScope = viewLifecycleOwner.lifecycleScope
+        ) { eventMessage ->
+            view.showSnackBar(messageId = eventMessage.resId)
         }
     }
 

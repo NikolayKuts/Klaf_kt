@@ -24,30 +24,32 @@ fun DeckCreationDialog(
 ) {
     val deckNameState = rememberAsMutableStateOf(value = "")
 
-    Box() {
-        Card(
-            modifier = Modifier
-                .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
-                .padding(bottom = (DIALOG_BUTTON_SIZE / 2).dp)
-        ) {
-            Column(modifier = Modifier.padding(MainTheme.dimensions.dialogContentPadding)) {
-                DialogTitle()
-                Spacer(modifier = Modifier.height(16.dp))
-                DeckNameTextField(deckNameState = deckNameState)
-                Spacer(modifier = Modifier.height(16.dp))
+    Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.align(Alignment.Center)) {
+            Card(
+                modifier = Modifier
+                    .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
+                    .padding(bottom = (DIALOG_BUTTON_SIZE / 2).dp)
+            ) {
+                Column(modifier = Modifier.padding(MainTheme.dimensions.dialogContentPadding)) {
+                    DialogTitle()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    DeckNameTextField(deckNameState = deckNameState)
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
-        }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(0.5F)
-                .align(alignment = Alignment.BottomCenter),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            ConformationButton(
-                onClick = { onConfirmCreationClick(deckNameState.value) }
-            )
-            DialogClosingButton(onClick = onCloseDialogClick)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(0.5F)
+                    .align(alignment = Alignment.BottomCenter),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                ConformationButton(
+                    onClick = { onConfirmCreationClick(deckNameState.value) }
+                )
+                DialogClosingButton(onClick = onCloseDialogClick)
+            }
         }
     }
 }
