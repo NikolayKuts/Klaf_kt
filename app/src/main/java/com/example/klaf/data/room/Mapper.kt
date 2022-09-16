@@ -2,8 +2,10 @@ package com.example.klaf.data.room
 
 import com.example.klaf.data.room.entities.RoomCard
 import com.example.klaf.data.room.entities.RoomDeck
+import com.example.klaf.data.room.entities.RoomStorageSaveVersion
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
+import com.example.klaf.domain.entities.StorageSaveVersion
 
 fun RoomDeck.mapToDomainEntity(): Deck = Deck(
     name = name,
@@ -50,4 +52,12 @@ fun Card.mapToRoomEntity(): RoomCard = RoomCard(
     foreignWord = foreignWord,
     ipa = ipa,
     id = id
+)
+
+fun StorageSaveVersion.mapToRoomEntity(): RoomStorageSaveVersion = RoomStorageSaveVersion(
+    version = version
+)
+
+fun RoomStorageSaveVersion.mapToDomainEntity(): StorageSaveVersion = StorageSaveVersion(
+    version = version
 )

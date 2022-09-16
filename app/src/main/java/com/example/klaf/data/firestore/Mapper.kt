@@ -2,8 +2,10 @@ package com.example.klaf.data.firestore
 
 import com.example.klaf.data.firestore.entities.FirestoreCard
 import com.example.klaf.data.firestore.entities.FirestoreDeck
+import com.example.klaf.data.firestore.entities.FirestoreStorageSaveVersion
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
+import com.example.klaf.domain.entities.StorageSaveVersion
 
 fun FirestoreDeck.mapToDomainEntity(): Deck = Deck(
     name = name,
@@ -50,3 +52,13 @@ fun Card.mapToFirestoreEntity(): FirestoreCard = FirestoreCard(
     ipa = ipa,
     id = id
 )
+
+fun FirestoreStorageSaveVersion.mapToDomainEntity(): StorageSaveVersion = StorageSaveVersion(
+    version = version
+)
+
+fun StorageSaveVersion.mapToFirestoreEntity(): FirestoreStorageSaveVersion {
+    return FirestoreStorageSaveVersion(
+        version = version
+    )
+}
