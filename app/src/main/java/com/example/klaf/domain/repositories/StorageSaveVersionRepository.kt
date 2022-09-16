@@ -1,8 +1,12 @@
 package com.example.klaf.domain.repositories
 
+import com.example.klaf.domain.entities.StorageSaveVersion
+
 interface StorageSaveVersionRepository {
 
-    suspend fun fetchVersion(): Long?
+    suspend fun fetchVersion(): StorageSaveVersion?
 
-    suspend fun insertVersion(version: Long)
+    suspend fun insertVersion(version: StorageSaveVersion)
+
+    suspend fun increaseVersion()
 }

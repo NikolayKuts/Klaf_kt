@@ -42,7 +42,6 @@ class DeckRepositoryFirestoreImp @Inject constructor(
     }
 
     override suspend fun insertDeck(deck: Deck) {
-//        delay((1000..3000).random().toLong())
         getDeckSubCollection()
             .document(deck.id.toString())
             .set(deck.mapToFirestoreEntity())
@@ -50,7 +49,6 @@ class DeckRepositoryFirestoreImp @Inject constructor(
     }
 
     override suspend fun removeDeck(deckId: Int) {
-//        delay((1000..3000).random().toLong())
         getDeckSubCollection()
             .document(deckId.toString())
             .delete()

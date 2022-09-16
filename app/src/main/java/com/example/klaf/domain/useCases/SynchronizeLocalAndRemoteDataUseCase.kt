@@ -5,6 +5,8 @@ import com.example.klaf.data.common.StorageSaveVersionValidationData
 import com.example.klaf.di.*
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
+import com.example.klaf.domain.entities.StorageSaveVersion
+import com.example.klaf.domain.entities.StorageSaveVersion.Companion.INITIAL_SAVE_VERSION
 import com.example.klaf.domain.repositories.CardRepository
 import com.example.klaf.domain.repositories.DeckRepository
 import com.example.klaf.domain.repositories.StorageSaveVersionRepository
@@ -29,11 +31,6 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
     private val remoteStorageSaveVersionRepository: StorageSaveVersionRepository,
     private val dataSynchronizationValidator: DataSynchronizationValidator,
 ) {
-
-    companion object {
-
-        private const val INITIAL_STORAGE_SAVE_VERSION = 0L
-    }
 
     operator fun invoke(): Flow<String> = channelFlow {
         manageDataSynchronization()
@@ -62,8 +59,8 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
             val remoteSaveVersion = remoteSaveVersionDeferred.await()
 
             val storageSaveVersionValidationData = StorageSaveVersionValidationData(
-                localStorageSaveVersion = localSaveVersion,
-                remoteStorageSaveVersion = remoteSaveVersion,
+                localStorageSaveVersion = localSaveVersion?.version,
+                remoteStorageSaveVersion = remoteSaveVersion?.version,
             )
 
             when {
@@ -71,10 +68,10 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
                     validationData = storageSaveVersionValidationData
                 ) -> {
                     localStorageSaveVersionRepository.insertVersion(
-                        version = INITIAL_STORAGE_SAVE_VERSION
+                        version = StorageSaveVersion()
                     )
                     remoteStorageSaveVersionRepository.insertVersion(
-                        version = INITIAL_STORAGE_SAVE_VERSION
+                        version = StorageSaveVersion()
                     )
                 }
 
@@ -89,7 +86,7 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
                         olderSaveVersionCards = localCards,
                         olderSaveVersionDeckRepository = localDeckRepository,
                         olderSaveVersionCardRepository = localCardRepository,
-                        olderStorageSaveVersion = localSaveVersion
+                        olderStorageSaveVersion = localSaveVersion?.version
                     )
                 }
 
@@ -104,7 +101,7 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
                         olderSaveVersionCards = remoteCards,
                         olderSaveVersionDeckRepository = remoteDeckRepository,
                         olderSaveVersionCardRepository = remoteCardRepository,
-                        olderStorageSaveVersion = remoteSaveVersion
+                        olderStorageSaveVersion = remoteSaveVersion?.version
                     )
                 }
             }
@@ -238,12 +235,16 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
         oldVersion: Long?,
         synchronizationJobs: MutableList<Job>,
     ) {
-        val updatedVersion =
-            (oldVersion ?: StorageSaveVersionValidationData.UNDEFINED_SAVE_VERSION) + 1
+        val updatedStorageSaveVersion = StorageSaveVersion(
+            version = oldVersion ?: INITIAL_SAVE_VERSION
+        )
 
-        launch { remoteStorageSaveVersionRepository.insertVersion(version = updatedVersion) }
-            .let { job -> synchronizationJobs.add(job) }
-        launch { localStorageSaveVersionRepository.insertVersion(version = updatedVersion) }
-            .let { job -> synchronizationJobs.add(job) }
+        launch {
+            remoteStorageSaveVersionRepository.insertVersion(version = updatedStorageSaveVersion)
+        }.let { job -> synchronizationJobs.add(job) }
+
+        launch {
+            localStorageSaveVersionRepository.insertVersion(version = updatedStorageSaveVersion)
+        }.let { job -> synchronizationJobs.add(job) }
     }
 }

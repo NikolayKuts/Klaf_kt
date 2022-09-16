@@ -8,13 +8,13 @@ import com.example.klaf.data.room.dao.DeckDao
 import com.example.klaf.data.room.dao.StorageSaveVersionDao
 import com.example.klaf.data.room.entities.RoomCard
 import com.example.klaf.data.room.entities.RoomDeck
-import com.example.klaf.data.room.entities.StorageSaveVersion
+import com.example.klaf.data.room.entities.RoomStorageSaveVersion
 
 @Database(
     entities = [
         RoomDeck::class,
         RoomCard::class,
-        StorageSaveVersion::class
+        RoomStorageSaveVersion::class
     ],
     version = 3,
     exportSchema = true,

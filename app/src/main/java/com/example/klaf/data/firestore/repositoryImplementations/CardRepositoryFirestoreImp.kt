@@ -63,7 +63,6 @@ class CardRepositoryFirestoreImp @Inject constructor(
     }
 
     override suspend fun deleteCard(cardId: Int) {
-//        delay((1000..3000).random().toLong())
         getCardSubCollection()
             .document(cardId.toString())
             .delete()
