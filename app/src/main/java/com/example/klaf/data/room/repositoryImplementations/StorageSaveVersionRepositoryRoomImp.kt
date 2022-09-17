@@ -6,35 +6,29 @@ import com.example.klaf.data.room.mapToDomainEntity
 import com.example.klaf.data.room.mapToRoomEntity
 import com.example.klaf.domain.entities.StorageSaveVersion
 import com.example.klaf.domain.repositories.StorageSaveVersionRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class StorageSaveVersionRepositoryRoomImp @Inject constructor(
-    private val database: KlafRoomDatabase
+    private val database: KlafRoomDatabase,
 ) : StorageSaveVersionRepository {
 
-    override suspend fun fetchVersion(): StorageSaveVersion? = withContext(Dispatchers.IO) {
-        database.storageSaveVersionDao()
+    override suspend fun fetchVersion(): StorageSaveVersion? {
+        return database.storageSaveVersionDao()
             .getStorageSaveVersion()
             ?.mapToDomainEntity()
     }
 
     override suspend fun insertVersion(version: StorageSaveVersion) {
-        withContext(Dispatchers.IO) {
-            database.storageSaveVersionDao()
-                .insertStorageSaveVersion(saveVersion = version.mapToRoomEntity())
-        }
+        database.storageSaveVersionDao()
+            .insertStorageSaveVersion(saveVersion = version.mapToRoomEntity())
     }
 
     override suspend fun increaseVersion() {
-        withContext(Dispatchers.IO) {
-            val oldVersion = fetchVersion()?.version ?: StorageSaveVersion.INITIAL_SAVE_VERSION
+        val oldVersion = fetchVersion()?.version ?: StorageSaveVersion.INITIAL_SAVE_VERSION
 
-            database.storageSaveVersionDao()
-                .insertStorageSaveVersion(
-                    saveVersion = RoomStorageSaveVersion(version = oldVersion + 1)
-                )
-        }
+        database.storageSaveVersionDao()
+            .insertStorageSaveVersion(
+                saveVersion = RoomStorageSaveVersion(version = oldVersion + 1)
+            )
     }
 }

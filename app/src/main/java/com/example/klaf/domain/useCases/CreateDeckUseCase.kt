@@ -5,6 +5,7 @@ import com.example.klaf.di.StorageSaveVersionRepositoryRoomImp
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.repositories.DeckRepository
 import com.example.klaf.domain.repositories.StorageSaveVersionRepository
+import com.example.klaf.domain.repositories.StorageTransactionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -13,13 +14,16 @@ class CreateDeckUseCase @Inject constructor(
     @DeckRepositoryRoomImp
     private val deckRepository: DeckRepository,
     @StorageSaveVersionRepositoryRoomImp
-    private val localStorageSaveVersionRepository: StorageSaveVersionRepository
+    private val localStorageSaveVersionRepository: StorageSaveVersionRepository,
+    private val localStorageTransactionRepository: StorageTransactionRepository
 ) {
 
     suspend operator fun invoke(deck: Deck) {
         withContext(Dispatchers.IO) {
-            deckRepository.insertDeck(deck = deck)
-            localStorageSaveVersionRepository.increaseVersion()
+            localStorageTransactionRepository.performWithTransaction {
+                deckRepository.insertDeck(deck = deck)
+                localStorageSaveVersionRepository.increaseVersion()
+            }
         }
     }
 }
