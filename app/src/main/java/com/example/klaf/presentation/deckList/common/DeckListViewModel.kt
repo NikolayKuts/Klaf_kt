@@ -99,12 +99,15 @@ class DeckListViewModel @AssistedInject constructor(
     fun renameDeck(deck: Deck?, newName: String) {
         val updatedName = newName.trim()
         deck?.let { notNullableDeck ->
-            when (updatedName) {
-                "" -> {
+            when {
+                updatedName.isEmpty() -> {
                     _eventMessage.tryEmit(messageId = R.string.type_new_deck_name)
                 }
-                notNullableDeck.name -> {
+                updatedName == notNullableDeck.name -> {
                     _eventMessage.tryEmit(messageId = R.string.deck_name_is_not_changed)
+                }
+                deckSource.value.any { it.name == newName } -> {
+                    _eventMessage.tryEmit(messageId = R.string.such_deck_is_already_exist)
                 }
                 else -> {
                     viewModelScope.launchWithExceptionHandler(
