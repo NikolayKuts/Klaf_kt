@@ -3,6 +3,7 @@ package com.example.klaf.presentation.common
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -12,6 +13,7 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -89,7 +91,7 @@ fun ColumnScope.DeckInfo(name: String, cardQuantity: Int) {
 fun Pointer(
     pointerTextId: Int,
     valueText: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Text(
         modifier = modifier,
@@ -184,5 +186,21 @@ private fun WordTextField(
             backgroundColor = MainTheme.colors.cardTextFieldBackground,
             textColor = textColor
         ),
+    )
+}
+
+@Composable
+fun DialogBox(
+    onClick: () -> Unit,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .clickable(
+            indication = null,
+            interactionSource = remember { MutableInteractionSource() },
+            onClick = onClick,
+        ),
+        content = content
     )
 }

@@ -16,6 +16,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
 import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
+import com.example.klaf.presentation.common.DialogBox
 import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
 import com.example.klaf.presentation.theme.MainTheme
@@ -28,39 +29,41 @@ fun DeckRenamingDialog(
 ) {
     var fieldDeckName by rememberAsMutableStateOf(value = deckName)
 
-    Box() {
-        Card(
-            modifier = Modifier
-                .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
-                .padding(bottom = (DIALOG_BUTTON_SIZE / 2).dp)
-        ) {
-            Column(modifier = Modifier.padding(MainTheme.dimensions.dialogContentPadding)) {
-                DialogTitle(deckName = deckName)
-                Spacer(modifier = Modifier.height(16.dp))
-                RenamingTextField(
-                    deckName = fieldDeckName,
-                    onValueChange = { updatedName -> fieldDeckName = updatedName }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+    DialogBox(onClick = onCloseDialogClick) {
+        Box(modifier = Modifier.align(Alignment.Center)) {
+            Card(
+                modifier = Modifier
+                    .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
+                    .padding(bottom = (DIALOG_BUTTON_SIZE / 2).dp)
+            ) {
+                Column(modifier = Modifier.padding(MainTheme.dimensions.dialogContentPadding)) {
+                    DialogTitle(deckName = deckName)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    RenamingTextField(
+                        deckName = fieldDeckName,
+                        onValueChange = { updatedName -> fieldDeckName = updatedName }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
-        }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(0.5F)
-                .align(alignment = Alignment.BottomCenter),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            RoundButton(
-                background = MainTheme.colors.positiveDialogButton,
-                iconId = R.drawable.ic_comfirmation_24,
-                onClick = { onConfirmRenamingClick(fieldDeckName) }
-            )
-            RoundButton(
-                background = MainTheme.colors.neutralDialogButton,
-                iconId = R.drawable.ic_close_24,
-                onClick = onCloseDialogClick
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(0.5F)
+                    .align(alignment = Alignment.BottomCenter),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                RoundButton(
+                    background = MainTheme.colors.positiveDialogButton,
+                    iconId = R.drawable.ic_comfirmation_24,
+                    onClick = { onConfirmRenamingClick(fieldDeckName) }
+                )
+                RoundButton(
+                    background = MainTheme.colors.neutralDialogButton,
+                    iconId = R.drawable.ic_close_24,
+                    onClick = onCloseDialogClick
+                )
+            }
         }
     }
 }
