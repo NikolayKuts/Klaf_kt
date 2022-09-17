@@ -7,10 +7,8 @@ import com.example.klaf.data.firestore.repositoryImplementations.StorageSaveVers
 import com.example.klaf.data.room.repositoryImplementations.CardRepositoryRoomImp
 import com.example.klaf.data.room.repositoryImplementations.DeckRepositoryRoomImp
 import com.example.klaf.data.room.repositoryImplementations.StorageSaveVersionRepositoryRoomImp
-import com.example.klaf.domain.repositories.CardRepository
-import com.example.klaf.domain.repositories.DeckRepository
-import com.example.klaf.domain.repositories.OldAppKlafDataTransferRepository
-import com.example.klaf.domain.repositories.StorageSaveVersionRepository
+import com.example.klaf.data.room.repositoryImplementations.StorageTransactionRepositoryRoomImp
+import com.example.klaf.domain.repositories.*
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -71,4 +69,9 @@ interface DomainModule {
     fun bindOldAppKlafTransferRepository(
         repository: OldAppKlafDataTransferRepositoryImpl,
     ): OldAppKlafDataTransferRepository
+
+    @Binds
+    fun bindStorageTransactionRepository(
+        repository: StorageTransactionRepositoryRoomImp
+    ): StorageTransactionRepository
 }
