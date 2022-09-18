@@ -9,7 +9,7 @@ The application allows you to create cards with the automatic creation of a tran
 
 ## Technology stack
 * The code is written with _**Kotlin**_
-*  _**MVVM**_ + _**Clean Architecture**_
+* _**MVVM**_ + _**Clean Architecture**_
 * Access to local storage via _**Room database**_
 * Access to remote storage via _**Firebase**_
 * For asynchronous operations used _**Coroutines**_ and _**Coroutine flows**_
@@ -17,6 +17,7 @@ The application allows you to create cards with the automatic creation of a tran
 * For dependency injection used _**Hilt**_
 * For Ui used _**Jetpack Compose**_ and _**XML**_
 * For scheduling work used _**Work Manager**_
+* For testing used _**MockK**_ and _**JUnit4**_
 * For uploading and playing the pronunciation of words used _**Media Player**_
 
 ## Features
