@@ -4,14 +4,14 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.klaf.data.room.entities.StorageSaveVersion
+import com.example.klaf.data.room.entities.RoomStorageSaveVersion
 
 @Dao
 interface StorageSaveVersionDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertStorageSaveVersion(saveVersion: StorageSaveVersion)
+    fun insertStorageSaveVersion(saveVersion: RoomStorageSaveVersion)
 
-    @Query("SELECT * FROM ${StorageSaveVersion.TABLE_NAME}")
-    fun getStorageSaveVersion(): StorageSaveVersion?
+    @Query("SELECT * FROM ${RoomStorageSaveVersion.TABLE_NAME}")
+    fun getStorageSaveVersion(): RoomStorageSaveVersion?
 }

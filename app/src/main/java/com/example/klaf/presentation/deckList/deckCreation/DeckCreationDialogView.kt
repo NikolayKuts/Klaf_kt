@@ -12,6 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
 import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
+import com.example.klaf.presentation.common.DialogBox
 import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
 import com.example.klaf.presentation.theme.MainTheme
@@ -24,30 +25,32 @@ fun DeckCreationDialog(
 ) {
     val deckNameState = rememberAsMutableStateOf(value = "")
 
-    Box() {
-        Card(
-            modifier = Modifier
-                .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
-                .padding(bottom = (DIALOG_BUTTON_SIZE / 2).dp)
-        ) {
-            Column(modifier = Modifier.padding(MainTheme.dimensions.dialogContentPadding)) {
-                DialogTitle()
-                Spacer(modifier = Modifier.height(16.dp))
-                DeckNameTextField(deckNameState = deckNameState)
-                Spacer(modifier = Modifier.height(16.dp))
+    DialogBox(onClick = onCloseDialogClick) {
+        Box(modifier = Modifier.align(Alignment.Center)) {
+            Card(
+                modifier = Modifier
+                    .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
+                    .padding(bottom = (DIALOG_BUTTON_SIZE / 2).dp)
+            ) {
+                Column(modifier = Modifier.padding(MainTheme.dimensions.dialogContentPadding)) {
+                    DialogTitle()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    DeckNameTextField(deckNameState = deckNameState)
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
-        }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(0.5F)
-                .align(alignment = Alignment.BottomCenter),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            ConformationButton(
-                onClick = { onConfirmCreationClick(deckNameState.value) }
-            )
-            DialogClosingButton(onClick = onCloseDialogClick)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(0.5F)
+                    .align(alignment = Alignment.BottomCenter),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                ConformationButton(
+                    onClick = { onConfirmCreationClick(deckNameState.value) }
+                )
+                DialogClosingButton(onClick = onCloseDialogClick)
+            }
         }
     }
 }

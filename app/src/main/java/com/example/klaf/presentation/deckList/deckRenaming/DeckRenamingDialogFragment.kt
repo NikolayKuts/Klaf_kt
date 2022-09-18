@@ -11,6 +11,7 @@ import com.example.klaf.R
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.presentation.common.TransparentDialogFragment
 import com.example.klaf.presentation.common.collectWhenStarted
+import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.deckList.common.DeckListViewModel
 import com.example.klaf.presentation.theme.MainTheme
 
@@ -23,6 +24,8 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        setEvenMessageObserver(view = view)
 
         view.findViewById<ComposeView>(R.id.dialog_deck_renaming).setContent {
             setDeckRenamingStateObserver()
@@ -45,6 +48,14 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
         }
     }
 
+    private fun setEvenMessageObserver(view: View) {
+        viewModel.eventMessage.collectWhenStarted(
+            lifecycleScope = viewLifecycleOwner.lifecycleScope
+        ) { eventMessage ->
+            view.showSnackBar(messageId = eventMessage.resId)
+        }
+    }
+
     private fun setDeckRenamingStateObserver() {
         viewModel.renamingState.collectWhenStarted(
             viewLifecycleOwner.lifecycleScope
@@ -52,7 +63,7 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
             when (renamingState) {
                 DeckRenamingState.NOT_RENAMED -> {}
                 DeckRenamingState.RENAMED -> {
-                    viewModel.resetRenamingState()
+                    viewModel.resetDeckRenamingState()
                     navController.popBackStack()
                 }
             }

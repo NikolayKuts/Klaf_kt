@@ -4,8 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = StorageSaveVersion.TABLE_NAME)
-data class StorageSaveVersion(
+@Entity(tableName = RoomStorageSaveVersion.TABLE_NAME)
+data class RoomStorageSaveVersion(
     @ColumnInfo(name = "save_version")
     val version: Long,
     @PrimaryKey(autoGenerate = false)

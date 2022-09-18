@@ -1,8 +1,12 @@
 package com.example.klaf.data.firestore.repositoryImplementations
 
 import com.example.klaf.data.firestore.MAIN_COLLECTION_NAME
-import com.example.klaf.data.firestore.entities.StorageSaveVersion
+import com.example.klaf.data.firestore.entities.FirestoreStorageSaveVersion
+import com.example.klaf.data.firestore.mapToDomainEntity
+import com.example.klaf.data.firestore.mapToFirestoreEntity
+import com.example.klaf.domain.entities.StorageSaveVersion
 import com.example.klaf.domain.repositories.StorageSaveVersionRepository
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
 import kotlinx.coroutines.Dispatchers
@@ -19,21 +23,33 @@ class StorageSaveVersionRepositoryFirestoreImp @Inject constructor(
         private const val SAVE_VERSION_DOCUMENT_NAME = "storage_save_version"
     }
 
-    override suspend fun fetchVersion(): Long? = withContext(Dispatchers.IO) {
-        firestore.collection(MAIN_COLLECTION_NAME)
-            .document(SAVE_VERSION_DOCUMENT_NAME)
+    override suspend fun fetchVersion(): StorageSaveVersion? = withContext(Dispatchers.IO) {
+        getStorageSaveVersionDocument()
             .get()
             .await()
-            .toObject<StorageSaveVersion>()
-            ?.version
+            .toObject<FirestoreStorageSaveVersion>()
+            ?.mapToDomainEntity()
     }
 
-    override suspend fun insertVersion(version: Long) {
+    override suspend fun insertVersion(version: StorageSaveVersion) {
         withContext(Dispatchers.IO) {
-            firestore.collection(MAIN_COLLECTION_NAME)
-                .document(SAVE_VERSION_DOCUMENT_NAME)
-                .set(StorageSaveVersion(version = version))
+            getStorageSaveVersionDocument()
+                .set(version.mapToFirestoreEntity())
                 .await()
         }
+    }
+
+    override suspend fun increaseVersion() {
+        val oldVersion = fetchVersion()?.version ?: StorageSaveVersion.INITIAL_SAVE_VERSION
+
+        getStorageSaveVersionDocument()
+            .set(FirestoreStorageSaveVersion(version = oldVersion + 1))
+            .await()
+
+    }
+
+    private fun getStorageSaveVersionDocument(): DocumentReference {
+        return firestore.collection(MAIN_COLLECTION_NAME)
+            .document(SAVE_VERSION_DOCUMENT_NAME)
     }
 }

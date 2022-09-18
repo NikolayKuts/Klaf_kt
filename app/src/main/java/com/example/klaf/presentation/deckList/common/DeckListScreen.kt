@@ -42,7 +42,6 @@ fun DeckListScreen(
     onMainButtonClick: () -> Unit,
     onSwipeRefresh: () -> Unit,
 ) {
-    val decks by viewModel.deckSource.collectAsState()
 
     SwipeRefresh(
         modifier = Modifier.fillMaxSize(),
@@ -50,6 +49,8 @@ fun DeckListScreen(
         onRefresh = onSwipeRefresh
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
+            val decks by viewModel.deckSource.collectAsState()
+
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 124.dp)
@@ -116,17 +117,16 @@ private fun LazyItemScope.DeckItemView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             DeckNameView(deckName = deck.name, position = position)
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             Row(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ScheduledDateView(deck = deck)
-                Spacer(modifier = Modifier.width(4.dp))
+                ItemContentSpacer()
                 RepetitionQuantityView(deck = deck)
-                Spacer(modifier = Modifier.width(4.dp))
+                ItemContentSpacer()
                 CardQuantityView(deck = deck)
-                Spacer(modifier = Modifier.width(4.dp))
             }
         }
     }
@@ -152,6 +152,11 @@ private fun ScheduledDateView(deck: Deck) {
         text = scheduledDateState.range,
         style = getScheduledDateStyleByScheduledDateState(state = scheduledDateState)
     )
+}
+
+@Composable
+private fun ItemContentSpacer() {
+    Spacer(modifier = Modifier.width(8.dp))
 }
 
 @Composable
