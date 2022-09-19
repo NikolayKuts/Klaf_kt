@@ -12,6 +12,7 @@ import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
+import com.example.klaf.presentation.common.NotificationChannelInitializer
 import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.deckList.dataSynchronization.DataSynchronizationNotifier
 import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
@@ -28,8 +29,7 @@ class DeckListViewModel @AssistedInject constructor(
     private val removeDeck: RemoveDeckUseCase,
     private val deleteAllCardsOfDeck: DeleteAllCardsOfDeck,
     createInterimDeck: CreateInterimDeckUseCase,
-    deckRepetitionNotifier: DeckRepetitionNotifier,
-    dataSynchronizationNotifier: DataSynchronizationNotifier,
+    notificationChannelInitializer: NotificationChannelInitializer,
     private val workManager: WorkManager,
 ) : ViewModel() {
 
@@ -61,8 +61,7 @@ class DeckListViewModel @AssistedInject constructor(
     }
 
     init {
-        deckRepetitionNotifier.createDeckRepetitionNotificationChannel()
-        dataSynchronizationNotifier.createSynchronizationNotificationChannel()
+        notificationChannelInitializer.initialize()
         viewModelScope.launch { createInterimDeck() }
         observeDataSynchronizationStateWorker()
     }
@@ -81,7 +80,7 @@ class DeckListViewModel @AssistedInject constructor(
             else -> {
                 viewModelScope.launchWithExceptionHandler(
                     onException = { _, _ ->
-                        _eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
+                        _eventMessage.tryEmit(messageId = R.string.problem_with_creating_deck)
                     },
                     onCompletion = {
                         _eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
