@@ -1,5 +1,6 @@
 package com.example.klaf.presentation.deckList.common
 
+import androidx.annotation.StringRes
 import androidx.work.WorkManager
 import app.cash.turbine.test
 import com.example.klaf.R
@@ -9,13 +10,16 @@ import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.NotificationChannelInitializer
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import kotlin.math.exp
 
 class DeckListViewModelTest {
 
@@ -37,11 +41,7 @@ class DeckListViewModelTest {
 
         verify(exactly = 1) { fetchDeckSourceUseCase.invoke() }
 
-        viewModel.eventMessage.test {
-            val receivedMessageId = awaitItem().resId
-
-            assertEquals(R.string.problem_with_fetching_decks, receivedMessageId)
-        }
+        viewModel.testEventMassageIdEquals(expectedMassageId = R.string.problem_with_fetching_decks)
     }
 
     @ExperimentalCoroutinesApi
@@ -81,13 +81,10 @@ class DeckListViewModelTest {
             }
         )
 
-        val testJob = launch {
-            viewModel.eventMessage.test {
-                val messageId = awaitItem().resId
-
-                assertEquals(R.string.such_deck_is_already_exist, messageId)
-            }
-        }
+        val testJob = launchEventMassageIdEqualsTest(
+            viewModel = viewModel,
+            expectedMassageId = R.string.such_deck_is_already_exist,
+        )
 
         viewModel.createNewDeck(deckName = newDeck.name)
         testJob.join()
@@ -99,13 +96,10 @@ class DeckListViewModelTest {
         val viewModel = createViewModel()
         val emptyDeckName = "     "
 
-        val testJob = launch {
-            viewModel.eventMessage.test {
-                val messageId = awaitItem().resId
-
-                assertEquals(R.string.warning_deck_name_empty, messageId)
-            }
-        }
+        val testJob = launchEventMassageIdEqualsTest(
+            viewModel = viewModel,
+            expectedMassageId = R.string.warning_deck_name_empty,
+        )
 
         viewModel.createNewDeck(deckName = emptyDeckName)
         testJob.join()
@@ -114,41 +108,145 @@ class DeckListViewModelTest {
     @ExperimentalCoroutinesApi
     @Test
     fun `get a success message when a deck has been created`() = runTest {
-        val viewModel = createViewModel()
+        val createDeckUseCase: CreateDeckUseCase = mockk(relaxed = true)
+        val viewModel = createViewModel(createDeck = createDeckUseCase)
         val deckName = "deck_name"
 
-        val testJob = launch {
-            viewModel.eventMessage.test {
-                val messageId = awaitItem().resId
-
-                assertEquals(R.string.deck_has_been_created, messageId)
-            }
-        }
+        val testJob = launchEventMassageIdEqualsTest(
+            viewModel = viewModel,
+            expectedMassageId = R.string.deck_has_been_created,
+        )
 
         viewModel.createNewDeck(deckName = deckName)
+        coVerify(exactly = 1) { createDeckUseCase.invoke(deck = any()) }
         testJob.join()
     }
 
     @ExperimentalCoroutinesApi
     @Test
-    fun `get a problem message when creating deck is failed`() = runTest {
+    fun `get a warning message when creating deck is failed`() = runTest {
         val deckName = "deck_name"
         val createDeckUseCase: CreateDeckUseCase = mockk() {
             coEvery { this@mockk.invoke(any()) } throws Exception()
         }
         val viewModel = createViewModel(createDeck = createDeckUseCase)
 
-        val testJob = launch {
-            viewModel.eventMessage.test {
-                val messageId = awaitItem().resId
-
-                assertEquals(R.string.problem_with_creating_deck, messageId)
-            }
-        }
+        val testJob = launchEventMassageIdEqualsTest(
+            viewModel = viewModel,
+            expectedMassageId = R.string.problem_with_creating_deck
+        )
 
         viewModel.createNewDeck(deckName = deckName)
-        coVerify { createDeckUseCase.invoke(deck = any()) }
+        coVerify(exactly = 1) { createDeckUseCase.invoke(deck = any()) }
         testJob.join()
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    fun `get a warning massage when deck name for deck renaming is empty`() = runTest {
+        val viewModel = createViewModel()
+        val oldDeck = Deck(name = "old_name", creationDate = 19999)
+        val newEmptyName = "    "
+
+        val testJob = launchEventMassageIdEqualsTest(
+            viewModel = viewModel,
+            expectedMassageId = R.string.type_new_deck_name
+        )
+
+        viewModel.renameDeck(deck = oldDeck, newName = newEmptyName)
+        testJob.join()
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    fun `get a massage while deck renaming when the deck name is not changed`() = runTest {
+        val viewModel = createViewModel()
+        val oldDeck = Deck(name = "old_name", creationDate = 19999)
+
+        val testJob = launchEventMassageIdEqualsTest(
+            viewModel = viewModel,
+            expectedMassageId = R.string.deck_name_is_not_changed
+        )
+
+        viewModel.renameDeck(deck = oldDeck, newName = oldDeck.name)
+        testJob.join()
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    fun `get a massage while deck renaming that a deck with such name already exists`() = runTest {
+        val existingDeckName = "existed_deck_name"
+        val existingDeck = Deck(name = existingDeckName, creationDate = 22222222)
+        val oldDeck = Deck(name = "old_name", creationDate = 1111111)
+        val fetchDeckSourceUseCase: FetchDeckSourceUseCase = mockk() {
+            every { this@mockk.invoke() } returns flow { emit(listOf(existingDeck)) }
+        }
+        val viewModel = createViewModel(fetchDeckSource = fetchDeckSourceUseCase)
+
+        val testJob = launchEventMassageIdEqualsTest(
+            viewModel = viewModel,
+            expectedMassageId = R.string.such_deck_is_already_exist
+        )
+
+        viewModel.renameDeck(deck = oldDeck, newName = existingDeckName)
+        testJob.join()
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    fun `get a success message when a deck has been renamed`() = runTest {
+        val oldDeck = Deck(name = "old_name", creationDate = 1111111)
+        val newDeckName = "new_deck_name"
+        val viewModel = createViewModel()
+
+        val testJob = launchEventMassageIdEqualsTest(
+            viewModel = viewModel,
+            expectedMassageId = R.string.deck_has_been_renamed
+        )
+
+        viewModel.renameDeck(deck = oldDeck, newName = newDeckName)
+        testJob.join()
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    fun `get a message when deck renaming is failed`() = runTest {
+        val oldDeck = Deck(name = "old_name", creationDate = 1111111)
+        val newDeckName = "new_deck_name"
+        val renameDeckUseCase: RenameDeckUseCase = mockk() {
+            coEvery {
+                this@mockk.invoke(oldDeck = oldDeck, name = newDeckName)
+            } throws Exception()
+        }
+        val viewModel = createViewModel(renameDeck = renameDeckUseCase)
+
+        val testJob = launchEventMassageIdEqualsTest(
+            viewModel = viewModel,
+            expectedMassageId = R.string.problem_with_renaming_deck
+        )
+
+        viewModel.renameDeck(deck = oldDeck, newName = newDeckName)
+        testJob.join()
+    }
+
+    @ExperimentalCoroutinesApi
+    private fun TestScope.launchEventMassageIdEqualsTest(
+        viewModel: DeckListViewModel,
+        @StringRes expectedMassageId: Int
+    ): Job {
+        return launch {
+            viewModel.testEventMassageIdEquals(expectedMassageId = expectedMassageId)
+        }
+    }
+
+    private suspend fun DeckListViewModel.testEventMassageIdEquals(
+        @StringRes expectedMassageId: Int
+    ) {
+        this.eventMessage.test {
+            val receivedMessageId = awaitItem().resId
+
+            assertEquals(expectedMassageId, receivedMessageId)
+        }
     }
 
     private fun createViewModel(
