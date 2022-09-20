@@ -29,20 +29,19 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
 
         view.findViewById<ComposeView>(R.id.dialog_deck_renaming).setContent {
             setDeckRenamingStateObserver()
-            viewModel.getDeckById(deckId = args.deckId).let { deck: Deck? ->
-                if (deck == null) {
+            viewModel.getDeckById(deckId = args.deckId).let { receivedDeck: Deck? ->
+                if (receivedDeck == null) {
                     navController.popBackStack()
-                    return@let
-                }
-                MainTheme {
-                    DeckRenamingDialog(
-                        deckName = deck.name,
-                        onConfirmRenamingClick = { newName ->
-                            confirmDeckRenaming(deck = deck, newName = newName)
-                        },
-                        onCloseDialogClick = { navController.popBackStack() },
-                    )
-
+                } else {
+                    MainTheme {
+                        DeckRenamingDialog(
+                            deckName = receivedDeck.name,
+                            onConfirmRenamingClick = { newName ->
+                                confirmDeckRenaming(deck = receivedDeck, newName = newName)
+                            },
+                            onCloseDialogClick = { navController.popBackStack() },
+                        )
+                    }
                 }
             }
         }
@@ -70,7 +69,7 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
         }
     }
 
-    private fun confirmDeckRenaming(deck: Deck?, newName: String) {
+    private fun confirmDeckRenaming(deck: Deck, newName: String) {
         viewModel.renameDeck(deck = deck, newName = newName)
     }
 }

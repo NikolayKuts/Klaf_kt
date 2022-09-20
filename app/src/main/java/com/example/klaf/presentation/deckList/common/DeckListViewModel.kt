@@ -14,10 +14,8 @@ import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.NotificationChannelInitializer
 import com.example.klaf.presentation.common.tryEmit
-import com.example.klaf.presentation.deckList.dataSynchronization.DataSynchronizationNotifier
 import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
-import com.example.klaf.presentation.deckRepetition.DeckRepetitionNotifier
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -99,31 +97,30 @@ class DeckListViewModel @AssistedInject constructor(
         _deckCreationState.value = DeckCreationState.NOT_CREATED
     }
 
-    fun renameDeck(deck: Deck?, newName: String) {
+    fun renameDeck(deck: Deck, newName: String) {
         val updatedName = newName.trim()
-        deck?.let { notNullableDeck ->
-            when {
-                updatedName.isEmpty() -> {
-                    _eventMessage.tryEmit(messageId = R.string.type_new_deck_name)
-                }
-                updatedName == notNullableDeck.name -> {
-                    _eventMessage.tryEmit(messageId = R.string.deck_name_is_not_changed)
-                }
-                deckSource.value.any { it.name == newName } -> {
-                    _eventMessage.tryEmit(messageId = R.string.such_deck_is_already_exist)
-                }
-                else -> {
-                    viewModelScope.launchWithExceptionHandler(
-                        onException = { _, _ ->
-                            _eventMessage.tryEmit(messageId = R.string.problem_with_renaming_deck)
-                        },
-                        onCompletion = {
-                            _eventMessage.tryEmit(messageId = R.string.deck_has_been_renamed)
-                            _renamingState.value = DeckRenamingState.RENAMED
-                        }
-                    ) {
-                        renameDeck(oldDeck = deck, name = updatedName)
+
+        when {
+            updatedName.isEmpty() -> {
+                _eventMessage.tryEmit(messageId = R.string.type_new_deck_name)
+            }
+            updatedName == deck.name -> {
+                _eventMessage.tryEmit(messageId = R.string.deck_name_is_not_changed)
+            }
+            deckSource.value.any { it.name == newName } -> {
+                _eventMessage.tryEmit(messageId = R.string.such_deck_is_already_exist)
+            }
+            else -> {
+                viewModelScope.launchWithExceptionHandler(
+                    onException = { _, _ ->
+                        _eventMessage.tryEmit(messageId = R.string.problem_with_renaming_deck)
+                    },
+                    onCompletion = {
+                        _eventMessage.tryEmit(messageId = R.string.deck_has_been_renamed)
+                        _renamingState.value = DeckRenamingState.RENAMED
                     }
+                ) {
+                    renameDeck(oldDeck = deck, name = updatedName)
                 }
             }
         }
