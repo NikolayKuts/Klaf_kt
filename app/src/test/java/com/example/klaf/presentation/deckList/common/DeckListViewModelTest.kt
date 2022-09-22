@@ -19,7 +19,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import kotlin.math.exp
 
 class DeckListViewModelTest {
 
@@ -230,9 +229,40 @@ class DeckListViewModelTest {
     }
 
     @ExperimentalCoroutinesApi
+    @Test
+    fun `get a success message when the deck has been deleted`() = runTest {
+        val deckId = 11111
+        val viewModel = createViewModel()
+
+        launchEventMassageIdEqualsTest(
+            viewModel = viewModel,
+            expectedMassageId = R.string.the_deck_has_been_removed
+        )
+
+        viewModel.deleteDeck(deckId = deckId)
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    fun `get a message when deck deleting is failed`() = runTest {
+        val deckId = 11111
+        val removeDeckUseCase: RemoveDeckUseCase = mockk() {
+            coEvery { this@mockk.invoke(deckId = any()) } throws Exception()
+        }
+        val viewModel = createViewModel(removeDeck = removeDeckUseCase)
+
+        launchEventMassageIdEqualsTest(
+            viewModel = viewModel,
+            expectedMassageId = R.string.problem_with_removing_deck
+        )
+
+        viewModel.deleteDeck(deckId = deckId)
+    }
+
+    @ExperimentalCoroutinesApi
     private fun TestScope.launchEventMassageIdEqualsTest(
         viewModel: DeckListViewModel,
-        @StringRes expectedMassageId: Int
+        @StringRes expectedMassageId: Int,
     ): Job {
         return launch {
             viewModel.testEventMassageIdEquals(expectedMassageId = expectedMassageId)
@@ -240,7 +270,7 @@ class DeckListViewModelTest {
     }
 
     private suspend fun DeckListViewModel.testEventMassageIdEquals(
-        @StringRes expectedMassageId: Int
+        @StringRes expectedMassageId: Int,
     ) {
         this.eventMessage.test {
             val receivedMessageId = awaitItem().resId
@@ -256,7 +286,6 @@ class DeckListViewModelTest {
         createDeck: CreateDeckUseCase = mockk(relaxed = true),
         renameDeck: RenameDeckUseCase = mockk(relaxed = true),
         removeDeck: RemoveDeckUseCase = mockk(relaxed = true),
-        deleteAllCardsOfDeck: DeleteAllCardsOfDeck = mockk(relaxed = true),
         createInterimDeck: CreateInterimDeckUseCase = mockk(relaxed = true),
         notificationChannelInitializer: NotificationChannelInitializer = mockk(relaxed = true),
         workManager: WorkManager = mockk(relaxed = true),
@@ -266,7 +295,6 @@ class DeckListViewModelTest {
             createDeck = createDeck,
             renameDeck = renameDeck,
             removeDeck = removeDeck,
-            deleteAllCardsOfDeck = deleteAllCardsOfDeck,
             createInterimDeck = createInterimDeck,
             notificationChannelInitializer = notificationChannelInitializer,
             workManager = workManager

@@ -156,7 +156,7 @@ class DeckListViewModel @AssistedInject constructor(
 
     private fun observeDataSynchronizationStateWorker() {
         workManager.getDataSynchronizationProgressState()
-            .filter { it !is DataSynchronizationState.UncertainState }
+            .filterNot { it is DataSynchronizationState.UncertainState }
             .onEach { _dataSynchronizationState.value = it }
             .launchIn(scope = viewModelScope)
     }
