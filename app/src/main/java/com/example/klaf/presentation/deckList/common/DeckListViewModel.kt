@@ -25,7 +25,6 @@ class DeckListViewModel @AssistedInject constructor(
     private val createDeck: CreateDeckUseCase,
     private val renameDeck: RenameDeckUseCase,
     private val removeDeck: RemoveDeckUseCase,
-    private val deleteAllCardsOfDeck: DeleteAllCardsOfDeck,
     createInterimDeck: CreateInterimDeckUseCase,
     notificationChannelInitializer: NotificationChannelInitializer,
     private val workManager: WorkManager,
@@ -139,8 +138,7 @@ class DeckListViewModel @AssistedInject constructor(
                 _eventMessage.tryEmit(messageId = R.string.the_deck_has_been_removed)
             }
         ) {
-            launch { removeDeck(deckId = deckId) }
-            launch { deleteAllCardsOfDeck(deckId = deckId) }
+            removeDeck(deckId = deckId)
         }
     }
 
@@ -158,7 +156,6 @@ class DeckListViewModel @AssistedInject constructor(
 
     private fun observeDataSynchronizationStateWorker() {
         workManager.getDataSynchronizationProgressState()
-            .catch { }
             .filter { it !is DataSynchronizationState.UncertainState }
             .onEach { _dataSynchronizationState.value = it }
             .launchIn(scope = viewModelScope)
