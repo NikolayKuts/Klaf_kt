@@ -65,7 +65,7 @@ private const val ROTATION_DEGREES = 360F
 
 @Composable
 fun DeckRepetitionScreen(
-    viewModel: DeckRepetitionViewModel,
+    viewModel: BaseDeckRepetitionViewModel,
     onDeleteCardClick: (cardId: Int) -> Unit,
     onAddCardClick: () -> Unit,
     onEditCardClick: (cardId: Int) -> Unit,
@@ -283,7 +283,7 @@ private fun SwitchOrderButton(onClick: () -> Unit) {
 }
 
 @Composable
-private fun Time(viewModel: DeckRepetitionViewModel) {
+private fun Time(viewModel: BaseDeckRepetitionViewModel) {
     val timerState by viewModel.timer.timerState.collectAsState()
     val timerColor = when (timerState.countingState) {
         TimerCountingState.RUN -> MainTheme.colors.timerActive
@@ -365,7 +365,7 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
 @Composable
 private fun RepetitionButtons(
     deckRepetitionState: DeckRepetitionState,
-    viewModel: DeckRepetitionViewModel,
+    viewModel: BaseDeckRepetitionViewModel,
     onFinish: (
         currentDuration: String,
         lastDuration: String,

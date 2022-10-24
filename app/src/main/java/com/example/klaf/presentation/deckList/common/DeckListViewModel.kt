@@ -1,5 +1,6 @@
 package com.example.klaf.presentation.deckList.common
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
@@ -17,6 +18,8 @@ import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -57,10 +60,17 @@ class DeckListViewModel @AssistedInject constructor(
         _dataSynchronizationState.value = DataSynchronizationState.InitialState
     }
 
+    val data = MutableLiveData<String>("initial")
+
     init {
         notificationChannelInitializer.initialize()
         viewModelScope.launch { createInterimDeck() }
         observeDataSynchronizationStateWorker()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            delay(2000)
+//            data.postValue("new data")
+        }
     }
 
     fun createNewDeck(deckName: String) {
