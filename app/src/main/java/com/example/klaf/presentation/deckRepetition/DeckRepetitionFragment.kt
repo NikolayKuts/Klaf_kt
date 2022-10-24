@@ -11,7 +11,6 @@ import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.presentation.common.collectWhenStarted
-import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.showToast
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,9 +23,10 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
 
     @Inject
     lateinit var assistedFactory: RepetitionViewModelAssistedFactory
-    private val viewModel: DeckRepetitionViewModel by navGraphViewModels(R.id.deckRepetitionFragment) {
-        RepetitionViewModelFactory(assistedFactory = assistedFactory, deckId = args.deckId)
-    }
+    private val viewModel: BaseDeckRepetitionViewModel
+            by navGraphViewModels(R.id.deckRepetitionFragment) {
+                RepetitionViewModelFactory(assistedFactory = assistedFactory, deckId = args.deckId)
+            }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
