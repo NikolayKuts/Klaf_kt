@@ -1,7 +1,5 @@
 package com.example.klaf.presentation.deckList.common
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.example.klaf.R
@@ -18,8 +16,6 @@ import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -31,24 +27,20 @@ class DeckListViewModel @AssistedInject constructor(
     createInterimDeck: CreateInterimDeckUseCase,
     notificationChannelInitializer: NotificationChannelInitializer,
     private val workManager: WorkManager,
-) : ViewModel() {
+) : BaseDeckListViewModel() {
 
-    private val _eventMessage = MutableSharedFlow<EventMessage>(replay = 1)
-    val eventMessage = _eventMessage.asSharedFlow()
+    override val eventMessage = MutableSharedFlow<EventMessage>(replay = 1)
 
-    private val _renamingState = MutableStateFlow(value = DeckRenamingState.NOT_RENAMED)
-    val renamingState = _renamingState.asStateFlow()
+    override val renamingState = MutableStateFlow(value = DeckRenamingState.NOT_RENAMED)
 
-    private val _deckCreationState = MutableStateFlow(value = DeckCreationState.NOT_CREATED)
-    val deckCreationState = _deckCreationState.asStateFlow()
+    override val deckCreationState = MutableStateFlow(value = DeckCreationState.NOT_CREATED)
 
-    private val _dataSynchronizationState =
+    override val dataSynchronizationState =
         MutableStateFlow<DataSynchronizationState>(DataSynchronizationState.InitialState)
-    val dataSynchronizationState = _dataSynchronizationState.asStateFlow()
 
-    val deckSource: StateFlow<List<Deck>> = fetchDeckSource()
+    override val deckSource: StateFlow<List<Deck>> = fetchDeckSource()
         .catch {
-            _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_decks)
+            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_decks)
         }
         .stateIn(
             scope = viewModelScope,
@@ -56,42 +48,35 @@ class DeckListViewModel @AssistedInject constructor(
             initialValue = emptyList()
         )
 
-    fun resetSynchronizationState() {
-        _dataSynchronizationState.value = DataSynchronizationState.InitialState
+    override fun resetSynchronizationState() {
+        dataSynchronizationState.value = DataSynchronizationState.InitialState
     }
-
-    val data = MutableLiveData<String>("initial")
 
     init {
         notificationChannelInitializer.initialize()
         viewModelScope.launch { createInterimDeck() }
         observeDataSynchronizationStateWorker()
-
-        viewModelScope.launch(Dispatchers.IO) {
-            delay(2000)
-//            data.postValue("new data")
-        }
     }
 
-    fun createNewDeck(deckName: String) {
+    override fun createNewDeck(deckName: String) {
         val deckNames = deckSource.value.map { deck -> deck.name }
         val trimmedDeckName = deckName.trim()
 
         when {
             deckNames.contains(deckName) -> {
-                _eventMessage.tryEmit(value = EventMessage(R.string.such_deck_is_already_exist))
+                eventMessage.tryEmit(value = EventMessage(R.string.such_deck_is_already_exist))
             }
             trimmedDeckName.isEmpty() -> {
-                _eventMessage.tryEmit(messageId = R.string.warning_deck_name_empty)
+                eventMessage.tryEmit(messageId = R.string.warning_deck_name_empty)
             }
             else -> {
                 viewModelScope.launchWithExceptionHandler(
                     onException = { _, _ ->
-                        _eventMessage.tryEmit(messageId = R.string.problem_with_creating_deck)
+                        eventMessage.tryEmit(messageId = R.string.problem_with_creating_deck)
                     },
                     onCompletion = {
-                        _eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
-                        _deckCreationState.value = DeckCreationState.CREATED
+                        eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
+                        deckCreationState.value = DeckCreationState.CREATED
                     },
                 ) {
                     createDeck(
@@ -102,31 +87,31 @@ class DeckListViewModel @AssistedInject constructor(
         }
     }
 
-    fun resetDeckCreationState() {
-        _deckCreationState.value = DeckCreationState.NOT_CREATED
+    override fun resetDeckCreationState() {
+        deckCreationState.value = DeckCreationState.NOT_CREATED
     }
 
-    fun renameDeck(deck: Deck, newName: String) {
+    override fun renameDeck(deck: Deck, newName: String) {
         val updatedName = newName.trim()
 
         when {
             updatedName.isEmpty() -> {
-                _eventMessage.tryEmit(messageId = R.string.type_new_deck_name)
+                eventMessage.tryEmit(messageId = R.string.type_new_deck_name)
             }
             updatedName == deck.name -> {
-                _eventMessage.tryEmit(messageId = R.string.deck_name_is_not_changed)
+                eventMessage.tryEmit(messageId = R.string.deck_name_is_not_changed)
             }
             deckSource.value.any { it.name == newName } -> {
-                _eventMessage.tryEmit(messageId = R.string.such_deck_is_already_exist)
+                eventMessage.tryEmit(messageId = R.string.such_deck_is_already_exist)
             }
             else -> {
                 viewModelScope.launchWithExceptionHandler(
                     onException = { _, _ ->
-                        _eventMessage.tryEmit(messageId = R.string.problem_with_renaming_deck)
+                        eventMessage.tryEmit(messageId = R.string.problem_with_renaming_deck)
                     },
                     onCompletion = {
-                        _eventMessage.tryEmit(messageId = R.string.deck_has_been_renamed)
-                        _renamingState.value = DeckRenamingState.RENAMED
+                        eventMessage.tryEmit(messageId = R.string.deck_has_been_renamed)
+                        renamingState.value = DeckRenamingState.RENAMED
                     }
                 ) {
                     renameDeck(oldDeck = deck, name = updatedName)
@@ -135,39 +120,39 @@ class DeckListViewModel @AssistedInject constructor(
         }
     }
 
-    fun resetDeckRenamingState() {
-        _renamingState.value = DeckRenamingState.NOT_RENAMED
+    override fun resetDeckRenamingState() {
+        renamingState.value = DeckRenamingState.NOT_RENAMED
     }
 
-    fun deleteDeck(deckId: Int) {
+    override fun deleteDeck(deckId: Int) {
         viewModelScope.launchWithExceptionHandler(
             onException = { _, _ ->
-                _eventMessage.tryEmit(messageId = R.string.problem_with_removing_deck)
+                eventMessage.tryEmit(messageId = R.string.problem_with_removing_deck)
             },
             onCompletion = {
-                _eventMessage.tryEmit(messageId = R.string.the_deck_has_been_removed)
+                eventMessage.tryEmit(messageId = R.string.the_deck_has_been_removed)
             }
         ) {
             removeDeck(deckId = deckId)
         }
     }
 
-    fun getDeckById(deckId: Int): Deck? {
+    override fun getDeckById(deckId: Int): Deck? {
         val deck = deckSource.value.find { deck -> deck.id == deckId }
         if (deck == null) {
-            _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck)
+            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck)
         }
         return deck
     }
 
-    fun synchronizeData() {
+    override fun synchronizeData() {
         workManager.performDataSynchronization()
     }
 
     private fun observeDataSynchronizationStateWorker() {
         workManager.getDataSynchronizationProgressState()
             .filterNot { it is DataSynchronizationState.UncertainState }
-            .onEach { _dataSynchronizationState.value = it }
+            .onEach { dataSynchronizationState.value = it }
             .launchIn(scope = viewModelScope)
     }
 }
