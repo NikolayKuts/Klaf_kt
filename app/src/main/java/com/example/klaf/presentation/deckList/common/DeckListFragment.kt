@@ -11,7 +11,6 @@ import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.presentation.common.collectWhenStarted
-import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,7 +23,7 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
 
     @Inject
     lateinit var assistedFactory: DeckListViewModelAssistedFactory
-    private val viewModel: DeckListViewModel by navGraphViewModels(R.id.deckListFragment) {
+    private val viewModel: BaseDeckListViewModel by navGraphViewModels(R.id.deckListFragment) {
         DeckListViewModelFactory(assistedFactory = assistedFactory)
     }
 
@@ -45,10 +44,6 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
                     )
                 }
             }
-        }
-
-        viewModel.data.observe(viewLifecycleOwner) {
-            log(message = it)
         }
     }
 
