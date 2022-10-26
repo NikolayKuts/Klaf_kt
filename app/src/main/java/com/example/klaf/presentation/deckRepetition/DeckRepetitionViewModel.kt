@@ -195,7 +195,6 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         ) {
             deleteCardFromDeck(cardId = cardId, deckId = deckId)
         }
-        viewModelScope.launch { deleteCardFromDeck(cardId = cardId, deckId = deckId) }
     }
 
     private fun manageCardSide() {

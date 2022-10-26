@@ -11,11 +11,11 @@ import org.junit.Assert
 
 @ExperimentalCoroutinesApi
 fun TestScope.launchEventMassageIdEqualsTest(
-    viewModel: EventMessageSource,
+    eventMessageSource: EventMessageSource,
     @StringRes expectedMassageId: Int,
 ): Job {
     return launch {
-        viewModel.testEventMassageIdEquals(expectedMassageId = expectedMassageId)
+        eventMessageSource.testEventMassageIdEquals(expectedMassageId = expectedMassageId)
     }
 }
 
