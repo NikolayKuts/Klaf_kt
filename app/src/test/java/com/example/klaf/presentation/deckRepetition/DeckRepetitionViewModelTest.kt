@@ -30,9 +30,9 @@ class DeckRepetitionViewModelTest {
 
     @ExperimentalCoroutinesApi
     @Test
-    fun `getting problem message when getting deck is failed`() = runTest() {
+    fun `getting problem message when getting deck is failed`() = runTest {
         val deckId = 111111
-        val fetchDeckByIdUseCase: FetchDeckByIdUseCase = mockk() {
+        val fetchDeckByIdUseCase: FetchDeckByIdUseCase = mockk {
             coEvery { this@mockk.invoke(deckId = deckId) } returns flow { throw Exception() }
         }
         val viewModel = createViewModel(
@@ -49,9 +49,9 @@ class DeckRepetitionViewModelTest {
 
     @ExperimentalCoroutinesApi
     @Test
-    fun `getting problem message when fetching cards is failed`() = runTest() {
+    fun `getting problem message when fetching cards is failed`() = runTest {
         val deckId = 111111
-        val fetchCardsUseCase: FetchCardsUseCase = mockk() {
+        val fetchCardsUseCase: FetchCardsUseCase = mockk {
             every { invoke(deckId = deckId) } returns flow { throw Exception() }
         }
         val viewModel = createViewModel(
@@ -70,7 +70,7 @@ class DeckRepetitionViewModelTest {
     @Test
     fun `get problem message when repetition cards is empty on start repeating`() = runTest {
         val deckId = 111111
-        val fetchCardsUseCase: FetchCardsUseCase = mockk() {
+        val fetchCardsUseCase: FetchCardsUseCase = mockk {
             every { invoke(deckId = deckId) } returns flow { emptyList<Card>() }
         }
         val viewModel = createViewModel(
@@ -92,7 +92,7 @@ class DeckRepetitionViewModelTest {
     fun `get problem message when repetition cards is empty on moveCardByDifficultyRecallingLevel`() =
         runTest {
             val deckId = 111111
-            val fetchCardsUseCase: FetchCardsUseCase = mockk() {
+            val fetchCardsUseCase: FetchCardsUseCase = mockk {
                 every { invoke(deckId = deckId) } returns flow { emptyList<Card>() }
             }
             val viewModel = createViewModel(
@@ -114,7 +114,7 @@ class DeckRepetitionViewModelTest {
     fun `get problem message if deleting card is failed`() = runTest {
         val cardId = 222222
         val deckId = 999999
-        val deleteCardFromDeckUseCase: DeleteCardFromDeckUseCase = mockk() {
+        val deleteCardFromDeckUseCase: DeleteCardFromDeckUseCase = mockk {
             coEvery { this@mockk.invoke(cardId = cardId, deckId = deckId) } throws Exception()
         }
         val viewModel = createViewModel(deleteCardFromDeck = deleteCardFromDeckUseCase)
@@ -133,7 +133,7 @@ class DeckRepetitionViewModelTest {
     fun `getting deck from observable deck source`() = runTest {
         val deckId = 3333333
         val expectedDeck = Deck(name = "first", creationDate = 100000L, id = deckId)
-        val fetchDeckByIdUseCase: FetchDeckByIdUseCase = mockk() {
+        val fetchDeckByIdUseCase: FetchDeckByIdUseCase = mockk {
             coEvery { this@mockk.invoke(deckId = deckId) } returns flow { emit(expectedDeck) }
         }
         val viewModel = createViewModel(
