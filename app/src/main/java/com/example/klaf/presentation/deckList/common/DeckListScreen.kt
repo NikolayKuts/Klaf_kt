@@ -36,7 +36,7 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @Composable
 fun DeckListScreen(
-    viewModel: DeckListViewModel,
+    viewModel: BaseDeckListViewModel,
     onItemClick: (deck: Deck) -> Unit,
     onLongItemClick: (deck: Deck) -> Unit,
     onMainButtonClick: () -> Unit,
