@@ -1,24 +1,22 @@
 package com.example.klaf.presentation.cardViewing
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import androidx.compose.material.Surface
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.coroutineScope
 import androidx.navigation.fragment.navArgs
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.klaf.databinding.FragmentCardViewingBinding
+import com.example.klaf.R
 import com.example.klaf.presentation.common.collectWhenStarted
+import com.example.klaf.presentation.common.showSnackBar
+import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CardViewingFragment : Fragment() {
-
-    private var _binding: FragmentCardViewingBinding? = null
-    private val binding get() = _binding!!
+class CardViewingFragment : Fragment(R.layout.fragment_card_viewing) {
 
     private val args by navArgs<CardViewingFragmentArgs>()
 
@@ -28,41 +26,23 @@ class CardViewingFragment : Fragment() {
         CardViewingViewModelFactory(assistedFactory = assistedFactory, deckId = args.deckId)
     }
 
-    private val cardAdapter = CardAdapter()
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
-        _binding = FragmentCardViewingBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.textViewItemDeckName.text = args.deckName
-        initCarRecyclerView()
-        setCardObserver()
-    }
+        observeEventMessage(view = view)
 
-    private fun initCarRecyclerView() {
-        binding.cardRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = cardAdapter
+        view.findViewById<ComposeView>(R.id.compose_view_card_viewing).setContent {
+            MainTheme {
+                Surface { CardViewingScreen(viewModel = viewModel) }
+            }
         }
     }
 
-    private fun setCardObserver() {
-        viewModel.cards.collectWhenStarted(lifecycleScope) { cards ->
-            cardAdapter.updateData(cards = cards)
+    private fun observeEventMessage(view: View) {
+        viewModel.eventMessage.collectWhenStarted(
+            lifecycleScope = viewLifecycleOwner.lifecycle.coroutineScope
+        ) { eventMessage ->
+            view.showSnackBar(messageId = eventMessage.resId)
         }
-    }
-
-    override fun onDestroy() {
-        binding.cardRecyclerView.adapter = null
-        _binding = null
-        super.onDestroy()
     }
 }

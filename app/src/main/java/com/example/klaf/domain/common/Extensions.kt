@@ -33,7 +33,7 @@ fun CoroutineScope.launchWithExceptionHandler(
     }
 }
 
-fun <T, R> Flow<List<T>>.simplifiedMap(transform: suspend (T) -> R): Flow<List<R>> {
+fun <T, R> Flow<List<T>>.simplifiedItemMap(transform: suspend (T) -> R): Flow<List<R>> {
     return this.map { list: List<T> ->
         list.map { value: T -> transform(value) }
     }
@@ -49,3 +49,31 @@ fun CharSequence?.generateLetterInfos(): List<LetterInfo> {
         .dropLast(1)
         .map { letter -> LetterInfo(letter = letter, isChecked = false) }
 }
+
+fun <T> List<T>.addIntoNewInstance(newElement: T): List<T> {
+    return this.toMutableList().apply { add(element = newElement) }
+}
+
+fun Int.isEven(): Boolean = this % 2 == 0
+
+fun Int.isOdd(): Boolean = this % 2 != 0
+
+fun Long.isEven(): Boolean = this % 2 == 0L
+
+fun Long.isOdd(): Boolean = this % 2 != 0L
+
+inline fun <R> Boolean.ifTrue(block: () -> R): R? {
+    return if (this) block() else null
+}
+
+inline fun Boolean.ifFalse(block: () -> Unit) {
+    if (!this) block()
+}
+
+fun <T> T.isNotNull(): Boolean = this != null
+
+inline fun <T> T.ifNull(block: () -> Unit) {
+    if (this == null) block()
+}
+
+fun Int.toFloatPercents(): Float = this / 100.0F

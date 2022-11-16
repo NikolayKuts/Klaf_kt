@@ -1,41 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<androidx.compose.ui.platform.ComposeView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_gravity="center"
-    android:background="#D3CACA"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".presentation.deckList.DeckCreationDialogFragment">
+    android:id="@+id/dialog_deck_creation_view"
+    tools:context=".presentation.deckList.deckCreation.DeckCreationDialogFragment">
 
-    <EditText
-        android:id="@+id/edit_text_deck_name"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:hint="type some text here"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
-
-    <Button
-        android:id="@+id/button_cancel_deck_creation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Cancel"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/edit_text_deck_name"
-        app:layout_constraintEnd_toStartOf="@id/button_confirm_deck_creation"
-        />
-
-    <Button
-        android:id="@+id/button_confirm_deck_creation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Create"
-        app:layout_constraintStart_toEndOf="@id/button_cancel_deck_creation"
-        app:layout_constraintTop_toBottomOf="@id/edit_text_deck_name"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.compose.ui.platform.ComposeView>

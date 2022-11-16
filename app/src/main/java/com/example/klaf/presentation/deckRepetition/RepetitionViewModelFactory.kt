@@ -18,5 +18,5 @@ class RepetitionViewModelFactory(
 @AssistedFactory
 interface RepetitionViewModelAssistedFactory {
 
-    fun create(deckId: Int): RepetitionViewModel
+    fun create(deckId: Int): DeckRepetitionViewModel
 }
