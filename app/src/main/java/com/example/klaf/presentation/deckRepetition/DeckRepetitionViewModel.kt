@@ -14,10 +14,7 @@ import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.domain.enums.DifficultyRecallingLevel.*
-import com.example.klaf.domain.useCases.DeleteCardFromDeckUseCase
-import com.example.klaf.domain.useCases.FetchCardsUseCase
-import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
-import com.example.klaf.domain.useCases.UpdateDeckUseCase
+import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.RepetitionTimer
 import com.example.klaf.presentation.common.timeAsString
@@ -26,7 +23,6 @@ import com.example.klaf.presentation.deckRepetition.RepetitionScreenState.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import java.util.*
 
 class DeckRepetitionViewModel @AssistedInject constructor(
@@ -38,6 +34,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     private val updateDeck: UpdateDeckUseCase,
     private val deleteCardFromDeck: DeleteCardFromDeckUseCase,
     private val workManager: WorkManager,
+    private val fetchDeckRepetitionInfo: FetchDeckRepetitionInfoUseCase,
+    private val saveDeckRepetitionInfo: SaveDeckRepetitionInfoUseCase,
 ) : BaseDeckRepetitionViewModel() {
 
     companion object {
