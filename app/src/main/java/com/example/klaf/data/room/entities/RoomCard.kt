@@ -2,8 +2,7 @@ package com.example.klaf.data.room.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-
-const val CARD_TABLE_NAME = "cards"
+import com.example.klaf.data.room.entities.RoomCard.Companion.CARD_TABLE_NAME
 
 @Entity(tableName = CARD_TABLE_NAME)
 data class RoomCard (
@@ -12,4 +11,10 @@ data class RoomCard (
     val foreignWord: String,
     val ipa: String,
     @PrimaryKey(autoGenerate = true) val id: Int = 0
-)
+) {
+
+    companion object {
+
+        const val CARD_TABLE_NAME = "cards"
+    }
+}

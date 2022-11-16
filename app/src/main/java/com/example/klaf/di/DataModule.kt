@@ -1,9 +1,9 @@
 package com.example.klaf.di
 
 import android.content.Context
-import android.media.MediaPlayer
-import com.example.klaf.data.networking.CardAudioPlayer
+import androidx.work.WorkManager
 import com.example.klaf.data.room.databases.KlafRoomDatabase
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,5 +22,12 @@ class DataModule {
     }
 
     @Provides
-    fun provideMediaPlayer(): MediaPlayer = MediaPlayer()
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
+        return WorkManager.getInstance(context)
+    }
+
+    @Provides
+    fun provideFirestore(): FirebaseFirestore {
+        return FirebaseFirestore.getInstance()
+    }
 }

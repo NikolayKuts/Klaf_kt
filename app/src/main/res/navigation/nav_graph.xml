@@ -6,176 +6,112 @@
     app:startDestination="@id/deckListFragment">
     <fragment
         android:id="@+id/deckListFragment"
-        android:name="com.example.klaf.presentation.deckList.DeckListFragment"
+        android:name="com.example.klaf.presentation.deckList.common.DeckListFragment"
         android:label="fragment_deck_list"
-        tools:layout="@layout/fragment_deck_list" >
-        <action
-            android:id="@+id/action_deckListFragment_to_repeatFragment"
-            app:destination="@id/repeatFragment" />
-        <action
-            android:id="@+id/action_deckListFragment_to_cardViewerFragment"
-            app:destination="@id/cardViewerFragment" />
+        tools:layout="@layout/fragment_deck_list">
         <action
             android:id="@+id/action_deckListFragment_to_deckCreationDialogFragment"
             app:destination="@id/deckCreationDialogFragment" />
         <action
-            android:id="@+id/action_deckListFragment_to_deckRemovingDialogFragment"
-            app:destination="@id/deckRemovingDialogFragment" />
+            android:id="@+id/action_deckListFragment_to_deckNavigationDialog"
+            app:destination="@id/deckNavigationDialog" />
         <action
-            android:id="@+id/action_deckListFragment_to_deckRenamingDialogFragment"
-            app:destination="@id/deckRenamingDialogFragment" />
+            android:id="@+id/action_deckListFragment_to_deckRepetitionFragment"
+            app:destination="@id/deckRepetitionFragment" />
         <action
-            android:id="@+id/action_deckListFragment_to_cardAdditionFragment"
-            app:destination="@id/cardAdditionFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/repeatFragment"
-        android:name="com.example.klaf.presentation.deckRepetition.RepeatFragment"
-        android:label="fragment_repeat"
-        tools:layout="@layout/fragment_repeat" >
-        <argument
-            android:name="deckId"
-            app:argType="integer" />
-<!--        <argument-->
-<!--            android:name="cardId"-->
-<!--            app:argType="integer"-->
-<!--            android:defaultValue="-1" />-->
-        <action
-            android:id="@+id/action_repeatFragment_to_cardEditingFragment"
-            app:destination="@id/cardEditingFragment"/>
-        <action
-            android:id="@+id/action_repeatFragment_to_deckListFragment"
-            app:destination="@id/deckListFragment" />
-        <action
-            android:id="@+id/action_repeatFragment_to_cardAdditionFragment"
-            app:destination="@id/cardAdditionFragment" />
-        <action
-            android:id="@+id/action_repeatFragment_to_cardRemovingDialogFragment"
-            app:destination="@id/cardRemovingDialogFragment" />
-        <action
-            android:id="@+id/action_repeatFragment_to_deckRepetitionInfoDialogFragment"
-            app:destination="@id/deckRepetitionInfoDialogFragment" />
+            android:id="@+id/action_deckListFragment_to_dataSynchronizationDialogFragment"
+            app:destination="@id/dataSynchronizationDialogFragment" />
     </fragment>
     <fragment
         android:id="@+id/cardEditingFragment"
         android:name="com.example.klaf.presentation.cardEdinting.CardEditingFragment"
         android:label="fragment_card_editing"
-        tools:layout="@layout/fragment_card_editing" >
+        tools:layout="@layout/fragment_card_editing">
         <argument
             android:name="cardId"
-            app:argType="integer"
-            android:defaultValue="-1" />
+            android:defaultValue="-1"
+            app:argType="integer" />
         <argument
             android:name="deckId"
-            app:argType="integer"
-            android:defaultValue="-1" />
+            android:defaultValue="-1"
+            app:argType="integer" />
         <argument
             android:name="deckName"
-            app:argType="string"
-            android:defaultValue="empty" />
+            android:defaultValue="empty"
+            app:argType="string" />
         <action
-            android:id="@+id/action_cardEditingFragment_to_repeatFragment"
-            app:destination="@id/repeatFragment"
-            app:popUpTo="@id/repeatFragment"
-            app:popUpToInclusive="true"/>
+            android:id="@+id/action_cardEditingFragment_to_deckRepetitionFragment"
+            app:destination="@id/deckRepetitionFragment" />
     </fragment>
     <fragment
         android:id="@+id/cardViewerFragment"
         android:name="com.example.klaf.presentation.cardViewing.CardViewingFragment"
         android:label="fragment_card_viewer"
-        tools:layout="@layout/fragment_card_viewing" >
+        tools:layout="@layout/fragment_card_viewing">
         <argument
             android:name="deckId"
-            app:argType="integer"
-            android:defaultValue="-1" />
+            android:defaultValue="-1"
+            app:argType="integer" />
         <argument
             android:name="deckName"
-            app:argType="string"
-            android:defaultValue="empty" />
-        <action
-            android:id="@+id/action_cardViewerFragment_to_deckListFragment"
-            app:destination="@id/deckListFragment" />
+            android:defaultValue="empty"
+            app:argType="string" />
     </fragment>
     <dialog
         android:id="@+id/deckCreationDialogFragment"
-        android:name="com.example.klaf.presentation.deckList.DeckCreationDialogFragment"
+        android:name="com.example.klaf.presentation.deckList.deckCreation.DeckCreationDialogFragment"
         android:label="dialog_deck_creation"
-        tools:layout="@layout/dialog_deck_creation" >
-        <action
-            android:id="@+id/action_deckCreationDialogFragment_to_deckListFragment"
-            app:destination="@id/deckListFragment" />
-    </dialog>
-    <dialog
-        android:id="@+id/deckRemovingDialogFragment"
-        android:name="com.example.klaf.presentation.deckList.DeckRemovingDialogFragment"
-        android:label="dialog_deck_removing"
-        tools:layout="@layout/dialog_deck_removing" >
-        <argument
-            android:name="deckId"
-            app:argType="integer"
-            android:defaultValue="-1" />
-        <argument
-            android:name="deckName"
-            app:argType="string"
-            android:defaultValue="empty" />
-        <action
-            android:id="@+id/action_deckRemovingDialogFragment_to_deckListFragment"
-            app:destination="@id/deckListFragment" />
-    </dialog>
+        tools:layout="@layout/dialog_deck_creation" />
+
     <dialog
         android:id="@+id/deckRenamingDialogFragment"
-        android:name="com.example.klaf.presentation.deckList.DeckRenamingDialogFragment"
+        android:name="com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingDialogFragment"
         android:label="dialog_deck_renaming"
-        tools:layout="@layout/dialog_deck_renaming" >
+        tools:layout="@layout/dialog_deck_renaming">
         <argument
             android:name="deckId"
-            app:argType="integer"
-            android:defaultValue="-1" />
-        <action
-            android:id="@+id/action_deckRenamingDialogFragment_to_deckListFragment"
-            app:destination="@id/deckListFragment" />
+            app:argType="integer" />
     </dialog>
     <fragment
         android:id="@+id/cardAdditionFragment"
         android:name="com.example.klaf.presentation.cardAddition.CardAdditionFragment"
         android:label="fragment_card_addition"
-        tools:layout="@layout/fragment_card_addition" >
+        tools:layout="@layout/fragment_card_addition">
         <argument
             android:name="deckId"
-            app:argType="integer"
-            android:defaultValue="-1" />
-        <action
-            android:id="@+id/action_cardAdditionFragment_to_repeatFragment"
-            app:destination="@id/repeatFragment" />
+            android:defaultValue="-1"
+            app:argType="integer" />
+        <deepLink
+            android:id="@+id/deepLink"
+            app:action="ACTION_PROCESS_TEXT"
+            app:mimeType="text/plain"
+            app:uri="app://com.example.klaf" />
+
     </fragment>
     <dialog
         android:id="@+id/cardRemovingDialogFragment"
-        android:name="com.example.klaf.presentation.cardRemoving.CardRemovingDialogFragment"
+        android:name="com.example.klaf.presentation.deckRepetition.cardDeleting.CardDeletingDialogFragment"
         android:label="dialog_card_removing"
-        tools:layout="@layout/dialog_card_removing" >
+        tools:layout="@layout/dialog_card_deleting">
         <argument
             android:name="deckId"
-            app:argType="integer"
-            android:defaultValue="-1" />
+            android:defaultValue="-1"
+            app:argType="integer" />
         <argument
             android:name="cardId"
-            app:argType="integer"
-            android:defaultValue="-1" />
-        <action
-            android:id="@+id/action_cardRemovingDialogFragment_to_repeatFragment"
-            app:destination="@id/repeatFragment"
-            app:popUpTo="@id/repeatFragment"
-            app:popUpToInclusive="true"/>
+            android:defaultValue="-1"
+            app:argType="integer" />
     </dialog>
     <dialog
         android:id="@+id/deckRepetitionInfoDialogFragment"
         android:name="com.example.klaf.presentation.deckRepetitionInfo.DeckRepetitionInfoDialogFragment"
         android:label="dialog_deck_repetition_info"
-        tools:layout="@layout/dialog_deck_repetition_info" >
+        tools:layout="@layout/dialog_deck_repetition_info">
         <argument
             android:name="currentDuration"
             app:argType="string" />
-        <argument android:name="lastDuration"
+        <argument
+            android:name="lastDuration"
             app:argType="string" />
         <argument
             android:name="scheduledDate"
@@ -183,8 +119,10 @@
         <argument
             android:name="previusScheduledDate"
             app:argType="long" />
-        <argument android:name="lastRepetitionDate"
-            app:argType="string" />
+        <argument
+            android:name="lastRepetitionIterationDate"
+            app:argType="string"
+            app:nullable="true" />
         <argument
             android:name="repetitionQuantity"
             app:argType="string" />
@@ -192,5 +130,74 @@
             android:name="lastSuccessMark"
             app:argType="string" />
     </dialog>
+    <dialog
+        android:id="@+id/deckNavigationDialog"
+        android:name="com.example.klaf.presentation.deckList.deckNavigation.DeckNavigationDialogFragment"
+        android:label="dialog_deck_navigation"
+        tools:layout="@layout/dialog_deck_navigation">
+        <argument
+            android:name="deckId"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_deckNavigationDialog_to_deckRenamingDialogFragment"
+            app:destination="@id/deckRenamingDialogFragment"
+            app:popUpTo="@id/deckListFragment" />
+        <action
+            android:id="@+id/action_deckNavigationDialog_to_cardAdditionFragment"
+            app:destination="@id/cardAdditionFragment"
+            app:popUpTo="@id/deckListFragment" />
+        <action
+            android:id="@+id/action_deckNavigationDialog_to_cardViewerFragment"
+            app:destination="@id/cardViewerFragment"
+            app:popUpTo="@id/deckListFragment" />
+        <argument
+            android:name="deckName"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_deckNavigationDialog_to_deckDeletingDialogFragment"
+            app:destination="@id/deckDeletingDialogFragment"
+            app:popUpTo="@id/deckListFragment" />
+    </dialog>
+    <dialog
+        android:id="@+id/deckDeletingDialogFragment"
+        android:name="com.example.klaf.presentation.deckList.deckDeleting.DeckDeletingDialogFragment"
+        android:label="dialog_deck_deleting"
+        tools:layout="@layout/dialog_deck_deleting">
+        <argument
+            android:name="deckId"
+            app:argType="integer" />
+        <argument
+            android:name="deckName"
+            app:argType="string" />
+    </dialog>
+    <fragment
+        android:id="@+id/deckRepetitionFragment"
+        android:name="com.example.klaf.presentation.deckRepetition.DeckRepetitionFragment"
+        android:label="fragment_deck_repetion"
+        tools:layout="@layout/fragment_deck_repetion">
+        <action
+            android:id="@+id/action_deckRepetitionFragment_to_deckListFragment"
+            app:destination="@id/deckListFragment" />
+        <action
+            android:id="@+id/action_deckRepetitionFragment_to_cardEditingFragment"
+            app:destination="@id/cardEditingFragment" />
+        <action
+            android:id="@+id/action_deckRepetitionFragment_to_cardAdditionFragment"
+            app:destination="@id/cardAdditionFragment" />
+        <action
+            android:id="@+id/action_deckRepetitionFragment_to_cardRemovingDialogFragment"
+            app:destination="@id/cardRemovingDialogFragment" />
+        <action
+            android:id="@+id/action_deckRepetitionFragment_to_deckRepetitionInfoDialogFragment"
+            app:destination="@id/deckRepetitionInfoDialogFragment" />
+        <argument
+            android:name="deckId"
+            app:argType="integer" />
+    </fragment>
+    <dialog
+        android:id="@+id/dataSynchronizationDialogFragment"
+        android:name="com.example.klaf.presentation.deckList.dataSynchronization.DataSynchronizationDialogFragment"
+        android:label="dialog_data_synchronization"
+        tools:layout="@layout/dialog_data_synchronization" />
 
 </navigation>

@@ -2,12 +2,15 @@ package com.example.klaf.data.common
 
 import android.content.Context
 import androidx.work.*
-import com.example.klaf.presentation.common.Notifier
+import com.example.klaf.presentation.deckRepetition.DeckRepetitionNotifier
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
 
-class DeckRepetitionReminder(
-    private val appContext: Context,
-    private val parameters: WorkerParameters,
+class DeckRepetitionReminder @AssistedInject constructor(
+    @Assisted private val appContext: Context,
+    @Assisted private val parameters: WorkerParameters,
+    private val deckRepetitionNotifier: DeckRepetitionNotifier
 ) : CoroutineWorker(
     appContext = appContext,
     params = parameters
@@ -18,24 +21,23 @@ class DeckRepetitionReminder(
         private const val DECK_NAME = "deck_name"
         private const val DECK_ID = "deck_id"
 
-        private const val UNIQUE_WORK_NAME = "repetition_scheduling"
-
         fun WorkManager.scheduleDeckRepetition(
             deckName: String,
             deckId: Int,
-            scheduledTime: Long = 0,
+            atTime: Long = 0,
         ) {
-            this.enqueueUniqueWork(
-                UNIQUE_WORK_NAME,
+            cancelUniqueWork(deckId.toString())
+            enqueueUniqueWork(
+                deckId.toString(),
                 ExistingWorkPolicy.KEEP,
-                makeWorkRequest(deckName = deckName, deckId = deckId, scheduleTime = scheduledTime)
+                makeWorkRequest(deckName = deckName, deckId = deckId, atTime = atTime)
             )
         }
 
         private fun makeWorkRequest(
             deckName: String,
             deckId: Int,
-            scheduleTime: Long,
+            atTime: Long,
         ): OneTimeWorkRequest {
             val workData = workDataOf(
                 DECK_NAME to deckName,
@@ -45,14 +47,14 @@ class DeckRepetitionReminder(
             val currentTime = System.currentTimeMillis()
 
             return OneTimeWorkRequestBuilder<DeckRepetitionReminder>()
-                .setInitialDelay(scheduleTime - currentTime, TimeUnit.MILLISECONDS)
+                .setInitialDelay(atTime - currentTime, TimeUnit.MILLISECONDS)
                 .setInputData(workData)
                 .build()
         }
     }
 
     override suspend fun doWork(): Result {
-        Notifier(context = appContext).showNotification(
+        deckRepetitionNotifier.showNotification(
             deckName = parameters.inputData.getString(DECK_NAME) ?: "",
             deckId = parameters.inputData.getInt(DECK_ID, -1)
         )

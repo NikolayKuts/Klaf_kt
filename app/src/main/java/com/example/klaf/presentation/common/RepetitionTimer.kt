@@ -4,10 +4,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.example.klaf.presentation.common.TimerCountingState.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
@@ -32,17 +29,16 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
 
     val timerState = combine(_time, timerCountingState) { time, countingState ->
         RepetitionTimerState(time = time, countingState = countingState)
-    }.shareIn(
+    }.stateIn(
         scope = scope,
         started = SharingStarted.Lazily,
-        replay = 1
+        initialValue = RepetitionTimerState(_time.value, countingState = timerCountingState.value)
     )
 
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
         if (timerCountingState.value == PAUSED) {
             runCounting()
-            timerCountingState.value = RUN
         }
     }
 
@@ -50,7 +46,6 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
         super.onPause(owner)
         if (timerCountingState.value == RUN) {
             pauseCounting()
-            timerCountingState.value = PAUSED
         }
     }
 
@@ -82,8 +77,16 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
         _time.value = totalSeconds.timeAsString
     }
 
-    private fun pauseCounting() {
-        job?.cancel()
-        timerCountingState.value = PAUSED
+    fun resumeCounting() {
+        if (timerCountingState.value == PAUSED) {
+            runCounting()
+        }
+    }
+
+    fun pauseCounting() {
+        if (timerCountingState.value == RUN) {
+            job?.cancel()
+            timerCountingState.value = PAUSED
+        }
     }
 }
