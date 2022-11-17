@@ -23,12 +23,12 @@ import com.example.klaf.R
 import com.example.klaf.data.common.DataSynchronizationState.*
 import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
 import com.example.klaf.presentation.common.RoundButton
-import com.example.klaf.presentation.deckList.common.DeckListViewModel
+import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
 fun DataSynchronizationDialogView(
-    viewModel: DeckListViewModel,
+    viewModel: BaseDeckListViewModel,
     onClose: () -> Unit,
 ) {
     val synchronizationState by viewModel.dataSynchronizationState.collectAsState()
