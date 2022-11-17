@@ -82,4 +82,5 @@
     <string name="data_synchronization_notifier_content_text">Local and remote data synchronization</string>
     <string name="data_synchronization_dialog_sync_state_text">Local and remote data synchronization</string>
     <string name="data_synchronization_dialog_finish_state_text">The local and the remote data are synchronized</string>
+    <string name="problem_with_fetching_deck_repetition_info">There is a problem with fetching deck repetition info</string>
 </resources>

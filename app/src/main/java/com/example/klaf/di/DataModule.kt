@@ -40,6 +40,7 @@ class DataModule {
         return FirebaseFirestore.getInstance()
     }
 
+
     @Singleton
     @Provides
     fun provideDeckRepetitionInfoDataStore(

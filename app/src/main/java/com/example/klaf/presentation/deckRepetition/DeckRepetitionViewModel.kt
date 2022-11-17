@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.example.klaf.R
 import com.example.klaf.data.common.DeckRepetitionReminder.Companion.scheduleDeckRepetition
+import com.example.klaf.data.dataStore.DeckRepetitionInfo
 import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.domain.common.*
 import com.example.klaf.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE
@@ -26,7 +27,7 @@ import kotlinx.coroutines.flow.*
 import java.util.*
 
 class DeckRepetitionViewModel @AssistedInject constructor(
-    @Assisted deckId: Int,
+    @Assisted private val deckId: Int,
     fetchCards: FetchCardsUseCase,
     fetchDeckById: FetchDeckByIdUseCase,
     override val timer: RepetitionTimer,
@@ -34,7 +35,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     private val updateDeck: UpdateDeckUseCase,
     private val deleteCardFromDeck: DeleteCardFromDeckUseCase,
     private val workManager: WorkManager,
-    private val fetchDeckRepetitionInfo: FetchDeckRepetitionInfoUseCase,
+    fetchDeckRepetitionInfo: FetchDeckRepetitionInfoUseCase,
     private val saveDeckRepetitionInfo: SaveDeckRepetitionInfoUseCase,
 ) : BaseDeckRepetitionViewModel() {
 
@@ -95,6 +96,17 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         started = SharingStarted.Eagerly,
         replay = 1
     )
+
+    override val deckRepetitionInfo: SharedFlow<DeckRepetitionInfo?> =
+        fetchDeckRepetitionInfo(deckId = deckId)
+            .catch {
+                eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck_repetition_info)
+            }
+            .shareIn(
+                scope = viewModelScope,
+                started = SharingStarted.Eagerly,
+                replay = 1
+            )
 
     init {
         observeCardSource()
@@ -323,26 +335,31 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             },
             onCompletion = {
                 scheduleDeckRepetition(repeatedDeck = repeatedDeck, updatedDeck = updatedDeck)
+                screenState.value = FinishState
+            }
+        ) {
+            val currentIterationDuration = if (updatedDeck.repetitionQuantity.isEven()) {
+                updatedDeck.lastRepetitionIterationDuration.timeAsString
+            } else {
+                UNASSIGNED_STRING_VALUE
+            }
 
-                val currentIterationDuration = if (updatedDeck.repetitionQuantity.isEven()) {
-                    updatedDeck.lastRepetitionIterationDuration.timeAsString
-                } else {
-                    UNASSIGNED_STRING_VALUE
-                }
+            updateDeck(updatedDeck = updatedDeck)
 
-                screenState.value = FinishState(
+            saveDeckRepetitionInfo(
+                deckRepetitionInfo = DeckRepetitionInfo(
+                    deckId = deckId,
                     currentDuration = currentIterationDuration,
                     previousDuration = repeatedDeck.lastRepetitionIterationDuration.timeAsString,
                     scheduledDate = updatedDeck.scheduledDate ?: UNASSIGNED_LONG_VALUE,
-                    previousScheduledDate = repeatedDeck.scheduledDate ?: UNASSIGNED_LONG_VALUE,
+                    previousScheduledDate = repeatedDeck.scheduledDate
+                        ?: UNASSIGNED_LONG_VALUE,
                     lastRepetitionIterationDate = repeatedDeck.lastRepetitionIterationDate
                         ?.asFormattedDate(),
                     repetitionQuantity = updatedDeck.repetitionQuantity.toString(),
                     lastSuccessMark = repeatedDeck.isLastIterationSucceeded.toString()
                 )
-            }
-        ) {
-            updateDeck(updatedDeck = updatedDeck)
+            )
         }
     }
 
