@@ -20,6 +20,7 @@ import javax.inject.Inject
 class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
 
     private val args by navArgs<DeckRepetitionFragmentArgs>()
+    private val navController by lazy { findNavController() }
 
     @Inject
     lateinit var assistedFactory: RepetitionViewModelAssistedFactory
@@ -73,40 +74,26 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
         DeckRepetitionFragmentDirections.actionDeckRepetitionFragmentToCardEditingFragment(
             cardId = cardId,
             deckId = args.deckId
-        ).also { findNavController().navigate(it) }
+        ).also { navController.navigate(it) }
     }
 
     private fun navigateToCardAdditionFragment() {
         DeckRepetitionFragmentDirections.actionDeckRepetitionFragmentToCardAdditionFragment(
             deckId = args.deckId,
-        ).also { findNavController().navigate(it) }
+        ).also { navController.navigate(it) }
     }
 
     private fun navigateToCardRemovingDialogFragment(cardId: Int) {
         DeckRepetitionFragmentDirections.actionDeckRepetitionFragmentToCardRemovingDialogFragment(
             deckId = args.deckId,
             cardId = cardId
-        ).also { findNavController().navigate(it) }
+        ).also { navController.navigate(it) }
     }
 
     private fun navigateToDeckRepetitionInfoDialogFragment(
-        currentDuration: String,
-        lastDuration: String,
-        scheduledDate: Long,
-        previousScheduledDate: Long,
-        lastRepetitionIterationDate: String?,
-        repetitionQuantity: String,
-        lastSuccessMark: String,
     ) {
-        DeckRepetitionFragmentDirections
-            .actionDeckRepetitionFragmentToDeckRepetitionInfoDialogFragment(
-                currentDuration = currentDuration,
-                lastDuration = lastDuration,
-                scheduledDate = scheduledDate,
-                previusScheduledDate = previousScheduledDate,
-                lastRepetitionIterationDate = lastRepetitionIterationDate,
-                repetitionQuantity = repetitionQuantity,
-                lastSuccessMark = lastSuccessMark
-            ).also { findNavController().navigate(directions = it) }
+        navController.navigate(
+            resId = R.id.action_deckRepetitionFragment_to_deckRepetitionInfoDialogFragment
+        )
     }
 }

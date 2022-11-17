@@ -69,15 +69,7 @@ fun DeckRepetitionScreen(
     onDeleteCardClick: (cardId: Int) -> Unit,
     onAddCardClick: () -> Unit,
     onEditCardClick: (cardId: Int) -> Unit,
-    onFinishRepetition: (
-        currentDuration: String,
-        lastDuration: String,
-        scheduledDate: Long,
-        previousScheduledDate: Long,
-        lastRepetitionIterationDate: String?,
-        repetitionQuantity: String,
-        lastSuccessMark: String,
-    ) -> Unit,
+    onFinishRepetition: () -> Unit,
 ) {
     val deckRepetitionState by viewModel.cardState.collectAsState(initial = null)
     val deck by viewModel.deck.collectAsState(initial = null)
@@ -366,15 +358,7 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
 private fun RepetitionButtons(
     deckRepetitionState: DeckRepetitionState,
     viewModel: BaseDeckRepetitionViewModel,
-    onFinish: (
-        currentDuration: String,
-        lastDuration: String,
-        scheduledDate: Long,
-        previousScheduledDate: Long,
-        lastRepetitionIterationDate: String?,
-        repetitionQuantity: String,
-        lastSuccessMark: String,
-    ) -> Unit,
+    onFinish: () -> Unit,
 ) {
     val screenStateState = viewModel.screenState.collectAsState()
     var isOnFinishCalled by rememberAsMutableStateOf(value = false)
@@ -432,18 +416,7 @@ private fun RepetitionButtons(
         is RepetitionScreenState.FinishState -> {
             isOnFinishCalled.ifFalse {
                 isOnFinishCalled = true
-
-                with(screenState) {
-                    onFinish(
-                        currentDuration,
-                        previousDuration,
-                        scheduledDate,
-                        previousScheduledDate,
-                        lastRepetitionIterationDate,
-                        repetitionQuantity,
-                        lastSuccessMark
-                    )
-                }
+                onFinish()
             }
         }
     }

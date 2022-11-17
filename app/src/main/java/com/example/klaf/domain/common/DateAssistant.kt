@@ -30,9 +30,7 @@ fun getFormattedCurrentTime(): String {
     return dateFormat.format(date)
 }
 
-fun Long?.asFormattedDate(): String? {
-    if (this == null) return null
-
+fun Long.asFormattedDate(): String {
     val dateFormat: DateFormat = SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.getDefault())
     return dateFormat.format(this)
 }
