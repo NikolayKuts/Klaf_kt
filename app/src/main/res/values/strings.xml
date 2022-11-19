@@ -83,4 +83,11 @@
     <string name="data_synchronization_dialog_sync_state_text">Local and remote data synchronization</string>
     <string name="data_synchronization_dialog_finish_state_text">The local and the remote data are synchronized</string>
     <string name="problem_with_fetching_deck_repetition_info">There is a problem with fetching deck repetition info</string>
+    <string name="pointer_current">current</string>
+    <string name="pointer_previous">previous</string>
+    <string name="pointer_iteration_duration">iteration duration</string>
+    <string name="pointer_scheduled_date">scheduled date</string>
+    <string name="pointer_last_iteration_date">last iteration date</string>
+    <string name="pointer_repetiton_quantity">repetition quantity</string>
+    <string name="pointer_last_iteration_success_mark">last iteration success mark</string>
 </resources>
