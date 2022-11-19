@@ -3,6 +3,8 @@ package com.example.klaf.presentation.theme
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 
 data class MainTopographies(
     val materialTypographies: Typography,
@@ -28,13 +30,28 @@ data class MainTopographies(
     val viewingCardForeignWord: TextStyle,
     val viewingCardIpa: TextStyle,
     val viewingCardOrdinal: TextStyle,
+    val deckRepetitionInfoScreenTextStyles: DeckRepetitionInfoScreenTextStyles,
 )
 
-val Typography = Typography(
+data class DeckRepetitionInfoScreenTextStyles(
+    val pointer: TextStyle,
+    val deckName: TextStyle,
+)
+
+private val Typography = Typography(
     body1 = Body1,
     caption = Caption,
     subtitle1 = Subtitle1,
     button = Button,
+)
+
+private val CommonDeckRepetitionInfoScreenTextStyles = DeckRepetitionInfoScreenTextStyles(
+    pointer = Body1.copy(fontStyle = FontStyle.Italic),
+    deckName = Body1.copy(
+        fontStyle = FontStyle.Italic,
+        fontSize = CommonDimension.deckRepetitionInfoScreenDimensions.deckName,
+        fontWeight = FontWeight.Bold
+    )
 )
 
 val LightMainTypographies = MainTopographies(
@@ -61,6 +78,7 @@ val LightMainTypographies = MainTopographies(
     viewingCardForeignWord = LightViewingCardForeignWord,
     viewingCardIpa = LightViewingCardIpa,
     viewingCardOrdinal = LightViewingCardOrdinal,
+    deckRepetitionInfoScreenTextStyles = CommonDeckRepetitionInfoScreenTextStyles,
 )
 
 val DarkMainTypographies = MainTopographies(
@@ -87,4 +105,5 @@ val DarkMainTypographies = MainTopographies(
     viewingCardForeignWord = DarkViewingCardForeignWord,
     viewingCardIpa = DarkViewingCardIpa,
     viewingCardOrdinal = DarkViewingCardOrdinal,
+    deckRepetitionInfoScreenTextStyles = CommonDeckRepetitionInfoScreenTextStyles,
 )

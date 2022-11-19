@@ -12,18 +12,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.MeasurePolicy
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.klaf.R
 import com.example.klaf.domain.common.asFormattedDate
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.presentation.deckRepetition.BaseDeckRepetitionViewModel
+import com.example.klaf.presentation.theme.MainTheme
 import kotlin.math.max
 
 @Composable
@@ -93,7 +91,7 @@ fun InfoHeader(deck: Deck) {
             modifier = Modifier.weight(1F),
             text = deck.name,
             textAlign = TextAlign.End,
-            fontSize = 22.sp,
+            style = MainTheme.typographies.deckRepetitionInfoScreenTextStyles.deckName
         )
     }
 }
@@ -111,10 +109,12 @@ private fun DualInfoItem(
                     .fillMaxWidth()
                     .padding(bottom = 4.dp)
                     .clip(shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
-                    .background(Color(0x20FFFFFF))
+                    .background(
+                        color = MainTheme.colors.deckRepetitionInfoScreenColors.pointerBackground
+                    )
                     .padding(start = 4.dp),
                 text = title,
-                fontStyle = FontStyle.Italic,
+                style = MainTheme.typographies.deckRepetitionInfoScreenTextStyles.pointer
             )
             Row {
                 Text(text = stringResource(id = R.string.pointer_current))
@@ -196,6 +196,9 @@ fun infoItemLayoutMeasurePolicy(): MeasurePolicy = MeasurePolicy { measurables, 
 @Composable
 private fun InfoItemDivider() {
     Spacer(modifier = Modifier.height(8.dp))
-    Divider(Modifier.height(1.dp), color = Color(0xF1575757))
+    Divider(
+        modifier = Modifier.height(1.dp),
+        color = MainTheme.colors.deckRepetitionInfoScreenColors.itemDivider,
+    )
     Spacer(modifier = Modifier.height(16.dp))
 }
