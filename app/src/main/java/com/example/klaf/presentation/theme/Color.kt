@@ -55,11 +55,16 @@ data class MainColors(
 data class DeckRepetitionInfoScreenColors(
     val pointerBackground: Color,
     val itemDivider: Color,
+    val successMark: Color,
+    val failureMark: Color,
 )
 
 private val LightDeckRepetitionInfoScreenColors = DeckRepetitionInfoScreenColors(
     pointerBackground = Color(0x2F868686),
     itemDivider = Color(0xF1575757),
+    successMark = Color(0x759BDA51),
+    failureMark = Color(0x4DE98077),
+
 )
 
 val LightMainPalettes = MainColors(
@@ -84,7 +89,7 @@ val LightMainPalettes = MainColors(
     deckNavigationDialogSeparator = Color(0xFF818181),
     checkedLetterCell = Color(0xFFB0D9DF),
     uncheckedLetterCell = Color(0xFFE9E9E9),
-    cardTextFieldBackground = Color(0x00000000),
+    cardTextFieldBackground = Color.Transparent,
     cardNativeWord = Color(0xFFC0914C),
     cardForeignWord = Color(0xFFAD7DB4),
     cardIpa = Color(0xFF6EA5AC),
@@ -113,6 +118,8 @@ val LightMainPalettes = MainColors(
 private val DarkDeckRepetitionInfoScreenColors = DeckRepetitionInfoScreenColors(
     pointerBackground = Color(0x2F868686),
     itemDivider = Color(0xF1575757),
+    successMark = Color(0x3BAED382),
+    failureMark = Color(0x4DE98077),
 )
 
 val DarkMainPalettes = MainColors(
@@ -136,7 +143,7 @@ val DarkMainPalettes = MainColors(
     deckNavigationDialogSeparator = Color(0xFF4D4D4D),
     checkedLetterCell = Color(0xFF94B172),
     uncheckedLetterCell = Color(0xFF63665F),
-    cardTextFieldBackground = Color(0x00000000),
+    cardTextFieldBackground = Color.Transparent,
     cardNativeWord = Color(0xFFA9CA84),
     cardForeignWord = Color(0xFFD3AA6E),
     cardIpa = Color(0xFFB8ABD1),
