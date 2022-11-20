@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.MeasurePolicy
 import androidx.compose.ui.res.stringResource
@@ -19,6 +20,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
 import com.example.klaf.data.common.currentDurationAsTimeOrUnassigned
+import com.example.klaf.data.dataStore.DeckRepetitionSuccessMark
+import com.example.klaf.data.dataStore.DeckRepetitionSuccessMark.*
 import com.example.klaf.domain.common.asFormattedDate
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.presentation.common.timeAsString
@@ -36,7 +39,6 @@ fun DeckRepetitionInfoView(viewModel: BaseDeckRepetitionViewModel) {
             shape = RoundedCornerShape(24.dp),
             elevation = 4.dp,
         ) {
-
             Column(
                 modifier = Modifier
                     .defaultMinSize(minWidth = 300.dp)
@@ -48,7 +50,8 @@ fun DeckRepetitionInfoView(viewModel: BaseDeckRepetitionViewModel) {
                 DualInfoItem(
                     title = stringResource(R.string.pointer_iteration_duration),
                     current = info.currentDurationAsTimeOrUnassigned,
-                    previous = info.previousDuration.timeAsString
+                    previous = info.previousDuration.timeAsString,
+                    currentMark = info.currentIterationSuccessMark,
                 )
                 InfoItemDivider()
 
@@ -63,6 +66,7 @@ fun DeckRepetitionInfoView(viewModel: BaseDeckRepetitionViewModel) {
                     title = stringResource(R.string.pointer_last_iteration_success_mark),
                     current = stringResource(id = info.currentIterationSuccessMark.markResId),
                     previous = stringResource(id = info.previousIterationSuccessMark.markResId),
+                    currentMark = info.currentIterationSuccessMark,
                 )
                 InfoItemDivider()
 
@@ -83,7 +87,7 @@ fun DeckRepetitionInfoView(viewModel: BaseDeckRepetitionViewModel) {
 }
 
 @Composable
-fun InfoHeader(deck: Deck) {
+private fun InfoHeader(deck: Deck) {
     Row(modifier = Modifier
         .fillMaxWidth(), verticalAlignment = Alignment.Bottom
     ) {
@@ -105,6 +109,36 @@ private fun DualInfoItem(
     current: String,
     previous: String,
 ) {
+    DualInfoItemWithValueBackground(
+        title = title,
+        current = current,
+        previous = previous,
+        valueBackground = Color.Transparent
+    )
+}
+
+@Composable
+private fun DualInfoItem(
+    title: String,
+    current: String,
+    previous: String,
+    currentMark: DeckRepetitionSuccessMark,
+) {
+    DualInfoItemWithValueBackground(
+        title = title,
+        current = current,
+        previous = previous,
+        valueBackground = getValueBackgroundColorBySuccessMark(mark = currentMark)
+    )
+}
+
+@Composable
+private fun DualInfoItemWithValueBackground(
+    title: String,
+    current: String,
+    previous: String,
+    valueBackground: Color,
+) {
     Column {
         Column {
             Text(
@@ -119,18 +153,25 @@ private fun DualInfoItem(
                 text = title,
                 style = MainTheme.typographies.deckRepetitionInfoScreenTextStyles.pointer
             )
-            Row {
-                Text(text = stringResource(id = R.string.pointer_current))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     modifier = Modifier.weight(1F),
+                    text = stringResource(id = R.string.pointer_current))
+                Text(
+                    modifier = Modifier
+                        .clip(shape = RoundedCornerShape(4.dp))
+                        .background(color = valueBackground)
+                        .valuePadding(),
                     text = current,
-                    textAlign = TextAlign.End
                 )
             }
-            Row {
-                Text(text = stringResource(R.string.pointer_previous))
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     modifier = Modifier.weight(1F),
+                    text = stringResource(R.string.pointer_previous))
+                Text(
+                    modifier = Modifier.valuePadding(),
                     text = previous,
                     textAlign = TextAlign.End
                 )
@@ -151,7 +192,7 @@ private fun FlowableInfoItem(textPointer: String, infoValue: String) {
 }
 
 @Composable
-fun InfoFlowLayout(
+private fun InfoFlowLayout(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
@@ -162,39 +203,40 @@ fun InfoFlowLayout(
     )
 }
 
-fun infoItemLayoutMeasurePolicy(): MeasurePolicy = MeasurePolicy { measurables, constraints ->
-    val placeables = measurables.map { measurable ->
-        measurable.measure(constraints)
-    }
-    val firstElement = placeables.first()
-    val secondElement = placeables[1]
-    val potentialMaxContentWidth = placeables.sumOf { it.measuredWidth }
-    val totalContentHeight = if (potentialMaxContentWidth < constraints.maxWidth) {
-        max(firstElement.height, secondElement.height)
-    } else {
-        firstElement.height + secondElement.height
-    }
-
-    layout(
-        width = constraints.maxWidth,
-        height = totalContentHeight
-    ) {
-        val startPosition = 0
-        val xPosition: Int
-        val yPosition: Int
-
-        if (potentialMaxContentWidth > constraints.maxWidth) {
-            xPosition = constraints.maxWidth - secondElement.width
-            yPosition = firstElement.height
+private fun infoItemLayoutMeasurePolicy(): MeasurePolicy =
+    MeasurePolicy { measurables, constraints ->
+        val placeables = measurables.map { measurable ->
+            measurable.measure(constraints)
+        }
+        val firstElement = placeables.first()
+        val secondElement = placeables[1]
+        val potentialMaxContentWidth = placeables.sumOf { it.measuredWidth }
+        val totalContentHeight = if (potentialMaxContentWidth < constraints.maxWidth) {
+            max(firstElement.height, secondElement.height)
         } else {
-            xPosition = constraints.maxWidth - secondElement.width
-            yPosition = startPosition
+            firstElement.height + secondElement.height
         }
 
-        firstElement.placeRelative(x = startPosition, y = startPosition)
-        secondElement.placeRelative(x = xPosition, y = yPosition)
+        layout(
+            width = constraints.maxWidth,
+            height = totalContentHeight
+        ) {
+            val startPosition = 0
+            val xPosition: Int
+            val yPosition: Int
+
+            if (potentialMaxContentWidth > constraints.maxWidth) {
+                xPosition = constraints.maxWidth - secondElement.width
+                yPosition = firstElement.height
+            } else {
+                xPosition = constraints.maxWidth - secondElement.width
+                yPosition = startPosition
+            }
+
+            firstElement.placeRelative(x = startPosition, y = startPosition)
+            secondElement.placeRelative(x = xPosition, y = yPosition)
+        }
     }
-}
 
 @Composable
 private fun InfoItemDivider() {
@@ -204,4 +246,17 @@ private fun InfoItemDivider() {
         color = MainTheme.colors.deckRepetitionInfoScreenColors.itemDivider,
     )
     Spacer(modifier = Modifier.height(16.dp))
+}
+
+fun Modifier.valuePadding(): Modifier {
+    return this.padding(start = 4.dp, top = 2.dp, end = 4.dp, bottom = 2.dp)
+}
+
+@Composable
+private fun getValueBackgroundColorBySuccessMark(mark: DeckRepetitionSuccessMark): Color {
+    return when (mark) {
+        SUCCESS -> MainTheme.colors.deckRepetitionInfoScreenColors.successMark
+        FAILURE -> MainTheme.colors.deckRepetitionInfoScreenColors.failureMark
+        UNASSIGNED -> Color.Transparent
+    }
 }
