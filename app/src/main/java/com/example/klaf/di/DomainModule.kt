@@ -1,6 +1,7 @@
 package com.example.klaf.di
 
 import com.example.klaf.data.common.OldAppKlafDataTransferRepositoryImpl
+import com.example.klaf.data.dataStore.implementations.DataStoreDeckRepetitionInfoRepositoryImpl
 import com.example.klaf.data.firestore.repositoryImplementations.DeckRepositoryFirestoreImp
 import com.example.klaf.data.firestore.repositoryImplementations.CardRepositoryFirestoreImp
 import com.example.klaf.data.firestore.repositoryImplementations.StorageSaveVersionRepositoryFirestoreImp
@@ -74,4 +75,9 @@ interface DomainModule {
     fun bindStorageTransactionRepository(
         repository: StorageTransactionRepositoryRoomImp
     ): StorageTransactionRepository
+
+    @Binds
+    fun bindDeckRepetitionInfoRepository(
+        repository: DataStoreDeckRepetitionInfoRepositoryImpl
+    ): DeckRepetitionInfoRepository
 }

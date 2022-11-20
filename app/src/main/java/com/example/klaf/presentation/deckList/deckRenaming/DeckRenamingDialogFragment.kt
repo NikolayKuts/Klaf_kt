@@ -12,7 +12,7 @@ import com.example.klaf.domain.entities.Deck
 import com.example.klaf.presentation.common.TransparentDialogFragment
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showSnackBar
-import com.example.klaf.presentation.deckList.common.DeckListViewModel
+import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
 import com.example.klaf.presentation.theme.MainTheme
 
 class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_deck_renaming) {
@@ -20,7 +20,7 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
     private val args by navArgs<DeckRenamingDialogFragmentArgs>()
     private val navController by lazy { findNavController() }
 
-    private val viewModel by navGraphViewModels<DeckListViewModel>(R.id.deckListFragment)
+    private val viewModel by navGraphViewModels<BaseDeckListViewModel>(R.id.deckListFragment)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

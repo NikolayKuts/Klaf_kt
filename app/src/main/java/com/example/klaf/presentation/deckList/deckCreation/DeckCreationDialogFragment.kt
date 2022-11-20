@@ -10,12 +10,12 @@ import com.example.klaf.R
 import com.example.klaf.presentation.common.TransparentDialogFragment
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showSnackBar
-import com.example.klaf.presentation.deckList.common.DeckListViewModel
+import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
 import com.example.klaf.presentation.theme.MainTheme
 
 class DeckCreationDialogFragment : TransparentDialogFragment(R.layout.dialog_deck_creation) {
 
-    private val viewModel by navGraphViewModels<DeckListViewModel>(R.id.deckListFragment)
+    private val viewModel by navGraphViewModels<BaseDeckListViewModel>(R.id.deckListFragment)
 
     private val navController by lazy { findNavController() }
 

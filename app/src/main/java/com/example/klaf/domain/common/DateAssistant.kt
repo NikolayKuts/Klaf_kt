@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 private const val DERATION_FACTOR = 0.07
 private const val DECREASE_FACTOR = 0.1
 
-private const val DATE_FORMAT_PATTERN = "dd-MM-yy|HH:mm"
+private const val DATE_FORMAT_PATTERN = "dd.MM.yy|HH:mm"
 
 private const val UNASSIGNED_DATE_SYMBOL = "---"
 private const val MINUS_SYMBOL = "-"
@@ -30,9 +30,7 @@ fun getFormattedCurrentTime(): String {
     return dateFormat.format(date)
 }
 
-fun Long?.asFormattedDate(): String? {
-    if (this == null) return null
-
+fun Long.asFormattedDate(): String {
     val dateFormat: DateFormat = SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.getDefault())
     return dateFormat.format(this)
 }

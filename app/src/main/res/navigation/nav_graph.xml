@@ -107,28 +107,6 @@
         android:name="com.example.klaf.presentation.deckRepetitionInfo.DeckRepetitionInfoDialogFragment"
         android:label="dialog_deck_repetition_info"
         tools:layout="@layout/dialog_deck_repetition_info">
-        <argument
-            android:name="currentDuration"
-            app:argType="string" />
-        <argument
-            android:name="lastDuration"
-            app:argType="string" />
-        <argument
-            android:name="scheduledDate"
-            app:argType="long" />
-        <argument
-            android:name="previusScheduledDate"
-            app:argType="long" />
-        <argument
-            android:name="lastRepetitionIterationDate"
-            app:argType="string"
-            app:nullable="true" />
-        <argument
-            android:name="repetitionQuantity"
-            app:argType="string" />
-        <argument
-            android:name="lastSuccessMark"
-            app:argType="string" />
     </dialog>
     <dialog
         android:id="@+id/deckNavigationDialog"

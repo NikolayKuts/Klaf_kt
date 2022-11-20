@@ -21,6 +21,15 @@ data class MainDimensions(
     val ipaPromptsTextSize: TextUnit,
     val viewingCardDeckNameTextSize: TextUnit,
     val viewingCardContentTextSize: TextUnit,
+    val deckRepetitionInfoScreenDimensions: DeckRepetitionInfoScreenDimensions
+)
+
+data class DeckRepetitionInfoScreenDimensions(
+    val deckName: TextUnit,
+)
+
+private val DeckRepetitionInfoScreenSises = DeckRepetitionInfoScreenDimensions(
+    deckName = 22.sp
 )
 
 val CommonDimension = MainDimensions(
@@ -37,4 +46,5 @@ val CommonDimension = MainDimensions(
     cardWordTextSize = 22.sp,
     ipaPromptsTextSize = 18.sp,
     viewingCardContentTextSize =18.sp,
+    deckRepetitionInfoScreenDimensions = DeckRepetitionInfoScreenSises
 )

@@ -48,14 +48,30 @@ data class MainColors(
     val viewingCardOrdinal: Color,
     val dataSynchronizationLabelBackground: Color,
     val dataSynchronizationLabelBackgroundSecond: Color,
-    val dataSynchronizationProgressIndicator: Color
+    val dataSynchronizationProgressIndicator: Color,
+    val deckRepetitionInfoScreenColors: DeckRepetitionInfoScreenColors,
+)
+
+data class DeckRepetitionInfoScreenColors(
+    val pointerBackground: Color,
+    val itemDivider: Color,
+    val successMark: Color,
+    val failureMark: Color,
+)
+
+private val LightDeckRepetitionInfoScreenColors = DeckRepetitionInfoScreenColors(
+    pointerBackground = Color(0x2F868686),
+    itemDivider = Color(0xF1575757),
+    successMark = Color(0x759BDA51),
+    failureMark = Color(0x4DE98077),
+
 )
 
 val LightMainPalettes = MainColors(
     materialColors = lightColors(
         primary = Color(0xFFBEDB9C),
         onPrimary = Color(0xFF636363),
-    onBackground = Color(0xFF474747)
+        onBackground = Color(0xFF474747)
     ),
     statusBarBackground = Color(0xFF8AA768),
     lightDeckItemBackground = Color(0xFFFFFFFF),
@@ -73,7 +89,7 @@ val LightMainPalettes = MainColors(
     deckNavigationDialogSeparator = Color(0xFF818181),
     checkedLetterCell = Color(0xFFB0D9DF),
     uncheckedLetterCell = Color(0xFFE9E9E9),
-    cardTextFieldBackground = Color(0x8BC34A),
+    cardTextFieldBackground = Color.Transparent,
     cardNativeWord = Color(0xFFC0914C),
     cardForeignWord = Color(0xFFAD7DB4),
     cardIpa = Color(0xFF6EA5AC),
@@ -96,6 +112,14 @@ val LightMainPalettes = MainColors(
     dataSynchronizationLabelBackground = Color(0xFFFFFFFF),
     dataSynchronizationLabelBackgroundSecond = Color(0xFFE2F7D7),
     dataSynchronizationProgressIndicator = Color(0xFF92CFC3),
+    deckRepetitionInfoScreenColors = LightDeckRepetitionInfoScreenColors,
+)
+
+private val DarkDeckRepetitionInfoScreenColors = DeckRepetitionInfoScreenColors(
+    pointerBackground = Color(0x2F868686),
+    itemDivider = Color(0xF1575757),
+    successMark = Color(0x3BAED382),
+    failureMark = Color(0x4DE98077),
 )
 
 val DarkMainPalettes = MainColors(
@@ -119,7 +143,7 @@ val DarkMainPalettes = MainColors(
     deckNavigationDialogSeparator = Color(0xFF4D4D4D),
     checkedLetterCell = Color(0xFF94B172),
     uncheckedLetterCell = Color(0xFF63665F),
-    cardTextFieldBackground = Color(0x000000),
+    cardTextFieldBackground = Color.Transparent,
     cardNativeWord = Color(0xFFA9CA84),
     cardForeignWord = Color(0xFFD3AA6E),
     cardIpa = Color(0xFFB8ABD1),
@@ -142,4 +166,5 @@ val DarkMainPalettes = MainColors(
     dataSynchronizationLabelBackground = Color(0xFF1F1F1F),
     dataSynchronizationLabelBackgroundSecond = Color(0xFF576F58),
     dataSynchronizationProgressIndicator = Color(0xF0AC6761),
+    deckRepetitionInfoScreenColors = DarkDeckRepetitionInfoScreenColors,
 )
