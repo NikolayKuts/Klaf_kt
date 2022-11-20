@@ -4,7 +4,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.example.klaf.R
 import com.example.klaf.data.common.DeckRepetitionReminder.Companion.scheduleDeckRepetition
+import com.example.klaf.data.common.lastIterationSuccessMark
 import com.example.klaf.data.dataStore.DeckRepetitionInfo
+import com.example.klaf.data.dataStore.DeckRepetitionSuccessMark
 import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.domain.common.*
 import com.example.klaf.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE
@@ -18,7 +20,6 @@ import com.example.klaf.domain.enums.DifficultyRecallingLevel.*
 import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.RepetitionTimer
-import com.example.klaf.presentation.common.timeAsString
 import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.deckRepetition.RepetitionScreenState.*
 import dagger.assisted.Assisted
@@ -338,26 +339,29 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 screenState.value = FinishState
             }
         ) {
-            val currentIterationDuration = if (updatedDeck.repetitionQuantity.isEven()) {
-                updatedDeck.lastRepetitionIterationDuration.timeAsString
+            val currentIterationDuration: Long
+            val currentIterationSuccessMark: DeckRepetitionSuccessMark
+
+            if (updatedDeck.repetitionQuantity.isEven()) {
+                currentIterationDuration = updatedDeck.lastRepetitionIterationDuration
+                currentIterationSuccessMark = updatedDeck.lastIterationSuccessMark
             } else {
-                UNASSIGNED_STRING_VALUE
+                currentIterationDuration = UNASSIGNED_LONG_VALUE
+                currentIterationSuccessMark = DeckRepetitionSuccessMark.UNASSIGNED
             }
 
             updateDeck(updatedDeck = updatedDeck)
-
             saveDeckRepetitionInfo(
                 deckRepetitionInfo = DeckRepetitionInfo(
                     deckId = deckId,
                     currentDuration = currentIterationDuration,
-                    previousDuration = repeatedDeck.lastRepetitionIterationDuration.timeAsString,
+                    previousDuration = repeatedDeck.lastRepetitionIterationDuration,
                     scheduledDate = updatedDeck.scheduledDate ?: UNASSIGNED_LONG_VALUE,
-                    previousScheduledDate = repeatedDeck.scheduledDate
-                        ?: UNASSIGNED_LONG_VALUE,
-                    lastRepetitionIterationDate = repeatedDeck.lastRepetitionIterationDate
-                        ?.asFormattedDate(),
-                    repetitionQuantity = updatedDeck.repetitionQuantity.toString(),
-                    lastSuccessMark = repeatedDeck.isLastIterationSucceeded.toString()
+                    previousScheduledDate = repeatedDeck.scheduledDateOrUnassignedValue,
+                    lastIterationDate = repeatedDeck.lastRepetitionIterationDate,
+                    repetitionQuantity = updatedDeck.repetitionQuantity,
+                    currentIterationSuccessMark = currentIterationSuccessMark,
+                    previousIterationSuccessMark = repeatedDeck.lastIterationSuccessMark
                 )
             )
         }
