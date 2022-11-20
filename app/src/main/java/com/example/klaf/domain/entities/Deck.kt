@@ -1,5 +1,6 @@
 package com.example.klaf.domain.entities
 
+import com.example.klaf.domain.common.UNASSIGNED_LONG_VALUE
 import java.util.concurrent.TimeUnit
 
 data class Deck(
@@ -25,6 +26,7 @@ data class Deck(
 
     val lastRepetitionIterationDate: Long? get() = repetitionIterationDates.lastOrNull()
     val scheduledDate: Long? get() = scheduledIterationDates.lastOrNull()
+    val scheduledDateOrUnassignedValue: Long get() = scheduledDate ?: UNASSIGNED_LONG_VALUE
     val existenceDayQuantity: Long get() {
         return TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - creationDate) + 1
     }

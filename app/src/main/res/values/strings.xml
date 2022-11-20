@@ -88,6 +88,9 @@
     <string name="pointer_iteration_duration">iteration duration</string>
     <string name="pointer_scheduled_date">scheduled date</string>
     <string name="pointer_last_iteration_date">last iteration date</string>
-    <string name="pointer_repetiton_quantity">repetition quantity</string>
+    <string name="pointer_repetition_quantity">repetition quantity</string>
     <string name="pointer_last_iteration_success_mark">last iteration success mark</string>
+    <string name="deck_repetition_mark_successful">successful</string>
+    <string name="deck_repetition_mark_failed">failed</string>
+    <string name="unassigned_string_value">---</string>
 </resources>

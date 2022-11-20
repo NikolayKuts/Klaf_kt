@@ -18,8 +18,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
+import com.example.klaf.data.common.currentDurationAsTimeOrUnassigned
 import com.example.klaf.domain.common.asFormattedDate
 import com.example.klaf.domain.entities.Deck
+import com.example.klaf.presentation.common.timeAsString
 import com.example.klaf.presentation.deckRepetition.BaseDeckRepetitionViewModel
 import com.example.klaf.presentation.theme.MainTheme
 import kotlin.math.max
@@ -29,7 +31,7 @@ fun DeckRepetitionInfoView(viewModel: BaseDeckRepetitionViewModel) {
     val deckRepetitionInfo by viewModel.deckRepetitionInfo.collectAsState(initial = null)
     val deck = viewModel.deck.collectAsState(initial = null).value ?: return
 
-    deckRepetitionInfo?.let {
+    deckRepetitionInfo?.let { info ->
         Card(
             shape = RoundedCornerShape(24.dp),
             elevation = 4.dp,
@@ -45,34 +47,35 @@ fun DeckRepetitionInfoView(viewModel: BaseDeckRepetitionViewModel) {
 
                 DualInfoItem(
                     title = stringResource(R.string.pointer_iteration_duration),
-                    current = it.currentDuration,
-                    previous = it.previousDuration
+                    current = info.currentDurationAsTimeOrUnassigned,
+                    previous = info.previousDuration.timeAsString
                 )
                 InfoItemDivider()
 
                 DualInfoItem(
                     title = stringResource(R.string.pointer_scheduled_date),
-                    current = it.scheduledDate.asFormattedDate(),
-                    previous = it.previousScheduledDate.asFormattedDate(),
+                    current = info.scheduledDate.asFormattedDate(),
+                    previous = info.previousScheduledDate.asFormattedDate(),
                 )
                 InfoItemDivider()
 
                 DualInfoItem(
                     title = stringResource(R.string.pointer_last_iteration_success_mark),
-                    current = "---",
-                    previous = it.lastSuccessMark,
+                    current = stringResource(id = info.currentIterationSuccessMark.markResId),
+                    previous = stringResource(id = info.previousIterationSuccessMark.markResId),
                 )
                 InfoItemDivider()
 
                 FlowableInfoItem(
                     textPointer = stringResource(R.string.pointer_last_iteration_date),
-                    infoValue = it.lastRepetitionIterationDate ?: "---",
+                    infoValue = info.lastIterationDate?.asFormattedDate()
+                        ?: stringResource(id = R.string.unassigned_string_value),
                 )
                 InfoItemDivider()
 
                 FlowableInfoItem(
-                    textPointer = stringResource(R.string.pointer_repetiton_quantity),
-                    infoValue = it.repetitionQuantity,
+                    textPointer = stringResource(R.string.pointer_repetition_quantity),
+                    infoValue = info.repetitionQuantity.toString(),
                 )
             }
         }
