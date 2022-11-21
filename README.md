@@ -57,3 +57,7 @@ https://github.com/NikolayKuts/Klaf
 
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_deleting_dialog_dark_theme.png)
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_creating_dialog_light_theme.png)
+
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/success_mark_indication_light_theme.jpg)
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/success_mark_indication_dark_theme.jpg)
+
