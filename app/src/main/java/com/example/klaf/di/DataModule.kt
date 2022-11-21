@@ -7,10 +7,9 @@ import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
 import androidx.work.WorkManager
 import com.example.klaf.data.dataStore.DECK_REPETITION_INFO_FILE_NAME
-import com.example.klaf.data.dataStore.DeckRepetitionInfos
+import com.example.klaf.domain.entities.DeckRepetitionInfos
 import com.example.klaf.data.dataStore.DeckRepetitionInfosSerializer
 import com.example.klaf.data.room.databases.KlafRoomDatabase
-import com.example.klaf.presentation.common.log
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
