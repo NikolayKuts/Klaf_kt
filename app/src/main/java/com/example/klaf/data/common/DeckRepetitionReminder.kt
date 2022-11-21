@@ -1,16 +1,18 @@
 package com.example.klaf.data.common
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.example.klaf.presentation.deckRepetition.DeckRepetitionNotifier
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
 
+@HiltWorker
 class DeckRepetitionReminder @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted private val parameters: WorkerParameters,
-    private val deckRepetitionNotifier: DeckRepetitionNotifier
+    private val deckRepetitionNotifier: DeckRepetitionNotifier,
 ) : CoroutineWorker(
     appContext = appContext,
     params = parameters
@@ -43,11 +45,11 @@ class DeckRepetitionReminder @AssistedInject constructor(
                 DECK_NAME to deckName,
                 DECK_ID to deckId
             )
-
             val currentTime = System.currentTimeMillis()
+            val delayDuration = atTime - currentTime
 
             return OneTimeWorkRequestBuilder<DeckRepetitionReminder>()
-                .setInitialDelay(atTime - currentTime, TimeUnit.MILLISECONDS)
+                .setInitialDelay(delayDuration, TimeUnit.MILLISECONDS)
                 .setInputData(workData)
                 .build()
         }

@@ -60,7 +60,7 @@ fun DeckRepetitionInfoView(viewModel: BaseDeckRepetitionViewModel) {
                 InfoItemDivider()
 
                 ScheduledDateItem(
-                    title = stringResource(R.string.pointer_scheduled_date),
+                    title = stringResource(R.string.pointer_scheduled_repetition),
                     nextValue = info.calculateDetailedScheduledRange(context = context),
                     previousValue = info.calculateDetailedPreviousScheduledRange(context = context),
                 )
