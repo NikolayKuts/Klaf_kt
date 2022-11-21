@@ -3,6 +3,7 @@ package com.example.klaf.domain.common
 import android.content.Context
 import com.example.klaf.R
 import com.example.klaf.domain.entities.Deck
+import com.example.klaf.domain.entities.DeckRepetitionInfo
 import com.example.klaf.domain.enums.DayFactor.*
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -109,6 +110,18 @@ fun Deck.calculateDetailedScheduledRange(context: Context): String {
     return this.scheduledDate.calculateDetailedScheduledRange(context = context)
 }
 
+fun DeckRepetitionInfo.calculateDetailedScheduledRange(context: Context): String {
+    return this.scheduledDate.calculateDetailedScheduledRange(context = context)
+}
+
+fun DeckRepetitionInfo.calculateDetailedPreviousScheduledRange(context: Context): String {
+    return this.previousScheduledDate.calculateDetailedScheduledRange(context = context)
+}
+
+fun DeckRepetitionInfo.calculateDetailedLastIterationRange(context: Context): String {
+    return this.previousScheduledDate.calculateDetailedScheduledRange(context = context)
+}
+
 fun Long?.calculateDetailedScheduledRange(context: Context): String {
     if (this == null || this <= 0) return UNASSIGNED_DATE_SYMBOL
     val currentTime = System.currentTimeMillis()
@@ -136,7 +149,6 @@ fun Deck.getScheduledDateStateByByCalculatedRange(context: Context): ScheduledDa
     return ScheduledDateState(
         range = range,
         isOverdue = range.firstOrNull()?.toString() == MINUS_SYMBOL
-
     )
 }
 
