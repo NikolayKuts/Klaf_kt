@@ -1,4 +1,4 @@
-package com.example.klaf.data.dataStore
+package com.example.klaf.domain.entities
 
 import androidx.annotation.StringRes
 import com.example.klaf.R

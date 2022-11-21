@@ -3,11 +3,7 @@ package com.example.klaf.domain.useCases
 import com.example.klaf.di.CardRepositoryRoomImp
 import com.example.klaf.di.DeckRepositoryRoomImp
 import com.example.klaf.di.StorageSaveVersionRepositoryRoomImp
-import com.example.klaf.domain.repositories.CardRepository
-import com.example.klaf.domain.repositories.DeckRepository
-import com.example.klaf.domain.repositories.StorageSaveVersionRepository
-import com.example.klaf.domain.repositories.StorageTransactionRepository
-import com.example.klaf.presentation.common.log
+import com.example.klaf.domain.repositories.*
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
@@ -19,20 +15,24 @@ class RemoveDeckUseCase @Inject constructor(
     @StorageSaveVersionRepositoryRoomImp
     private val localStorageSaveVersionRepository: StorageSaveVersionRepository,
     private val localStorageTransactionRepository: StorageTransactionRepository,
+    private val deckRepetitionInfoRepository: DeckRepetitionInfoRepository
 ) {
 
     suspend operator fun invoke(deckId: Int) {
         withContext(Dispatchers.IO) {
             localStorageTransactionRepository.performWithTransaction {
                 coroutineScope {
-                    val deckDeletingJob = launch() {
+                    val deckDeletingJob = launch {
                         deckRepository.removeDeck(deckId = deckId)
                     }
-                    val cardDeletingJob = launch() {
+                    val cardDeletingJob = launch {
                         cardRepository.removeCardsOfDeck(deckId = deckId)
                     }
+                    val deckRepetitionInfoDeleting = launch {
+                        deckRepetitionInfoRepository.removeDeckRepetitionInfo(deckId = deckId)
+                    }
 
-                    joinAll(deckDeletingJob, cardDeletingJob)
+                    joinAll(deckDeletingJob, cardDeletingJob, deckRepetitionInfoDeleting)
                     localStorageSaveVersionRepository.increaseVersion()
                 }
             }

@@ -15,15 +15,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.MeasurePolicy
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
 import com.example.klaf.data.common.currentDurationAsTimeOrUnassigned
-import com.example.klaf.data.dataStore.DeckRepetitionSuccessMark
-import com.example.klaf.data.dataStore.DeckRepetitionSuccessMark.*
-import com.example.klaf.domain.common.asFormattedDate
+import com.example.klaf.domain.common.calculateDetailedLastIterationRange
+import com.example.klaf.domain.common.calculateDetailedPreviousScheduledRange
+import com.example.klaf.domain.common.calculateDetailedScheduledRange
 import com.example.klaf.domain.entities.Deck
+import com.example.klaf.domain.entities.DeckRepetitionSuccessMark
+import com.example.klaf.domain.entities.DeckRepetitionSuccessMark.*
 import com.example.klaf.presentation.common.timeAsString
 import com.example.klaf.presentation.deckRepetition.BaseDeckRepetitionViewModel
 import com.example.klaf.presentation.theme.MainTheme
@@ -33,6 +36,7 @@ import kotlin.math.max
 fun DeckRepetitionInfoView(viewModel: BaseDeckRepetitionViewModel) {
     val deckRepetitionInfo by viewModel.deckRepetitionInfo.collectAsState(initial = null)
     val deck = viewModel.deck.collectAsState(initial = null).value ?: return
+    val context = LocalContext.current
 
     deckRepetitionInfo?.let { info ->
         Card(
@@ -49,31 +53,30 @@ fun DeckRepetitionInfoView(viewModel: BaseDeckRepetitionViewModel) {
 
                 DualInfoItem(
                     title = stringResource(R.string.pointer_iteration_duration),
-                    current = info.currentDurationAsTimeOrUnassigned,
-                    previous = info.previousDuration.timeAsString,
+                    currentValue = info.currentDurationAsTimeOrUnassigned,
+                    previousValue = info.previousDuration.timeAsString,
                     currentMark = info.currentIterationSuccessMark,
                 )
                 InfoItemDivider()
 
-                DualInfoItem(
-                    title = stringResource(R.string.pointer_scheduled_date),
-                    current = info.scheduledDate.asFormattedDate(),
-                    previous = info.previousScheduledDate.asFormattedDate(),
+                ScheduledDateItem(
+                    title = stringResource(R.string.pointer_scheduled_repetition),
+                    nextValue = info.calculateDetailedScheduledRange(context = context),
+                    previousValue = info.calculateDetailedPreviousScheduledRange(context = context),
                 )
                 InfoItemDivider()
 
                 DualInfoItem(
                     title = stringResource(R.string.pointer_last_iteration_success_mark),
-                    current = stringResource(id = info.currentIterationSuccessMark.markResId),
-                    previous = stringResource(id = info.previousIterationSuccessMark.markResId),
+                    currentValue = stringResource(id = info.currentIterationSuccessMark.markResId),
+                    previousValue = stringResource(id = info.previousIterationSuccessMark.markResId),
                     currentMark = info.currentIterationSuccessMark,
                 )
                 InfoItemDivider()
 
                 FlowableInfoItem(
                     textPointer = stringResource(R.string.pointer_last_iteration_date),
-                    infoValue = info.lastIterationDate?.asFormattedDate()
-                        ?: stringResource(id = R.string.unassigned_string_value),
+                    infoValue = info.calculateDetailedLastIterationRange(context = context)
                 )
                 InfoItemDivider()
 
@@ -104,15 +107,17 @@ private fun InfoHeader(deck: Deck) {
 }
 
 @Composable
-private fun DualInfoItem(
+private fun ScheduledDateItem(
     title: String,
-    current: String,
-    previous: String,
+    nextValue: String,
+    previousValue: String,
 ) {
     DualInfoItemWithValueBackground(
         title = title,
-        current = current,
-        previous = previous,
+        firstPointer = stringResource(id = R.string.pointer_next),
+        firstValue = nextValue,
+        secondPointer = stringResource(id = R.string.pointer_previous),
+        secondValue = previousValue,
         valueBackground = Color.Transparent
     )
 }
@@ -120,14 +125,16 @@ private fun DualInfoItem(
 @Composable
 private fun DualInfoItem(
     title: String,
-    current: String,
-    previous: String,
+    currentValue: String,
+    previousValue: String,
     currentMark: DeckRepetitionSuccessMark,
 ) {
     DualInfoItemWithValueBackground(
         title = title,
-        current = current,
-        previous = previous,
+        firstPointer = stringResource(id = R.string.pointer_current),
+        firstValue = currentValue,
+        secondPointer = stringResource(id = R.string.pointer_previous),
+        secondValue = previousValue,
         valueBackground = getValueBackgroundColorBySuccessMark(mark = currentMark)
     )
 }
@@ -135,8 +142,10 @@ private fun DualInfoItem(
 @Composable
 private fun DualInfoItemWithValueBackground(
     title: String,
-    current: String,
-    previous: String,
+    firstPointer: String,
+    firstValue: String,
+    secondPointer: String,
+    secondValue: String,
     valueBackground: Color,
 ) {
     Column {
@@ -157,22 +166,23 @@ private fun DualInfoItemWithValueBackground(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     modifier = Modifier.weight(1F),
-                    text = stringResource(id = R.string.pointer_current))
+                    text = firstPointer
+                )
                 Text(
                     modifier = Modifier
                         .clip(shape = RoundedCornerShape(4.dp))
                         .background(color = valueBackground)
                         .valuePadding(),
-                    text = current,
+                    text = firstValue,
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     modifier = Modifier.weight(1F),
-                    text = stringResource(R.string.pointer_previous))
+                    text = secondPointer)
                 Text(
                     modifier = Modifier.valuePadding(),
-                    text = previous,
+                    text = secondValue,
                     textAlign = TextAlign.End
                 )
             }

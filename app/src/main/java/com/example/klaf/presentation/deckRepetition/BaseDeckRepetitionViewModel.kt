@@ -1,7 +1,7 @@
 package com.example.klaf.presentation.deckRepetition
 
 import androidx.lifecycle.ViewModel
-import com.example.klaf.data.dataStore.DeckRepetitionInfo
+import com.example.klaf.domain.entities.DeckRepetitionInfo
 import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.domain.common.DeckRepetitionState
 import com.example.klaf.domain.entities.Deck

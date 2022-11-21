@@ -5,8 +5,8 @@ import androidx.work.WorkManager
 import com.example.klaf.R
 import com.example.klaf.data.common.DeckRepetitionReminder.Companion.scheduleDeckRepetition
 import com.example.klaf.data.common.lastIterationSuccessMark
-import com.example.klaf.data.dataStore.DeckRepetitionInfo
-import com.example.klaf.data.dataStore.DeckRepetitionSuccessMark
+import com.example.klaf.domain.entities.DeckRepetitionInfo
+import com.example.klaf.domain.entities.DeckRepetitionSuccessMark
 import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.domain.common.*
 import com.example.klaf.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE
