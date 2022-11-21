@@ -1,6 +1,6 @@
 package com.example.klaf.domain.useCases
 
-import com.example.klaf.data.dataStore.DeckRepetitionInfo
+import com.example.klaf.domain.entities.DeckRepetitionInfo
 import com.example.klaf.domain.repositories.DeckRepetitionInfoRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

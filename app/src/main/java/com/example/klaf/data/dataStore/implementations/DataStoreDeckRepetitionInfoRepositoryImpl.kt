@@ -1,8 +1,8 @@
 package com.example.klaf.data.dataStore.implementations
 
 import androidx.datastore.core.DataStore
-import com.example.klaf.data.dataStore.DeckRepetitionInfo
-import com.example.klaf.data.dataStore.DeckRepetitionInfos
+import com.example.klaf.domain.entities.DeckRepetitionInfo
+import com.example.klaf.domain.entities.DeckRepetitionInfos
 import com.example.klaf.domain.repositories.DeckRepetitionInfoRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -24,6 +24,17 @@ class DataStoreDeckRepetitionInfoRepositoryImpl @Inject constructor(
                 removeIf { filteredInfo -> filteredInfo.deckId == info.deckId }
                 add(element = info)
             }
+
+            infos.copy(content = updatedContent)
+        }
+    }
+
+    override suspend fun removeDeckRepetitionInfo(deckId: Int) {
+        dataStore.updateData { infos ->
+            val updatedContent = infos.content.toMutableSet()
+                .apply {
+                    removeIf { filterdInfo -> filterdInfo.deckId == deckId }
+                }
 
             infos.copy(content = updatedContent)
         }

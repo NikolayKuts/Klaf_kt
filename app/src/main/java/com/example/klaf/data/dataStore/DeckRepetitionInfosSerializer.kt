@@ -1,6 +1,7 @@
 package com.example.klaf.data.dataStore
 
 import androidx.datastore.core.Serializer
+import com.example.klaf.domain.entities.DeckRepetitionInfos
 import kotlinx.serialization.json.Json
 import java.io.InputStream
 import java.io.OutputStream

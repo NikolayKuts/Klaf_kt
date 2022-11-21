@@ -20,8 +20,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
 import com.example.klaf.data.common.currentDurationAsTimeOrUnassigned
-import com.example.klaf.data.dataStore.DeckRepetitionSuccessMark
-import com.example.klaf.data.dataStore.DeckRepetitionSuccessMark.*
+import com.example.klaf.domain.entities.DeckRepetitionSuccessMark
+import com.example.klaf.domain.entities.DeckRepetitionSuccessMark.*
 import com.example.klaf.domain.common.asFormattedDate
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.presentation.common.timeAsString
