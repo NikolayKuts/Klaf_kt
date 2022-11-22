@@ -37,8 +37,6 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 @Composable
 fun DeckListScreen(
     viewModel: BaseDeckListViewModel,
-    onItemClick: (deck: Deck) -> Unit,
-    onLongItemClick: (deck: Deck) -> Unit,
     onMainButtonClick: () -> Unit,
     onSwipeRefresh: () -> Unit,
 ) {
@@ -61,10 +59,9 @@ fun DeckListScreen(
                     key = { _, deck -> deck.id }
                 ) { index, deck ->
                     DeckItemView(
+                        viewModel = viewModel,
                         deck = deck,
                         position = index,
-                        onItemClick = onItemClick,
-                        onLongItemClick = onLongItemClick
                     )
                 }
             }
@@ -85,10 +82,9 @@ fun DeckListScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun LazyItemScope.DeckItemView(
+    viewModel: BaseDeckListViewModel,
     deck: Deck,
     position: Int,
-    onItemClick: (Deck) -> Unit,
-    onLongItemClick: (Deck) -> Unit,
 ) {
     var animationFloat by rememberAsMutableStateOf(value = 0F)
     val animationFloatState by animateFloatAsState(
@@ -106,8 +102,14 @@ private fun LazyItemScope.DeckItemView(
             .scale(animationFloatState)
             .alpha(animationFloatState)
             .combinedClickable(
-                onClick = { onItemClick(deck) },
-                onLongClick = { onLongItemClick(deck) }
+                onClick = {
+                    viewModel.navigate(event = DeckListNavigationEvent.ToFragment(deck = deck))
+                },
+                onLongClick = {
+                    viewModel.navigate(
+                        event = DeckListNavigationEvent.ToDeckNavigationDialog(deck = deck)
+                    )
+                }
             ),
         backgroundColor = getCardBackgroundColorByPosition(position),
         elevation = 4.dp,
