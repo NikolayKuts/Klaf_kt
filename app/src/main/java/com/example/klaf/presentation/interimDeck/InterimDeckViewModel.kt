@@ -7,12 +7,13 @@ import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.presentation.common.EventMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class InterimDeckViewModel @Inject constructor(
     fetchDeckById: FetchDeckByIdUseCase,
-    fetchCards: FetchCardsUseCase,
+    private val fetchCards: FetchCardsUseCase,
 ) : BaseInterimDeckViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>()
@@ -25,7 +26,11 @@ class InterimDeckViewModel @Inject constructor(
 
     override val cardHolders = MutableStateFlow<List<SelectableCardHolder>>(value = emptyList())
 
-    override val cards = fetchCards(deckId = Deck.INTERIM_DECK_ID)
+    init {
+        observeCardSource()
+    }
+
+    private val cards = fetchCards(deckId = Deck.INTERIM_DECK_ID)
         .onEach { cardList ->
             cardHolders.value = cardList.map { card -> SelectableCardHolder(card = card) }
         }
@@ -46,6 +51,14 @@ class InterimDeckViewModel @Inject constructor(
     override fun selectAllCards() {
         cardHolders.update { holders ->
             holders.map { holder -> holder.copy(isSelected = true) }
+        }
+    }
+
+    private fun observeCardSource() {
+        viewModelScope.launch {
+            fetchCards(deckId = Deck.INTERIM_DECK_ID).collect { cards ->
+                cardHolders.value = cards.map { card -> SelectableCardHolder(card = card) }
+            }
         }
     }
 }

@@ -27,7 +27,8 @@ fun CardViewingScreen(viewModel: CardViewingViewModel) {
     ) {
         DeckInfo(deckName = deck?.name)
         LazyColumn(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(bottom = 124.dp),
         ) {
             itemsIndexed(items = cards) { index, card ->
                 CardItem(card = card, ordinal = index + 1)
