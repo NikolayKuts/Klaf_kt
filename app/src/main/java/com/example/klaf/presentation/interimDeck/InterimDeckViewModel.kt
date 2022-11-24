@@ -30,16 +30,6 @@ class InterimDeckViewModel @Inject constructor(
         observeCardSource()
     }
 
-    private val cards = fetchCards(deckId = Deck.INTERIM_DECK_ID)
-        .onEach { cardList ->
-            cardHolders.value = cardList.map { card -> SelectableCardHolder(card = card) }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = emptyList()
-        )
-
     override fun changeSelectionState(position: Int) {
         cardHolders.update { holders ->
             val holder = holders[position]
