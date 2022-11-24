@@ -94,4 +94,8 @@
     <string name="deck_repetition_mark_failed">failed</string>
     <string name="unassigned_string_value">---</string>
     <string name="pointer_next">next</string>
+    <string name="Interim_deck_name">Interim deck</string>
+    <string name="pointer_interim_deck_cards">cards</string>
+    <string name="pointer_interim_deck_total">total</string>
+    <string name="pointer_interim_deck_selected">selected</string>
 </resources>
