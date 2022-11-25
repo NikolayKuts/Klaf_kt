@@ -11,7 +11,10 @@ import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -25,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.example.klaf.R
 import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
+import com.example.klaf.presentation.interimDeck.InterimDeckNavigationEvent.*
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -62,13 +66,17 @@ fun InterimDeckScreen(viewModel: BaseInterimDeckViewModel) {
             }
         }
 
-        ManagementButtons(clickState = clickState)
+        ManagementButtons(
+            clickState = clickState,
+            onMoveCardsClick = { viewModel.navigate(event = ToCardMovingDialog) },
+            onAddCardsClick = { viewModel.navigate(event = ToCardAddingFragment) },
+            onDeleteCardsClick = { viewModel.navigate(event = ToCardDeletionDialog) },
+        )
     }
 }
 
 @Composable
-private fun ColumnScope.Header(
-) {
+private fun ColumnScope.Header() {
     Text(
         modifier = Modifier
             .align(alignment = Alignment.CenterHorizontally)
@@ -166,15 +174,20 @@ private fun DividingLine() {
 }
 
 @Composable
-private fun BoxScope.ManagementButtons(clickState: MutableState<Boolean>) {
+private fun BoxScope.ManagementButtons(
+    clickState: MutableState<Boolean>,
+    onMoveCardsClick: () -> Unit,
+    onAddCardsClick: () -> Unit,
+    onDeleteCardsClick: () -> Unit,
+) {
     Box(
         modifier = Modifier.align(Alignment.BottomEnd)
             .padding(end = 48.dp, bottom = 48.dp),
     ) {
         with(clickState) {
-            CardMovingButton(isStartPosition = value)
-            CardAddingButton(isStartPosition = value)
-            CardDeletingButton(isStartPosition = value)
+            CardMovingButton(isStartPosition = value, onClick = onMoveCardsClick)
+            CardAddingButton(isStartPosition = value, onClick = onAddCardsClick)
+            CardDeletingButton(isStartPosition = value, onClick = onDeleteCardsClick)
             RoundButton(
                 background = MainTheme.colors.materialColors.primary,
                 iconId = R.drawable.ic_more_vert_24,
@@ -187,6 +200,7 @@ private fun BoxScope.ManagementButtons(clickState: MutableState<Boolean>) {
 @Composable
 private fun CardMovingButton(
     isStartPosition: Boolean,
+    onClick: () -> Unit,
 ) {
     AnimatableOffsetButton(
         isStartPosition = isStartPosition,
@@ -194,30 +208,38 @@ private fun CardMovingButton(
         background = Color(0xFF679AB1),
         iconId = R.drawable.ic_move_24,
         stiffness = Spring.StiffnessVeryLow,
-        onClick = {}
+        onClick = onClick
     )
 }
 
 @Composable
-private fun CardAddingButton(isStartPosition: Boolean) {
+private fun CardAddingButton(
+    isStartPosition: Boolean,
+    onClick: () -> Unit,
+) {
     AnimatableOffsetButton(
         isStartPosition = isStartPosition,
         offset = -120F,
         background = Color(0xFFA8CE7D),
         iconId = R.drawable.ic_add_24,
         stiffness = Spring.StiffnessLow,
-        onClick = { /*TODO*/ })
+        onClick = onClick,
+    )
 }
 
 @Composable
-private fun CardDeletingButton(isStartPosition: Boolean) {
+private fun CardDeletingButton(
+    isStartPosition: Boolean,
+    onClick: () -> Unit,
+) {
     AnimatableOffsetButton(
         isStartPosition = isStartPosition,
         offset = -60F,
         background = Color(0xFFCE756E),
         iconId = R.drawable.ic_delete_24,
         stiffness = Spring.StiffnessMediumLow,
-        onClick = { /*TODO*/ })
+        onClick = onClick,
+    )
 }
 
 @Composable

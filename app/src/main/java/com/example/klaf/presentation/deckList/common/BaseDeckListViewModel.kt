@@ -15,7 +15,7 @@ abstract class BaseDeckListViewModel : ViewModel(), EventMessageSource {
     abstract val deckCreationState: StateFlow<DeckCreationState>
     abstract val dataSynchronizationState: StateFlow<DataSynchronizationState>
     abstract val deckSource: StateFlow<List<Deck>>
-    abstract val navigationDetination: SharedFlow<DeckListNavigationDestination>
+    abstract val navigationDestination: SharedFlow<DeckListNavigationDestination>
 
     abstract fun resetSynchronizationState()
     abstract fun createNewDeck(deckName: String)

@@ -54,7 +54,7 @@ class DeckListViewModel @AssistedInject constructor(
         dataSynchronizationState.value = DataSynchronizationState.InitialState
     }
 
-    override val navigationDetination = MutableSharedFlow<DeckListNavigationDestination>()
+    override val navigationDestination = MutableSharedFlow<DeckListNavigationDestination>()
 
     init {
         notificationChannelInitializer.initialize()
@@ -171,7 +171,7 @@ class DeckListViewModel @AssistedInject constructor(
             }
         }
 
-        viewModelScope.launch { navigationDetination.emit(value = destination) }
+        viewModelScope.launch { navigationDestination.emit(value = destination) }
     }
 
     private fun observeDataSynchronizationStateWorker() {

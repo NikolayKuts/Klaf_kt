@@ -32,7 +32,7 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
         super.onViewCreated(view, savedInstanceState)
 
         setEvenMessageObserver(view = view)
-        observeNavigationEvents()
+        observeNavigationChanges()
 
         view.findViewById<ComposeView>(R.id.compose_view_deck_list).setContent {
             MainTheme {
@@ -55,8 +55,8 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
         }
     }
 
-    private fun observeNavigationEvents() {
-        viewModel.navigationDetination.collectWhenStarted(
+    private fun observeNavigationChanges() {
+        viewModel.navigationDestination.collectWhenStarted(
             lifecycleScope = viewLifecycleOwner.lifecycleScope
         ) { destination ->
             when (destination) {
