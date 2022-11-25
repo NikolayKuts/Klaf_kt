@@ -183,12 +183,23 @@
         tools:layout="@layout/dialog_data_synchronization" />
     <fragment
         android:id="@+id/interimDeckFragment"
-        android:name="com.example.klaf.presentation.interimDeck.InterimDeckFragment"
+        android:name="com.example.klaf.presentation.interimDeck.common.InterimDeckFragment"
         android:label="fragment_interim_deck"
         tools:layout="@layout/fragment_interim_deck" >
         <action
             android:id="@+id/action_interimDeckFragment_to_cardAdditionFragment"
             app:destination="@id/cardAdditionFragment" />
+        <action
+            android:id="@+id/action_interimDeckFragment_to_cardDeletingDialogFragment"
+            app:destination="@id/cardDeletingDialogFragment" />
     </fragment>
+    <dialog
+        android:id="@+id/cardDeletingDialogFragment"
+        android:name="com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingDialogFragment"
+        android:label="CardDeletingDialogFragment" >
+        <argument
+            android:name="cardQuantity"
+            app:argType="integer" />
+    </dialog>
 
 </navigation>

@@ -1,25 +1,31 @@
-package com.example.klaf.presentation.interimDeck
+package com.example.klaf.presentation.interimDeck.common
 
 import android.os.Bundle
 import android.view.View
 import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.presentation.common.LifecycleObservingLogger
 import com.example.klaf.presentation.common.collectWhenStarted
-import com.example.klaf.presentation.common.log
-import com.example.klaf.presentation.interimDeck.InterimDeckNavigationDestination.*
+import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationDestination.*
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
 
-    private val viewModel: BaseInterimDeckViewModel by viewModels<InterimDeckViewModel>()
+    @Inject
+    lateinit var assistedFactory: InterimDeckViewModelAssistedFactory
+    private val viewModel: BaseInterimDeckViewModel by navGraphViewModels(
+        navGraphId = R.id.interimDeckFragment
+    ) {
+        InterimDeckViewModuleFactory(assistedFactory = assistedFactory)
+    }
     private val navController by lazy { findNavController() }
     val observer = LifecycleObservingLogger(ownerName = "lifecycle -> $this")
 
@@ -41,14 +47,14 @@ class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
             lifecycleScope = viewLifecycleOwner.lifecycleScope
         ) { destination ->
             when (destination) {
+                CardMovingDialogDestination -> {
+                    TODO()
+                }
                 is CardAddingFragmentDestination -> {
                     navigateToCardAdditionDialog(interimDeckId = destination.interimDeckId)
                 }
-                CardDeletingDialogDestination -> {
-                    TODO()
-                }
-                CardMovingDialogDestination -> {
-                    TODO()
+                is CardDeletingDialogDestination -> {
+                    navigateToCardDeletingDialog(cardQuantity = destination.cardQuantity)
                 }
             }
         }
@@ -57,6 +63,12 @@ class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
     private fun navigateToCardAdditionDialog(interimDeckId: Int) {
         InterimDeckFragmentDirections.actionInterimDeckFragmentToCardAdditionFragment(
             deckId = interimDeckId
+        ).also { navController.navigate(directions = it) }
+    }
+
+    private fun navigateToCardDeletingDialog(cardQuantity: Int) {
+        InterimDeckFragmentDirections.actionInterimDeckFragmentToCardDeletingDialogFragment(
+            cardQuantity = cardQuantity
         ).also { navController.navigate(directions = it) }
     }
 }

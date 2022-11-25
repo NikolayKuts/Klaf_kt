@@ -1,21 +1,25 @@
-package com.example.klaf.presentation.interimDeck
+package com.example.klaf.presentation.interimDeck.common
 
 import androidx.lifecycle.viewModelScope
+import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Deck
+import com.example.klaf.domain.useCases.DeleteCardFromDeckUseCase
 import com.example.klaf.domain.useCases.FetchCardsUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.interimDeck.InterimDeckNavigationDestination.*
-import com.example.klaf.presentation.interimDeck.InterimDeckNavigationEvent.*
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingState
+import com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingState.*
+import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationDestination.*
+import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationEvent.*
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
-@HiltViewModel
-class InterimDeckViewModel @Inject constructor(
+class InterimDeckViewModel @AssistedInject constructor(
     fetchDeckById: FetchDeckByIdUseCase,
     private val fetchCards: FetchCardsUseCase,
+    private val deleteCardFromDeckUseCase: DeleteCardFromDeckUseCase,
 ) : BaseInterimDeckViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>()
@@ -29,6 +33,18 @@ class InterimDeckViewModel @Inject constructor(
     override val cardHolders = MutableStateFlow<List<SelectableCardHolder>>(value = emptyList())
 
     override val navigationDestination = MutableSharedFlow<InterimDeckNavigationDestination>()
+
+    override val cardDeletingState: MutableStateFlow<CardDeletingState> =
+        MutableStateFlow(value = NON)
+
+    private val selectedCards = cardHolders.map { holders ->
+        holders.filter { it.isSelected }
+            .map { holder -> holder.card }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = emptyList()
+    )
 
     init {
         observeCardSource()
@@ -53,11 +69,35 @@ class InterimDeckViewModel @Inject constructor(
             ToCardAddingFragment -> {
                 CardAddingFragmentDestination(interimDeckId = Deck.INTERIM_DECK_ID)
             }
-            ToCardDeletionDialog -> CardDeletingDialogDestination
+            ToCardDeletionDialog -> {
+                CardDeletingDialogDestination(cardQuantity = selectedCards.value.size)
+            }
             ToCardMovingDialog -> CardMovingDialogDestination
         }
 
         viewModelScope.launch { navigationDestination.emit(value = destination) }
+    }
+
+    override fun deleteCards() {
+        cardDeletingState.value = IN_PROGRESS
+
+        selectedCards.value
+            .map { card -> card.id }
+            .also { cardIds ->
+                viewModelScope.launchWithExceptionHandler(
+                    onException = { coroutineContext: CoroutineContext, throwable: Throwable -> },
+                    onCompletion = { cardDeletingState.value = FINISHED }
+                ) {
+                    deleteCardFromDeckUseCase(
+                        cardIds = cardIds.toIntArray(),
+                        deckId = Deck.INTERIM_DECK_ID
+                    )
+                }
+            }
+    }
+
+    override fun resetCardDeletingState() {
+        cardDeletingState.value = NON
     }
 
     private fun observeCardSource() {

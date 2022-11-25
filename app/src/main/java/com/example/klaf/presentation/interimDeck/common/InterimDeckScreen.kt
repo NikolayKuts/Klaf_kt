@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.interimDeck
+package com.example.klaf.presentation.interimDeck.common
 
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.*
@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.example.klaf.R
 import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
-import com.example.klaf.presentation.interimDeck.InterimDeckNavigationEvent.*
+import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationEvent.*
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -53,7 +53,7 @@ fun InterimDeckScreen(viewModel: BaseInterimDeckViewModel) {
             Spacer(modifier = Modifier.height(28.dp))
             DividingLine()
 
-            LazyColumn {
+            LazyColumn(contentPadding = PaddingValues(bottom = 100.dp)) {
                 itemsIndexed(items = cardHolders) { index, holder ->
                     CardItem(
                         holder = holder,
@@ -115,7 +115,8 @@ private fun QuantityPointers(
             )
         }
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(end = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {

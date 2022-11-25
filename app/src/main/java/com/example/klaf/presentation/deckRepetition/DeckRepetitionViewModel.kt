@@ -204,7 +204,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             },
             onCompletion = { eventMessage.tryEmit(messageId = R.string.card_has_been_deleted) }
         ) {
-            deleteCardFromDeck(cardId = cardId, deckId = deckId)
+            deleteCardFromDeck(cardId, deckId = deckId)
         }
     }
 

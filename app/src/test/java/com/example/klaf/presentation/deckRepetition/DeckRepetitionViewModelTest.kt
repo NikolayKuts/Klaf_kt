@@ -115,7 +115,7 @@ class DeckRepetitionViewModelTest {
         val cardId = 222222
         val deckId = 999999
         val deleteCardFromDeckUseCase: DeleteCardFromDeckUseCase = mockk {
-            coEvery { this@mockk.invoke(cardId = cardId, deckId = deckId) } throws Exception()
+            coEvery { this@mockk.invoke(cardIds = cardId, deckId = deckId) } throws Exception()
         }
         val viewModel = createViewModel(deleteCardFromDeck = deleteCardFromDeckUseCase)
         val testJob = launchEventMassageIdEqualsTest(
@@ -124,7 +124,7 @@ class DeckRepetitionViewModelTest {
         )
 
         viewModel.deleteCard(cardId = cardId, deckId = deckId)
-        coVerify(exactly = 1) { deleteCardFromDeckUseCase(cardId = cardId, deckId = deckId) }
+        coVerify(exactly = 1) { deleteCardFromDeckUseCase(cardIds = cardId, deckId = deckId) }
         testJob.join()
     }
 
