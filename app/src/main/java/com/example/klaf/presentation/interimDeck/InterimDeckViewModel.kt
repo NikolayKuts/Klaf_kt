@@ -23,7 +23,7 @@ class InterimDeckViewModel @Inject constructor(
     override val interimDeck = fetchDeckById(deckId = Deck.INTERIM_DECK_ID).shareIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
-        replay = 0
+        replay = 1
     )
 
     override val cardHolders = MutableStateFlow<List<SelectableCardHolder>>(value = emptyList())
@@ -49,8 +49,10 @@ class InterimDeckViewModel @Inject constructor(
     }
 
     override fun navigate(event: InterimDeckNavigationEvent) {
-        val destination = when(event) {
-            ToCardAddingFragment -> CardAddingFragmentDestination
+        val destination = when (event) {
+            ToCardAddingFragment -> {
+                CardAddingFragmentDestination(interimDeckId = Deck.INTERIM_DECK_ID)
+            }
             ToCardDeletionDialog -> CardDeletingDialogDestination
             ToCardMovingDialog -> CardMovingDialogDestination
         }

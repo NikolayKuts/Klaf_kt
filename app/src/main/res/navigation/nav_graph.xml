@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -184,6 +185,10 @@
         android:id="@+id/interimDeckFragment"
         android:name="com.example.klaf.presentation.interimDeck.InterimDeckFragment"
         android:label="fragment_interim_deck"
-        tools:layout="@layout/fragment_interim_deck" />
+        tools:layout="@layout/fragment_interim_deck" >
+        <action
+            android:id="@+id/action_interimDeckFragment_to_cardAdditionFragment"
+            app:destination="@id/cardAdditionFragment" />
+    </fragment>
 
 </navigation>
