@@ -5,6 +5,8 @@ import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.FetchCardsUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.presentation.common.EventMessage
+import com.example.klaf.presentation.interimDeck.InterimDeckNavigationDestination.*
+import com.example.klaf.presentation.interimDeck.InterimDeckNavigationEvent.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -26,6 +28,8 @@ class InterimDeckViewModel @Inject constructor(
 
     override val cardHolders = MutableStateFlow<List<SelectableCardHolder>>(value = emptyList())
 
+    override val navigationDestination = MutableSharedFlow<InterimDeckNavigationDestination>()
+
     init {
         observeCardSource()
     }
@@ -42,6 +46,16 @@ class InterimDeckViewModel @Inject constructor(
         cardHolders.update { holders ->
             holders.map { holder -> holder.copy(isSelected = true) }
         }
+    }
+
+    override fun navigate(event: InterimDeckNavigationEvent) {
+        val destination = when(event) {
+            ToCardAddingFragment -> CardAddingFragmentDestination
+            ToCardDeletionDialog -> CardDeletingDialogDestination
+            ToCardMovingDialog -> CardMovingDialogDestination
+        }
+
+        viewModelScope.launch { navigationDestination.emit(value = destination) }
     }
 
     private fun observeCardSource() {
