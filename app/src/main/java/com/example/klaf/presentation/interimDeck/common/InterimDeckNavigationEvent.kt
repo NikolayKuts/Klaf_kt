@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.interimDeck
+package com.example.klaf.presentation.interimDeck.common
 
 sealed class InterimDeckNavigationEvent {
 

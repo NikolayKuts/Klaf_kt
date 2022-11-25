@@ -2,9 +2,6 @@ package com.example.klaf.di
 
 import android.app.NotificationManager
 import android.content.Context
-import com.example.klaf.presentation.interimDeck.BaseInterimDeckViewModel
-import com.example.klaf.presentation.interimDeck.InterimDeckViewModel
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
