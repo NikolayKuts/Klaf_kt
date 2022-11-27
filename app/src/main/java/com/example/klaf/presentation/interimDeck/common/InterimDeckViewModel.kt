@@ -6,6 +6,7 @@ import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.DeleteCardFromDeckUseCase
 import com.example.klaf.domain.useCases.FetchCardsUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
+import com.example.klaf.domain.useCases.FetchDeckSourceUseCase
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingState
 import com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingState.*
@@ -20,6 +21,7 @@ class InterimDeckViewModel @AssistedInject constructor(
     fetchDeckById: FetchDeckByIdUseCase,
     private val fetchCards: FetchCardsUseCase,
     private val deleteCardFromDeckUseCase: DeleteCardFromDeckUseCase,
+    fetchDeckSource: FetchDeckSourceUseCase,
 ) : BaseInterimDeckViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>()
@@ -36,6 +38,12 @@ class InterimDeckViewModel @AssistedInject constructor(
 
     override val cardDeletingState: MutableStateFlow<CardDeletingState> =
         MutableStateFlow(value = NON)
+
+    override val decks: StateFlow<List<Deck>> = fetchDeckSource().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = emptyList()
+    )
 
     private val selectedCards = cardHolders.map { holders ->
         holders.filter { it.isSelected }

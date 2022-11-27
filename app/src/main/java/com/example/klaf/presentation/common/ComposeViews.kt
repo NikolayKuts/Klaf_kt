@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -202,5 +203,72 @@ fun DialogBox(
             onClick = onClick,
         ),
         content = content
+    )
+}
+
+@Composable
+fun FullBackgroundDialog(
+    onBackgroundClick: () -> Unit,
+    mainContent: @Composable BoxScope.() -> Unit,
+    buttonContent: @Composable RowScope.() -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = onBackgroundClick,
+            ),
+    ) {
+        Box(modifier = Modifier.align(Alignment.Center)) {
+            Card(
+                modifier = Modifier
+                    .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
+                    .padding(bottom = (DIALOG_BUTTON_SIZE / 2).dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .padding(MainTheme.dimensions.dialogContentPadding)
+                        .padding(bottom = (DIALOG_BUTTON_SIZE / 4).dp),
+                    content = mainContent
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(0.5F)
+                    .align(alignment = Alignment.BottomCenter),
+                horizontalArrangement = Arrangement.SpaceAround,
+                content = buttonContent
+            )
+        }
+    }
+}
+
+@Composable
+fun DeletingButton(onClick: () -> Unit) {
+    RoundButton(
+        background = MainTheme.colors.negativeDialogButton,
+        iconId = R.drawable.ic_delete_24,
+        onClick = onClick
+    )
+}
+
+@Composable
+fun ClosingButton(onClick: () -> Unit) {
+    RoundButton(
+        background = MainTheme.colors.neutralDialogButton,
+        iconId = R.drawable.ic_close_24,
+        onClick = onClick
+    )
+}
+
+@Composable
+fun ConfirmationButton(onClick: () -> Unit) {
+    RoundButton(
+        background = MainTheme.colors.positiveDialogButton,
+        iconId = R.drawable.ic_confirmation_24,
+        onClick = onClick
     )
 }

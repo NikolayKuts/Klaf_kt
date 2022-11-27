@@ -26,6 +26,7 @@ fun DialogView(
                 content = mainContent
             )
         }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth(0.5F)

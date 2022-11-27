@@ -4,8 +4,9 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.example.klaf.R
+import com.example.klaf.presentation.common.DeletingButton
+import com.example.klaf.presentation.common.ClosingButton
 import com.example.klaf.presentation.common.DialogView
-import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -22,27 +23,9 @@ fun CardDeletingDialogView(
             )
         },
         buttonContent = {
-            DeckDeletingConformationButton(onClick = onConfirmDeleting)
-            DialogClosingButton(onClick = onCancel)
+            DeletingButton(onClick = onConfirmDeleting)
+            ClosingButton(onClick = onCancel)
         }
-    )
-}
-
-@Composable
-private fun DeckDeletingConformationButton(onClick: () -> Unit) {
-    RoundButton(
-        background = MainTheme.colors.negativeDialogButton,
-        iconId = R.drawable.ic_delete_24,
-        onClick = onClick
-    )
-}
-
-@Composable
-private fun DialogClosingButton(onClick: () -> Unit) {
-    RoundButton(
-        background = MainTheme.colors.neutralDialogButton,
-        iconId = R.drawable.ic_close_24,
-        onClick = onClick
     )
 }
 

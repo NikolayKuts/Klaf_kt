@@ -192,6 +192,9 @@
         <action
             android:id="@+id/action_interimDeckFragment_to_cardDeletingDialogFragment"
             app:destination="@id/cardDeletingDialogFragment" />
+        <action
+            android:id="@+id/action_interimDeckFragment_to_cardMovingDialogFragment"
+            app:destination="@id/cardMovingDialogFragment" />
     </fragment>
     <dialog
         android:id="@+id/cardDeletingDialogFragment"
@@ -201,5 +204,9 @@
             android:name="cardQuantity"
             app:argType="integer" />
     </dialog>
+    <dialog
+        android:id="@+id/cardMovingDialogFragment"
+        android:name="com.example.klaf.presentation.interimDeck.cardMoving.CardMovingDialogFragment"
+        android:label="CardMovingDialogFragment" />
 
 </navigation>

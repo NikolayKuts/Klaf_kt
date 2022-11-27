@@ -33,7 +33,7 @@ class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
         super.onViewCreated(view, savedInstanceState)
 
         observeNavigationChanges()
-        view.findViewById<ComposeView>(R.id.compose_view_interim_deck).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view_dialog).setContent {
             MainTheme {
                 Surface() {
                     InterimDeckScreen(viewModel = viewModel)
@@ -48,7 +48,7 @@ class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
         ) { destination ->
             when (destination) {
                 CardMovingDialogDestination -> {
-                    TODO()
+                    navigateToCardMovingDialog()
                 }
                 is CardAddingFragmentDestination -> {
                     navigateToCardAdditionDialog(interimDeckId = destination.interimDeckId)
@@ -58,6 +58,10 @@ class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
                 }
             }
         }
+    }
+
+    private fun navigateToCardMovingDialog() {
+        navController.navigate(R.id.action_interimDeckFragment_to_cardMovingDialogFragment)
     }
 
     private fun navigateToCardAdditionDialog(interimDeckId: Int) {
