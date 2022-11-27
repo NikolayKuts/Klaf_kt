@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/compose_view_interim_deck"
+    android:id="@+id/compose_view_dialog"
     tools:context=".presentation.interimDeck.common.InterimDeckFragment">
 
 </androidx.compose.ui.platform.ComposeView>

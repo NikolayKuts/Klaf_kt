@@ -14,7 +14,7 @@ import com.example.klaf.presentation.interimDeck.common.BaseInterimDeckViewModel
 import com.example.klaf.presentation.theme.MainTheme
 
 class CardDeletingDialogFragment :
-    TransparentDialogFragment(contentLayoutId = R.layout.dialog_card_deleting) {
+    TransparentDialogFragment(contentLayoutId = R.layout.dialog_interim_deck) {
 
     private val viewModel by navGraphViewModels<BaseInterimDeckViewModel>(R.id.interimDeckFragment)
     private val args by navArgs<CardDeletingDialogFragmentArgs>()
@@ -24,7 +24,7 @@ class CardDeletingDialogFragment :
 
         observeCardDeletingState()
 
-        view.findViewById<ComposeView>(R.id.compose_view_card_deleting).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view_dialog).setContent {
             MainTheme {
                 CardDeletingDialogView(
                     cardQuantity = args.cardQuantity,

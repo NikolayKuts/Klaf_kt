@@ -13,6 +13,7 @@ abstract class BaseInterimDeckViewModel : ViewModel(), EventMessageSource {
     abstract val cardHolders: StateFlow<List<SelectableCardHolder>>
     abstract val navigationDestination: SharedFlow<InterimDeckNavigationDestination>
     abstract val cardDeletingState: StateFlow<CardDeletingState>
+    abstract val decks: StateFlow<List<Deck>>
 
     abstract fun changeSelectionState(position: Int)
     abstract fun selectAllCards()

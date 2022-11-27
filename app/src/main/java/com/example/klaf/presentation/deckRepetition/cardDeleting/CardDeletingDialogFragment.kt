@@ -25,7 +25,7 @@ class CardDeletingDialogFragment : TransparentDialogFragment(R.layout.dialog_car
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<ComposeView>(R.id.compose_view_card_deleting).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view_dialog).setContent {
             MainTheme {
                 CardDeletingDialogView(
                     onConfirmDeleting = ::confirmCardRemoving,
