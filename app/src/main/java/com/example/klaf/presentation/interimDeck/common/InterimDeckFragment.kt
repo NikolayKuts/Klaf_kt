@@ -47,15 +47,14 @@ class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
             lifecycleScope = viewLifecycleOwner.lifecycleScope
         ) { destination ->
             when (destination) {
-                CardMovingDialogDestination -> {
-                    navigateToCardMovingDialog()
-                }
+                CardMovingDialogDestination -> navigateToCardMovingDialog()
                 is CardAddingFragmentDestination -> {
                     navigateToCardAdditionDialog(interimDeckId = destination.interimDeckId)
                 }
                 is CardDeletingDialogDestination -> {
                     navigateToCardDeletingDialog(cardQuantity = destination.cardQuantity)
                 }
+                InterimDeckFragment -> navController.popBackStack()
             }
         }
     }

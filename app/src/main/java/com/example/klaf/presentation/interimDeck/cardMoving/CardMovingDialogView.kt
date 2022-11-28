@@ -79,9 +79,9 @@ fun CardMovingDialogView(
             }
         },
         buttonContent = {
-            ConfirmationButton {
-
-            }
+            ConfirmationButton(
+                onClick = { viewModel.moveCards(targetDeck = decks[selectedIndex]) }
+            )
             ClosingButton(onClick = onCloseClick)
         },
     )
