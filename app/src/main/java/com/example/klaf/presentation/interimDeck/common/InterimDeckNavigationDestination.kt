@@ -11,4 +11,6 @@ sealed interface InterimDeckNavigationDestination {
     data class CardDeletingDialogDestination(
         val cardQuantity: Int,
     ) : InterimDeckNavigationDestination
+
+    object InterimDeckFragment : InterimDeckNavigationDestination
 }

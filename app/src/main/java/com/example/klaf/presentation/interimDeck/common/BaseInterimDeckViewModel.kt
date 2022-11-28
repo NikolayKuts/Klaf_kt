@@ -1,6 +1,7 @@
 package com.example.klaf.presentation.interimDeck.common
 
 import androidx.lifecycle.ViewModel
+import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.presentation.common.EventMessageSource
 import com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingState
@@ -19,5 +20,6 @@ abstract class BaseInterimDeckViewModel : ViewModel(), EventMessageSource {
     abstract fun selectAllCards()
     abstract fun navigate(event: InterimDeckNavigationEvent)
     abstract fun deleteCards()
+    abstract fun moveCards(targetDeck: Deck)
     abstract fun resetCardDeletingState()
 }

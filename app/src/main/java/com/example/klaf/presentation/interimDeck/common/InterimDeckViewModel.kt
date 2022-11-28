@@ -3,25 +3,23 @@ package com.example.klaf.presentation.interimDeck.common
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Deck
-import com.example.klaf.domain.useCases.DeleteCardFromDeckUseCase
-import com.example.klaf.domain.useCases.FetchCardsUseCase
-import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
-import com.example.klaf.domain.useCases.FetchDeckSourceUseCase
+import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingState
 import com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingState.*
 import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationDestination.*
+import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationDestination.InterimDeckFragment
 import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationEvent.*
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlin.coroutines.CoroutineContext
 
 class InterimDeckViewModel @AssistedInject constructor(
     fetchDeckById: FetchDeckByIdUseCase,
     private val fetchCards: FetchCardsUseCase,
     private val deleteCardFromDeckUseCase: DeleteCardFromDeckUseCase,
     fetchDeckSource: FetchDeckSourceUseCase,
+    private val moveCardsToDeck: MoveCarsToDeckUseCase,
 ) : BaseInterimDeckViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>()
@@ -93,7 +91,7 @@ class InterimDeckViewModel @AssistedInject constructor(
             .map { card -> card.id }
             .also { cardIds ->
                 viewModelScope.launchWithExceptionHandler(
-                    onException = { coroutineContext: CoroutineContext, throwable: Throwable -> },
+                    onException = { _, _ -> },
                     onCompletion = { cardDeletingState.value = FINISHED }
                 ) {
                     deleteCardFromDeckUseCase(
@@ -102,6 +100,26 @@ class InterimDeckViewModel @AssistedInject constructor(
                     )
                 }
             }
+    }
+
+    override fun moveCards(targetDeck: Deck) {
+        viewModelScope.launchWithExceptionHandler(
+            onException = { _, _ -> },
+            onCompletion = {
+                viewModelScope.launch { navigationDestination.emit(value = InterimDeckFragment) }
+            }
+        ) {
+            val sourceDeck = interimDeck.replayCache.first()
+
+            if (sourceDeck != null) {
+                moveCardsToDeck(
+                    sourceDeck = sourceDeck,
+                    targetDeck = targetDeck,
+                    cards = selectedCards.value.toTypedArray())
+            } else {
+
+            }
+        }
     }
 
     override fun resetCardDeletingState() {
