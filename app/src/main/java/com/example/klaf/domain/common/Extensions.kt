@@ -5,7 +5,9 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
@@ -36,6 +38,18 @@ fun CoroutineScope.launchWithExceptionHandler(
 fun <T, R> Flow<List<T>>.simplifiedItemMap(transform: suspend (T) -> R): Flow<List<R>> {
     return this.map { list: List<T> ->
         list.map { value: T -> transform(value) }
+    }
+}
+
+fun <T> Flow<List<T>>.simplifiedItemFilter(predicate: (T) -> Boolean): Flow<List<T>> {
+    return this.onEach { list: List<T> ->
+        list.filter(predicate = predicate)
+    }
+}
+
+fun <T> Flow<List<T>>.simplifiedItemFilterNot(predicate: (T) -> Boolean): Flow<List<T>> {
+    return this.map { list: List<T> ->
+        list.filterNot(predicate = predicate)
     }
 }
 
