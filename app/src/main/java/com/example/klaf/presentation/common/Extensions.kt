@@ -56,6 +56,10 @@ fun MutableSharedFlow<EventMessage>.tryEmit(@StringRes messageId: Int) {
     tryEmit(value = EventMessage(resId = messageId))
 }
 
+suspend fun MutableSharedFlow<EventMessage>.emit(@StringRes messageId: Int) {
+    emit(value = EventMessage(resId = messageId))
+}
+
 fun TextView.applyTextColor(@ColorRes colorId: Int) {
     setTextColor(ContextCompat.getColor(context, colorId))
 }
