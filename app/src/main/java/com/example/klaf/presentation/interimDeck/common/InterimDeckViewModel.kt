@@ -1,11 +1,13 @@
 package com.example.klaf.presentation.interimDeck.common
 
 import androidx.lifecycle.viewModelScope
+import com.example.klaf.R
 import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.common.simplifiedItemFilterNot
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
+import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingState
 import com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingState.*
 import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationDestination.*
@@ -25,11 +27,13 @@ class InterimDeckViewModel @AssistedInject constructor(
 
     override val eventMessage = MutableSharedFlow<EventMessage>()
 
-    override val interimDeck = fetchDeckById(deckId = Deck.INTERIM_DECK_ID).shareIn(
-        scope = viewModelScope,
-        started = SharingStarted.Eagerly,
-        replay = 1
-    )
+    override val interimDeck = fetchDeckById(deckId = Deck.INTERIM_DECK_ID)
+        .catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck) }
+        .shareIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            replay = 1
+        )
 
     override val cardHolders = MutableStateFlow<List<SelectableCardHolder>>(value = emptyList())
 
@@ -39,6 +43,7 @@ class InterimDeckViewModel @AssistedInject constructor(
         MutableStateFlow(value = NON)
 
     override val decks: StateFlow<List<Deck>> = fetchDeckSource()
+        .catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_decks) }
         .simplifiedItemFilterNot { deck -> deck.id == Deck.INTERIM_DECK_ID }
         .stateIn(
             scope = viewModelScope,
@@ -94,7 +99,9 @@ class InterimDeckViewModel @AssistedInject constructor(
             .map { card -> card.id }
             .also { cardIds ->
                 viewModelScope.launchWithExceptionHandler(
-                    onException = { _, _ -> },
+                    onException = { _, _ ->
+                        eventMessage.tryEmit(messageId = R.string.problem_with_removing_cards)
+                    },
                     onCompletion = { cardDeletingState.value = FINISHED }
                 ) {
                     deleteCardFromDeckUseCase(
@@ -107,20 +114,18 @@ class InterimDeckViewModel @AssistedInject constructor(
 
     override fun moveCards(targetDeck: Deck) {
         viewModelScope.launchWithExceptionHandler(
-            onException = { _, _ -> },
+            onException = { _, _ ->
+                eventMessage.tryEmit(messageId = R.string.problem_with_moving_cards)
+            },
             onCompletion = {
                 viewModelScope.launch { navigationDestination.emit(value = InterimDeckFragment) }
             }
         ) {
-            val sourceDeck = interimDeck.replayCache.first()
-
-            if (sourceDeck != null) {
+            interimDeck.replayCache.first()?.let { sourceDeck ->
                 moveCardsToDeck(
                     sourceDeck = sourceDeck,
                     targetDeck = targetDeck,
                     cards = selectedCards.value.toTypedArray())
-            } else {
-
             }
         }
     }
