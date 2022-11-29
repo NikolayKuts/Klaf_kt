@@ -9,11 +9,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
-import com.example.klaf.presentation.common.LifecycleObservingLogger
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showSnackBar
-import com.example.klaf.presentation.common.showToast
 import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationDestination.*
+import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationDestination.InterimDeckFragment
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -29,7 +28,6 @@ class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
         InterimDeckViewModuleFactory(assistedFactory = assistedFactory)
     }
     private val navController by lazy { findNavController() }
-    val observer = LifecycleObservingLogger(ownerName = "lifecycle -> $this")
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -39,7 +37,7 @@ class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
 
         view.findViewById<ComposeView>(R.id.compose_view_dialog).setContent {
             MainTheme {
-                Surface() {
+                Surface {
                     InterimDeckScreen(viewModel = viewModel)
                 }
             }

@@ -1,5 +1,6 @@
 package com.example.klaf.presentation.interimDeck.common
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.R
 import com.example.klaf.domain.common.launchWithExceptionHandler
@@ -7,13 +8,14 @@ import com.example.klaf.domain.common.simplifiedItemFilterNot
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.tryEmit
+import com.example.klaf.presentation.common.emit
 import com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingState
 import com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingState.*
 import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationDestination.*
 import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationDestination.InterimDeckFragment
 import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationEvent.*
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -28,7 +30,7 @@ class InterimDeckViewModel @AssistedInject constructor(
     override val eventMessage = MutableSharedFlow<EventMessage>()
 
     override val interimDeck = fetchDeckById(deckId = Deck.INTERIM_DECK_ID)
-        .catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck) }
+        .catch { emitEventMessage(messageId = R.string.problem_with_fetching_deck) }
         .shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -43,7 +45,7 @@ class InterimDeckViewModel @AssistedInject constructor(
         MutableStateFlow(value = NON)
 
     override val decks: StateFlow<List<Deck>> = fetchDeckSource()
-        .catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_decks) }
+        .catch { emitEventMessage(messageId = R.string.problem_with_fetching_decks) }
         .simplifiedItemFilterNot { deck -> deck.id == Deck.INTERIM_DECK_ID }
         .stateIn(
             scope = viewModelScope,
@@ -79,17 +81,11 @@ class InterimDeckViewModel @AssistedInject constructor(
     }
 
     override fun navigate(event: InterimDeckNavigationEvent) {
-        val destination = when (event) {
-            ToCardAddingFragment -> {
-                CardAddingFragmentDestination(interimDeckId = Deck.INTERIM_DECK_ID)
-            }
-            ToCardDeletionDialog -> {
-                CardDeletingDialogDestination(cardQuantity = selectedCards.value.size)
-            }
-            ToCardMovingDialog -> CardMovingDialogDestination
+        when (event) {
+            ToCardAddingFragment -> navigateToCardAddingFragmentDestination()
+            ToCardDeletionDialog -> navigateToCardDeletingDialogDestination()
+            ToCardMovingDialog -> navigateToCardMovingDialogDestination()
         }
-
-        viewModelScope.launch { navigationDestination.emit(value = destination) }
     }
 
     override fun deleteCards() {
@@ -100,7 +96,7 @@ class InterimDeckViewModel @AssistedInject constructor(
             .also { cardIds ->
                 viewModelScope.launchWithExceptionHandler(
                     onException = { _, _ ->
-                        eventMessage.tryEmit(messageId = R.string.problem_with_removing_cards)
+                        emitEventMessage(messageId = R.string.problem_with_removing_cards)
                     },
                     onCompletion = { cardDeletingState.value = FINISHED }
                 ) {
@@ -115,7 +111,7 @@ class InterimDeckViewModel @AssistedInject constructor(
     override fun moveCards(targetDeck: Deck) {
         viewModelScope.launchWithExceptionHandler(
             onException = { _, _ ->
-                eventMessage.tryEmit(messageId = R.string.problem_with_moving_cards)
+                emitEventMessage(messageId = R.string.problem_with_moving_cards)
             },
             onCompletion = {
                 viewModelScope.launch { navigationDestination.emit(value = InterimDeckFragment) }
@@ -139,6 +135,42 @@ class InterimDeckViewModel @AssistedInject constructor(
             fetchCards(deckId = Deck.INTERIM_DECK_ID).collect { cards ->
                 cardHolders.value = cards.map { card -> SelectableCardHolder(card = card) }
             }
+        }
+    }
+
+    private fun navigateToCardAddingFragmentDestination() {
+        emitDestination(
+            destination = CardAddingFragmentDestination(interimDeckId = Deck.INTERIM_DECK_ID)
+        )
+    }
+
+    private fun navigateToCardDeletingDialogDestination() {
+        val cardForDeleting = selectedCards.value
+
+        if (cardForDeleting.isEmpty()) {
+            emitEventMessage(messageId = R.string.message_no_cards_selected)
+        } else {
+            emitDestination(
+                destination = CardDeletingDialogDestination(cardQuantity = cardForDeleting.size)
+            )
+        }
+    }
+
+    private fun navigateToCardMovingDialogDestination() {
+        if (selectedCards.value.isEmpty()) {
+            emitEventMessage(messageId = R.string.message_no_cards_selected)
+        } else {
+            emitDestination(destination = CardMovingDialogDestination)
+        }
+    }
+
+    private fun emitDestination(destination: InterimDeckNavigationDestination) {
+        viewModelScope.launch { navigationDestination.emit(value = destination) }
+    }
+
+    private fun emitEventMessage(@StringRes messageId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            eventMessage.emit(messageId = messageId)
         }
     }
 }
