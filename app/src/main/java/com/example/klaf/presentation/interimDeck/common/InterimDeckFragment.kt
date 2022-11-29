@@ -11,6 +11,8 @@ import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.presentation.common.LifecycleObservingLogger
 import com.example.klaf.presentation.common.collectWhenStarted
+import com.example.klaf.presentation.common.showSnackBar
+import com.example.klaf.presentation.common.showToast
 import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationDestination.*
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -33,6 +35,8 @@ class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
         super.onViewCreated(view, savedInstanceState)
 
         observeNavigationChanges()
+        observeEventMessage(view = view)
+
         view.findViewById<ComposeView>(R.id.compose_view_dialog).setContent {
             MainTheme {
                 Surface() {
@@ -56,6 +60,14 @@ class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
                 }
                 InterimDeckFragment -> navController.popBackStack()
             }
+        }
+    }
+
+    private fun observeEventMessage(view: View) {
+        viewModel.eventMessage.collectWhenStarted(
+            lifecycleScope = viewLifecycleOwner.lifecycleScope
+        ) { message ->
+            view.showSnackBar(messageId = message.resId)
         }
     }
 

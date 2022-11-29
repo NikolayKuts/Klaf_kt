@@ -20,6 +20,7 @@
     <string name="card_is_not_found">The card is not found</string>
     <string name="problem_with_fetching_cards">There is a problem with fetching cards</string>
     <string name="problem_with_removing_card">There is a problem with removing card</string>
+    <string name="problem_with_removing_cards">There is a problem with removing cards</string>
     <string name="card_deleting_dialog_title">Would you like to delete the card?</string>
 
     <!--    deck-->
@@ -101,4 +102,5 @@
     <string name="multiple_cards_deleting_dialog_title">Would you like to delete %d cards?</string>
     <string name="single_cards_deleting_dialog_title">Would you like to delete 1 card?</string>
     <string name="title_card_moving_dialog">Choose the deck you would like to move to?</string>
+    <string name="problem_with_moving_cards">There is a poblem with moving the cards</string>
 </resources>
