@@ -2,6 +2,7 @@ package com.example.klaf.presentation.interimDeck.common
 
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.domain.common.launchWithExceptionHandler
+import com.example.klaf.domain.common.simplifiedItemFilterNot
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
@@ -37,11 +38,13 @@ class InterimDeckViewModel @AssistedInject constructor(
     override val cardDeletingState: MutableStateFlow<CardDeletingState> =
         MutableStateFlow(value = NON)
 
-    override val decks: StateFlow<List<Deck>> = fetchDeckSource().stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.Eagerly,
-        initialValue = emptyList()
-    )
+    override val decks: StateFlow<List<Deck>> = fetchDeckSource()
+        .simplifiedItemFilterNot { deck -> deck.id == Deck.INTERIM_DECK_ID }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList()
+        )
 
     private val selectedCards = cardHolders.map { holders ->
         holders.filter { it.isSelected }
