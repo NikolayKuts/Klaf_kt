@@ -5,7 +5,6 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -28,9 +27,7 @@ fun CoroutineScope.launchWithExceptionHandler(
 
     return launch(context = context + exceptionHandler) { task() }.apply {
         invokeOnCompletion { cause: Throwable? ->
-            if (cause == null) {
-                onCompletion()
-            }
+            cause.ifNull { onCompletion() }
         }
     }
 }

@@ -98,7 +98,12 @@ class InterimDeckViewModel @AssistedInject constructor(
                     onException = { _, _ ->
                         emitEventMessage(messageId = R.string.problem_with_removing_cards)
                     },
-                    onCompletion = { cardDeletingState.value = FINISHED }
+                    onCompletion = {
+                        cardDeletingState.value = FINISHED
+                        emitEventMessage(
+                            messageId = R.string.message_deletion_completed_successfully
+                        )
+                    }
                 ) {
                     deleteCardFromDeckUseCase(
                         cardIds = cardIds.toIntArray(),
@@ -114,7 +119,8 @@ class InterimDeckViewModel @AssistedInject constructor(
                 emitEventMessage(messageId = R.string.problem_with_moving_cards)
             },
             onCompletion = {
-                viewModelScope.launch { navigationDestination.emit(value = InterimDeckFragment) }
+                emitDestination(destination = InterimDeckFragment)
+                emitEventMessage(messageId = (R.string.message_transfer_completed_successfully))
             }
         ) {
             interimDeck.replayCache.first()?.let { sourceDeck ->
