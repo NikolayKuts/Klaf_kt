@@ -101,7 +101,9 @@
     <string name="pointer_interim_deck_selected">selected</string>
     <string name="multiple_cards_deleting_dialog_title">Would you like to delete %d cards?</string>
     <string name="single_cards_deleting_dialog_title">Would you like to delete 1 card?</string>
-    <string name="title_card_moving_dialog">Choose the deck you would like to move to?</string>
+    <string name="title_card_moving_dialog">Choose the deck where you would like to transfer</string>
     <string name="problem_with_moving_cards">There is a poblem with moving the cards</string>
     <string name="message_no_cards_selected">No cards selected</string>
+    <string name="message_deletion_completed_successfully">Deletion completed successfully</string>
+    <string name="message_transfer_completed_successfully">Transfer completed successfully</string>
 </resources>

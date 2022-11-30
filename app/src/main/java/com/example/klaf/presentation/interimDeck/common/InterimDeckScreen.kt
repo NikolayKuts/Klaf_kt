@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Checkbox
-import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +24,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
+import com.example.klaf.presentation.common.CustomCheckBox
 import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
 import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationEvent.*
@@ -46,8 +45,8 @@ fun InterimDeckScreen(viewModel: BaseInterimDeckViewModel) {
             Header()
 
             QuantityPointers(
-                total = deck.cardQuantity.toString(),
-                selected = cardHolders.filter { it.isSelected }.size.toString()
+                totalValue = deck.cardQuantity.toString(),
+                selectedValue = cardHolders.filter { it.isSelected }.size.toString()
             )
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -82,50 +81,55 @@ private fun ColumnScope.Header() {
             .align(alignment = Alignment.CenterHorizontally)
             .padding(top = 8.dp, bottom = 8.dp),
         text = stringResource(id = R.string.Interim_deck_name),
-        style = MainTheme.typographies.viewingCardDeckName
+        style = MainTheme.typographies.cardTransferringScreenTextStyles.header
     )
 }
 
 @Composable
 private fun QuantityPointers(
-    total: String,
-    selected: String,
+    totalValue: String,
+    selectedValue: String,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
-                .background(Color(0x4B707070))
+                .background(MainTheme.colors.cardTransferringScreenColors.quantityPointerBackground)
                 .padding(start = 4.dp, end = 4.dp),
             text = stringResource(R.string.pointer_interim_deck_cards),
-            fontStyle = FontStyle.Italic,
+            style = MainTheme.typographies.cardTransferringScreenTextStyles.pointerTitle,
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(text = stringResource(R.string.pointer_interim_deck_total))
-            Text(
-                text = total,
-                fontStyle = FontStyle.Italic,
-            )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(text = stringResource(R.string.pointer_interim_deck_selected))
-            Text(
-                text = selected,
-                fontStyle = FontStyle.Italic,
-            )
-        }
+
+        QuantityPointer(
+            pointerText = stringResource(R.string.pointer_interim_deck_total),
+            pointerValue = totalValue
+        )
+
+        QuantityPointer(
+            pointerText = stringResource(R.string.pointer_interim_deck_selected),
+            pointerValue = selectedValue
+        )
+    }
+}
+
+@Composable
+private fun QuantityPointer(
+    pointerText: String,
+    pointerValue: String,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(end = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(text = pointerText)
+        Text(
+            text = pointerValue,
+            style = MainTheme.typographies.cardTransferringScreenTextStyles.quantityPointerValue,
+        )
     }
 }
 
@@ -136,30 +140,31 @@ private fun CardItem(
     onSelectedChanged: (Boolean) -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-
-        ) {
+    ) {
         Text(
             text = position.toString(),
-            color = Color(0xFF525252),
+            color = MainTheme.colors.cardTransferringScreenColors.cardOrdinal,
             fontStyle = FontStyle.Italic
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = holder.card.foreignWord,
-            color = Color(0xFF93B46A)
+            color = MainTheme.colors.cardTransferringScreenColors.foreignWord
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             modifier = Modifier.weight(1F),
             text = holder.card.nativeWord,
         )
-        Checkbox(
+
+        CustomCheckBox(
+            modifier = Modifier.padding(6.dp),
             checked = holder.isSelected,
             onCheckedChange = onSelectedChanged,
-            colors = CheckboxDefaults.colors(checkedColor = Color(0xFFA9D378))
+            uncheckedBorderColor = MainTheme.colors.cardTransferringScreenColors.unCheckedBorder,
+            checkedBoxColor = MainTheme.colors.cardTransferringScreenColors.selectedCheckBox
         )
     }
 }
@@ -170,7 +175,7 @@ private fun DividingLine() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 3.dp, bottom = 3.dp),
-        color = Color(0xF1636262),
+        color = MainTheme.colors.cardTransferringScreenColors.itemDivider,
     )
 }
 
@@ -182,11 +187,12 @@ private fun BoxScope.ManagementButtons(
     onDeleteCardsClick: () -> Unit,
 ) {
     Box(
-        modifier = Modifier.align(Alignment.BottomEnd)
+        modifier = Modifier
+            .align(Alignment.BottomEnd)
             .padding(end = 48.dp, bottom = 48.dp),
     ) {
         with(clickState) {
-            CardMovingButton(isStartPosition = value, onClick = onMoveCardsClick)
+            CardTransferringButton(isStartPosition = value, onClick = onMoveCardsClick)
             CardAddingButton(isStartPosition = value, onClick = onAddCardsClick)
             CardDeletingButton(isStartPosition = value, onClick = onDeleteCardsClick)
             RoundButton(
@@ -199,14 +205,14 @@ private fun BoxScope.ManagementButtons(
 }
 
 @Composable
-private fun CardMovingButton(
+private fun CardTransferringButton(
     isStartPosition: Boolean,
     onClick: () -> Unit,
 ) {
     AnimatableOffsetButton(
         isStartPosition = isStartPosition,
         offset = -180F,
-        background = Color(0xFF679AB1),
+        background = MainTheme.colors.cardTransferringScreenColors.transferringButton,
         iconId = R.drawable.ic_move_24,
         stiffness = Spring.StiffnessVeryLow,
         onClick = onClick
@@ -221,7 +227,7 @@ private fun CardAddingButton(
     AnimatableOffsetButton(
         isStartPosition = isStartPosition,
         offset = -120F,
-        background = Color(0xFFA8CE7D),
+        background = MainTheme.colors.cardTransferringScreenColors.cardAddingButton,
         iconId = R.drawable.ic_add_24,
         stiffness = Spring.StiffnessLow,
         onClick = onClick,
@@ -236,7 +242,7 @@ private fun CardDeletingButton(
     AnimatableOffsetButton(
         isStartPosition = isStartPosition,
         offset = -60F,
-        background = Color(0xFFCE756E),
+        background = MainTheme.colors.cardTransferringScreenColors.deletingButton,
         iconId = R.drawable.ic_delete_24,
         stiffness = Spring.StiffnessMediumLow,
         onClick = onClick,
