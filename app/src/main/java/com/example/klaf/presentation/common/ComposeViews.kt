@@ -1,32 +1,34 @@
 package com.example.klaf.presentation.common
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.remember
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.klaf.R
 import com.example.klaf.domain.common.generateLetterInfos
+import com.example.klaf.domain.common.ifTrue
 import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.ipa.convertToUncompletedIpa
 import com.example.klaf.presentation.theme.MainTheme
@@ -271,4 +273,48 @@ fun ConfirmationButton(onClick: () -> Unit) {
         iconId = R.drawable.ic_confirmation_24,
         onClick = onClick
     )
+}
+
+@Composable
+fun CustomCheckBox(
+    modifier: Modifier,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    checkBoxSize: Dp = 20.dp,
+    borderWidth: Dp = 1.dp,
+    checkedBoxColor: Color = MaterialTheme.colors.secondary,
+    uncheckedBoxColor: Color = checkedBoxColor.copy(alpha = 0f),
+    checkmarkColor: Color = MaterialTheme.colors.surface,
+    checkedBorderColor: Color = checkedBoxColor,
+    uncheckedBorderColor: Color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+    shape: Shape = RoundedCornerShape(size = 4.dp),
+    contentDescription: String? = null,
+) {
+    var checkBoxState by rememberAsMutableStateOf(checked)
+    val background = if (checkBoxState) checkedBoxColor else uncheckedBoxColor
+    val borderColor = if (checkBoxState) checkedBorderColor else uncheckedBorderColor
+
+    Box(
+        modifier = modifier
+            .clip(shape = shape)
+            .background(color = background)
+            .border(
+                border = BorderStroke(width = borderWidth, color = borderColor),
+                shape = RoundedCornerShape(size = 6.dp)
+            )
+            .size(checkBoxSize)
+            .clickable {
+                checkBoxState = !checkBoxState
+                onCheckedChange(checkBoxState)
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        checkBoxState.ifTrue {
+            Icon(
+                Icons.Default.Check,
+                tint = checkmarkColor,
+                contentDescription = contentDescription,
+            )
+        }
+    }
 }
