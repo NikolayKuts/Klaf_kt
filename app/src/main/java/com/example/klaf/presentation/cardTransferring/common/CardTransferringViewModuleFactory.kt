@@ -1,11 +1,11 @@
-package com.example.klaf.presentation.interimDeck.common
+package com.example.klaf.presentation.cardTransferring.common
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import dagger.assisted.AssistedFactory
 
-class InterimDeckViewModuleFactory(
-    private val assistedFactory: InterimDeckViewModelAssistedFactory,
+class CardTransferringViewModuleFactory(
+    private val assistedFactory: CardTransferringViewModelAssistedFactory,
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
@@ -15,7 +15,7 @@ class InterimDeckViewModuleFactory(
 }
 
 @AssistedFactory
-interface InterimDeckViewModelAssistedFactory {
+interface CardTransferringViewModelAssistedFactory {
 
-    fun create(): InterimDeckViewModel
+    fun create(): CardTransferringViewModel
 }

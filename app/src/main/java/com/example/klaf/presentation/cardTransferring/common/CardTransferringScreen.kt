@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.interimDeck.common
+package com.example.klaf.presentation.cardTransferring.common
 
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.*
@@ -27,11 +27,11 @@ import com.example.klaf.R
 import com.example.klaf.presentation.common.CustomCheckBox
 import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
-import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationEvent.*
+import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
-fun InterimDeckScreen(viewModel: BaseInterimDeckViewModel) {
+fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
     val deck = viewModel.interimDeck.collectAsState(initial = null).value ?: return
     val cardHolders by viewModel.cardHolders.collectAsState()
     val clickState = rememberAsMutableStateOf(value = false)

@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.interimDeck.cardMoving
+package com.example.klaf.presentation.cardTransferring.deckChoosing
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,11 +21,11 @@ import com.example.klaf.presentation.common.ClosingButton
 import com.example.klaf.presentation.common.ConfirmationButton
 import com.example.klaf.presentation.common.FullBackgroundDialog
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
-import com.example.klaf.presentation.interimDeck.common.BaseInterimDeckViewModel
+import com.example.klaf.presentation.cardTransferring.common.BaseCardTransferringViewModel
 
 @Composable
-fun CardMovingDialogView(
-    viewModel: BaseInterimDeckViewModel,
+fun DeckChoosingDialogView(
+    viewModel: BaseCardTransferringViewModel,
     onCloseClick: () -> Unit,
 ) {
     val decks by viewModel.decks.collectAsState()

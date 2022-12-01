@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.interimDeck.common
+package com.example.klaf.presentation.cardTransferring.common
 
 import com.example.klaf.domain.entities.Card
 

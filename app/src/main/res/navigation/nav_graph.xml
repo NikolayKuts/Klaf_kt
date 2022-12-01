@@ -183,7 +183,7 @@
         tools:layout="@layout/dialog_data_synchronization" />
     <fragment
         android:id="@+id/interimDeckFragment"
-        android:name="com.example.klaf.presentation.interimDeck.common.InterimDeckFragment"
+        android:name="com.example.klaf.presentation.cardTransferring.common.CardTransferringFragment"
         android:label="fragment_interim_deck"
         tools:layout="@layout/fragment_interim_deck" >
         <action
@@ -198,7 +198,7 @@
     </fragment>
     <dialog
         android:id="@+id/cardDeletingDialogFragment"
-        android:name="com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingDialogFragment"
+        android:name="com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingDialogFragment"
         android:label="CardDeletingDialogFragment" >
         <argument
             android:name="cardQuantity"
@@ -206,7 +206,7 @@
     </dialog>
     <dialog
         android:id="@+id/cardMovingDialogFragment"
-        android:name="com.example.klaf.presentation.interimDeck.cardMoving.CardMovingDialogFragment"
+        android:name="com.example.klaf.presentation.cardTransferring.deckChoosing.DeckChoosingDialogFragment"
         android:label="CardMovingDialogFragment" />
 
 </navigation>

@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.interimDeck.cardDeleting
+package com.example.klaf.presentation.cardTransferring.cardDeleting
 
 enum class CardDeletingState {
 
