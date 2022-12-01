@@ -43,6 +43,7 @@ data class CardTransferringScreenTextStyles(
     val header: TextStyle,
     val pointerTitle: TextStyle,
     val quantityPointerValue: TextStyle,
+    val choosingContent: TextStyle,
 )
 
 private val Typography = Typography(
