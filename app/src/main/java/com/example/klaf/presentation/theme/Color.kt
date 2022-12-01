@@ -81,14 +81,14 @@ data class CardTransferringScreenColors(
 
 val LightCadTransferringScreenColors = CardTransferringScreenColors(
     quantityPointerBackground = Color(0x4B707070),
-    cardOrdinal = Color(0xFf123344),
-    foreignWord = Color(0xFF93B46A),
+    cardOrdinal = Color(0xFFC4C4C4),
+    foreignWord = Color(0xFF8F3CA3),
     selectedCheckBox = Color(0xFFA9D378),
-    unCheckedBorder = Color(0xFFA9D378),
-    itemDivider = Color(0xF1636262),
-    transferringButton = Color(0xF1636262),
-    cardAddingButton = Color(0xF1636262),
-    deletingButton = Color(0xF1636262),
+    unCheckedBorder = Color(0xFF7E7E7E),
+    itemDivider = Color(0xF17E7E7E),
+    transferringButton = Color(0xFF87BAE2),
+    cardAddingButton = Color(0xFFB3CC96),
+    deletingButton = Color(0xFFDA9B96),
 )
 
 val DarkCadTransferringScreenColors = CardTransferringScreenColors(
