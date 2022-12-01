@@ -243,8 +243,13 @@ private val QuantityPointer = Body1.copy(
     fontStyle = FontStyle.Italic
 )
 
+private val ChoosingContent = Body1.copy(
+    fontStyle = FontStyle.Italic
+)
+
 val CannonCardTransferringScreenTextStyles = CardTransferringScreenTextStyles(
     header = HeaderTextStyle,
     pointerTitle = PointerTitleTextStyle,
-    quantityPointerValue = QuantityPointer
+    quantityPointerValue = QuantityPointer,
+    choosingContent = ChoosingContent,
 )

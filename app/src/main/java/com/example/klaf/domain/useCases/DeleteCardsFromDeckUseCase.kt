@@ -20,7 +20,7 @@ class DeleteCardsFromDeckUseCase @Inject constructor(
     private val localStorageTransactionRepository: StorageTransactionRepository,
 ) {
 
-    suspend operator fun invoke(vararg cardIds: Int, deckId: Int) {
+    suspend operator fun invoke(deckId: Int, vararg cardIds: Int) {
         withContext(Dispatchers.IO) {
             localStorageTransactionRepository.performWithTransaction {
                 val originDeck = deckRepository.getDeckById(deckId = deckId)

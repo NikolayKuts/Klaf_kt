@@ -77,6 +77,13 @@ data class CardTransferringScreenColors(
     val transferringButton: Color,
     val cardAddingButton: Color,
     val deletingButton: Color,
+    val chosenDeckBoxBorder: Color,
+)
+
+private val LightMaterialColors = lightColors(
+    primary = Color(0xFFBEDB9C),
+    onPrimary = Color(0xFF636363),
+    onBackground = Color(0xFF474747)
 )
 
 val LightCadTransferringScreenColors = CardTransferringScreenColors(
@@ -89,26 +96,11 @@ val LightCadTransferringScreenColors = CardTransferringScreenColors(
     transferringButton = Color(0xFF87BAE2),
     cardAddingButton = Color(0xFFB3CC96),
     deletingButton = Color(0xFFDA9B96),
-)
-
-val DarkCadTransferringScreenColors = CardTransferringScreenColors(
-    quantityPointerBackground = Color(0x4B707070),
-    cardOrdinal = Color(0xFF525252),
-    foreignWord = Color(0xFF93B46A),
-    selectedCheckBox = Color(0xFF85A560),
-    unCheckedBorder = Color(0xFF646464),
-    itemDivider = Color(0xF1636262),
-    transferringButton = Color(0xFF4E7383),
-    cardAddingButton = Color(0xFF809C5F),
-    deletingButton = Color(0xFFC4716A),
+    chosenDeckBoxBorder = Color(0xFFB3CC96),
 )
 
 val LightMainPalettes = MainColors(
-    materialColors = lightColors(
-        primary = Color(0xFFBEDB9C),
-        onPrimary = Color(0xFF636363),
-        onBackground = Color(0xFF474747)
-    ),
+    materialColors = LightMaterialColors,
     statusBarBackground = Color(0xFF8AA768),
     lightDeckItemBackground = Color(0xFFFFFFFF),
     darkDeckItemBackground = Color(0xFFEBEBEB),
@@ -120,7 +112,7 @@ val LightMainPalettes = MainColors(
     deckItemCardQuantity = Color(0xFFB27DBB),
     deckItemPointer = Color(0xFF7C7C7C),
     positiveDialogButton = Color(0xFFBFE295),
-    negativeDialogButton = Color(0xFFEBC4C6),
+    negativeDialogButton = Color(0xFFEBAEB1),
     neutralDialogButton = Color(0xFFB9E5EB),
     deckNavigationDialogSeparator = Color(0xFF818181),
     checkedLetterCell = Color(0xFFB0D9DF),
@@ -152,6 +144,11 @@ val LightMainPalettes = MainColors(
     cardTransferringScreenColors = LightCadTransferringScreenColors,
 )
 
+private val DarkMaterialColors = darkColors(
+    primary = DarkPrimaryColor,
+    onPrimary = DarkOnPrimaryColor,
+)
+
 private val DarkDeckRepetitionInfoScreenColors = DeckRepetitionInfoScreenColors(
     pointerBackground = Color(0x2F868686),
     itemDivider = Color(0xF1575757),
@@ -159,11 +156,21 @@ private val DarkDeckRepetitionInfoScreenColors = DeckRepetitionInfoScreenColors(
     failureMark = Color(0x4DE98077),
 )
 
+private val DarkCadTransferringScreenColors = CardTransferringScreenColors(
+    quantityPointerBackground = Color(0x4B707070),
+    cardOrdinal = Color(0xFF525252),
+    foreignWord = Color(0xFF93B46A),
+    selectedCheckBox = Color(0xFF85A560),
+    unCheckedBorder = Color(0xFF646464),
+    itemDivider = Color(0xF1636262),
+    transferringButton = Color(0xFF4E7383),
+    cardAddingButton = Color(0xFF809C5F),
+    deletingButton = Color(0xFFC4716A),
+    chosenDeckBoxBorder = Color(0xFF8CA76D),
+)
+
 val DarkMainPalettes = MainColors(
-    materialColors = darkColors(
-        primary = DarkPrimaryColor,
-        onPrimary = DarkOnPrimaryColor,
-    ),
+    materialColors = DarkMaterialColors,
     statusBarBackground = Color(0xFF464646),
     lightDeckItemBackground = Color(0xFF464646),
     darkDeckItemBackground = Color(0xFF353535),

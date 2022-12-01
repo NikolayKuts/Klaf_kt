@@ -34,7 +34,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     override val timer: RepetitionTimer,
     override val audioPlayer: CardAudioPlayer,
     private val updateDeck: UpdateDeckUseCase,
-    private val deleteCardFromDeck: DeleteCardsFromDeckUseCase,
+    private val deleteCardsFromDeck: DeleteCardsFromDeckUseCase,
     private val workManager: WorkManager,
     fetchDeckRepetitionInfo: FetchDeckRepetitionInfoUseCase,
     private val saveDeckRepetitionInfo: SaveDeckRepetitionInfoUseCase,
@@ -204,7 +204,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             },
             onCompletion = { eventMessage.tryEmit(messageId = R.string.card_has_been_deleted) }
         ) {
-            deleteCardFromDeck(cardId, deckId = deckId)
+            deleteCardsFromDeck(deckId = deckId, cardIds = intArrayOf(cardId)   )
         }
     }
 
