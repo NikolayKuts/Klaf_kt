@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.cardEdinting
+package com.example.klaf.presentation.cardEditing
 
 import android.os.Bundle
 import android.view.View

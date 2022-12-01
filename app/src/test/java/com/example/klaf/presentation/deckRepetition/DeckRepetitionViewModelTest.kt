@@ -9,7 +9,7 @@ import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
-import com.example.klaf.domain.useCases.DeleteCardFromDeckUseCase
+import com.example.klaf.domain.useCases.DeleteCardsFromDeckUseCase
 import com.example.klaf.domain.useCases.FetchCardsUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.domain.useCases.UpdateDeckUseCase
@@ -114,17 +114,17 @@ class DeckRepetitionViewModelTest {
     fun `get problem message if deleting card is failed`() = runTest {
         val cardId = 222222
         val deckId = 999999
-        val deleteCardFromDeckUseCase: DeleteCardFromDeckUseCase = mockk {
+        val deleteCardsFromDeckUseCase: DeleteCardsFromDeckUseCase = mockk {
             coEvery { this@mockk.invoke(cardIds = cardId, deckId = deckId) } throws Exception()
         }
-        val viewModel = createViewModel(deleteCardFromDeck = deleteCardFromDeckUseCase)
+        val viewModel = createViewModel(deleteCardFromDeck = deleteCardsFromDeckUseCase)
         val testJob = launchEventMassageIdEqualsTest(
             eventMessageSource = viewModel,
             expectedMassageId = R.string.problem_with_removing_card
         )
 
         viewModel.deleteCard(cardId = cardId, deckId = deckId)
-        coVerify(exactly = 1) { deleteCardFromDeckUseCase(cardIds = cardId, deckId = deckId) }
+        coVerify(exactly = 1) { deleteCardsFromDeckUseCase(cardIds = cardId, deckId = deckId) }
         testJob.join()
     }
 
@@ -154,7 +154,7 @@ class DeckRepetitionViewModelTest {
         timer: RepetitionTimer = mockk(relaxed = true),
         audioPlayer: CardAudioPlayer = mockk(relaxed = true),
         updateDeck: UpdateDeckUseCase = mockk(relaxed = true),
-        deleteCardFromDeck: DeleteCardFromDeckUseCase = mockk(relaxed = true),
+        deleteCardFromDeck: DeleteCardsFromDeckUseCase = mockk(relaxed = true),
         workManager: WorkManager = mockk(relaxed = true),
     ): BaseDeckRepetitionViewModel = DeckRepetitionViewModel(
         deckId = deckId,

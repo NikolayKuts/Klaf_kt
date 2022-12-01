@@ -10,7 +10,7 @@ import com.example.klaf.domain.repositories.StorageTransactionRepository
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
-class DeleteCardFromDeckUseCase @Inject constructor(
+class DeleteCardsFromDeckUseCase @Inject constructor(
     @DeckRepositoryRoomImp
     private val deckRepository: DeckRepository,
     @CardRepositoryRoomImp

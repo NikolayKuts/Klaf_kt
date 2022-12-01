@@ -31,7 +31,7 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setEvenMessageObserver(view = view)
+        observeEvenMessage(view = view)
         observeNavigationChanges()
 
         view.findViewById<ComposeView>(R.id.compose_view_deck_list).setContent {
@@ -47,7 +47,7 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
         }
     }
 
-    private fun setEvenMessageObserver(view: View) {
+    private fun observeEvenMessage(view: View) {
         viewModel.eventMessage.collectWhenStarted(
             lifecycleScope = viewLifecycleOwner.lifecycleScope
         ) { eventMessage ->
@@ -67,8 +67,12 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
                 is DeckNavigationDialogDestination -> {
                     navigateToDeckNavigationDialog(deck = destination.deck)
                 }
-                DataSynchronizationDialogDestination -> navigateToDataSynchronizationDialog()
-                InterimDeckDestination -> navigateInterimDeck()
+                DataSynchronizationDialogDestination -> {
+                    navigateToDataSynchronizationDialog()
+                }
+                is CardTransferringDestination -> {
+                    navigateCardTransferringFragment(deckId = destination.deckId)
+                }
             }
         }
     }
@@ -94,7 +98,9 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
         navController.navigate(R.id.action_deckListFragment_to_dataSynchronizationDialogFragment)
     }
 
-    private fun navigateInterimDeck() {
-        navController.navigate(R.id.action_deckListFragment_to_interimDeckFragment)
+    private fun navigateCardTransferringFragment(deckId: Int) {
+        DeckListFragmentDirections.actionDeckListFragmentToCardTransferringFragment(
+            sourceDeckId = deckId
+        ).also { navController.navigate(directions = it) }
     }
 }

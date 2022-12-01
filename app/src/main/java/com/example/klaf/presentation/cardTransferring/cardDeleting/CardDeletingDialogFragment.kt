@@ -16,7 +16,7 @@ import com.example.klaf.presentation.theme.MainTheme
 class CardDeletingDialogFragment :
     TransparentDialogFragment(contentLayoutId = R.layout.dialog_interim_deck) {
 
-    private val viewModel by navGraphViewModels<BaseCardTransferringViewModel>(R.id.interimDeckFragment)
+    private val viewModel by navGraphViewModels<BaseCardTransferringViewModel>(R.id.cardTransferringFragment)
     private val args by navArgs<CardDeletingDialogFragmentArgs>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
