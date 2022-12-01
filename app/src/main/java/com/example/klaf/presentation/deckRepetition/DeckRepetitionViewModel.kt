@@ -34,7 +34,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     override val timer: RepetitionTimer,
     override val audioPlayer: CardAudioPlayer,
     private val updateDeck: UpdateDeckUseCase,
-    private val deleteCardFromDeck: DeleteCardFromDeckUseCase,
+    private val deleteCardFromDeck: DeleteCardsFromDeckUseCase,
     private val workManager: WorkManager,
     fetchDeckRepetitionInfo: FetchDeckRepetitionInfoUseCase,
     private val saveDeckRepetitionInfo: SaveDeckRepetitionInfoUseCase,

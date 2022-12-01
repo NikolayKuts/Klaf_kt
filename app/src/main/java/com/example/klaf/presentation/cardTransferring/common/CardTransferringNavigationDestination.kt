@@ -5,7 +5,7 @@ sealed interface CardTransferringNavigationDestination {
     object CardMovingDialogDestination : CardTransferringNavigationDestination
 
     data class CardAddingFragmentDestination(
-        val interimDeckId: Int,
+        val sourceDeckId: Int,
     ) : CardTransferringNavigationDestination
 
     data class CardDeletingDialogDestination(

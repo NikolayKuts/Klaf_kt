@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.cardEdinting
+package com.example.klaf.presentation.cardEditing
 
 enum class CardEditingState {
 

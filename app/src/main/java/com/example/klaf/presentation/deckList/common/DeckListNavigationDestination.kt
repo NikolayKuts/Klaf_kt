@@ -12,5 +12,5 @@ sealed class DeckListNavigationDestination {
 
     object DataSynchronizationDialogDestination : DeckListNavigationDestination()
 
-    object InterimDeckDestination : DeckListNavigationDestination()
+    data class CardTransferringDestination(val deckId: Int) : DeckListNavigationDestination()
 }

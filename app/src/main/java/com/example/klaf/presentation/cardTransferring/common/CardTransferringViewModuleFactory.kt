@@ -5,17 +5,18 @@ import androidx.lifecycle.ViewModelProvider
 import dagger.assisted.AssistedFactory
 
 class CardTransferringViewModuleFactory(
+    private val sourceDeckId: Int,
     private val assistedFactory: CardTransferringViewModelAssistedFactory,
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return assistedFactory.create() as T
+        return assistedFactory.create(sourceDeckId = sourceDeckId) as T
     }
 }
 
 @AssistedFactory
 interface CardTransferringViewModelAssistedFactory {
 
-    fun create(): CardTransferringViewModel
+    fun create(sourceDeckId: Int): CardTransferringViewModel
 }

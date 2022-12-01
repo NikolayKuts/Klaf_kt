@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.cardEdinting
+package com.example.klaf.presentation.cardEditing
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable

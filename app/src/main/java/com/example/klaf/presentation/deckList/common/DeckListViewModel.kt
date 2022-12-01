@@ -186,7 +186,7 @@ class DeckListViewModel @AssistedInject constructor(
         ifDeckIsNotInterim: () -> DeckListNavigationDestination,
     ): DeckListNavigationDestination {
         return if (deckId == Deck.INTERIM_DECK_ID) {
-            InterimDeckDestination
+            CardTransferringDestination(deckId = deckId)
         } else {
             ifDeckIsNotInterim()
         }

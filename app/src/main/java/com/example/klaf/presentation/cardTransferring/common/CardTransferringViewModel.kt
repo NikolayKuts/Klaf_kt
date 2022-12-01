@@ -14,22 +14,24 @@ import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingS
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardTransferringFragment
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class CardTransferringViewModel @AssistedInject constructor(
+    @Assisted private val sourceDeckId: Int,
     fetchDeckById: FetchDeckByIdUseCase,
     private val fetchCards: FetchCardsUseCase,
-    private val deleteCardFromDeckUseCase: DeleteCardFromDeckUseCase,
+    private val deleteCardsFromDeckUseCase: DeleteCardsFromDeckUseCase,
     fetchDeckSource: FetchDeckSourceUseCase,
     private val moveCardsToDeck: TransferCardsToDeckUseCase,
 ) : BaseCardTransferringViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>()
 
-    override val interimDeck = fetchDeckById(deckId = Deck.INTERIM_DECK_ID)
+    override val interimDeck = fetchDeckById(deckId = sourceDeckId)
         .catch { emitEventMessage(messageId = R.string.problem_with_fetching_deck) }
         .shareIn(
             scope = viewModelScope,
@@ -46,7 +48,7 @@ class CardTransferringViewModel @AssistedInject constructor(
 
     override val decks: StateFlow<List<Deck>> = fetchDeckSource()
         .catch { emitEventMessage(messageId = R.string.problem_with_fetching_decks) }
-        .simplifiedItemFilterNot { deck -> deck.id == Deck.INTERIM_DECK_ID }
+        .simplifiedItemFilterNot { deck -> deck.id == sourceDeckId }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -105,9 +107,9 @@ class CardTransferringViewModel @AssistedInject constructor(
                         )
                     }
                 ) {
-                    deleteCardFromDeckUseCase(
+                    deleteCardsFromDeckUseCase(
                         cardIds = cardIds.toIntArray(),
-                        deckId = Deck.INTERIM_DECK_ID
+                        deckId = sourceDeckId
                     )
                 }
             }
@@ -138,7 +140,7 @@ class CardTransferringViewModel @AssistedInject constructor(
 
     private fun observeCardSource() {
         viewModelScope.launch {
-            fetchCards(deckId = Deck.INTERIM_DECK_ID).collect { cards ->
+            fetchCards(deckId = sourceDeckId).collect { cards ->
                 cardHolders.value = cards.map { card -> SelectableCardHolder(card = card) }
             }
         }
@@ -146,7 +148,7 @@ class CardTransferringViewModel @AssistedInject constructor(
 
     private fun navigateToCardAddingFragmentDestination() {
         emitDestination(
-            destination = CardAddingFragmentDestination(interimDeckId = Deck.INTERIM_DECK_ID)
+            destination = CardAddingFragmentDestination(sourceDeckId = sourceDeckId)
         )
     }
 
