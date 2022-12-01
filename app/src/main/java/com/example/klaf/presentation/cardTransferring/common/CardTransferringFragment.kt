@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.interimDeck.common
+package com.example.klaf.presentation.cardTransferring.common
 
 import android.os.Bundle
 import android.view.View
@@ -11,21 +11,21 @@ import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showSnackBar
-import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationDestination.*
-import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationDestination.InterimDeckFragment
+import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
+import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardTransferringFragment
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
+class CardTransferringFragment : Fragment(R.layout.fragment_interim_deck) {
 
     @Inject
-    lateinit var assistedFactory: InterimDeckViewModelAssistedFactory
-    private val viewModel: BaseInterimDeckViewModel by navGraphViewModels(
+    lateinit var assistedFactory: CardTransferringViewModelAssistedFactory
+    private val viewModel: BaseCardTransferringViewModel by navGraphViewModels(
         navGraphId = R.id.interimDeckFragment
     ) {
-        InterimDeckViewModuleFactory(assistedFactory = assistedFactory)
+        CardTransferringViewModuleFactory(assistedFactory = assistedFactory)
     }
     private val navController by lazy { findNavController() }
 
@@ -38,7 +38,7 @@ class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
         view.findViewById<ComposeView>(R.id.compose_view_dialog).setContent {
             MainTheme {
                 Surface {
-                    InterimDeckScreen(viewModel = viewModel)
+                    CardTransferringScreen(viewModel = viewModel)
                 }
             }
         }
@@ -56,7 +56,7 @@ class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
                 is CardDeletingDialogDestination -> {
                     navigateToCardDeletingDialog(cardQuantity = destination.cardQuantity)
                 }
-                InterimDeckFragment -> navController.popBackStack()
+                CardTransferringFragment -> navController.popBackStack()
             }
         }
     }
@@ -74,13 +74,13 @@ class InterimDeckFragment : Fragment(R.layout.fragment_interim_deck) {
     }
 
     private fun navigateToCardAdditionDialog(interimDeckId: Int) {
-        InterimDeckFragmentDirections.actionInterimDeckFragmentToCardAdditionFragment(
+        CardTransferringFragmentDirections.actionInterimDeckFragmentToCardAdditionFragment(
             deckId = interimDeckId
         ).also { navController.navigate(directions = it) }
     }
 
     private fun navigateToCardDeletingDialog(cardQuantity: Int) {
-        InterimDeckFragmentDirections.actionInterimDeckFragmentToCardDeletingDialogFragment(
+        CardTransferringFragmentDirections.actionInterimDeckFragmentToCardDeletingDialogFragment(
             cardQuantity = cardQuantity
         ).also { navController.navigate(directions = it) }
     }

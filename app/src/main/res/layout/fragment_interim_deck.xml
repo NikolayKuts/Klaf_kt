@@ -4,6 +4,6 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/compose_view_dialog"
-    tools:context=".presentation.interimDeck.common.InterimDeckFragment">
+    tools:context=".presentation.cardTransferring.common.CardTransferringFragment">
 
 </androidx.compose.ui.platform.ComposeView>

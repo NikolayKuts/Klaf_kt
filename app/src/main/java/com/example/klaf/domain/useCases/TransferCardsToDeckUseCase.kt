@@ -12,7 +12,7 @@ import com.example.klaf.domain.repositories.StorageTransactionRepository
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
-class MoveCarsToDeckUseCase @Inject constructor(
+class TransferCardsToDeckUseCase @Inject constructor(
     @CardRepositoryRoomImp
     private val cardRepository: CardRepository,
     @DeckRepositoryRoomImp

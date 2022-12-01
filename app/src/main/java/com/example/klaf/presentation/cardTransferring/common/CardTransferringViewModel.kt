@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.interimDeck.common
+package com.example.klaf.presentation.cardTransferring.common
 
 import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
@@ -9,23 +9,23 @@ import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.emit
-import com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingState
-import com.example.klaf.presentation.interimDeck.cardDeleting.CardDeletingState.*
-import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationDestination.*
-import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationDestination.InterimDeckFragment
-import com.example.klaf.presentation.interimDeck.common.InterimDeckNavigationEvent.*
+import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingState
+import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingState.*
+import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
+import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardTransferringFragment
+import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class InterimDeckViewModel @AssistedInject constructor(
+class CardTransferringViewModel @AssistedInject constructor(
     fetchDeckById: FetchDeckByIdUseCase,
     private val fetchCards: FetchCardsUseCase,
     private val deleteCardFromDeckUseCase: DeleteCardFromDeckUseCase,
     fetchDeckSource: FetchDeckSourceUseCase,
-    private val moveCardsToDeck: MoveCarsToDeckUseCase,
-) : BaseInterimDeckViewModel() {
+    private val moveCardsToDeck: TransferCardsToDeckUseCase,
+) : BaseCardTransferringViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>()
 
@@ -39,7 +39,7 @@ class InterimDeckViewModel @AssistedInject constructor(
 
     override val cardHolders = MutableStateFlow<List<SelectableCardHolder>>(value = emptyList())
 
-    override val navigationDestination = MutableSharedFlow<InterimDeckNavigationDestination>()
+    override val navigationDestination = MutableSharedFlow<CardTransferringNavigationDestination>()
 
     override val cardDeletingState: MutableStateFlow<CardDeletingState> =
         MutableStateFlow(value = NON)
@@ -80,7 +80,7 @@ class InterimDeckViewModel @AssistedInject constructor(
         }
     }
 
-    override fun navigate(event: InterimDeckNavigationEvent) {
+    override fun navigate(event: CardTransferringNavigationEvent) {
         when (event) {
             ToCardAddingFragment -> navigateToCardAddingFragmentDestination()
             ToCardDeletionDialog -> navigateToCardDeletingDialogDestination()
@@ -119,7 +119,7 @@ class InterimDeckViewModel @AssistedInject constructor(
                 emitEventMessage(messageId = R.string.problem_with_moving_cards)
             },
             onCompletion = {
-                emitDestination(destination = InterimDeckFragment)
+                emitDestination(destination = CardTransferringFragment)
                 emitEventMessage(messageId = (R.string.message_transfer_completed_successfully))
             }
         ) {
@@ -170,7 +170,7 @@ class InterimDeckViewModel @AssistedInject constructor(
         }
     }
 
-    private fun emitDestination(destination: InterimDeckNavigationDestination) {
+    private fun emitDestination(destination: CardTransferringNavigationDestination) {
         viewModelScope.launch { navigationDestination.emit(value = destination) }
     }
 

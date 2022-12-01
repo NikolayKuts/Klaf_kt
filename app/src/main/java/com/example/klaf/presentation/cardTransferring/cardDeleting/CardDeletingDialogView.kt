@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.interimDeck.cardDeleting
+package com.example.klaf.presentation.cardTransferring.cardDeleting
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
