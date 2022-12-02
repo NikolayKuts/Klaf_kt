@@ -31,7 +31,7 @@ class CardTransferringViewModel @AssistedInject constructor(
 
     override val eventMessage = MutableSharedFlow<EventMessage>()
 
-    override val interimDeck = fetchDeckById(deckId = sourceDeckId)
+    override val sourceDeck = fetchDeckById(deckId = sourceDeckId)
         .catch { emitEventMessage(messageId = R.string.problem_with_fetching_deck) }
         .shareIn(
             scope = viewModelScope,
@@ -87,6 +87,11 @@ class CardTransferringViewModel @AssistedInject constructor(
             ToCardAddingFragment -> navigateToCardAddingFragmentDestination()
             ToCardDeletionDialog -> navigateToCardDeletingDialogDestination()
             ToCardMovingDialog -> navigateToCardMovingDialogDestination()
+            is ToCardEditingFragment -> {
+                navigateToCardEditingFragmentDestination(
+                    cardSelectionIndex = event.cardSelectionIndex
+                )
+            }
         }
     }
 
@@ -125,7 +130,7 @@ class CardTransferringViewModel @AssistedInject constructor(
                 emitEventMessage(messageId = (R.string.message_transfer_completed_successfully))
             }
         ) {
-            interimDeck.replayCache.first()?.let { sourceDeck ->
+            sourceDeck.replayCache.first()?.let { sourceDeck ->
                 moveCardsToDeck(
                     sourceDeck = sourceDeck,
                     targetDeck = targetDeck,
@@ -170,6 +175,17 @@ class CardTransferringViewModel @AssistedInject constructor(
         } else {
             emitDestination(destination = CardMovingDialogDestination)
         }
+    }
+
+    private fun navigateToCardEditingFragmentDestination(cardSelectionIndex: Int) {
+        val selectedCard = cardHolders.value[cardSelectionIndex].card
+
+        emitDestination(
+            destination = CardEditingFragment(
+                cardId = selectedCard.id,
+                deckId = selectedCard.deckId,
+            )
+        )
     }
 
     private fun emitDestination(destination: CardTransferringNavigationDestination) {

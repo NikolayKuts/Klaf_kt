@@ -13,4 +13,9 @@ sealed interface CardTransferringNavigationDestination {
     ) : CardTransferringNavigationDestination
 
     object CardTransferringFragment : CardTransferringNavigationDestination
+
+    data class CardEditingFragment(
+        val cardId: Int,
+        val deckId: Int,
+    ) : CardTransferringNavigationDestination
 }

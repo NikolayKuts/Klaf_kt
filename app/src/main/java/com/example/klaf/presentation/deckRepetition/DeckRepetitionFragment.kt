@@ -90,8 +90,7 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
         ).also { navController.navigate(it) }
     }
 
-    private fun navigateToDeckRepetitionInfoDialogFragment(
-    ) {
+    private fun navigateToDeckRepetitionInfoDialogFragment() {
         navController.navigate(
             resId = R.id.action_deckRepetitionFragment_to_deckRepetitionInfoDialogFragment
         )
