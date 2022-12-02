@@ -133,7 +133,7 @@ private fun DeckChoosingDropdownMenu(
                         style = MainTheme.typographies.cardTransferringScreenTextStyles.choosingContent
                     )
 
-                    Divider(modifier = Modifier.fillMaxWidth().height(1.dp))
+                    Divider(modifier = Modifier.fillMaxWidth())
                 }
             }
         }

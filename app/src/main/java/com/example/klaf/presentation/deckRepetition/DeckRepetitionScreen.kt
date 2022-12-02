@@ -570,12 +570,14 @@ private fun EditButton(enabled: Boolean, onClick: () -> Unit) {
 @Composable
 private fun MainButton(animationStateState: MutableState<Boolean>, onClick: () -> Unit) {
     val transition = updateTransition(targetState = animationStateState, label = null)
+
     val scale by transition.animateDp(
         transitionSpec = {
             spring(dampingRatio = Spring.DampingRatioHighBouncy)
         },
         label = ""
     ) { if (it.value) 40.dp else 50.dp }
+
     val color by transition.animateColor(
         transitionSpec = { tween(durationMillis = 200) }, label = ""
     ) {

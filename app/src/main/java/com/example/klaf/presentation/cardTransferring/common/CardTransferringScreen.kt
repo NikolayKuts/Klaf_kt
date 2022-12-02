@@ -1,40 +1,46 @@
 package com.example.klaf.presentation.cardTransferring.common
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
+import com.example.klaf.domain.common.ifTrue
+import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
 import com.example.klaf.presentation.common.CustomCheckBox
 import com.example.klaf.presentation.common.RoundButton
+import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
-import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
 import com.example.klaf.presentation.theme.MainTheme
+import kotlinx.coroutines.delay
 
 @Composable
 fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
     val deck = viewModel.interimDeck.collectAsState(initial = null).value ?: return
     val cardHolders by viewModel.cardHolders.collectAsState()
-    val clickState = rememberAsMutableStateOf(value = false)
+    var moreButtonClickedState by rememberAsMutableStateOf(value = true)
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -52,25 +58,29 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
             Spacer(modifier = Modifier.height(28.dp))
             DividingLine()
 
-            LazyColumn(contentPadding = PaddingValues(bottom = 100.dp)) {
-                itemsIndexed(items = cardHolders) { index, holder ->
-                    CardItem(
-                        holder = holder,
-                        position = index + 1,
-                        onSelectedChanged = { viewModel.changeSelectionState(position = index) },
-                    )
-                    DividingLine()
-                    Spacer(modifier = Modifier.height(8.dp))
+            DeckList(
+                moreButtonClickedState = moreButtonClickedState,
+                cardHolders = cardHolders,
+                onScroll = { moreButtonClickedState = false },
+                onSelectedChanged = { index ->
+                    viewModel.changeSelectionState(position = index)
+                    moreButtonClickedState = false
                 }
-            }
+            )
         }
 
         ManagementButtons(
-            clickState = clickState,
+            clickState = moreButtonClickedState,
             onMoveCardsClick = { viewModel.navigate(event = ToCardMovingDialog) },
             onAddCardsClick = { viewModel.navigate(event = ToCardAddingFragment) },
             onDeleteCardsClick = { viewModel.navigate(event = ToCardDeletionDialog) },
+            onMoreButtonClick = { moreButtonClickedState = !moreButtonClickedState }
         )
+    }
+
+    LaunchedEffect(key1 = null) {
+        delay(1000)
+        moreButtonClickedState = false
     }
 }
 
@@ -134,6 +144,37 @@ private fun QuantityPointer(
 }
 
 @Composable
+private fun DeckList(
+    moreButtonClickedState: Boolean,
+    cardHolders: List<SelectableCardHolder>,
+    onScroll: () -> Unit,
+    onSelectedChanged: (index: Int) -> Unit,
+) {
+    val scrollState = rememberLazyListState()
+
+    LazyColumn(
+        state = scrollState,
+        contentPadding = PaddingValues(bottom = 100.dp),
+        modifier = Modifier.scrollable(
+            orientation = Orientation.Vertical,
+            state = rememberScrollableState { delta ->
+                moreButtonClickedState.ifTrue { onScroll() }
+                delta
+            }
+        )
+    ) {
+        itemsIndexed(items = cardHolders) { index, holder ->
+            CardItem(
+                holder = holder,
+                position = index + 1,
+                onSelectedChanged = { onSelectedChanged(index) }
+            )
+            DividingLine()
+        }
+    }
+}
+
+@Composable
 private fun CardItem(
     holder: SelectableCardHolder,
     position: Int,
@@ -171,36 +212,33 @@ private fun CardItem(
 
 @Composable
 private fun DividingLine() {
+    val padding = 4.dp
     Divider(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 3.dp, bottom = 3.dp),
+            .padding(top = padding, bottom = padding),
         color = MainTheme.colors.cardTransferringScreenColors.itemDivider,
     )
 }
 
 @Composable
 private fun BoxScope.ManagementButtons(
-    clickState: MutableState<Boolean>,
+    clickState: Boolean,
     onMoveCardsClick: () -> Unit,
     onAddCardsClick: () -> Unit,
     onDeleteCardsClick: () -> Unit,
+    onMoreButtonClick: () -> Unit,
 ) {
     Box(
         modifier = Modifier
             .align(Alignment.BottomEnd)
             .padding(end = 48.dp, bottom = 48.dp),
+        contentAlignment = Alignment.BottomCenter
     ) {
-        with(clickState) {
-            CardTransferringButton(isStartPosition = value, onClick = onMoveCardsClick)
-            CardAddingButton(isStartPosition = value, onClick = onAddCardsClick)
-            CardDeletingButton(isStartPosition = value, onClick = onDeleteCardsClick)
-            RoundButton(
-                background = MainTheme.colors.materialColors.primary,
-                iconId = R.drawable.ic_more_vert_24,
-                onClick = { value = !value }
-            )
-        }
+        CardTransferringButton(isStartPosition = clickState, onClick = onMoveCardsClick)
+        CardAddingButton(isStartPosition = clickState, onClick = onAddCardsClick)
+        CardDeletingButton(isStartPosition = clickState, onClick = onDeleteCardsClick)
+        MoreButton(clicked = clickState, onClick = onMoreButtonClick)
     }
 }
 
@@ -288,10 +326,38 @@ private fun AnimatableOffsetButton(
         modifier = Modifier
             .offset(y = xOffset.dp)
             .alpha(alpha)
-            .rotate(degrees = degrees),
+            .rotate(degrees = degrees)
+            .padding(10.dp),
         background = background,
         iconId = iconId,
         onClick = onClick,
         elevation = elevation
+    )
+}
+
+@Composable
+private fun MoreButton(
+    clicked: Boolean,
+    onClick: () -> Unit,
+) {
+    val color by animateColorAsState(
+        targetValue = if (!clicked) {
+            MainTheme.colors.cardTransferringScreenColors.clickedMoreButton
+        } else {
+            MainTheme.colors.cardTransferringScreenColors.unClickedMoreButton
+        }
+    )
+    val scale by animateFloatAsState(
+        targetValue = if (clicked) 0.9F else 1.0F,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioHighBouncy)
+    )
+
+    RoundButton(
+        modifier = Modifier
+            .scale(scale)
+            .padding(10.dp),
+        background = color,
+        iconId = R.drawable.ic_more_vert_24,
+        onClick = onClick
     )
 }

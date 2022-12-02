@@ -290,9 +290,8 @@ fun CustomCheckBox(
     shape: Shape = RoundedCornerShape(size = 4.dp),
     contentDescription: String? = null,
 ) {
-    var checkBoxState by rememberAsMutableStateOf(checked)
-    val background = if (checkBoxState) checkedBoxColor else uncheckedBoxColor
-    val borderColor = if (checkBoxState) checkedBorderColor else uncheckedBorderColor
+    val background = if (checked) checkedBoxColor else uncheckedBoxColor
+    val borderColor = if (checked) checkedBorderColor else uncheckedBorderColor
 
     Box(
         modifier = modifier
@@ -303,13 +302,10 @@ fun CustomCheckBox(
                 shape = RoundedCornerShape(size = 6.dp)
             )
             .size(checkBoxSize)
-            .clickable {
-                checkBoxState = !checkBoxState
-                onCheckedChange(checkBoxState)
-            },
+            .clickable { onCheckedChange(checked) },
         contentAlignment = Alignment.Center
     ) {
-        checkBoxState.ifTrue {
+        checked.ifTrue {
             Icon(
                 Icons.Default.Check,
                 tint = checkmarkColor,
