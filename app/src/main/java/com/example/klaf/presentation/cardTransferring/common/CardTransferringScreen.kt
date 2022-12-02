@@ -37,6 +37,8 @@ import com.example.klaf.presentation.common.rememberAsMutableStateOf
 import com.example.klaf.presentation.theme.MainTheme
 import kotlinx.coroutines.delay
 
+private const val CLOSING_ANIMATION_DELAY = 500L
+
 @Composable
 fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
     val deck = viewModel.sourceDeck.collectAsState(initial = null).value ?: return
@@ -83,7 +85,7 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
     }
 
     LaunchedEffect(key1 = null) {
-        delay(1000)
+        delay(CLOSING_ANIMATION_DELAY)
         moreButtonClickedState = false
     }
 }
