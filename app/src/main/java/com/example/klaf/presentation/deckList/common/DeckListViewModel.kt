@@ -13,6 +13,8 @@ import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.NotificationChannelInitializer
 import com.example.klaf.presentation.common.tryEmit
+import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.*
+import com.example.klaf.presentation.deckList.common.DeckListNavigationEvent.*
 import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
 import dagger.assisted.AssistedInject
@@ -51,6 +53,8 @@ class DeckListViewModel @AssistedInject constructor(
     override fun resetSynchronizationState() {
         dataSynchronizationState.value = DataSynchronizationState.InitialState
     }
+
+    override val navigationDestination = MutableSharedFlow<DeckListNavigationDestination>()
 
     init {
         notificationChannelInitializer.initialize()
@@ -149,10 +153,42 @@ class DeckListViewModel @AssistedInject constructor(
         workManager.performDataSynchronization()
     }
 
+    override fun navigate(event: DeckListNavigationEvent) {
+        val destination = when (event) {
+            ToDeckCreationDialog -> DeckCreationDialogDestination
+            ToDataSynchronizationDialog -> DataSynchronizationDialogDestination
+            is ToDeckNavigationDialog -> {
+                getDestinationByDeckId(
+                    deckId = event.deck.id,
+                    ifDeckIsNotInterim = { DeckNavigationDialogDestination(deck = event.deck) }
+                )
+            }
+            is ToFragment -> {
+                getDestinationByDeckId(
+                    deckId = event.deck.id,
+                    ifDeckIsNotInterim = { DeckRepetitionFragmentDestination(deck = event.deck) }
+                )
+            }
+        }
+
+        viewModelScope.launch { navigationDestination.emit(value = destination) }
+    }
+
     private fun observeDataSynchronizationStateWorker() {
         workManager.getDataSynchronizationProgressState()
             .filterNot { it is DataSynchronizationState.UncertainState }
             .onEach { dataSynchronizationState.value = it }
             .launchIn(scope = viewModelScope)
+    }
+
+    private fun getDestinationByDeckId(
+        deckId: Int,
+        ifDeckIsNotInterim: () -> DeckListNavigationDestination,
+    ): DeckListNavigationDestination {
+        return if (deckId == Deck.INTERIM_DECK_ID) {
+            CardTransferringDestination(deckId = deckId)
+        } else {
+            ifDeckIsNotInterim()
+        }
     }
 }

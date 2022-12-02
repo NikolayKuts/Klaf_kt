@@ -20,6 +20,7 @@
     <string name="card_is_not_found">The card is not found</string>
     <string name="problem_with_fetching_cards">There is a problem with fetching cards</string>
     <string name="problem_with_removing_card">There is a problem with removing card</string>
+    <string name="problem_with_removing_cards">There is a problem with removing cards</string>
     <string name="card_deleting_dialog_title">Would you like to delete the card?</string>
 
     <!--    deck-->
@@ -94,4 +95,15 @@
     <string name="deck_repetition_mark_failed">failed</string>
     <string name="unassigned_string_value">---</string>
     <string name="pointer_next">next</string>
+    <string name="Interim_deck_name">Interim deck</string>
+    <string name="pointer_interim_deck_cards">cards</string>
+    <string name="pointer_interim_deck_total">total</string>
+    <string name="pointer_interim_deck_selected">selected</string>
+    <string name="multiple_cards_deleting_dialog_title">Would you like to delete %d cards?</string>
+    <string name="single_cards_deleting_dialog_title">Would you like to delete 1 card?</string>
+    <string name="title_card_moving_dialog">Choose the deck where you would like to transfer</string>
+    <string name="problem_with_moving_cards">There is a poblem with moving the cards</string>
+    <string name="message_no_cards_selected">No cards selected</string>
+    <string name="message_deletion_completed_successfully">Deletion completed successfully</string>
+    <string name="message_transfer_completed_successfully">Transfer completed successfully</string>
 </resources>

@@ -9,10 +9,7 @@ import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
-import com.example.klaf.domain.useCases.DeleteCardFromDeckUseCase
-import com.example.klaf.domain.useCases.FetchCardsUseCase
-import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
-import com.example.klaf.domain.useCases.UpdateDeckUseCase
+import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.RepetitionTimer
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -114,17 +111,21 @@ class DeckRepetitionViewModelTest {
     fun `get problem message if deleting card is failed`() = runTest {
         val cardId = 222222
         val deckId = 999999
-        val deleteCardFromDeckUseCase: DeleteCardFromDeckUseCase = mockk {
-            coEvery { this@mockk.invoke(cardId = cardId, deckId = deckId) } throws Exception()
+        val deleteCardsFromDeckUseCase: DeleteCardsFromDeckUseCase = mockk {
+            coEvery {
+                this@mockk.invoke(deckId = deckId, cardIds = intArrayOf(cardId))
+            } throws Exception()
         }
-        val viewModel = createViewModel(deleteCardFromDeck = deleteCardFromDeckUseCase)
+        val viewModel = createViewModel(deleteCardFromDeck = deleteCardsFromDeckUseCase)
         val testJob = launchEventMassageIdEqualsTest(
             eventMessageSource = viewModel,
             expectedMassageId = R.string.problem_with_removing_card
         )
 
         viewModel.deleteCard(cardId = cardId, deckId = deckId)
-        coVerify(exactly = 1) { deleteCardFromDeckUseCase(cardId = cardId, deckId = deckId) }
+        coVerify(exactly = 1) {
+            deleteCardsFromDeckUseCase(deckId = deckId, cardIds = intArrayOf(cardId))
+        }
         testJob.join()
     }
 
@@ -154,8 +155,11 @@ class DeckRepetitionViewModelTest {
         timer: RepetitionTimer = mockk(relaxed = true),
         audioPlayer: CardAudioPlayer = mockk(relaxed = true),
         updateDeck: UpdateDeckUseCase = mockk(relaxed = true),
-        deleteCardFromDeck: DeleteCardFromDeckUseCase = mockk(relaxed = true),
+        deleteCardFromDeck: DeleteCardsFromDeckUseCase = mockk(relaxed = true),
         workManager: WorkManager = mockk(relaxed = true),
+        fetchDeckRepetitionInfo: FetchDeckRepetitionInfoUseCase = mockk(relaxed = true),
+        saveDeckRepetitionInfo: SaveDeckRepetitionInfoUseCase = mockk(relaxed = true),
+
     ): BaseDeckRepetitionViewModel = DeckRepetitionViewModel(
         deckId = deckId,
         fetchCards = fetchCards,
@@ -163,7 +167,9 @@ class DeckRepetitionViewModelTest {
         timer = timer,
         audioPlayer = audioPlayer,
         updateDeck = updateDeck,
-        deleteCardFromDeck = deleteCardFromDeck,
-        workManager = workManager
+        deleteCardsFromDeck = deleteCardFromDeck,
+        workManager = workManager,
+        fetchDeckRepetitionInfo = fetchDeckRepetitionInfo,
+        saveDeckRepetitionInfo = saveDeckRepetitionInfo,
     )
 }

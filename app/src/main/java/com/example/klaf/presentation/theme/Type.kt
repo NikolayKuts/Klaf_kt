@@ -31,11 +31,19 @@ data class MainTopographies(
     val viewingCardIpa: TextStyle,
     val viewingCardOrdinal: TextStyle,
     val deckRepetitionInfoScreenTextStyles: DeckRepetitionInfoScreenTextStyles,
+    val cardTransferringScreenTextStyles: CardTransferringScreenTextStyles,
 )
 
 data class DeckRepetitionInfoScreenTextStyles(
     val pointer: TextStyle,
     val deckName: TextStyle,
+)
+
+data class CardTransferringScreenTextStyles(
+    val header: TextStyle,
+    val pointerTitle: TextStyle,
+    val quantityPointerValue: TextStyle,
+    val choosingContent: TextStyle,
 )
 
 private val Typography = Typography(
@@ -53,6 +61,7 @@ private val CommonDeckRepetitionInfoScreenTextStyles = DeckRepetitionInfoScreenT
         fontWeight = FontWeight.Bold
     )
 )
+
 
 val LightMainTypographies = MainTopographies(
     materialTypographies = Typography,
@@ -73,12 +82,13 @@ val LightMainTypographies = MainTopographies(
     frontSideCardWordTextStyle = LightFrontSideCardWordTextStyle,
     backSideCardWordTextStyle = LightBackSideCardWordTextStyle,
     cardIpaPromptsTextStyle = IpaPromptsTextStyle,
-    viewingCardDeckName = LightViewingCardDeckNameTextStyle,
+    viewingCardDeckName = CommonViewingCardDeckNameTextStyle,
     viewingCardNativeWord = LightViewingCardNativeWord,
     viewingCardForeignWord = LightViewingCardForeignWord,
     viewingCardIpa = LightViewingCardIpa,
     viewingCardOrdinal = LightViewingCardOrdinal,
     deckRepetitionInfoScreenTextStyles = CommonDeckRepetitionInfoScreenTextStyles,
+    cardTransferringScreenTextStyles = CannonCardTransferringScreenTextStyles,
 )
 
 val DarkMainTypographies = MainTopographies(
@@ -100,10 +110,11 @@ val DarkMainTypographies = MainTopographies(
     frontSideCardWordTextStyle = DarkFrontSideCardWordTextStyle,
     backSideCardWordTextStyle = DarkBackSideCardWordTextStyle,
     cardIpaPromptsTextStyle = IpaPromptsTextStyle,
-    viewingCardDeckName = DarkViewingCardDeckNameTextStyle,
+    viewingCardDeckName = CommonViewingCardDeckNameTextStyle,
     viewingCardNativeWord = DarkViewingCardNativeWord,
     viewingCardForeignWord = DarkViewingCardForeignWord,
     viewingCardIpa = DarkViewingCardIpa,
     viewingCardOrdinal = DarkViewingCardOrdinal,
     deckRepetitionInfoScreenTextStyles = CommonDeckRepetitionInfoScreenTextStyles,
+    cardTransferringScreenTextStyles = CannonCardTransferringScreenTextStyles,
 )

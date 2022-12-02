@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.cardEdinting
+package com.example.klaf.presentation.cardEditing
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
@@ -69,7 +69,7 @@ fun CardEditingFragmentView(viewModel: CardEditingViewModel) {
                         ) {
                             RoundButton(
                                 background = MainTheme.colors.positiveDialogButton,
-                                iconId = R.drawable.ic_comfirmation_24,
+                                iconId = R.drawable.ic_confirmation_24,
                                 onClick = {
                                     viewModel.updateCard(
                                         oldCard = receivedCard,

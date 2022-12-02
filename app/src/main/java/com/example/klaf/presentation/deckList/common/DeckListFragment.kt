@@ -12,6 +12,7 @@ import com.example.klaf.R
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showSnackBar
+import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.*
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -30,15 +31,14 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setEvenMessageObserver(view = view)
+        observeEvenMessage(view = view)
+        observeNavigationChanges()
 
         view.findViewById<ComposeView>(R.id.compose_view_deck_list).setContent {
             MainTheme {
                 Surface {
                     DeckListScreen(
                         viewModel = viewModel,
-                        onItemClick = ::navigateToRepeatFragment,
-                        onLongItemClick = ::navigateToDeckNavigationDialog,
                         onMainButtonClick = ::navigateToDeckCreationDialog,
                         onSwipeRefresh = ::navigateToDataSynchronizationDialog
                     )
@@ -47,11 +47,33 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
         }
     }
 
-    private fun setEvenMessageObserver(view: View) {
+    private fun observeEvenMessage(view: View) {
         viewModel.eventMessage.collectWhenStarted(
             lifecycleScope = viewLifecycleOwner.lifecycleScope
         ) { eventMessage ->
             view.showSnackBar(messageId = eventMessage.resId)
+        }
+    }
+
+    private fun observeNavigationChanges() {
+        viewModel.navigationDestination.collectWhenStarted(
+            lifecycleScope = viewLifecycleOwner.lifecycleScope
+        ) { destination ->
+            when (destination) {
+                DeckCreationDialogDestination -> navigateToDeckCreationDialog()
+                is DeckRepetitionFragmentDestination -> {
+                    navigateToRepeatFragment(deck = destination.deck)
+                }
+                is DeckNavigationDialogDestination -> {
+                    navigateToDeckNavigationDialog(deck = destination.deck)
+                }
+                DataSynchronizationDialogDestination -> {
+                    navigateToDataSynchronizationDialog()
+                }
+                is CardTransferringDestination -> {
+                    navigateCardTransferringFragment(deckId = destination.deckId)
+                }
+            }
         }
     }
 
@@ -74,5 +96,11 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
 
     private fun navigateToDataSynchronizationDialog() {
         navController.navigate(R.id.action_deckListFragment_to_dataSynchronizationDialogFragment)
+    }
+
+    private fun navigateCardTransferringFragment(deckId: Int) {
+        DeckListFragmentDirections.actionDeckListFragmentToCardTransferringFragment(
+            sourceDeckId = deckId
+        ).also { navController.navigate(directions = it) }
     }
 }

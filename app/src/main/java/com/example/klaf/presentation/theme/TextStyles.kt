@@ -193,7 +193,7 @@ val IpaPromptsTextStyle = Body1.copy(
 
 private val ViewingCardTextStyle = Body1.copy(fontSize = CommonDimension.viewingCardContentTextSize)
 
-val LightViewingCardDeckNameTextStyle = Body1.copy(
+val CommonViewingCardDeckNameTextStyle = Body1.copy(
     fontSize = CommonDimension.viewingCardDeckNameTextSize,
     fontStyle = FontStyle.Italic,
     fontWeight = FontWeight.Bold
@@ -214,12 +214,6 @@ val LightViewingCardOrdinal = ViewingCardTextStyle.copy(
     fontStyle = FontStyle.Italic
 )
 
-val DarkViewingCardDeckNameTextStyle = Body1.copy(
-    fontSize = CommonDimension.viewingCardDeckNameTextSize,
-    fontStyle = FontStyle.Italic,
-    fontWeight = FontWeight.Bold
-)
-
 val DarkViewingCardNativeWord = ViewingCardTextStyle
 
 val DarkViewingCardForeignWord = ViewingCardTextStyle.copy(
@@ -233,4 +227,29 @@ val DarkViewingCardIpa = ViewingCardTextStyle.copy(
 val DarkViewingCardOrdinal = ViewingCardTextStyle.copy(
     color = DarkMainPalettes.viewingCardOrdinal,
     fontStyle = FontStyle.Italic
+)
+
+private val HeaderTextStyle = Body1.copy(
+    fontSize = CommonDimension.viewingCardDeckNameTextSize,
+    fontStyle = FontStyle.Italic,
+    fontWeight = FontWeight.Bold
+)
+
+private val PointerTitleTextStyle = Body1.copy(
+    fontStyle = FontStyle.Italic,
+)
+
+private val QuantityPointer = Body1.copy(
+    fontStyle = FontStyle.Italic
+)
+
+private val ChoosingContent = Body1.copy(
+    fontStyle = FontStyle.Italic
+)
+
+val CannonCardTransferringScreenTextStyles = CardTransferringScreenTextStyles(
+    header = HeaderTextStyle,
+    pointerTitle = PointerTitleTextStyle,
+    quantityPointerValue = QuantityPointer,
+    choosingContent = ChoosingContent,
 )

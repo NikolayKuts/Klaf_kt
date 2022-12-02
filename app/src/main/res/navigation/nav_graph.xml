@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -21,10 +22,13 @@
         <action
             android:id="@+id/action_deckListFragment_to_dataSynchronizationDialogFragment"
             app:destination="@id/dataSynchronizationDialogFragment" />
+        <action
+            android:id="@+id/action_deckListFragment_to_cardTransferringFragment"
+            app:destination="@id/cardTransferringFragment" />
     </fragment>
     <fragment
         android:id="@+id/cardEditingFragment"
-        android:name="com.example.klaf.presentation.cardEdinting.CardEditingFragment"
+        android:name="com.example.klaf.presentation.cardEditing.CardEditingFragment"
         android:label="fragment_card_editing"
         tools:layout="@layout/fragment_card_editing">
         <argument
@@ -35,10 +39,6 @@
             android:name="deckId"
             android:defaultValue="-1"
             app:argType="integer" />
-        <argument
-            android:name="deckName"
-            android:defaultValue="empty"
-            app:argType="string" />
         <action
             android:id="@+id/action_cardEditingFragment_to_deckRepetitionFragment"
             app:destination="@id/deckRepetitionFragment" />
@@ -177,5 +177,38 @@
         android:name="com.example.klaf.presentation.deckList.dataSynchronization.DataSynchronizationDialogFragment"
         android:label="dialog_data_synchronization"
         tools:layout="@layout/dialog_data_synchronization" />
+    <fragment
+        android:id="@+id/cardTransferringFragment"
+        android:name="com.example.klaf.presentation.cardTransferring.common.CardTransferringFragment"
+        android:label="fragment_interim_deck"
+        tools:layout="@layout/fragment_interim_deck" >
+        <action
+            android:id="@+id/action_interimDeckFragment_to_cardAdditionFragment"
+            app:destination="@id/cardAdditionFragment" />
+        <action
+            android:id="@+id/action_interimDeckFragment_to_cardDeletingDialogFragment"
+            app:destination="@id/cardDeletingDialogFragment" />
+        <action
+            android:id="@+id/action_interimDeckFragment_to_cardMovingDialogFragment"
+            app:destination="@id/cardMovingDialogFragment" />
+        <argument
+            android:name="sourceDeckId"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_cardTransferringFragment_to_cardEditingFragment"
+            app:destination="@id/cardEditingFragment" />
+    </fragment>
+    <dialog
+        android:id="@+id/cardDeletingDialogFragment"
+        android:name="com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingDialogFragment"
+        android:label="CardDeletingDialogFragment" >
+        <argument
+            android:name="cardQuantity"
+            app:argType="integer" />
+    </dialog>
+    <dialog
+        android:id="@+id/cardMovingDialogFragment"
+        android:name="com.example.klaf.presentation.cardTransferring.deckChoosing.DeckChoosingDialogFragment"
+        android:label="CardMovingDialogFragment" />
 
 </navigation>

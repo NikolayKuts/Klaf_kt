@@ -4,6 +4,6 @@
     android:id="@+id/compose_view_card_editing"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".presentation.cardEdinting.CardEditingFragment">
+    tools:context=".presentation.cardEditing.CardEditingFragment">
 
 </androidx.compose.ui.platform.ComposeView>

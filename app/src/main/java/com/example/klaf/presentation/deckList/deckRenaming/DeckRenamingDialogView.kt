@@ -55,7 +55,7 @@ fun DeckRenamingDialog(
             ) {
                 RoundButton(
                     background = MainTheme.colors.positiveDialogButton,
-                    iconId = R.drawable.ic_comfirmation_24,
+                    iconId = R.drawable.ic_confirmation_24,
                     onClick = { onConfirmRenamingClick(fieldDeckName) }
                 )
                 RoundButton(
