@@ -78,6 +78,8 @@ data class CardTransferringScreenColors(
     val cardAddingButton: Color,
     val deletingButton: Color,
     val chosenDeckBoxBorder: Color,
+    val clickedMoreButton: Color,
+    val unClickedMoreButton: Color,
 )
 
 private val LightMaterialColors = lightColors(
@@ -97,6 +99,9 @@ val LightCadTransferringScreenColors = CardTransferringScreenColors(
     cardAddingButton = Color(0xFFB3CC96),
     deletingButton = Color(0xFFDA9B96),
     chosenDeckBoxBorder = Color(0xFFB3CC96),
+    clickedMoreButton = LightMaterialColors.primary,
+    unClickedMoreButton = Color(0xFFB8B8B8),
+
 )
 
 val LightMainPalettes = MainColors(
@@ -167,6 +172,8 @@ private val DarkCadTransferringScreenColors = CardTransferringScreenColors(
     cardAddingButton = Color(0xFF809C5F),
     deletingButton = Color(0xFFC4716A),
     chosenDeckBoxBorder = Color(0xFF8CA76D),
+    clickedMoreButton = DarkMaterialColors.primary,
+    unClickedMoreButton = Color(0xFF636363),
 )
 
 val DarkMainPalettes = MainColors(
