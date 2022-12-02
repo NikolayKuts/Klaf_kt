@@ -3,7 +3,9 @@ package com.example.klaf.presentation.cardTransferring.common
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
@@ -31,14 +33,13 @@ import com.example.klaf.domain.common.ifTrue
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
 import com.example.klaf.presentation.common.CustomCheckBox
 import com.example.klaf.presentation.common.RoundButton
-import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
 import com.example.klaf.presentation.theme.MainTheme
 import kotlinx.coroutines.delay
 
 @Composable
 fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
-    val deck = viewModel.interimDeck.collectAsState(initial = null).value ?: return
+    val deck = viewModel.sourceDeck.collectAsState(initial = null).value ?: return
     val cardHolders by viewModel.cardHolders.collectAsState()
     var moreButtonClickedState by rememberAsMutableStateOf(value = true)
 
@@ -65,6 +66,9 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
                 onSelectedChanged = { index ->
                     viewModel.changeSelectionState(position = index)
                     moreButtonClickedState = false
+                },
+                onLongItemClick = { index ->
+                    viewModel.navigate(event = ToCardEditingFragment(cardSelectionIndex = index))
                 }
             )
         }
@@ -149,6 +153,7 @@ private fun DeckList(
     cardHolders: List<SelectableCardHolder>,
     onScroll: () -> Unit,
     onSelectedChanged: (index: Int) -> Unit,
+    onLongItemClick: (indes: Int) -> Unit
 ) {
     val scrollState = rememberLazyListState()
 
@@ -167,21 +172,28 @@ private fun DeckList(
             CardItem(
                 holder = holder,
                 position = index + 1,
-                onSelectedChanged = { onSelectedChanged(index) }
+                onSelectedChanged = { onSelectedChanged(index) },
+                onLongClick = { onLongItemClick(index) }
             )
             DividingLine()
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CardItem(
     holder: SelectableCardHolder,
     position: Int,
     onSelectedChanged: (Boolean) -> Unit,
+    onLongClick: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth()
+            .combinedClickable(
+                onClick = {},
+                onLongClick = onLongClick
+            ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(

@@ -39,10 +39,6 @@
             android:name="deckId"
             android:defaultValue="-1"
             app:argType="integer" />
-        <argument
-            android:name="deckName"
-            android:defaultValue="empty"
-            app:argType="string" />
         <action
             android:id="@+id/action_cardEditingFragment_to_deckRepetitionFragment"
             app:destination="@id/deckRepetitionFragment" />
@@ -198,6 +194,9 @@
         <argument
             android:name="sourceDeckId"
             app:argType="integer" />
+        <action
+            android:id="@+id/action_cardTransferringFragment_to_cardEditingFragment"
+            app:destination="@id/cardEditingFragment" />
     </fragment>
     <dialog
         android:id="@+id/cardDeletingDialogFragment"

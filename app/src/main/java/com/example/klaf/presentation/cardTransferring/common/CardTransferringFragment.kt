@@ -66,7 +66,15 @@ class CardTransferringFragment : Fragment(R.layout.fragment_interim_deck) {
                 is CardDeletingDialogDestination -> {
                     navigateToCardDeletingDialog(cardQuantity = destination.cardQuantity)
                 }
-                CardTransferringFragment -> navController.popBackStack()
+                CardTransferringFragment -> {
+                    navController.popBackStack()
+                }
+                is CardEditingFragment -> {
+                    navigateToCardEditingFragment(
+                        cardId = destination.cardId,
+                        deckId = destination.deckId
+                    )
+                }
             }
         }
     }
@@ -93,5 +101,14 @@ class CardTransferringFragment : Fragment(R.layout.fragment_interim_deck) {
         CardTransferringFragmentDirections.actionInterimDeckFragmentToCardDeletingDialogFragment(
             cardQuantity = cardQuantity
         ).also { navController.navigate(directions = it) }
+    }
+
+    private fun navigateToCardEditingFragment(cardId: Int, deckId: Int) {
+        navController.navigate( directions =
+            CardTransferringFragmentDirections.actionCardTransferringFragmentToCardEditingFragment(
+                cardId = cardId,
+                deckId = deckId,
+            )
+        )
     }
 }

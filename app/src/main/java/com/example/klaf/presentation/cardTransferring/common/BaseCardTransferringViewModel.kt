@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 abstract class BaseCardTransferringViewModel : ViewModel(), EventMessageSource {
 
-    abstract val interimDeck: SharedFlow<Deck?>
+    abstract val sourceDeck: SharedFlow<Deck?>
     abstract val cardHolders: StateFlow<List<SelectableCardHolder>>
     abstract val navigationDestination: SharedFlow<CardTransferringNavigationDestination>
     abstract val cardDeletingState: StateFlow<CardDeletingState>
