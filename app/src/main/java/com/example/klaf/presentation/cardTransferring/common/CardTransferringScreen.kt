@@ -11,6 +11,9 @@ import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.*
+
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope.*
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -155,7 +158,7 @@ private fun DeckList(
     cardHolders: List<SelectableCardHolder>,
     onScroll: () -> Unit,
     onSelectedChanged: (index: Int) -> Unit,
-    onLongItemClick: (indes: Int) -> Unit
+    onLongItemClick: (index: Int) -> Unit
 ) {
     val scrollState = rememberLazyListState()
 
@@ -170,7 +173,10 @@ private fun DeckList(
             }
         )
     ) {
-        itemsIndexed(items = cardHolders) { index, holder ->
+        itemsIndexed(
+            items = cardHolders,
+            key = { _, holder -> holder.card.id },
+        ) { index, holder ->
             CardItem(
                 holder = holder,
                 position = index + 1,
@@ -184,14 +190,16 @@ private fun DeckList(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun CardItem(
+private fun LazyItemScope.CardItem(
     holder: SelectableCardHolder,
     position: Int,
     onSelectedChanged: (Boolean) -> Unit,
     onLongClick: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateItemPlacement()
             .combinedClickable(
                 onClick = {},
                 onLongClick = onLongClick
