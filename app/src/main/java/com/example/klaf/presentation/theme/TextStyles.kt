@@ -129,25 +129,25 @@ val CardPointerValueTextStyle = MainSpanStyle.copy(
 )
 
 val LightFrondSideOrderPointer = Body1.copy(
-    color = LightMainPalettes.frontSideOrderPointer,
+    color = LightMainPalettes.deckRepetitionScreenColors.frontSideOrderPointer,
     fontWeight = FontWeight.Bold,
     fontStyle = FontStyle.Italic
 )
 
 val LightBackSideOrderPointer = Body1.copy(
-    color = LightMainPalettes.backSideOrderPointer,
+    color = LightMainPalettes.deckRepetitionScreenColors.backSideOrderPointer,
     fontWeight = FontWeight.Bold,
     fontStyle = FontStyle.Italic
 )
 
 val DarkFrondSideOrderPointer = Body1.copy(
-    color = DarkMainPalettes.frontSideOrderPointer,
+    color = DarkMainPalettes.deckRepetitionScreenColors.frontSideOrderPointer,
     fontWeight = FontWeight.Bold,
     fontStyle = FontStyle.Italic
 )
 
 val DarkBackSideOrderPointer = Body1.copy(
-    color = DarkMainPalettes.backSideOrderPointer,
+    color = DarkMainPalettes.deckRepetitionScreenColors.backSideOrderPointer,
     fontWeight = FontWeight.Bold,
     fontStyle = FontStyle.Italic
 )
@@ -161,28 +161,28 @@ val LightFrontSideCardWordTextStyle = Body1.copy(
     fontSize = CommonDimension.cardWordTextSize,
     fontStyle = FontStyle.Italic,
     fontWeight = FontWeight.Bold,
-    color = LightMainPalettes.frontSideCardWord,
+    color = LightMainPalettes.deckRepetitionScreenColors.frontSideCardWord,
 )
 
 val DarkFrontSideCardWordTextStyle = Body1.copy(
     fontSize = CommonDimension.cardWordTextSize,
     fontStyle = FontStyle.Italic,
     fontWeight = FontWeight.Bold,
-    color = DarkMainPalettes.frontSideCardWord,
+    color = DarkMainPalettes.deckRepetitionScreenColors.frontSideCardWord,
 )
 
 val LightBackSideCardWordTextStyle = Body1.copy(
     fontSize = CommonDimension.cardWordTextSize,
     fontStyle = FontStyle.Italic,
     fontWeight = FontWeight.Bold,
-    color = LightMainPalettes.backSideCardWord,
+    color = LightMainPalettes.deckRepetitionScreenColors.backSideCardWord,
 )
 
 val DarkBackSideCardWordTextStyle = Body1.copy(
     fontSize = CommonDimension.cardWordTextSize,
     fontStyle = FontStyle.Italic,
     fontWeight = FontWeight.Bold,
-    color = DarkMainPalettes.backSideCardWord,
+    color = DarkMainPalettes.deckRepetitionScreenColors.backSideCardWord,
 )
 
 
