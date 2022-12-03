@@ -179,7 +179,7 @@ private fun BoxScope.SynchronizationLabel(iconModifier: Modifier = Modifier) {
         Icon(
             modifier = iconModifier
                 .size(20.dp)
-                .background(MainTheme.colors.dataSynchronizationLabelBackground)
+                .background(MainTheme.colors.dataSynchronizationViewColors.labelBackground)
                 .padding(8.dp),
             painter = painterResource(id = R.drawable.ic_sync_24),
             contentDescription = null,
@@ -202,8 +202,8 @@ private fun BoxScope.AnimatedSynchronizationLabel() {
         )
     )
     val color by infiniteTransition.animateColor(
-        initialValue = MainTheme.colors.dataSynchronizationLabelBackground,
-        targetValue = MainTheme.colors.dataSynchronizationLabelBackgroundSecond,
+        initialValue = MainTheme.colors.dataSynchronizationViewColors.labelBackground,
+        targetValue = MainTheme.colors.dataSynchronizationViewColors.labelBackgroundSecond,
         animationSpec = infiniteRepeatable(
             animation = tween(
                 durationMillis = animationDuration,
