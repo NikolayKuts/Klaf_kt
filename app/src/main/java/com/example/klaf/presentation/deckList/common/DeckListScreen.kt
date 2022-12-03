@@ -40,7 +40,6 @@ fun DeckListScreen(
     onMainButtonClick: () -> Unit,
     onSwipeRefresh: () -> Unit,
 ) {
-
     SwipeRefresh(
         modifier = Modifier.fillMaxSize(),
         state = rememberSwipeRefreshState(isRefreshing = false),
