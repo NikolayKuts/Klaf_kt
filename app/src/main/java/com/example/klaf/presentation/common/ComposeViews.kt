@@ -33,6 +33,59 @@ import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
+fun CardManagementView(
+    deckName: String,
+    cardQuantity: Int,
+    letterInfos: List<LetterInfo>,
+    nativeWord: String,
+    foreignWord: String,
+    ipaTemplate: String,
+    onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
+    onNativeWordChange: (String) -> Unit,
+    onForeignWordChange: (String) -> Unit,
+    onIpaChange: (String) -> Unit,
+    onConfirmClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.3F),
+        ) {
+            DeckInfo(name = deckName, cardQuantity = cardQuantity)
+            ForeignWordSelector(
+                letterInfos = letterInfos,
+                onLetterClick = onLetterClick,
+            )
+        }
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            CardFields(
+                modifier = Modifier.align(alignment = Alignment.TopCenter),
+                nativeWord = nativeWord,
+                foreignWord = foreignWord,
+                ipaTemplate = ipaTemplate,
+                onNativeWordChange = onNativeWordChange,
+                onForeignWordChange = onForeignWordChange,
+                onIpaChange = onIpaChange,
+            )
+            RoundButton(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 16.dp),
+                background = MainTheme.colors.positiveDialogButton,
+                iconId = R.drawable.ic_confirmation_24,
+                onClick = onConfirmClick
+            )
+        }
+    }
+}
+
+@Composable
 fun ColumnScope.ForeignWordSelector(
     letterInfos: List<LetterInfo>,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit
