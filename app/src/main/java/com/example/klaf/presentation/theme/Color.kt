@@ -111,7 +111,7 @@ private val LightDeckRepetitionScreenColors = DeckRepetitionScreenColors(
 
 private val LightDataSynchronizationViewColors = DataSynchronizationViewColors(
     labelBackground = Color(0xFFFFFFFF),
-    labelBackgroundSecond = Color(0xFFE2F7D7),
+    labelBackgroundSecond = Color(0xFFC4ECB0),
     progressIndicator = Color(0xFF92CFC3),
 )
 
