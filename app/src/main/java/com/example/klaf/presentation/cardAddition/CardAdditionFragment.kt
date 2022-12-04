@@ -39,7 +39,7 @@ class CardAdditionFragment : Fragment(R.layout.fragment_card_addition) {
         view.findViewById<ComposeView>(R.id.compose_view_card_addition).setContent {
             MainTheme() {
                 Surface() {
-                    CardAdditionFragmentView(
+                    CardAdditionScreen(
                         viewModel = viewModel,
                         smartSelectedWord = retrieveSmartSelectedWord()
                     )
