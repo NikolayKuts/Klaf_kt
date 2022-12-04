@@ -13,9 +13,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -23,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -197,13 +201,14 @@ fun DialogBox(
     onClick: () -> Unit,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .clickable(
-            indication = null,
-            interactionSource = remember { MutableInteractionSource() },
-            onClick = onClick,
-        ),
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = onClick,
+            ),
         content = content
     )
 }
@@ -212,40 +217,71 @@ fun DialogBox(
 fun FullBackgroundDialog(
     onBackgroundClick: () -> Unit,
     mainContent: @Composable BoxScope.() -> Unit,
-    buttonContent: @Composable RowScope.() -> Unit,
+    buttonContent: @Composable (RowScope.() -> Unit)? = null,
+    topContent: @Composable (RowScope.() -> Unit)? = null,
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .clickable(
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() },
-                onClick = onBackgroundClick,
-            ),
+            .noRippleClickable(onClick = onBackgroundClick)
     ) {
         Box(modifier = Modifier.align(Alignment.Center)) {
             Card(
                 modifier = Modifier
                     .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
-                    .padding(bottom = (DIALOG_BUTTON_SIZE / 2).dp)
+                    .padding(
+                        top = (DIALOG_BUTTON_SIZE / 2).dp,
+                        bottom = (DIALOG_BUTTON_SIZE / 2).dp,
+                    )
             ) {
                 Box(
                     modifier = Modifier
+                        .noRippleClickable { }
                         .padding(MainTheme.dimensions.dialogContentPadding)
-                        .padding(bottom = (DIALOG_BUTTON_SIZE / 4).dp),
+                        .bottomPadding(apply = buttonContent != null)
+                        .topPadding(apply = topContent != null),
                     content = mainContent
                 )
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(0.5F)
-                    .align(alignment = Alignment.BottomCenter),
-                horizontalArrangement = Arrangement.SpaceAround,
-                content = buttonContent
-            )
+            topContent?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(0.5F)
+                        .padding(bottom = (DIALOG_BUTTON_SIZE / 4).dp)
+                        .align(alignment = Alignment.TopCenter),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    content = it
+                )
+            }
+
+            buttonContent?.let {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(0.5F)
+                        .align(alignment = Alignment.BottomCenter),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    content = it
+                )
+            }
         }
     }
+}
+
+fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier = composed {
+    this.clickable(
+        indication = null,
+        interactionSource = remember { MutableInteractionSource() },
+        onClick = onClick
+    )
+}
+
+fun Modifier.topPadding(apply: Boolean): Modifier {
+    return if (apply) this.padding(top = (DIALOG_BUTTON_SIZE / 4).dp) else this
+}
+
+fun Modifier.bottomPadding(apply: Boolean): Modifier {
+    return if (apply) this.padding(bottom = (DIALOG_BUTTON_SIZE / 4).dp) else this
 }
 
 @Composable

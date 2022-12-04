@@ -25,7 +25,7 @@ class DataSynchronizationDialogFragment : TransparentDialogFragment(
             MainTheme {
                 DataSynchronizationDialogView(
                     viewModel = viewModel,
-                    onClose = ::closeDialog,
+                    onCloseClick = ::closeDialog,
                 )
             }
         }

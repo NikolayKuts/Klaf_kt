@@ -32,6 +32,11 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
     private val dataSynchronizationValidator: DataSynchronizationValidator,
 ) {
 
+    companion object {
+
+        private const val INCREMENT_STEP = 1
+    }
+
     operator fun invoke(): Flow<String> = channelFlow {
         manageDataSynchronization()
     }
@@ -86,13 +91,16 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
                         olderSaveVersionCards = localCards,
                         olderSaveVersionDeckRepository = localDeckRepository,
                         olderSaveVersionCardRepository = localCardRepository,
-                        olderStorageSaveVersion = localSaveVersion?.version
+                        targetStorageSaveVersion = remoteSaveVersion?.version
                     )
                 }
 
                 dataSynchronizationValidator.shouldRemoteStorageBeUpdated(
                     validationData = storageSaveVersionValidationData
                 ) -> {
+                    val targetVersion =
+                        (remoteSaveVersion?.version ?: INITIAL_SAVE_VERSION) + INCREMENT_STEP
+
                     synchronizeData(
                         dataChannelFlow = this@manageDataSynchronization,
                         newerVersionDecks = localDecks,
@@ -101,7 +109,7 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
                         olderSaveVersionCards = remoteCards,
                         olderSaveVersionDeckRepository = remoteDeckRepository,
                         olderSaveVersionCardRepository = remoteCardRepository,
-                        olderStorageSaveVersion = remoteSaveVersion?.version
+                        targetStorageSaveVersion = targetVersion
                     )
                 }
             }
@@ -116,7 +124,7 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
         olderSaveVersionCards: List<Card>,
         olderSaveVersionDeckRepository: DeckRepository,
         olderSaveVersionCardRepository: CardRepository,
-        olderStorageSaveVersion: Long?,
+        targetStorageSaveVersion: Long?,
     ) {
         val synchronizationJobs = mutableListOf<Job>()
         val notContainedDecks = olderSaveVersionDecks.filter { deck ->
@@ -157,7 +165,7 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
 
         dataChannelFlow.launchAndAddJob(to = synchronizationJobs) {
             dataChannelFlow.updateStorageSaveVersion(
-                oldVersion = olderStorageSaveVersion,
+                targetVersion = targetStorageSaveVersion,
                 synchronizationJobs = synchronizationJobs
             )
         }
@@ -232,12 +240,11 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
     }
 
     private fun CoroutineScope.updateStorageSaveVersion(
-        oldVersion: Long?,
+        targetVersion: Long?,
         synchronizationJobs: MutableList<Job>,
     ) {
-        val updatedStorageSaveVersion = StorageSaveVersion(
-            version = oldVersion ?: INITIAL_SAVE_VERSION
-        )
+        val updatedStorageSaveVersion =
+            StorageSaveVersion(version = targetVersion ?: INITIAL_SAVE_VERSION)
 
         launch {
             remoteStorageSaveVersionRepository.insertVersion(version = updatedStorageSaveVersion)

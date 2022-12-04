@@ -58,9 +58,9 @@ data class DeckRepetitionScreenColors(
 )
 
 data class DataSynchronizationViewColors(
-    val dataSynchronizationLabelBackground: Color,
-    val dataSynchronizationLabelBackgroundSecond: Color,
-    val dataSynchronizationProgressIndicator: Color,
+    val labelBackground: Color,
+    val labelBackgroundSecond: Color,
+    val progressIndicator: Color,
 )
 
 data class DeckRepetitionInfoScreenColors(
@@ -110,9 +110,9 @@ private val LightDeckRepetitionScreenColors = DeckRepetitionScreenColors(
 )
 
 private val LightDataSynchronizationViewColors = DataSynchronizationViewColors(
-    dataSynchronizationLabelBackground = Color(0xFFFFFFFF),
-    dataSynchronizationLabelBackgroundSecond = Color(0xFFE2F7D7),
-    dataSynchronizationProgressIndicator = Color(0xFF92CFC3),
+    labelBackground = Color(0xFFFFFFFF),
+    labelBackgroundSecond = Color(0xFFC4ECB0),
+    progressIndicator = Color(0xFF92CFC3),
 )
 
 private val LightDeckRepetitionInfoScreenColors = DeckRepetitionInfoScreenColors(
@@ -192,9 +192,9 @@ private val DarkDeckRepetitionScreenColors = DeckRepetitionScreenColors(
 )
 
 private val DarkDataSynchronizationViewColors = DataSynchronizationViewColors(
-    dataSynchronizationLabelBackground = Color(0xFF1F1F1F),
-    dataSynchronizationLabelBackgroundSecond = Color(0xFF576F58),
-    dataSynchronizationProgressIndicator = Color(0xF0AC6761),
+    labelBackground = Color(0xFF1F1F1F),
+    labelBackgroundSecond = Color(0xFF576F58),
+    progressIndicator = Color(0xF0AC6761),
 )
 
 private val DarkDeckRepetitionInfoScreenColors = DeckRepetitionInfoScreenColors(

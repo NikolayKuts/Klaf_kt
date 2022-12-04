@@ -35,6 +35,7 @@ fun DeckChoosingDialogView(
 
     FullBackgroundDialog(
         onBackgroundClick = onCloseClick,
+        topContent = {},
         mainContent = {
             Column {
                 var expandedState by rememberAsMutableStateOf(value = false)
