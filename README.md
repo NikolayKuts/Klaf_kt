@@ -13,7 +13,7 @@ The application allows you to create cards with the automatic creation of a tran
 
 ## Technology stack
 * The code is written with [_**Kotlin**_](https://kotlinlang.org/)
-* [_**MVVM**_](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel) + [_**Clean Architecture**_](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+* [_**MVVM**_](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel), [_**MVI**_](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter) + [_**Clean Architecture**_](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 * Access to local storage via [_**Room database**_](https://developer.android.com/jetpack/androidx/releases/room?gclid=Cj0KCQiA4aacBhCUARIsAI55maHsI2AXFdILFEuxiZANnj4osoCdiKzs8wbbReVJ94HUD4Mo_CS3k-UaAlj1EALw_wcB&gclsrc=aw.ds), [_**DataStore**_](https://developer.android.com/topic/libraries/architecture/datastore?gclid=Cj0KCQiA4aacBhCUARIsAI55maF8MzhHpnejUNKEjuWnHm3UNt1YOdiCIfE2Xe_yn37gLw7Ap5rV5r0aAjLfEALw_wcB&gclsrc=aw.ds)
 * Access to remote storage via [_**Firebase**_](https://firebase.google.com/)
 * For asynchronous operations used [_**Coroutines**_](https://kotlinlang.org/docs/coroutines-overview.html) and [_**Coroutine flows**_](https://developer.android.com/kotlin/flow)

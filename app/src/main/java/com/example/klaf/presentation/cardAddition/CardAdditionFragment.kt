@@ -1,6 +1,7 @@
 package com.example.klaf.presentation.cardAddition
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.compose.material.Surface
@@ -25,10 +26,11 @@ class CardAdditionFragment : Fragment(R.layout.fragment_card_addition) {
 
     @Inject
     lateinit var cardAdditionAssistedFactory: CardAdditionViewModelAssistedFactory
-    private val viewModel: CardAdditionViewModel by viewModels {
+    private val viewModel: BaseCardAdditionViewModel by viewModels {
         CardAdditionViewModelFactory(
             assistedFactory = cardAdditionAssistedFactory,
-            deckId = args.deckId
+            deckId = args.deckId,
+            smartSelectedWord = retrieveSmartSelectedWord()
         )
     }
 
@@ -37,12 +39,9 @@ class CardAdditionFragment : Fragment(R.layout.fragment_card_addition) {
         setEventMessageObserver(view = view)
 
         view.findViewById<ComposeView>(R.id.compose_view_card_addition).setContent {
-            MainTheme() {
-                Surface() {
-                    CardAdditionFragmentView(
-                        viewModel = viewModel,
-                        smartSelectedWord = retrieveSmartSelectedWord()
-                    )
+            MainTheme {
+                Surface {
+                    CardAdditionScreen(viewModel = viewModel)
                 }
             }
         }
@@ -55,9 +54,14 @@ class CardAdditionFragment : Fragment(R.layout.fragment_card_addition) {
     }
 
     private fun retrieveSmartSelectedWord(): String? {
-        return activity?.intent?.run {
-            type?.startsWith(MIME_TYPE_TEXT_PLAIN)
-                ?.ifTrue { this.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT).toString() }
+        return when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
+                activity?.intent?.run {
+                    type?.startsWith(MIME_TYPE_TEXT_PLAIN)
+                        ?.ifTrue { this.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT).toString() }
+                }
+            }
+            else -> null
         }
     }
 }

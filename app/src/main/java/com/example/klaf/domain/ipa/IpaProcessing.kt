@@ -197,3 +197,7 @@ fun Card.decodeToIpaPrompts(): List<LetterInfo> {
     }
     return result
 }
+
+fun List<LetterInfo>.toWord(): String {
+    return this.joinToString(separator = "") { letterInfo -> letterInfo.letter }
+}

@@ -160,10 +160,10 @@ private fun DeckList(
     onSelectedChanged: (index: Int) -> Unit,
     onLongItemClick: (index: Int) -> Unit
 ) {
-    val scrollState = rememberLazyListState()
+    val lazyListState = rememberLazyListState()
 
     LazyColumn(
-        state = scrollState,
+        state = lazyListState,
         contentPadding = PaddingValues(bottom = 100.dp),
         modifier = Modifier.scrollable(
             orientation = Orientation.Vertical,
