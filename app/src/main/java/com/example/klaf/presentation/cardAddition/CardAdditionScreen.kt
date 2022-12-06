@@ -7,7 +7,7 @@ import com.example.klaf.presentation.cardAddition.CardAdditionEvent.*
 import com.example.klaf.presentation.common.CardManagementView
 
 @Composable
-fun CardAdditionScreen(viewModel: CardAdditionViewModel) {
+fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
     val deck = viewModel.deck.collectAsState(initial = null)
     val cardState by viewModel.cardAdditionState.collectAsState()
     val letterInfos = cardState.letterInfos
