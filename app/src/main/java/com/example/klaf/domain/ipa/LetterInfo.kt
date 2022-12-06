@@ -5,4 +5,9 @@ data class LetterInfo(
     val isChecked: Boolean
 ) {
     val isNotChecked get() = !isChecked
+
+    companion object {
+
+        const val EMPTY_LETTER = " "
+    }
 }

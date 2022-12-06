@@ -1,10 +1,10 @@
 package com.example.klaf.presentation.cardAddition
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.R
 import com.example.klaf.domain.common.generateLetterInfos
 import com.example.klaf.domain.common.launchWithExceptionHandler
+import com.example.klaf.domain.common.updatedAt
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.ipa.LetterInfo
@@ -25,20 +25,19 @@ class CardAdditionViewModel @AssistedInject constructor(
     @Assisted smartSelectedWord: String?,
     fetchDeckById: FetchDeckByIdUseCase,
     private val addNewCardIntoDeck: AddNewCardIntoDeckUseCase,
-) : ViewModel() {
+) : BaseCardAdditionViewModel() {
 
-    private val _eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
-    val eventMessage = _eventMessage.asSharedFlow()
+    override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
-    val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
-        .catch { _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck) }
+    override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
+        .catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck) }
         .shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
             replay = 1
         )
 
-    private val _cardAdditionState = MutableStateFlow<CardAdditionState>(
+    override val cardAdditionState = MutableStateFlow<CardAdditionState>(
         value = CardAdditionState.Adding(
             letterInfos = smartSelectedWord?.generateLetterInfos() ?: emptyList(),
             nativeWord = "",
@@ -46,11 +45,10 @@ class CardAdditionViewModel @AssistedInject constructor(
             ipaTemplate = ""
         )
     )
-    val cardAdditionState = _cardAdditionState.asStateFlow()
 
-    private val letterInfosState = MutableStateFlow(value = _cardAdditionState.value.letterInfos)
-    private val nativeWordState = MutableStateFlow(value = _cardAdditionState.value.nativeWord)
-    private val ipaTemplateState = MutableStateFlow(value = _cardAdditionState.value.ipaTemplate)
+    private val letterInfosState = MutableStateFlow(value = cardAdditionState.value.letterInfos)
+    private val nativeWordState = MutableStateFlow(value = cardAdditionState.value.nativeWord)
+    private val ipaTemplateState = MutableStateFlow(value = cardAdditionState.value.ipaTemplate)
 
     init {
         combine(
@@ -64,12 +62,11 @@ class CardAdditionViewModel @AssistedInject constructor(
                 foreignWord = letterInfos.toWord(),
                 ipaTemplate = ipaTemplate
             )
-        }.onEach { addingState -> _cardAdditionState.value = addingState }
+        }.onEach { addingState -> cardAdditionState.value = addingState }
             .launchIn(viewModelScope)
-
     }
 
-    fun sendEvent(event: CardAdditionEvent) {
+    override fun sendEvent(event: CardAdditionEvent) {
         when (event) {
             is ChangeLetterSelectionWithIpaTemplate -> {
                 changeLetterSelectionWithIpaTemplate(index = event.index, letterInfo = event.letterInfo)
@@ -97,7 +94,7 @@ class CardAdditionViewModel @AssistedInject constructor(
         ipaTemplate: String,
     ) {
         if (nativeWordState.value.isEmpty() || foreignWord.isEmpty()) {
-            _eventMessage.tryEmit(
+            eventMessage.tryEmit(
                 messageId = R.string.native_and_foreign_words_must_be_filled
             )
         } else {
@@ -110,11 +107,11 @@ class CardAdditionViewModel @AssistedInject constructor(
 
             viewModelScope.launchWithExceptionHandler(
                 onException = { _, _ ->
-                    _eventMessage.tryEmit(messageId = R.string.exception_adding_card)
+                    eventMessage.tryEmit(messageId = R.string.exception_adding_card)
                 },
                 onCompletion = {
-                    _cardAdditionState.value = CardAdditionState.Finished
-                    _eventMessage.tryEmit(messageId = R.string.card_has_been_added)
+                    cardAdditionState.value = CardAdditionState.Finished
+                    eventMessage.tryEmit(messageId = R.string.card_has_been_added)
                 },
                 task = { addNewCardIntoDeck(card = newCard) }
             )
@@ -123,13 +120,15 @@ class CardAdditionViewModel @AssistedInject constructor(
 
     private fun changeLetterSelectionWithIpaTemplate(index: Int, letterInfo: LetterInfo) {
         val updatedIsChecked = when (letterInfo.letter) {
-            " " -> false
+            LetterInfo.EMPTY_LETTER -> false
             else -> !letterInfo.isChecked
         }
 
         letterInfosState.update { infos ->
-            infos.toMutableList()
-                .apply { this[index] = letterInfo.copy(isChecked = updatedIsChecked) }
+            infos.updatedAt(
+                index = index,
+                updateValue = letterInfo.copy(isChecked = updatedIsChecked)
+            )
         }
 
         ipaTemplateState.value = letterInfosState.value.convertToUncompletedIpa()

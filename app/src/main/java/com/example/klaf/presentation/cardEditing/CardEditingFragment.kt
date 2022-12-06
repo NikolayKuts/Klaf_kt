@@ -39,7 +39,7 @@ class CardEditingFragment : Fragment(R.layout.fragment_card_editing) {
         view.findViewById<ComposeView>(R.id.compose_view_card_editing).setContent {
             MainTheme {
                 Surface {
-                    CardEditingFragmentView(viewModel = viewModel)
+                    CardEditingScreen(viewModel = viewModel)
                 }
             }
         }

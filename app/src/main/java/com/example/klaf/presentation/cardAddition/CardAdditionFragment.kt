@@ -26,7 +26,7 @@ class CardAdditionFragment : Fragment(R.layout.fragment_card_addition) {
 
     @Inject
     lateinit var cardAdditionAssistedFactory: CardAdditionViewModelAssistedFactory
-    private val viewModel: CardAdditionViewModel by viewModels {
+    private val viewModel: BaseCardAdditionViewModel by viewModels {
         CardAdditionViewModelFactory(
             assistedFactory = cardAdditionAssistedFactory,
             deckId = args.deckId,
