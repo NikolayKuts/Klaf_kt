@@ -82,6 +82,6 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
     }
 
     private fun Card.buildAudioUri(): String {
-        return AUDIO_URI_TEMPLATE.format(this.foreignWord)
+        return AUDIO_URI_TEMPLATE.format(this.foreignWord.trim().lowercase())
     }
 }
