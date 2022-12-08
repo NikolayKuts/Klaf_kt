@@ -45,12 +45,18 @@ class CardAdditionFragment : Fragment(R.layout.fragment_card_addition) {
                 }
             }
         }
+
+        subscribeAudioPlayerObserver()
     }
 
     private fun setEventMessageObserver(view: View) {
         viewModel.eventMessage.collectWhenStarted(lifecycleScope) { eventMessage ->
             view.showSnackBar(messageId = eventMessage.resId)
         }
+    }
+
+    private fun subscribeAudioPlayerObserver() {
+        lifecycle.addObserver(viewModel.audioPlayer)
     }
 
     private fun retrieveSmartSelectedWord(): String? {

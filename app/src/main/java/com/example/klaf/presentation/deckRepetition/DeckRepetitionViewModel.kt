@@ -238,7 +238,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     private fun observeCurrentCard() {
         currentCard.onEach { card: Card? ->
             card?.let { notNullCard ->
-                audioPlayer.preparePronunciation(card = notNullCard)
+                audioPlayer.preparePronunciation(word = notNullCard.foreignWord)
             }
         }.catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card) }
             .launchIn(viewModelScope)

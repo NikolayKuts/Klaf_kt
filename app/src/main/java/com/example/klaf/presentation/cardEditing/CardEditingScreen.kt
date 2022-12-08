@@ -25,7 +25,8 @@ fun CardEditingScreen(viewModel: CardEditingViewModel) {
             )
             var nativeWordState by rememberAsMutableStateOf(value = receivedCard.nativeWord)
             var foreignWordState by rememberAsMutableStateOf(value = receivedCard.foreignWord)
-            var ipaTemplateState by rememberAsMutableStateOf(value = receivedCard.decodeToCompletedIpa())
+            var ipaTemplateState
+                    by rememberAsMutableStateOf(value = receivedCard.decodeToCompletedIpa())
 
             CardManagementView(
                 deckName = receivedDeck.name,
@@ -51,6 +52,7 @@ fun CardEditingScreen(viewModel: CardEditingViewModel) {
                     foreignWordState = foreignWord
                     letterInfosState = foreignWord.generateLetterInfos()
                     ipaTemplateState = letterInfosState.convertToUncompletedIpa()
+                    viewModel.preparePronunciation(word = foreignWord)
                 },
                 onIpaChange = { ipaTemplate -> ipaTemplateState = ipaTemplate },
                 onConfirmClick = {
@@ -62,7 +64,8 @@ fun CardEditingScreen(viewModel: CardEditingViewModel) {
                         letterInfos = letterInfosState,
                         ipaTemplate = ipaTemplateState,
                     )
-                }
+                },
+                onPronounceIconClick = { viewModel.pronounce() }
             )
         }
     }
