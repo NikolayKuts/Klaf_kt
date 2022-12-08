@@ -37,9 +37,7 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
             onForeignWordChange = { word ->
                 viewModel.sendEvent(event = UpdateForeignWordWithIpaTemplate(word = word))
             },
-            onIpaChange = { ipa ->
-                viewModel.sendEvent(event = UpdateIpaTemplate(ipa = ipa))
-            },
+            onIpaChange = { ipa -> viewModel.sendEvent(event = UpdateIpaTemplate(ipa = ipa)) },
             onConfirmClick = {
                 viewModel.sendEvent(
                     event = AddNewCard(
@@ -50,7 +48,8 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
                         ipaTemplate = ipaTemplate
                     )
                 )
-            }
+            },
+            onPronounceIconClick = { viewModel.sendEvent(event = PronounceForeignWord) }
         )
     }
 }

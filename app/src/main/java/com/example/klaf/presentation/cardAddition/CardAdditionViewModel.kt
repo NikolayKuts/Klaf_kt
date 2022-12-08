@@ -2,6 +2,7 @@ package com.example.klaf.presentation.cardAddition
 
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.R
+import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.domain.common.generateLetterInfos
 import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.common.updatedAt
@@ -25,6 +26,7 @@ class CardAdditionViewModel @AssistedInject constructor(
     @Assisted smartSelectedWord: String?,
     fetchDeckById: FetchDeckByIdUseCase,
     private val addNewCardIntoDeck: AddNewCardIntoDeckUseCase,
+    override val audioPlayer: CardAudioPlayer,
 ) : BaseCardAdditionViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
@@ -40,9 +42,6 @@ class CardAdditionViewModel @AssistedInject constructor(
     override val cardAdditionState = MutableStateFlow<CardAdditionState>(
         value = CardAdditionState.Adding(
             letterInfos = smartSelectedWord?.generateLetterInfos() ?: emptyList(),
-            nativeWord = "",
-            foreignWord = "",
-            ipaTemplate = ""
         )
     )
 
@@ -62,14 +61,19 @@ class CardAdditionViewModel @AssistedInject constructor(
                 foreignWord = letterInfos.toWord(),
                 ipaTemplate = ipaTemplate
             )
-        }.onEach { addingState -> cardAdditionState.value = addingState }
-            .launchIn(viewModelScope)
+        }.onEach { addingState ->
+            cardAdditionState.value = addingState
+            audioPlayer.preparePronunciation(word = addingState.foreignWord)
+        }.launchIn(viewModelScope)
     }
 
     override fun sendEvent(event: CardAdditionEvent) {
         when (event) {
             is ChangeLetterSelectionWithIpaTemplate -> {
-                changeLetterSelectionWithIpaTemplate(index = event.index, letterInfo = event.letterInfo)
+                changeLetterSelectionWithIpaTemplate(
+                    index = event.index,
+                    letterInfo = event.letterInfo
+                )
             }
             is UpdateForeignWordWithIpaTemplate -> updateForeignWordWithIpaTemplate(word = event.word)
             is UpdateIpaTemplate -> updateIpa(ipa = event.ipa)
@@ -83,6 +87,7 @@ class CardAdditionViewModel @AssistedInject constructor(
                     ipaTemplate = event.ipaTemplate
                 )
             }
+            PronounceForeignWord -> audioPlayer.play()
         }
     }
 

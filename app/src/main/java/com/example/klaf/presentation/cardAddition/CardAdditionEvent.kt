@@ -22,4 +22,6 @@ sealed interface CardAdditionEvent {
         val letterInfos: List<LetterInfo>,
         val ipaTemplate: String,
     ) : CardAdditionEvent
+
+    object PronounceForeignWord : CardAdditionEvent
 }

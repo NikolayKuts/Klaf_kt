@@ -20,6 +20,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,6 +46,7 @@ fun CardManagementView(
     onForeignWordChange: (String) -> Unit,
     onIpaChange: (String) -> Unit,
     onConfirmClick: () -> Unit,
+    onPronounceIconClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -72,6 +74,7 @@ fun CardManagementView(
                 onNativeWordChange = onNativeWordChange,
                 onForeignWordChange = onForeignWordChange,
                 onIpaChange = onIpaChange,
+                onPronounceIconClick = onPronounceIconClick
             )
             RoundButton(
                 modifier = Modifier
@@ -182,6 +185,7 @@ fun CardFields(
     onForeignWordChange: (String) -> Unit,
     onIpaChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onPronounceIconClick: () -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -193,12 +197,24 @@ fun CardFields(
             textColor = MainTheme.colors.cardNativeWord,
             onValueChange = onNativeWordChange,
         )
-        WordTextField(
-            value = foreignWord,
-            labelTextId = R.string.label_foreign_word,
-            textColor = MainTheme.colors.cardForeignWord,
-            onValueChange = onForeignWordChange
-        )
+        Row {
+            WordTextField(
+                value = foreignWord,
+                labelTextId = R.string.label_foreign_word,
+                textColor = MainTheme.colors.cardForeignWord,
+                onValueChange = onForeignWordChange,
+                trailingIcon = {
+                    Icon(
+                        modifier = Modifier
+                            .clip(shape = RoundedCornerShape(50.dp))
+                            .clickable { onPronounceIconClick() }
+                            .padding(5.dp),
+                        painter = painterResource(id = R.drawable.ic_baseline_volume_up_24),
+                        contentDescription = null
+                    )
+                }
+            )
+        }
         WordTextField(
             value = ipaTemplate,
             labelTextId = R.string.label_ipa,
@@ -214,8 +230,8 @@ private fun WordTextField(
     @StringRes labelTextId: Int,
     textColor: Color,
     onValueChange: (String) -> Unit,
+    trailingIcon: @Composable (() -> Unit)? = null
 ) {
-
     TextField(
         value = value,
         onValueChange = onValueChange,
@@ -224,6 +240,7 @@ private fun WordTextField(
             backgroundColor = MainTheme.colors.cardTextFieldBackground,
             textColor = textColor
         ),
+        trailingIcon = trailingIcon
     )
 }
 

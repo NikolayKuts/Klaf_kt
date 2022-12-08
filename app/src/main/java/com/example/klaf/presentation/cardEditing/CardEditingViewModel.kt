@@ -3,6 +3,8 @@ package com.example.klaf.presentation.cardEditing
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.R
+import com.example.klaf.data.networking.CardAudioPlayer
+import com.example.klaf.domain.common.ifNotNull
 import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
@@ -23,6 +25,7 @@ class CardEditingViewModel @AssistedInject constructor(
     fetchDeckById: FetchDeckByIdUseCase,
     fetchCard: FetchCardUseCase,
     private val updateCard: UpdateCardUseCase,
+    private val audioPlayer: CardAudioPlayer,
 ) : ViewModel() {
 
     companion object {
@@ -44,6 +47,9 @@ class CardEditingViewModel @AssistedInject constructor(
 
     val card: SharedFlow<Card?> = fetchCard(cardId = cardId)
         .catch { _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card) }
+        .onEach { card: Card? ->
+            card?.ifNotNull { audioPlayer.preparePronunciation(word = it.foreignWord) }
+        }
         .shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -89,5 +95,13 @@ class CardEditingViewModel @AssistedInject constructor(
                 }
             }
         }
+    }
+
+    fun pronounce() {
+        audioPlayer.play()
+    }
+
+    fun preparePronunciation(word: String) {
+        audioPlayer.preparePronunciation(word = word)
     }
 }
