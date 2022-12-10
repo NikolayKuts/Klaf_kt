@@ -14,12 +14,15 @@ import com.example.klaf.domain.ipa.convertToUncompletedIpa
 import com.example.klaf.domain.ipa.toWord
 import com.example.klaf.domain.useCases.AddNewCardIntoDeckUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
+import com.example.klaf.domain.useCases.FetchWordAutocompleteUseCase
 import com.example.klaf.presentation.cardAddition.CardAdditionEvent.*
 import com.example.klaf.presentation.common.EventMessage
+import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.tryEmit
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
 class CardAdditionViewModel @AssistedInject constructor(
     @Assisted deckId: Int,
@@ -27,6 +30,7 @@ class CardAdditionViewModel @AssistedInject constructor(
     fetchDeckById: FetchDeckByIdUseCase,
     private val addNewCardIntoDeck: AddNewCardIntoDeckUseCase,
     override val audioPlayer: CardAudioPlayer,
+    private val fetchWordAutocomplete: FetchWordAutocompleteUseCase
 ) : BaseCardAdditionViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
