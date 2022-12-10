@@ -5,6 +5,7 @@ import com.example.klaf.data.dataStore.implementations.DataStoreDeckRepetitionIn
 import com.example.klaf.data.firestore.repositoryImplementations.DeckRepositoryFirestoreImp
 import com.example.klaf.data.firestore.repositoryImplementations.CardRepositoryFirestoreImp
 import com.example.klaf.data.firestore.repositoryImplementations.StorageSaveVersionRepositoryFirestoreImp
+import com.example.klaf.data.firestore.repositoryImplementations.WordAutocompleteFirestoreImp
 import com.example.klaf.data.room.repositoryImplementations.CardRepositoryRoomImp
 import com.example.klaf.data.room.repositoryImplementations.DeckRepositoryRoomImp
 import com.example.klaf.data.room.repositoryImplementations.StorageSaveVersionRepositoryRoomImp
@@ -80,4 +81,9 @@ interface DomainModule {
     fun bindDeckRepetitionInfoRepository(
         repository: DataStoreDeckRepetitionInfoRepositoryImpl
     ): DeckRepetitionInfoRepository
+
+    @Binds
+    fun bindWordAutocompleteRepository(
+        repository: WordAutocompleteFirestoreImp
+    ) : WordAutocompleteRepository
 }
