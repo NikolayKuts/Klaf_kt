@@ -20,6 +20,7 @@ class WordAutocompleteFirestoreImp @Inject constructor(
         private const val WORD_SUB_COLLECTION_SUFFIX = "_subCollection"
         private const val UNICODE_RANGE = "\uf8ff"
         private const val RESULT_LIMIT = 10L
+        private const val MIN_WORD_LENGTH = 2
     }
 
     override suspend fun fetchAutocomplete(prefix: String): List<AutocompleteWord> {
@@ -41,6 +42,7 @@ class WordAutocompleteFirestoreImp @Inject constructor(
                 .await()
                 .documents.mapNotNull { document -> document.toObject<FirestoreAutocompleteWord>() }
                 .map { firestoreAutocompleteWord -> firestoreAutocompleteWord.mapToDomainEntity() }
+                .filter { autocompleteWord -> autocompleteWord.value.length > MIN_WORD_LENGTH }
         }
     }
 }
