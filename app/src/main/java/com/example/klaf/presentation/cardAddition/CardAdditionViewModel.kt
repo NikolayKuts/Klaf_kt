@@ -17,10 +17,11 @@ import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.domain.useCases.FetchWordAutocompleteUseCase
 import com.example.klaf.presentation.cardAddition.CardAdditionEvent.*
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.tryEmit
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -49,9 +50,14 @@ class CardAdditionViewModel @AssistedInject constructor(
         )
     )
 
+    override val autocompleteState: MutableStateFlow<AutocompleteState> =
+        MutableStateFlow(value = AutocompleteState())
+
     private val letterInfosState = MutableStateFlow(value = cardAdditionState.value.letterInfos)
     private val nativeWordState = MutableStateFlow(value = cardAdditionState.value.nativeWord)
     private val ipaTemplateState = MutableStateFlow(value = cardAdditionState.value.ipaTemplate)
+
+    private var autocompleteFetchingJob: Job? = null
 
     init {
         combine(
@@ -79,7 +85,8 @@ class CardAdditionViewModel @AssistedInject constructor(
                     letterInfo = event.letterInfo
                 )
             }
-            is UpdateForeignWordWithIpaTemplate -> updateForeignWordWithIpaTemplate(word = event.word)
+            is UpdateDataOnForeignWordChaneged -> updateDataOnForeignWordChanged(word = event.word)
+            is UpdateDataOnAutocompleteSelected -> updateDataOnAutocompleteSelected(word = event.word)
             is UpdateIpaTemplate -> updateIpa(ipa = event.ipa)
             is UpdateNativeWord -> updateNativeWord(word = event.word)
             is AddNewCard -> {
@@ -92,6 +99,9 @@ class CardAdditionViewModel @AssistedInject constructor(
                 )
             }
             PronounceForeignWord -> audioPlayer.play()
+            CloseAutocompleteMenu -> {
+                autocompleteState.update { it.copy(isActive = false) }
+            }
         }
     }
 
@@ -103,9 +113,7 @@ class CardAdditionViewModel @AssistedInject constructor(
         ipaTemplate: String,
     ) {
         if (nativeWordState.value.isEmpty() || foreignWord.isEmpty()) {
-            eventMessage.tryEmit(
-                messageId = R.string.native_and_foreign_words_must_be_filled
-            )
+            eventMessage.tryEmit(messageId = R.string.native_and_foreign_words_must_be_filled)
         } else {
             val newCard = Card(
                 deckId = deckId,
@@ -119,6 +127,7 @@ class CardAdditionViewModel @AssistedInject constructor(
                     eventMessage.tryEmit(messageId = R.string.exception_adding_card)
                 },
                 onCompletion = {
+                    resetAddingState()
                     cardAdditionState.value = CardAdditionState.Finished
                     eventMessage.tryEmit(messageId = R.string.card_has_been_added)
                 },
@@ -147,12 +156,34 @@ class CardAdditionViewModel @AssistedInject constructor(
         nativeWordState.value = word
     }
 
-    private fun updateForeignWordWithIpaTemplate(word: String) {
+    private fun updateDataOnForeignWordChanged(word: String) {
+        val clearedWord = word.trim()
+        letterInfosState.value = clearedWord.generateLetterInfos()
+        ipaTemplateState.value = letterInfosState.value.convertToUncompletedIpa()
+
+        autocompleteFetchingJob?.cancel()
+        autocompleteFetchingJob = viewModelScope.launch(Dispatchers.IO) {
+            autocompleteState.value = AutocompleteState(
+                prefix = clearedWord,
+                autocomplete = fetchWordAutocomplete(prefix = clearedWord),
+                isActive = true,
+            )
+        }
+    }
+
+    private fun updateDataOnAutocompleteSelected(word: String) {
         letterInfosState.value = word.generateLetterInfos()
         ipaTemplateState.value = letterInfosState.value.convertToUncompletedIpa()
+        autocompleteState.value = AutocompleteState()
     }
 
     private fun updateIpa(ipa: String) {
         ipaTemplateState.value = ipa
+    }
+
+    private fun resetAddingState() {
+        letterInfosState.value = emptyList()
+        nativeWordState.value = ""
+        letterInfosState.value = emptyList()
     }
 }

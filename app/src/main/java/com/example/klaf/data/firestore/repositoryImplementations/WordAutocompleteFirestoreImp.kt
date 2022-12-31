@@ -25,18 +25,22 @@ class WordAutocompleteFirestoreImp @Inject constructor(
     override suspend fun fetchAutocomplete(prefix: String): List<AutocompleteWord> {
         firestore.collection(AUTOCOMPLETE_WORD_COLLECTION_NAME)
         val wordFieldName = FirestoreAutocompleteWord::word.name
-        val groupLetter = prefix.first()
+        val groupLetter = prefix.firstOrNull()
 
-        return firestore.collection(AUTOCOMPLETE_WORD_COLLECTION_NAME)
-            .document("${groupLetter}$WORD_GROUP_SUFFIX")
-            .collection("${groupLetter}$WORD_SUB_COLLECTION_SUFFIX")
-            .orderBy(wordFieldName)
-            .startAt(prefix)
-            .endAt("$prefix$UNICODE_RANGE")
-            .limit(RESULT_LIMIT)
-            .get()
-            .await()
-            .documents.mapNotNull { document -> document.toObject<FirestoreAutocompleteWord>() }
-            .map { firestoreAutocompleteWord -> firestoreAutocompleteWord.mapToDomainEntity() }
+        return if (groupLetter == null) {
+            emptyList()
+        } else {
+            firestore.collection(AUTOCOMPLETE_WORD_COLLECTION_NAME)
+                .document("${groupLetter}$WORD_GROUP_SUFFIX")
+                .collection("${groupLetter}$WORD_SUB_COLLECTION_SUFFIX")
+                .orderBy(wordFieldName)
+                .startAt(prefix)
+                .endAt("$prefix$UNICODE_RANGE")
+                .limit(RESULT_LIMIT)
+                .get()
+                .await()
+                .documents.mapNotNull { document -> document.toObject<FirestoreAutocompleteWord>() }
+                .map { firestoreAutocompleteWord -> firestoreAutocompleteWord.mapToDomainEntity() }
+        }
     }
 }
