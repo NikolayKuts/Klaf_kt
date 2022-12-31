@@ -66,9 +66,9 @@ fun StorageSaveVersion.mapToFirestoreEntity(): FirestoreStorageSaveVersion {
 }
 
 fun FirestoreAutocompleteWord.mapToDomainEntity(): AutocompleteWord = AutocompleteWord(
-    text = word
+    value = word
 )
 
 fun AutocompleteWord.mapToDomainEntity(): FirestoreAutocompleteWord = FirestoreAutocompleteWord(
-    word = text
+    word = value
 )

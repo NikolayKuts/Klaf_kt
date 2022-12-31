@@ -10,6 +10,7 @@ import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.ipa.convertToUncompletedIpa
 import com.example.klaf.domain.ipa.decodeToCompletedIpa
 import com.example.klaf.domain.ipa.decodeToInfos
+import com.example.klaf.presentation.cardAddition.AutocompleteState
 import com.example.klaf.presentation.common.CardManagementView
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
 
@@ -35,6 +36,8 @@ fun CardEditingScreen(viewModel: CardEditingViewModel) {
                 nativeWord = nativeWordState,
                 foreignWord = foreignWordState,
                 ipaTemplate = ipaTemplateState,
+                autocompleteState = AutocompleteState(), ///////////////////////////////////////////////////////////////////////,
+                onDismissRequest = {},      //////////////////////////////////////////////////////////////
                 onLetterClick = { index, letterInfo ->
                     val updatedIsChecked = when (letterInfo.letter) {
                         LetterInfo.EMPTY_LETTER -> false
@@ -65,7 +68,8 @@ fun CardEditingScreen(viewModel: CardEditingViewModel) {
                         ipaTemplate = ipaTemplateState,
                     )
                 },
-                onPronounceIconClick = { viewModel.pronounce() }
+                onPronounceIconClick = { viewModel.pronounce() },
+                onAutocompleteItemClick = {}
             )
         }
     }

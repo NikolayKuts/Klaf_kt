@@ -12,6 +12,7 @@ abstract class BaseCardAdditionViewModel : ViewModel(), EventMessageSource {
     abstract val deck: SharedFlow<Deck?>
     abstract val cardAdditionState: StateFlow<CardAdditionState>
     abstract val audioPlayer: CardAudioPlayer
+    abstract val autocompleteState: StateFlow<AutocompleteState>
 
     abstract  fun sendEvent(event: CardAdditionEvent)
 }

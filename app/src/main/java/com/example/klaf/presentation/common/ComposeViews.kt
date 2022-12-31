@@ -12,25 +12,31 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
+import androidx.compose.ui.window.Popup
 import com.example.klaf.R
 import com.example.klaf.domain.common.ifTrue
 import com.example.klaf.domain.ipa.LetterInfo
+import com.example.klaf.presentation.cardAddition.AutocompleteState
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -41,16 +47,20 @@ fun CardManagementView(
     nativeWord: String,
     foreignWord: String,
     ipaTemplate: String,
+    autocompleteState: AutocompleteState,
+    onDismissRequest: () -> Unit,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
     onNativeWordChange: (String) -> Unit,
     onForeignWordChange: (String) -> Unit,
     onIpaChange: (String) -> Unit,
     onConfirmClick: () -> Unit,
-    onPronounceIconClick: () -> Unit
+    onPronounceIconClick: () -> Unit,
+    onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .noRippleClickable { onDismissRequest() }
             .padding(32.dp)
     ) {
         Column(
@@ -71,10 +81,12 @@ fun CardManagementView(
                 nativeWord = nativeWord,
                 foreignWord = foreignWord,
                 ipaTemplate = ipaTemplate,
+                autocompleteState = autocompleteState,
                 onNativeWordChange = onNativeWordChange,
                 onForeignWordChange = onForeignWordChange,
                 onIpaChange = onIpaChange,
-                onPronounceIconClick = onPronounceIconClick
+                onPronounceIconClick = onPronounceIconClick,
+                onAutocompleteItemClick = onAutocompleteItemClick
             )
             RoundButton(
                 modifier = Modifier
@@ -181,11 +193,13 @@ fun CardFields(
     nativeWord: String,
     foreignWord: String,
     ipaTemplate: String,
+    autocompleteState: AutocompleteState,
     onNativeWordChange: (String) -> Unit,
     onForeignWordChange: (String) -> Unit,
     onIpaChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     onPronounceIconClick: () -> Unit,
+    onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -197,24 +211,16 @@ fun CardFields(
             textColor = MainTheme.colors.cardNativeWord,
             onValueChange = onNativeWordChange,
         )
-        Row {
-            WordTextField(
-                value = foreignWord,
-                labelTextId = R.string.label_foreign_word,
-                textColor = MainTheme.colors.cardForeignWord,
-                onValueChange = onForeignWordChange,
-                trailingIcon = {
-                    Icon(
-                        modifier = Modifier
-                            .clip(shape = RoundedCornerShape(50.dp))
-                            .clickable { onPronounceIconClick() }
-                            .padding(5.dp),
-                        painter = painterResource(id = R.drawable.ic_baseline_volume_up_24),
-                        contentDescription = null
-                    )
-                }
-            )
-        }
+
+        DropDownAutocompleteFiled(
+            expanded = autocompleteState.isActive && autocompleteState.autocomplete.isNotEmpty(),
+            typedWord = foreignWord,
+            onTypedWordChange = onForeignWordChange,
+            onPronounceIconClick = onPronounceIconClick,
+            autocompleteState = autocompleteState,
+            onAutocompleteItemClick = onAutocompleteItemClick
+        )
+
         WordTextField(
             value = ipaTemplate,
             labelTextId = R.string.label_ipa,
@@ -225,7 +231,78 @@ fun CardFields(
 }
 
 @Composable
+fun DropDownAutocompleteFiled(
+    expanded: Boolean,
+    typedWord: String,
+    onTypedWordChange: (String) -> Unit,
+    autocompleteState: AutocompleteState,
+    onPronounceIconClick: () -> Unit,
+    onAutocompleteItemClick: (chosenWord: String) -> Unit,
+) {
+    var sizeTopBar by remember { mutableStateOf(IntSize.Zero) }
+    var textFieldPosition by remember { mutableStateOf(Offset.Zero) }
+
+    Box(
+        modifier = Modifier
+            .onGloballyPositioned { coordinates ->
+                sizeTopBar = coordinates.size
+                textFieldPosition = coordinates.positionInWindow()
+            }
+    ) {
+        WordTextField(
+            value = typedWord,
+            labelTextId = R.string.label_foreign_word,
+            textColor = MainTheme.colors.cardForeignWord,
+            onValueChange = onTypedWordChange,
+            trailingIcon = {
+                Icon(
+                    modifier = Modifier
+                        .clip(shape = RoundedCornerShape(50.dp))
+                        .clickable { onPronounceIconClick() }
+                        .padding(5.dp),
+                    painter = painterResource(id = R.drawable.ic_baseline_volume_up_24),
+                    contentDescription = null
+                )
+            }
+        )
+
+        expanded.ifTrue {
+            Popup(offset = IntOffset(x = 0, y = sizeTopBar.height)) {
+                Column(
+                    modifier = Modifier
+                        .width(LocalDensity.current.run { sizeTopBar.width.toDp() })
+                        .clip(shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp))
+                        .background(Color(0xFF222222))
+                        .padding(start = 16.dp, top = 6.dp, end = 16.dp, bottom = 6.dp)
+                ) {
+                    autocompleteState.autocomplete.onEach { word ->
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onAutocompleteItemClick(word.value) },
+                            text = buildAnnotatedString {
+                                withStyle(
+                                    style = SpanStyle(
+                                        color = MainTheme.colors.cardForeignWord,
+                                        fontWeight = FontWeight.ExtraBold
+                                    )
+                                ) {
+                                    append(autocompleteState.prefix)
+                                }
+                                append(word.value.drop(autocompleteState.prefix.length))
+                            },
+                            fontStyle = FontStyle.Italic
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun WordTextField(
+    modifier: Modifier = Modifier,
     value: String,
     @StringRes labelTextId: Int,
     textColor: Color,
@@ -233,6 +310,7 @@ private fun WordTextField(
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
     TextField(
+        modifier = modifier,
         value = value,
         onValueChange = onValueChange,
         label = { Text(text = stringResource(id = labelTextId)) },
