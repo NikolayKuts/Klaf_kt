@@ -253,3 +253,13 @@ val CannonCardTransferringScreenTextStyles = CardTransferringScreenTextStyles(
     quantityPointerValue = QuantityPointer,
     choosingContent = ChoosingContent,
 )
+
+val LightForeignWordAutocompleteSpanStyle = MainSpanStyle.copy(
+    color = LightMainPalettes.cardManagementViewColors.foreignWord,
+    fontWeight = FontWeight.ExtraBold
+)
+
+val DarkForeignWordAutocompleteSpanStyle = MainSpanStyle.copy(
+    color = DarkMainPalettes.cardManagementViewColors.foreignWord,
+    fontWeight = FontWeight.ExtraBold
+)
