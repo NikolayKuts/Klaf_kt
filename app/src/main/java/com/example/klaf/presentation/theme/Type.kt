@@ -32,6 +32,7 @@ data class MainTopographies(
     val viewingCardOrdinal: TextStyle,
     val deckRepetitionInfoScreenTextStyles: DeckRepetitionInfoScreenTextStyles,
     val cardTransferringScreenTextStyles: CardTransferringScreenTextStyles,
+    val foreignWordAutocompleteSpanStyle: SpanStyle,
 )
 
 data class DeckRepetitionInfoScreenTextStyles(
@@ -62,7 +63,6 @@ private val CommonDeckRepetitionInfoScreenTextStyles = DeckRepetitionInfoScreenT
     )
 )
 
-
 val LightMainTypographies = MainTopographies(
     materialTypographies = Typography,
     evenDeckItemName = LightEvenDeckItemNameTextStyle,
@@ -89,6 +89,7 @@ val LightMainTypographies = MainTopographies(
     viewingCardOrdinal = LightViewingCardOrdinal,
     deckRepetitionInfoScreenTextStyles = CommonDeckRepetitionInfoScreenTextStyles,
     cardTransferringScreenTextStyles = CannonCardTransferringScreenTextStyles,
+    foreignWordAutocompleteSpanStyle = LightForeignWordAutocompleteSpanStyle,
 )
 
 val DarkMainTypographies = MainTopographies(
@@ -117,4 +118,5 @@ val DarkMainTypographies = MainTopographies(
     viewingCardOrdinal = DarkViewingCardOrdinal,
     deckRepetitionInfoScreenTextStyles = CommonDeckRepetitionInfoScreenTextStyles,
     cardTransferringScreenTextStyles = CannonCardTransferringScreenTextStyles,
+    foreignWordAutocompleteSpanStyle = DarkForeignWordAutocompleteSpanStyle,
 )

@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -25,10 +26,8 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.*
@@ -88,6 +87,7 @@ fun CardManagementView(
                 onPronounceIconClick = onPronounceIconClick,
                 onAutocompleteItemClick = onAutocompleteItemClick
             )
+
             RoundButton(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -208,7 +208,7 @@ fun CardFields(
         WordTextField(
             value = nativeWord,
             labelTextId = R.string.label_native_word,
-            textColor = MainTheme.colors.cardNativeWord,
+            textColor = MainTheme.colors.cardManagementViewColors.nativeWord,
             onValueChange = onNativeWordChange,
         )
 
@@ -224,7 +224,7 @@ fun CardFields(
         WordTextField(
             value = ipaTemplate,
             labelTextId = R.string.label_ipa,
-            textColor = MainTheme.colors.cardIpa,
+            textColor = MainTheme.colors.cardManagementViewColors.ipa,
             onValueChange = onIpaChange
         )
     }
@@ -243,16 +243,15 @@ fun DropDownAutocompleteFiled(
     var textFieldPosition by remember { mutableStateOf(Offset.Zero) }
 
     Box(
-        modifier = Modifier
-            .onGloballyPositioned { coordinates ->
-                sizeTopBar = coordinates.size
-                textFieldPosition = coordinates.positionInWindow()
-            }
+        modifier = Modifier.onGloballyPositioned { coordinates ->
+            sizeTopBar = coordinates.size
+            textFieldPosition = coordinates.positionInWindow()
+        }
     ) {
         WordTextField(
             value = typedWord,
             labelTextId = R.string.label_foreign_word,
-            textColor = MainTheme.colors.cardForeignWord,
+            textColor = MainTheme.colors.cardManagementViewColors.foreignWord,
             onValueChange = onTypedWordChange,
             trailingIcon = {
                 Icon(
@@ -268,36 +267,47 @@ fun DropDownAutocompleteFiled(
 
         expanded.ifTrue {
             Popup(offset = IntOffset(x = 0, y = sizeTopBar.height)) {
+                val menuShape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
+
                 Column(
                     modifier = Modifier
                         .width(LocalDensity.current.run { sizeTopBar.width.toDp() })
-                        .clip(shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp))
-                        .background(Color(0xFF222222))
+                        .shadow(elevation = 4.dp, shape = menuShape)
+                        .clip(shape = menuShape)
+                        .background(MainTheme.colors.cardManagementViewColors.autocompleteMenuBackground)
                         .padding(start = 16.dp, top = 6.dp, end = 16.dp, bottom = 6.dp)
                 ) {
                     autocompleteState.autocomplete.onEach { word ->
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onAutocompleteItemClick(word.value) },
-                            text = buildAnnotatedString {
-                                withStyle(
-                                    style = SpanStyle(
-                                        color = MainTheme.colors.cardForeignWord,
-                                        fontWeight = FontWeight.ExtraBold
-                                    )
-                                ) {
-                                    append(autocompleteState.prefix)
-                                }
-                                append(word.value.drop(autocompleteState.prefix.length))
-                            },
-                            fontStyle = FontStyle.Italic
+                        AutocompleteWordItem(
+                            word = word.value,
+                            prefix = autocompleteState.prefix,
+                            onAutocompleteItemClick = onAutocompleteItemClick
                         )
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun AutocompleteWordItem(
+    word: String,
+    prefix: String,
+    onAutocompleteItemClick: (String) -> Unit,
+) {
+    Text(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onAutocompleteItemClick(word) },
+        text = buildAnnotatedString {
+            withStyle(style = MainTheme.typographies.foreignWordAutocompleteSpanStyle) {
+                append(prefix)
+            }
+            append(word.drop(prefix.length))
+        },
+        fontStyle = FontStyle.Italic
+    )
 }
 
 @Composable
@@ -315,7 +325,7 @@ private fun WordTextField(
         onValueChange = onValueChange,
         label = { Text(text = stringResource(id = labelTextId)) },
         colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = MainTheme.colors.cardTextFieldBackground,
+            backgroundColor = MainTheme.colors.cardManagementViewColors.textFieldBackground,
             textColor = textColor
         ),
         trailingIcon = trailingIcon
