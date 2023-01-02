@@ -26,8 +26,10 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.*
@@ -248,7 +250,7 @@ fun DropDownAutocompleteFiled(
             textFieldPosition = coordinates.positionInWindow()
         }
     ) {
-        WordTextField(
+        WordTextFieldWithPopupMenu(
             value = typedWord,
             labelTextId = R.string.label_foreign_word,
             textColor = MainTheme.colors.cardManagementViewColors.foreignWord,
@@ -323,6 +325,41 @@ private fun WordTextField(
         modifier = modifier,
         value = value,
         onValueChange = onValueChange,
+        label = { Text(text = stringResource(id = labelTextId)) },
+        colors = TextFieldDefaults.textFieldColors(
+            backgroundColor = MainTheme.colors.cardManagementViewColors.textFieldBackground,
+            textColor = textColor
+        ),
+        trailingIcon = trailingIcon
+    )
+}
+
+@Composable
+private fun WordTextFieldWithPopupMenu(
+    modifier: Modifier = Modifier,
+    value: String,
+    @StringRes labelTextId: Int,
+    textColor: Color,
+    onValueChange: (String) -> Unit,
+    trailingIcon: @Composable (() -> Unit)? = null
+) {
+    var textFieldValue by rememberAsMutableStateOf(
+        value = TextFieldValue(text = value, selection = TextRange(value.length))
+    )
+
+    if (textFieldValue.text != value) {
+        textFieldValue = TextFieldValue(text = value, selection = TextRange(value.length))
+    }
+
+    TextField(
+        modifier = modifier,
+        value = textFieldValue,
+        onValueChange = {
+            if (it.text != value) {
+                onValueChange(it.text)
+            }
+            textFieldValue = it
+        },
         label = { Text(text = stringResource(id = labelTextId)) },
         colors = TextFieldDefaults.textFieldColors(
             backgroundColor = MainTheme.colors.cardManagementViewColors.textFieldBackground,
