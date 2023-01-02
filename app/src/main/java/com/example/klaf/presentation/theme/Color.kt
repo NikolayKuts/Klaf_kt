@@ -26,10 +26,7 @@ data class MainColors(
     val deckNavigationDialogSeparator: Color,
     val checkedLetterCell: Color,
     val uncheckedLetterCell: Color,
-    val cardTextFieldBackground: Color,
-    val cardNativeWord: Color,
-    val cardForeignWord: Color,
-    val cardIpa: Color,
+    val cardManagementViewColors: CardManagementViewColors,
     val deckRepetitionScreenColors: DeckRepetitionScreenColors,
     val viewingCardForeignWord: Color,
     val viewingCardIpa: Color,
@@ -37,6 +34,14 @@ data class MainColors(
     val dataSynchronizationViewColors: DataSynchronizationViewColors,
     val deckRepetitionInfoScreenColors: DeckRepetitionInfoScreenColors,
     val cardTransferringScreenColors: CardTransferringScreenColors,
+)
+
+data class CardManagementViewColors(
+    val textFieldBackground: Color,
+    val nativeWord: Color,
+    val foreignWord: Color,
+    val ipa: Color,
+    val autocompleteMenuBackground: Color,
 )
 
 data class DeckRepetitionScreenColors(
@@ -88,7 +93,15 @@ data class CardTransferringScreenColors(
 private val LightMaterialColors = lightColors(
     primary = Color(0xFFBEDB9C),
     onPrimary = Color(0xFF636363),
-    onBackground = Color(0xFF474747)
+    onBackground = Color(0xFF474747),
+)
+
+private val LightCardManagementViewColors = CardManagementViewColors(
+    textFieldBackground = Color.Transparent,
+    nativeWord = Color(0xFFC0914C),
+    foreignWord = Color(0xFFAD7DB4),
+    ipa = Color(0xFF6EA5AC),
+    autocompleteMenuBackground = Color(0xFFFFFFFF),
 )
 
 private val LightDeckRepetitionScreenColors = DeckRepetitionScreenColors(
@@ -155,10 +168,7 @@ val LightMainPalettes = MainColors(
     deckNavigationDialogSeparator = Color(0xFF818181),
     checkedLetterCell = Color(0xFFB0D9DF),
     uncheckedLetterCell = Color(0xFFE9E9E9),
-    cardTextFieldBackground = Color.Transparent,
-    cardNativeWord = Color(0xFFC0914C),
-    cardForeignWord = Color(0xFFAD7DB4),
-    cardIpa = Color(0xFF6EA5AC),
+    cardManagementViewColors = LightCardManagementViewColors,
     deckRepetitionScreenColors = LightDeckRepetitionScreenColors,
     viewingCardForeignWord = Color(0xFFA078AA),
     viewingCardIpa = Color(0xFF5E949C),
@@ -171,6 +181,14 @@ val LightMainPalettes = MainColors(
 private val DarkMaterialColors = darkColors(
     primary = DarkPrimaryColor,
     onPrimary = DarkOnPrimaryColor,
+)
+
+private val DarkCardManagementViewColors = CardManagementViewColors(
+    textFieldBackground = Color.Transparent,
+    nativeWord = Color(0xFFA9CA84),
+    foreignWord = Color(0xFFD3AA6E),
+    ipa = Color(0xFFB8ABD1),
+    autocompleteMenuBackground = Color(0xFF222222),
 )
 
 private val DarkDeckRepetitionScreenColors = DeckRepetitionScreenColors(
@@ -237,10 +255,7 @@ val DarkMainPalettes = MainColors(
     deckNavigationDialogSeparator = Color(0xFF4D4D4D),
     checkedLetterCell = Color(0xFF94B172),
     uncheckedLetterCell = Color(0xFF63665F),
-    cardTextFieldBackground = Color.Transparent,
-    cardNativeWord = Color(0xFFA9CA84),
-    cardForeignWord = Color(0xFFD3AA6E),
-    cardIpa = Color(0xFFB8ABD1),
+    cardManagementViewColors = DarkCardManagementViewColors,
     deckRepetitionScreenColors = DarkDeckRepetitionScreenColors,
     viewingCardForeignWord = Color(0xFFA5CA79),
     viewingCardIpa = Color(0xFF86BBC9),

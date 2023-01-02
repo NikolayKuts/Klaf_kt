@@ -6,7 +6,9 @@ sealed interface CardAdditionEvent {
 
     data class UpdateNativeWord(val word: String) : CardAdditionEvent
 
-    data class UpdateForeignWordWithIpaTemplate(val word: String) : CardAdditionEvent
+    data class UpdateDataOnForeignWordChaneged(val word: String) : CardAdditionEvent
+
+    data class UpdateDataOnAutocompleteSelected(val word: String) : CardAdditionEvent
 
     data class UpdateIpaTemplate(val ipa: String) : CardAdditionEvent
 
@@ -22,4 +24,8 @@ sealed interface CardAdditionEvent {
         val letterInfos: List<LetterInfo>,
         val ipaTemplate: String,
     ) : CardAdditionEvent
+
+    object PronounceForeignWord : CardAdditionEvent
+
+    object CloseAutocompleteMenu : CardAdditionEvent
 }

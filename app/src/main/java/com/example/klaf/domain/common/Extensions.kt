@@ -1,5 +1,6 @@
 package com.example.klaf.domain.common
 
+import androidx.core.text.HtmlCompat
 import com.example.klaf.domain.ipa.LetterInfo
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -85,6 +86,12 @@ fun <T> T.isNotNull(): Boolean = this != null
 
 inline fun <T> T.ifNull(block: () -> Unit) {
     if (this == null) block()
+}
+
+inline fun <T> T.ifNotNull(block: (T) -> Unit) {
+    if (this != null) {
+        block(this)
+    }
 }
 
 fun Int.toFloatPercents(): Float = this / 100.0F

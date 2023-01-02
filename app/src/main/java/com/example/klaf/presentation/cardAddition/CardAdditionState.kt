@@ -11,9 +11,9 @@ sealed class CardAdditionState(
 
     class Adding(
         letterInfos: List<LetterInfo>,
-        nativeWord: String,
-        foreignWord: String,
-        ipaTemplate: String,
+        nativeWord: String = "",
+        foreignWord: String = "",
+        ipaTemplate: String = "",
     ) : CardAdditionState(
         letterInfos = letterInfos,
         nativeWord = nativeWord,

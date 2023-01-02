@@ -28,6 +28,7 @@ The application allows you to create cards with the automatic creation of a tran
 * Single Activity pattern
 * Navigation to the app from [Smart Text Seletion Menu](https://developer.android.com/about/versions/marshmallow/android-6.0-changes.html?hl=ru#behavior-text-selection)
 * Ability to listen to the pronunciation of English words
+* Autocomplete suggestions when typing foreign words in English
 * Deck repeat alert by notifications
 * Ability to save data on remote storage
 * Animated UI
@@ -46,6 +47,7 @@ https://github.com/NikolayKuts/Klaf
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_repetition_screen_animation.gif)
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_list_item_animation_dark_them.gif)
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/card_transferring_fragment_buttons_animation_dark_theme.gif)
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/autocomplete.gif)
 
 ## Screen samples
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_list_screen_dark_theme.png)

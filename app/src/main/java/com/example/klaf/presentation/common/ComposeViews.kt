@@ -12,24 +12,32 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
+import androidx.compose.ui.window.Popup
 import com.example.klaf.R
 import com.example.klaf.domain.common.ifTrue
 import com.example.klaf.domain.ipa.LetterInfo
+import com.example.klaf.presentation.cardAddition.AutocompleteState
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -40,15 +48,20 @@ fun CardManagementView(
     nativeWord: String,
     foreignWord: String,
     ipaTemplate: String,
+    autocompleteState: AutocompleteState,
+    onDismissRequest: () -> Unit,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
     onNativeWordChange: (String) -> Unit,
     onForeignWordChange: (String) -> Unit,
     onIpaChange: (String) -> Unit,
     onConfirmClick: () -> Unit,
+    onPronounceIconClick: () -> Unit,
+    onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .noRippleClickable { onDismissRequest() }
             .padding(32.dp)
     ) {
         Column(
@@ -69,10 +82,14 @@ fun CardManagementView(
                 nativeWord = nativeWord,
                 foreignWord = foreignWord,
                 ipaTemplate = ipaTemplate,
+                autocompleteState = autocompleteState,
                 onNativeWordChange = onNativeWordChange,
                 onForeignWordChange = onForeignWordChange,
                 onIpaChange = onIpaChange,
+                onPronounceIconClick = onPronounceIconClick,
+                onAutocompleteItemClick = onAutocompleteItemClick
             )
+
             RoundButton(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -178,10 +195,13 @@ fun CardFields(
     nativeWord: String,
     foreignWord: String,
     ipaTemplate: String,
+    autocompleteState: AutocompleteState,
     onNativeWordChange: (String) -> Unit,
     onForeignWordChange: (String) -> Unit,
     onIpaChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onPronounceIconClick: () -> Unit,
+    onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -190,40 +210,162 @@ fun CardFields(
         WordTextField(
             value = nativeWord,
             labelTextId = R.string.label_native_word,
-            textColor = MainTheme.colors.cardNativeWord,
+            textColor = MainTheme.colors.cardManagementViewColors.nativeWord,
             onValueChange = onNativeWordChange,
         )
-        WordTextField(
-            value = foreignWord,
-            labelTextId = R.string.label_foreign_word,
-            textColor = MainTheme.colors.cardForeignWord,
-            onValueChange = onForeignWordChange
+
+        DropDownAutocompleteFiled(
+            expanded = autocompleteState.isActive && autocompleteState.autocomplete.isNotEmpty(),
+            typedWord = foreignWord,
+            onTypedWordChange = onForeignWordChange,
+            onPronounceIconClick = onPronounceIconClick,
+            autocompleteState = autocompleteState,
+            onAutocompleteItemClick = onAutocompleteItemClick
         )
+
         WordTextField(
             value = ipaTemplate,
             labelTextId = R.string.label_ipa,
-            textColor = MainTheme.colors.cardIpa,
+            textColor = MainTheme.colors.cardManagementViewColors.ipa,
             onValueChange = onIpaChange
         )
     }
 }
 
 @Composable
+fun DropDownAutocompleteFiled(
+    expanded: Boolean,
+    typedWord: String,
+    onTypedWordChange: (String) -> Unit,
+    autocompleteState: AutocompleteState,
+    onPronounceIconClick: () -> Unit,
+    onAutocompleteItemClick: (chosenWord: String) -> Unit,
+) {
+    var sizeTopBar by remember { mutableStateOf(IntSize.Zero) }
+    var textFieldPosition by remember { mutableStateOf(Offset.Zero) }
+
+    Box(
+        modifier = Modifier.onGloballyPositioned { coordinates ->
+            sizeTopBar = coordinates.size
+            textFieldPosition = coordinates.positionInWindow()
+        }
+    ) {
+        WordTextFieldWithPopupMenu(
+            value = typedWord,
+            labelTextId = R.string.label_foreign_word,
+            textColor = MainTheme.colors.cardManagementViewColors.foreignWord,
+            onValueChange = onTypedWordChange,
+            trailingIcon = {
+                Icon(
+                    modifier = Modifier
+                        .clip(shape = RoundedCornerShape(50.dp))
+                        .clickable { onPronounceIconClick() }
+                        .padding(5.dp),
+                    painter = painterResource(id = R.drawable.ic_baseline_volume_up_24),
+                    contentDescription = null
+                )
+            }
+        )
+
+        expanded.ifTrue {
+            Popup(offset = IntOffset(x = 0, y = sizeTopBar.height)) {
+                val menuShape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
+
+                Column(
+                    modifier = Modifier
+                        .width(LocalDensity.current.run { sizeTopBar.width.toDp() })
+                        .shadow(elevation = 4.dp, shape = menuShape)
+                        .clip(shape = menuShape)
+                        .background(MainTheme.colors.cardManagementViewColors.autocompleteMenuBackground)
+                        .padding(start = 16.dp, top = 6.dp, end = 16.dp, bottom = 6.dp)
+                ) {
+                    autocompleteState.autocomplete.onEach { word ->
+                        AutocompleteWordItem(
+                            word = word.value,
+                            prefix = autocompleteState.prefix,
+                            onAutocompleteItemClick = onAutocompleteItemClick
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AutocompleteWordItem(
+    word: String,
+    prefix: String,
+    onAutocompleteItemClick: (String) -> Unit,
+) {
+    Text(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onAutocompleteItemClick(word) },
+        text = buildAnnotatedString {
+            withStyle(style = MainTheme.typographies.foreignWordAutocompleteSpanStyle) {
+                append(prefix)
+            }
+            append(word.drop(prefix.length))
+        },
+        fontStyle = FontStyle.Italic
+    )
+}
+
+@Composable
 private fun WordTextField(
+    modifier: Modifier = Modifier,
     value: String,
     @StringRes labelTextId: Int,
     textColor: Color,
     onValueChange: (String) -> Unit,
+    trailingIcon: @Composable (() -> Unit)? = null
 ) {
-
     TextField(
+        modifier = modifier,
         value = value,
         onValueChange = onValueChange,
         label = { Text(text = stringResource(id = labelTextId)) },
         colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = MainTheme.colors.cardTextFieldBackground,
+            backgroundColor = MainTheme.colors.cardManagementViewColors.textFieldBackground,
             textColor = textColor
         ),
+        trailingIcon = trailingIcon
+    )
+}
+
+@Composable
+private fun WordTextFieldWithPopupMenu(
+    modifier: Modifier = Modifier,
+    value: String,
+    @StringRes labelTextId: Int,
+    textColor: Color,
+    onValueChange: (String) -> Unit,
+    trailingIcon: @Composable (() -> Unit)? = null
+) {
+    var textFieldValue by rememberAsMutableStateOf(
+        value = TextFieldValue(text = value, selection = TextRange(value.length))
+    )
+
+    if (textFieldValue.text != value) {
+        textFieldValue = TextFieldValue(text = value, selection = TextRange(value.length))
+    }
+
+    TextField(
+        modifier = modifier,
+        value = textFieldValue,
+        onValueChange = {
+            if (it.text != value) {
+                onValueChange(it.text)
+            }
+            textFieldValue = it
+        },
+        label = { Text(text = stringResource(id = labelTextId)) },
+        colors = TextFieldDefaults.textFieldColors(
+            backgroundColor = MainTheme.colors.cardManagementViewColors.textFieldBackground,
+            textColor = textColor
+        ),
+        trailingIcon = trailingIcon
     )
 }
 

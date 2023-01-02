@@ -1,8 +1,10 @@
 package com.example.klaf.data.firestore
 
+import com.example.klaf.data.firestore.entities.FirestoreAutocompleteWord
 import com.example.klaf.data.firestore.entities.FirestoreCard
 import com.example.klaf.data.firestore.entities.FirestoreDeck
 import com.example.klaf.data.firestore.entities.FirestoreStorageSaveVersion
+import com.example.klaf.domain.entities.AutocompleteWord
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.entities.StorageSaveVersion
@@ -62,3 +64,11 @@ fun StorageSaveVersion.mapToFirestoreEntity(): FirestoreStorageSaveVersion {
         version = version
     )
 }
+
+fun FirestoreAutocompleteWord.mapToDomainEntity(): AutocompleteWord = AutocompleteWord(
+    value = word
+)
+
+fun AutocompleteWord.mapToDomainEntity(): FirestoreAutocompleteWord = FirestoreAutocompleteWord(
+    word = value
+)

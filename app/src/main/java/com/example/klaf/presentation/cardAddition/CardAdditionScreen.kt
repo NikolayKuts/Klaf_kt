@@ -14,6 +14,7 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
     val foreignWord = cardState.foreignWord
     val nativeWord = cardState.nativeWord
     val ipaTemplate = cardState.ipaTemplate
+    val autocompleteState by viewModel.autocompleteState.collectAsState()
 
     deck.value?.let { receivedDeck ->
         CardManagementView(
@@ -23,6 +24,8 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
             nativeWord = nativeWord,
             foreignWord = foreignWord,
             ipaTemplate = ipaTemplate,
+            autocompleteState = autocompleteState,
+            onDismissRequest = { viewModel.sendEvent(event = CloseAutocompleteMenu) },
             onLetterClick = { index, letterInfo ->
                 viewModel.sendEvent(
                     event = ChangeLetterSelectionWithIpaTemplate(
@@ -35,11 +38,9 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
                 viewModel.sendEvent(event = UpdateNativeWord(word = word))
             },
             onForeignWordChange = { word ->
-                viewModel.sendEvent(event = UpdateForeignWordWithIpaTemplate(word = word))
+                viewModel.sendEvent(event = UpdateDataOnForeignWordChaneged(word = word))
             },
-            onIpaChange = { ipa ->
-                viewModel.sendEvent(event = UpdateIpaTemplate(ipa = ipa))
-            },
+            onIpaChange = { ipa -> viewModel.sendEvent(event = UpdateIpaTemplate(ipa = ipa)) },
             onConfirmClick = {
                 viewModel.sendEvent(
                     event = AddNewCard(
@@ -50,6 +51,10 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
                         ipaTemplate = ipaTemplate
                     )
                 )
+            },
+            onPronounceIconClick = { viewModel.sendEvent(event = PronounceForeignWord) },
+            onAutocompleteItemClick = { autocompleteWord ->
+                viewModel.sendEvent(event = UpdateDataOnAutocompleteSelected(word = autocompleteWord))
             }
         )
     }
