@@ -5,6 +5,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 private val MainFontFamily = FontFamily.Monospace
 
@@ -262,4 +263,9 @@ val LightForeignWordAutocompleteSpanStyle = MainSpanStyle.copy(
 val DarkForeignWordAutocompleteSpanStyle = MainSpanStyle.copy(
     color = DarkMainPalettes.cardManagementViewColors.foreignWord,
     fontWeight = FontWeight.ExtraBold
+)
+
+val commonDeckNavigationDialogTitle = Body1.copy(
+    fontSize = 30.sp,
+    fontStyle = FontStyle.Italic
 )

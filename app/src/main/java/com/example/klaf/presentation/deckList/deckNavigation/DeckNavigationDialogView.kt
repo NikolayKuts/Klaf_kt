@@ -9,9 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.klaf.R
 import com.example.klaf.presentation.common.FullBackgroundDialog
 import com.example.klaf.presentation.common.RoundButton
@@ -75,10 +73,7 @@ private fun ColumnScope.DialogTitle(deckName: String) {
             .align(alignment = Alignment.CenterHorizontally)
             .padding(bottom = 16.dp),
         text = deckName,
-        style = MainTheme.typographies.materialTypographies.body1.copy(
-            fontSize = 30.sp,
-            fontStyle = FontStyle.Italic
-        ),
+        style = MainTheme.typographies.deckNavigationDialogTitle,
     )
 }
 
