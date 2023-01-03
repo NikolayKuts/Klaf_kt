@@ -7,7 +7,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
 import com.example.klaf.presentation.common.TransparentDialogFragment
-import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.theme.MainTheme
 
 class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.dialog_deck_navigation) {
@@ -27,6 +26,7 @@ class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.dialog_d
                     onRenameDeckClick = ::navigateToDeckRenamingDialogFragment,
                     onBrowseDeckClick = ::navigateToCardViewerFragment,
                     onAddCardsClick = ::navigateToCardAdditionFragment,
+                    onTransferCardsClick = ::navigateToCardTransferringFragment,
                     onCloseDialogClick = { findNavController().popBackStack() }
                 )
             }
@@ -43,19 +43,25 @@ class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.dialog_d
     private fun navigateToDeckRenamingDialogFragment() {
         DeckNavigationDialogFragmentDirections.actionDeckNavigationDialogToDeckRenamingDialogFragment(
             deckId = args.deckId
-        ).also { navController.navigate(it) }
-    }
-
-    private fun navigateToCardAdditionFragment() {
-        DeckNavigationDialogFragmentDirections.actionDeckNavigationDialogToCardAdditionFragment(
-            deckId = args.deckId,
-        ).also { navController.navigate(it) }
+        ).also { navController.navigate(directions = it) }
     }
 
     private fun navigateToCardViewerFragment() {
         DeckNavigationDialogFragmentDirections.actionDeckNavigationDialogToCardViewerFragment(
             deckId = args.deckId,
             deckName = args.deckName
-        ).also { navController.navigate(it) }
+        ).also { navController.navigate(directions = it) }
+    }
+
+    private fun navigateToCardAdditionFragment() {
+        DeckNavigationDialogFragmentDirections.actionDeckNavigationDialogToCardAdditionFragment(
+            deckId = args.deckId,
+        ).also { navController.navigate(directions = it) }
+    }
+
+    private fun navigateToCardTransferringFragment() {
+        DeckNavigationDialogFragmentDirections.actionDeckNavigationDialogToCardTransferringFragment(
+            sourceDeckId = args.deckId
+        ).also { navController.navigate(directions = it) }
     }
 }

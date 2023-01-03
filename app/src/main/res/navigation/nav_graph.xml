@@ -135,6 +135,9 @@
             android:id="@+id/action_deckNavigationDialog_to_deckDeletingDialogFragment"
             app:destination="@id/deckDeletingDialogFragment"
             app:popUpTo="@id/deckListFragment" />
+        <action
+            android:id="@+id/action_deckNavigationDialog_to_cardTransferringFragment"
+            app:destination="@id/cardTransferringFragment" />
     </dialog>
     <dialog
         android:id="@+id/deckDeletingDialogFragment"

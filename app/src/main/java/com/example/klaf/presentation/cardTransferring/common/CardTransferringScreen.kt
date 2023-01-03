@@ -54,7 +54,7 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
                 .fillMaxSize()
                 .padding(28.dp)
         ) {
-            Header()
+            Header(deckName = deck.name)
 
             QuantityPointers(
                 totalValue = deck.cardQuantity.toString(),
@@ -94,12 +94,12 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
 }
 
 @Composable
-private fun ColumnScope.Header() {
+private fun ColumnScope.Header(deckName: String) {
     Text(
         modifier = Modifier
             .align(alignment = Alignment.CenterHorizontally)
             .padding(top = 8.dp, bottom = 8.dp),
-        text = stringResource(id = R.string.Interim_deck_name),
+        text = deckName,
         style = MainTheme.typographies.cardTransferringScreenTextStyles.header
     )
 }
