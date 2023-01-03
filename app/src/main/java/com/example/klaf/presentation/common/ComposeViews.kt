@@ -70,14 +70,14 @@ fun CardManagementView(
                 .fillMaxHeight(0.3F),
         ) {
             DeckInfo(name = deckName, cardQuantity = cardQuantity)
-            ForeignWordSelector(
+            ForeignWordLettersSelector(
                 letterInfos = letterInfos,
                 onLetterClick = onLetterClick,
             )
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
-            CardFields(
+            CardManagementFields(
                 modifier = Modifier.align(alignment = Alignment.TopCenter),
                 nativeWord = nativeWord,
                 foreignWord = foreignWord,
@@ -103,7 +103,7 @@ fun CardManagementView(
 }
 
 @Composable
-fun ColumnScope.ForeignWordSelector(
+fun ColumnScope.ForeignWordLettersSelector(
     letterInfos: List<LetterInfo>,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit
 ) {
@@ -191,7 +191,7 @@ fun Pointer(
 }
 
 @Composable
-fun CardFields(
+fun CardManagementFields(
     nativeWord: String,
     foreignWord: String,
     ipaTemplate: String,

@@ -74,7 +74,7 @@ private fun DialogTitle(deckName: String) {
         style = MainTheme.typographies.dialogTextStyle,
         text = buildAnnotatedString {
             withStyle(style = SpanStyle()) {
-                append(text = stringResource(id = R.string.rename_deck))
+                append(text = stringResource(id = R.string.deck_navigation_diaog_item_rename_deck))
             }
             withStyle(style = MainTheme.typographies.accentedDialogText) {
                 append(" \"${deckName}\"")
