@@ -42,8 +42,8 @@
     <string name="problem_with_creating_deck">There is a problem with creating deck</string>
     <string name="problem_with_updating_deck">There is a problem with updating deck</string>
     <string name="deck_deleting_title">Would you like to delete the deck</string>
-    <string name="deck_delete">Delete deck</string>
-    <string name="rename_deck">Rename deck</string>
+    <string name="deck_navigation_diaog_item_delete_deck">Delete deck</string>
+    <string name="deck_navigation_diaog_item_rename_deck">Rename deck</string>
     <string name="deck_name_label">Deck name</string>
     <string name="deck_creation_dialog_title">Create a deck</string>
     <string name="warning_deck_name_empty">Deck name must not be empty</string>
@@ -67,8 +67,8 @@
     <string name="time_pointer_now">now</string>
     <string name="repetition_quantity_pointer">r</string>
     <string name="card_quantity_pointer">c</string>
-    <string name="browse_cards">Browse cards</string>
-    <string name="add_cards">Add cards</string>
+    <string name="deck_navigation_diaog_item_browse_cards">Browse cards</string>
+    <string name="deck_navigation_diaog_item_add_cards">Add cards</string>
     <string name="label_native_word">native</string>
     <string name="label_foreign_word">foreign</string>
     <string name="label_ipa">ipa</string>
@@ -106,4 +106,5 @@
     <string name="message_no_cards_selected">No cards selected</string>
     <string name="message_deletion_completed_successfully">Deletion completed successfully</string>
     <string name="message_transfer_completed_successfully">Transfer completed successfully</string>
+    <string name="deck_navigation_diaog_item_transger_cards">Transfer cards</string>
 </resources>
