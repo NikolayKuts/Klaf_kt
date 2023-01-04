@@ -73,7 +73,7 @@ private fun InitialStateView(
                 text = stringResource(R.string.data_synchronization_dialog_title)
             )
         },
-        buttonContent = {
+        bottomContent = {
             RoundButton(
                 background = MainTheme.colors.positiveDialogButton,
                 iconId = R.drawable.ic_confirmation_24,
@@ -121,7 +121,7 @@ private fun FinishStateView(onCloseClick: () -> Unit) {
                 text = stringResource(R.string.data_synchronization_dialog_finish_state_text)
             )
         },
-        buttonContent = {
+        bottomContent = {
             RoundButton(
                 background = MainTheme.colors.neutralDialogButton,
                 iconId = R.drawable.ic_close_24,

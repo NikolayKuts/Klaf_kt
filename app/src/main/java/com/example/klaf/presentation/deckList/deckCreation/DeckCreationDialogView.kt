@@ -1,22 +1,20 @@
 package com.example.klaf.presentation.deckList.deckCreation
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.Card
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
-import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
-import com.example.klaf.presentation.common.DialogBox
+import com.example.klaf.presentation.common.FullBackgroundDialog
 import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
 import com.example.klaf.presentation.theme.MainTheme
-
 
 @Composable
 fun DeckCreationDialog(
@@ -25,34 +23,21 @@ fun DeckCreationDialog(
 ) {
     val deckNameState = rememberAsMutableStateOf(value = "")
 
-    DialogBox(onClick = onCloseDialogClick) {
-        Box(modifier = Modifier.align(Alignment.Center)) {
-            Card(
-                modifier = Modifier
-                    .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
-                    .padding(bottom = (DIALOG_BUTTON_SIZE / 2).dp)
-            ) {
-                Column(modifier = Modifier.padding(MainTheme.dimensions.dialogContentPadding)) {
-                    DialogTitle()
-                    Spacer(modifier = Modifier.height(16.dp))
-                    DeckNameTextField(deckNameState = deckNameState)
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
+    FullBackgroundDialog(
+        onBackgroundClick = onCloseDialogClick,
+        mainContent = {
+            Column {
+                DialogTitle()
+                Spacer(modifier = Modifier.height(16.dp))
+                DeckNameTextField(deckNameState = deckNameState)
+                Spacer(modifier = Modifier.height(16.dp))
             }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(0.5F)
-                    .align(alignment = Alignment.BottomCenter),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                ConformationButton(
-                    onClick = { onConfirmCreationClick(deckNameState.value) }
-                )
-                DialogClosingButton(onClick = onCloseDialogClick)
-            }
+        },
+        bottomContent = {
+            ConformationButton(onClick = { onConfirmCreationClick(deckNameState.value) })
+            DialogClosingButton(onClick = onCloseDialogClick)
         }
-    }
+    )
 }
 
 @Composable
