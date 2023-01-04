@@ -56,7 +56,7 @@ fun DeckNavigationDialogView(
                 )
             }
         },
-        buttonContent = {
+        bottomContent = {
             RoundButton(
                 background = MainTheme.colors.neutralDialogButton,
                 iconId = R.drawable.ic_close_24,

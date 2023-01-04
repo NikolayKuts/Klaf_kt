@@ -6,7 +6,6 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
@@ -52,7 +51,7 @@ class CardEditingFragment : Fragment(R.layout.fragment_card_editing) {
 
     private fun setEventMessageObserver(view: View) {
         viewModel.eventMessage.collectWhenStarted(
-            viewLifecycleOwner.lifecycleScope
+            lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
             view.showSnackBar(messageId = eventMessage.resId)
         }
@@ -60,7 +59,7 @@ class CardEditingFragment : Fragment(R.layout.fragment_card_editing) {
 
     private fun setCardEditingStateObserver() {
         viewModel.cardEditingState.collectWhenStarted(
-            viewLifecycleOwner.lifecycleScope
+            lifecycleOwner = viewLifecycleOwner
         ) { editingState ->
             when (editingState) {
                 CardEditingState.NOT_CHANGED -> {}

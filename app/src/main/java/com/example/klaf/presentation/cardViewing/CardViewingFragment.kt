@@ -6,7 +6,6 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.coroutineScope
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
 import com.example.klaf.presentation.common.collectWhenStarted
@@ -40,7 +39,7 @@ class CardViewingFragment : Fragment(R.layout.fragment_card_viewing) {
 
     private fun observeEventMessage(view: View) {
         viewModel.eventMessage.collectWhenStarted(
-            lifecycleScope = viewLifecycleOwner.lifecycle.coroutineScope
+            lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
             view.showSnackBar(messageId = eventMessage.resId)
         }

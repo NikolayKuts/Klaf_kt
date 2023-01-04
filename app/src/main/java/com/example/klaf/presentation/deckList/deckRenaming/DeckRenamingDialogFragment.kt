@@ -3,7 +3,6 @@ package com.example.klaf.presentation.deckList.deckRenaming
 import android.os.Bundle
 import android.view.View
 import androidx.compose.ui.platform.ComposeView
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
@@ -49,7 +48,7 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
 
     private fun setEvenMessageObserver(view: View) {
         viewModel.eventMessage.collectWhenStarted(
-            lifecycleScope = viewLifecycleOwner.lifecycleScope
+            lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
             view.showSnackBar(messageId = eventMessage.resId)
         }
@@ -57,7 +56,7 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
 
     private fun setDeckRenamingStateObserver() {
         viewModel.renamingState.collectWhenStarted(
-            viewLifecycleOwner.lifecycleScope
+            lifecycleOwner = viewLifecycleOwner
         ) { renamingState ->
             when (renamingState) {
                 DeckRenamingState.NOT_RENAMED -> {}
