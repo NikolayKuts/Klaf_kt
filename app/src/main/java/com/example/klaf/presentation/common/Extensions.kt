@@ -8,16 +8,23 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.constraintlayout.compose.ConstrainScope
 import androidx.constraintlayout.compose.ConstrainedLayoutReference
 import androidx.constraintlayout.compose.ConstraintSetScope
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
 
 
 private const val TIME_FORMAT_TEMPLATE = "%02d:%02d"
@@ -46,10 +53,14 @@ fun View.showSnackBar(@StringRes messageId: Int, duration: Int = Snackbar.LENGTH
 }
 
 inline fun <T> Flow<T>.collectWhenStarted(
-    lifecycleScope: LifecycleCoroutineScope,
+    lifecycleOwner: LifecycleOwner,
     crossinline onEach: (T) -> Unit,
 ): Job {
-    return lifecycleScope.launchWhenStarted { this@collectWhenStarted.collect { onEach(it) } }
+    return lifecycleOwner.lifecycleScope.launch {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            collect { element -> onEach(element) }
+        }
+    }
 }
 
 fun MutableSharedFlow<EventMessage>.tryEmit(@StringRes messageId: Int) {

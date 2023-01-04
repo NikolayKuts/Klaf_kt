@@ -6,7 +6,6 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
@@ -56,7 +55,7 @@ class CardTransferringFragment : Fragment(R.layout.fragment_interim_deck) {
 
     private fun observeNavigationChanges() {
         viewModel.navigationDestination.collectWhenStarted(
-            lifecycleScope = viewLifecycleOwner.lifecycleScope
+            lifecycleOwner = viewLifecycleOwner
         ) { destination ->
             when (destination) {
                 CardMovingDialogDestination -> navigateToCardMovingDialog()
@@ -80,9 +79,7 @@ class CardTransferringFragment : Fragment(R.layout.fragment_interim_deck) {
     }
 
     private fun observeEventMessage(view: View) {
-        viewModel.eventMessage.collectWhenStarted(
-            lifecycleScope = viewLifecycleOwner.lifecycleScope
-        ) { message ->
+        viewModel.eventMessage.collectWhenStarted(lifecycleOwner = viewLifecycleOwner) { message ->
             view.showSnackBar(messageId = message.resId)
         }
     }
@@ -104,7 +101,8 @@ class CardTransferringFragment : Fragment(R.layout.fragment_interim_deck) {
     }
 
     private fun navigateToCardEditingFragment(cardId: Int, deckId: Int) {
-        navController.navigate( directions =
+        navController.navigate(
+            directions =
             CardTransferringFragmentDirections.actionCardTransferringFragmentToCardEditingFragment(
                 cardId = cardId,
                 deckId = deckId,
