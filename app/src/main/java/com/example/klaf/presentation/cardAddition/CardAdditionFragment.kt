@@ -8,7 +8,6 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
 import com.example.klaf.data.common.MIME_TYPE_TEXT_PLAIN
@@ -50,7 +49,7 @@ class CardAdditionFragment : Fragment(R.layout.fragment_card_addition) {
     }
 
     private fun setEventMessageObserver(view: View) {
-        viewModel.eventMessage.collectWhenStarted(lifecycleScope) { eventMessage ->
+        viewModel.eventMessage.collectWhenStarted(lifecycleOwner = this) { eventMessage ->
             view.showSnackBar(messageId = eventMessage.resId)
         }
     }

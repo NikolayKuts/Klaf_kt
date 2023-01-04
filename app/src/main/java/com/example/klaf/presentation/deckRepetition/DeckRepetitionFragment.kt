@@ -5,7 +5,6 @@ import android.view.View
 import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
@@ -65,7 +64,9 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
     }
 
     private fun setEventMessageObserver() {
-        viewModel.eventMessage.collectWhenStarted(viewLifecycleOwner.lifecycleScope) { eventMessage ->
+        viewModel.eventMessage.collectWhenStarted(
+            lifecycleOwner = viewLifecycleOwner
+        ) { eventMessage ->
             requireContext().showToast(messageId = eventMessage.resId)
         }
     }

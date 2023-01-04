@@ -3,7 +3,6 @@ package com.example.klaf.presentation.cardTransferring.cardDeleting
 import android.os.Bundle
 import android.view.View
 import androidx.compose.ui.platform.ComposeView
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
@@ -39,7 +38,7 @@ class CardDeletingDialogFragment :
 
     private fun observeCardDeletingState() {
         viewModel.cardDeletingState.collectWhenStarted(
-            lifecycleScope = viewLifecycleOwner.lifecycleScope
+            lifecycleOwner = viewLifecycleOwner
         ) { deletingState ->
             when (deletingState) {
                 CardDeletingState.NON -> {}

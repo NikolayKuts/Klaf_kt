@@ -5,7 +5,6 @@ import android.view.View
 import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
@@ -49,7 +48,7 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
 
     private fun observeEvenMessage(view: View) {
         viewModel.eventMessage.collectWhenStarted(
-            lifecycleScope = viewLifecycleOwner.lifecycleScope
+            lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
             view.showSnackBar(messageId = eventMessage.resId)
         }
@@ -57,7 +56,7 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
 
     private fun observeNavigationChanges() {
         viewModel.navigationDestination.collectWhenStarted(
-            lifecycleScope = viewLifecycleOwner.lifecycleScope
+            lifecycleOwner = viewLifecycleOwner
         ) { destination ->
             when (destination) {
                 DeckCreationDialogDestination -> navigateToDeckCreationDialog()

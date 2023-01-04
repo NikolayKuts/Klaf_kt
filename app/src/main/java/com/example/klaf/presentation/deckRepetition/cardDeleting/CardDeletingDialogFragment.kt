@@ -3,7 +3,6 @@ package com.example.klaf.presentation.deckRepetition.cardDeleting
 import android.os.Bundle
 import android.view.View
 import androidx.compose.ui.platform.ComposeView
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
@@ -39,7 +38,7 @@ class CardDeletingDialogFragment : TransparentDialogFragment(R.layout.dialog_car
 
     private fun setEventMessageObserver() {
         viewModel.eventMessage.collectWhenStarted(
-            viewLifecycleOwner.lifecycleScope
+            lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
             requireContext().showToast(messageId = eventMessage.resId)
         }

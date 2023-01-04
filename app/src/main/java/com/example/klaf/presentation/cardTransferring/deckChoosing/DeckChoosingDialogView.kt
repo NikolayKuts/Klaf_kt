@@ -65,7 +65,7 @@ fun DeckChoosingDialogView(
             }
         },
 
-        buttonContent = {
+        bottomContent = {
             ConfirmationButton(
                 onClick = { viewModel.moveCards(targetDeck = decks[selectedIndex]) }
             )
