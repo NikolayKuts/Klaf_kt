@@ -390,7 +390,7 @@ fun DialogBox(
 fun FullBackgroundDialog(
     onBackgroundClick: () -> Unit,
     mainContent: @Composable BoxScope.() -> Unit,
-    buttonContent: @Composable (RowScope.() -> Unit)? = null,
+    bottomContent: @Composable (RowScope.() -> Unit)? = null,
     topContent: @Composable (RowScope.() -> Unit)? = null,
 ) {
     Box(
@@ -411,7 +411,7 @@ fun FullBackgroundDialog(
                     modifier = Modifier
                         .noRippleClickable { }
                         .padding(MainTheme.dimensions.dialogContentPadding)
-                        .bottomPadding(apply = buttonContent != null)
+                        .bottomPadding(apply = bottomContent != null)
                         .topPadding(apply = topContent != null),
                     content = mainContent
                 )
@@ -428,7 +428,7 @@ fun FullBackgroundDialog(
                 )
             }
 
-            buttonContent?.let {
+            bottomContent?.let {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(0.5F)
