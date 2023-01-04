@@ -3,7 +3,6 @@ package com.example.klaf.presentation.deckList.deckCreation
 import android.os.Bundle
 import android.view.View
 import androidx.compose.ui.platform.ComposeView
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
@@ -37,7 +36,7 @@ class DeckCreationDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
 
     private fun setEvenMessageObserver(view: View) {
         viewModel.eventMessage.collectWhenStarted(
-            lifecycleScope = viewLifecycleOwner.lifecycleScope
+            lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
             view.showSnackBar(messageId = eventMessage.resId)
         }
@@ -45,7 +44,7 @@ class DeckCreationDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
 
     private fun setDeckCreationStateObserver() {
         viewModel.deckCreationState.collectWhenStarted(
-            viewLifecycleOwner.lifecycleScope
+            lifecycleOwner = viewLifecycleOwner
         ) { deckCreationState ->
             when (deckCreationState) {
                 DeckCreationState.NOT_CREATED -> {}
