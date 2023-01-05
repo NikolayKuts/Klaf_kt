@@ -250,7 +250,7 @@ fun DropDownAutocompleteFiled(
             textFieldPosition = coordinates.positionInWindow()
         }
     ) {
-        WordTextFieldWithPopupMenu(
+        WordTextFieldForPopupMenu(
             value = typedWord,
             labelTextId = R.string.label_foreign_word,
             textColor = MainTheme.colors.cardManagementViewColors.foreignWord,
@@ -335,7 +335,7 @@ private fun WordTextField(
 }
 
 @Composable
-private fun WordTextFieldWithPopupMenu(
+private fun WordTextFieldForPopupMenu(
     modifier: Modifier = Modifier,
     value: String,
     @StringRes labelTextId: Int,
