@@ -22,7 +22,7 @@ class CardEditingFragment : Fragment(R.layout.fragment_card_editing) {
 
     @Inject
     lateinit var cardEditingAssistedViewModelFactory: CardEditingAssistedViewModelFactory
-    private val viewModel: CardEditingViewModel by viewModels {
+    private val viewModel: BaseCardEditingViewModel by viewModels {
         CardEditingViewModelFactory(
             assistedFactory = cardEditingAssistedViewModelFactory,
             deckId = args.deckId,
