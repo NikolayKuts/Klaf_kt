@@ -10,14 +10,14 @@ import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.ipa.convertToUncompletedIpa
 import com.example.klaf.domain.ipa.decodeToCompletedIpa
 import com.example.klaf.domain.ipa.decodeToInfos
-import com.example.klaf.presentation.cardAddition.AutocompleteState
 import com.example.klaf.presentation.common.CardManagementView
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
 
 @Composable
-fun CardEditingScreen(viewModel: CardEditingViewModel) {
+fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
     val deck by viewModel.deck.collectAsState(initial = null)
     val card by viewModel.card.collectAsState(initial = null)
+    val autocompleteState by viewModel.autocompleteState.collectAsState()
 
     deck?.let { receivedDeck ->
         card?.let { receivedCard ->
@@ -36,8 +36,8 @@ fun CardEditingScreen(viewModel: CardEditingViewModel) {
                 nativeWord = nativeWordState,
                 foreignWord = foreignWordState,
                 ipaTemplate = ipaTemplateState,
-                autocompleteState = AutocompleteState(), ///////////////////////////////////////////////////////////////////////,
-                onDismissRequest = {},      //////////////////////////////////////////////////////////////
+                autocompleteState = autocompleteState,
+                onDismissRequest = { viewModel.closeAutocompleteMenu() },
                 onLetterClick = { index, letterInfo ->
                     val updatedIsChecked = when (letterInfo.letter) {
                         LetterInfo.EMPTY_LETTER -> false
@@ -55,7 +55,7 @@ fun CardEditingScreen(viewModel: CardEditingViewModel) {
                     foreignWordState = foreignWord
                     letterInfosState = foreignWord.generateLetterInfos()
                     ipaTemplateState = letterInfosState.convertToUncompletedIpa()
-                    viewModel.preparePronunciation(word = foreignWord)
+                    viewModel.updateAutocompleteState(word = foreignWord)
                 },
                 onIpaChange = { ipaTemplate -> ipaTemplateState = ipaTemplate },
                 onConfirmClick = {
@@ -69,7 +69,10 @@ fun CardEditingScreen(viewModel: CardEditingViewModel) {
                     )
                 },
                 onPronounceIconClick = { viewModel.pronounce() },
-                onAutocompleteItemClick = {}
+                onAutocompleteItemClick = { chosenWord ->
+                    foreignWordState = chosenWord
+                    viewModel.setSelectedAutocomplete(selectedWord = chosenWord)
+                }
             )
         }
     }
