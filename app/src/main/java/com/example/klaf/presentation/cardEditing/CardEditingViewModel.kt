@@ -12,12 +12,17 @@ import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.ipa.convertToEncodedIpa
 import com.example.klaf.domain.useCases.FetchCardUseCase
 import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
+import com.example.klaf.domain.useCases.FetchWordAutocompleteUseCase
 import com.example.klaf.domain.useCases.UpdateCardUseCase
+import com.example.klaf.presentation.cardAddition.AutocompleteState
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.tryEmit
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
 class CardEditingViewModel @AssistedInject constructor(
     @Assisted(DECK_ARGUMENT_NAME) private val deckId: Int,
@@ -26,6 +31,7 @@ class CardEditingViewModel @AssistedInject constructor(
     fetchCard: FetchCardUseCase,
     private val updateCard: UpdateCardUseCase,
     private val audioPlayer: CardAudioPlayer,
+    private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
 ) : ViewModel() {
 
     companion object {
@@ -58,6 +64,10 @@ class CardEditingViewModel @AssistedInject constructor(
 
     private val _cardEditingState = MutableStateFlow(value = CardEditingState.NOT_CHANGED)
     val cardEditingState = _cardEditingState.asStateFlow()
+
+    private var autocompleteFetchingJob: Job? = null
+    val autocompleteState: MutableStateFlow<AutocompleteState> =
+        MutableStateFlow(value = AutocompleteState())
 
     fun updateCard(
         oldCard: Card,
@@ -103,5 +113,28 @@ class CardEditingViewModel @AssistedInject constructor(
 
     fun preparePronunciation(word: String) {
         audioPlayer.preparePronunciation(word = word)
+    }
+
+    fun updateAutocompleteState(word: String) {
+        val clearedWord = word.trim()
+
+        preparePronunciation(word = word)
+        autocompleteFetchingJob?.cancel()
+        autocompleteFetchingJob = viewModelScope.launch(Dispatchers.IO) {
+            autocompleteState.value = AutocompleteState(
+                prefix = clearedWord,
+                autocomplete = fetchWordAutocomplete(prefix = clearedWord),
+                isActive = true,
+            )
+        }
+    }
+
+    fun setSelectedAutocomplete(selectedWord: String) {
+        autocompleteState.value = AutocompleteState()
+        preparePronunciation(word = selectedWord)
+    }
+
+    fun closeAutocompleteMenu() {
+        autocompleteState.update { it.copy(isActive = false) }
     }
 }

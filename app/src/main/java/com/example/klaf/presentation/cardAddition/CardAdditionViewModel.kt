@@ -31,7 +31,7 @@ class CardAdditionViewModel @AssistedInject constructor(
     fetchDeckById: FetchDeckByIdUseCase,
     private val addNewCardIntoDeck: AddNewCardIntoDeckUseCase,
     override val audioPlayer: CardAudioPlayer,
-    private val fetchWordAutocomplete: FetchWordAutocompleteUseCase
+    private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
 ) : BaseCardAdditionViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
