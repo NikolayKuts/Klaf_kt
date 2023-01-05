@@ -14,7 +14,7 @@ import com.example.klaf.presentation.common.CardManagementView
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
 
 @Composable
-fun CardEditingScreen(viewModel: CardEditingViewModel) {
+fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
     val deck by viewModel.deck.collectAsState(initial = null)
     val card by viewModel.card.collectAsState(initial = null)
     val autocompleteState by viewModel.autocompleteState.collectAsState()

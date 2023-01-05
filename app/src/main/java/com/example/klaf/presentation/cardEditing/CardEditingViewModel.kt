@@ -1,6 +1,5 @@
 package com.example.klaf.presentation.cardEditing
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.R
 import com.example.klaf.data.networking.CardAudioPlayer
@@ -32,7 +31,7 @@ class CardEditingViewModel @AssistedInject constructor(
     private val updateCard: UpdateCardUseCase,
     private val audioPlayer: CardAudioPlayer,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
-) : ViewModel() {
+) : BaseCardEditingViewModel() {
 
     companion object {
 
@@ -40,19 +39,18 @@ class CardEditingViewModel @AssistedInject constructor(
         const val CARD_ARGUMENT_NAME = "card_id"
     }
 
-    private val _eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
-    val eventMessage = _eventMessage.asSharedFlow()
+    override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
-    val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
-        .catch { _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck) }
+    override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
+        .catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck) }
         .shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
             replay = 1
         )
 
-    val card: SharedFlow<Card?> = fetchCard(cardId = cardId)
-        .catch { _eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card) }
+    override val card: SharedFlow<Card?> = fetchCard(cardId = cardId)
+        .catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card) }
         .onEach { card: Card? ->
             card?.ifNotNull { audioPlayer.preparePronunciation(word = it.foreignWord) }
         }
@@ -62,14 +60,14 @@ class CardEditingViewModel @AssistedInject constructor(
             replay = 1
         )
 
-    private val _cardEditingState = MutableStateFlow(value = CardEditingState.NOT_CHANGED)
-    val cardEditingState = _cardEditingState.asStateFlow()
+    override val cardEditingState = MutableStateFlow(value = CardEditingState.NOT_CHANGED)
 
-    private var autocompleteFetchingJob: Job? = null
-    val autocompleteState: MutableStateFlow<AutocompleteState> =
+    override val autocompleteState: MutableStateFlow<AutocompleteState> =
         MutableStateFlow(value = AutocompleteState())
 
-    fun updateCard(
+    private var autocompleteFetchingJob: Job? = null
+
+    override fun updateCard(
         oldCard: Card,
         deckId: Int,
         nativeWord: String,
@@ -86,19 +84,19 @@ class CardEditingViewModel @AssistedInject constructor(
 
         when {
             updatedCard.nativeWord.isEmpty() || updatedCard.foreignWord.isEmpty() -> {
-                _eventMessage.tryEmit(messageId = R.string.native_and_foreign_words_must_be_filled)
+                eventMessage.tryEmit(messageId = R.string.native_and_foreign_words_must_be_filled)
             }
             updatedCard == oldCard -> {
-                _eventMessage.tryEmit(messageId = R.string.card_has_not_been_changed)
+                eventMessage.tryEmit(messageId = R.string.card_has_not_been_changed)
             }
             else -> {
                 viewModelScope.launchWithExceptionHandler(
                     onException = { _, _ ->
-                        _eventMessage.tryEmit(messageId = R.string.problem_with_updating_card)
+                        eventMessage.tryEmit(messageId = R.string.problem_with_updating_card)
                     },
                     onCompletion = {
-                        _eventMessage.tryEmit(R.string.card_has_been_changed)
-                        _cardEditingState.value = CardEditingState.CHANGED
+                        eventMessage.tryEmit(R.string.card_has_been_changed)
+                        cardEditingState.value = CardEditingState.CHANGED
                     }
                 ) {
                     updateCard(newCard = updatedCard)
@@ -107,15 +105,15 @@ class CardEditingViewModel @AssistedInject constructor(
         }
     }
 
-    fun pronounce() {
+    override fun pronounce() {
         audioPlayer.play()
     }
 
-    fun preparePronunciation(word: String) {
+    override fun preparePronunciation(word: String) {
         audioPlayer.preparePronunciation(word = word)
     }
 
-    fun updateAutocompleteState(word: String) {
+    override fun updateAutocompleteState(word: String) {
         val clearedWord = word.trim()
 
         preparePronunciation(word = word)
@@ -129,12 +127,12 @@ class CardEditingViewModel @AssistedInject constructor(
         }
     }
 
-    fun setSelectedAutocomplete(selectedWord: String) {
+    override fun setSelectedAutocomplete(selectedWord: String) {
         autocompleteState.value = AutocompleteState()
         preparePronunciation(word = selectedWord)
     }
 
-    fun closeAutocompleteMenu() {
+    override fun closeAutocompleteMenu() {
         autocompleteState.update { it.copy(isActive = false) }
     }
 }
