@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -28,7 +29,9 @@ import com.example.klaf.domain.common.ScheduledDateState
 import com.example.klaf.domain.common.getScheduledDateStateByByCalculatedRange
 import com.example.klaf.domain.common.isEven
 import com.example.klaf.domain.entities.Deck
+import com.example.klaf.presentation.common.FullBackgroundDialog
 import com.example.klaf.presentation.common.RoundButton
+import com.example.klaf.presentation.common.RoundedIcon
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
 import com.example.klaf.presentation.theme.MainTheme
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -39,6 +42,7 @@ fun DeckListScreen(
     viewModel: BaseDeckListViewModel,
     onMainButtonClick: () -> Unit,
     onSwipeRefresh: () -> Unit,
+    onRestartApp: () -> Unit,
 ) {
     SwipeRefresh(
         modifier = Modifier.fillMaxSize(),
@@ -48,42 +52,92 @@ fun DeckListScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             val decks by viewModel.deckSource.collectAsState()
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 124.dp)
-
-            ) {
-                itemsIndexed(
-                    items = decks,
-                    key = { _, deck -> deck.id }
-                ) { index, deck ->
-                    DeckItemView(
-                        viewModel = viewModel,
-                        deck = deck,
-                        position = index,
-                    )
-                }
+            if (decks == null) {
+                FetchingDecksWarningView(onRestartApp = onRestartApp)
+            } else {
+                DecksContentView(
+                    decks = decks ?: emptyList(),
+                    onItemClick = {
+                        viewModel.navigate(event = DeckListNavigationEvent.ToFragment(deck = it))
+                    },
+                    onLongItemClick = {
+                        viewModel.navigate(
+                            event = DeckListNavigationEvent.ToDeckNavigationDialog(deck = it)
+                        )
+                    },
+                    onMainButtonClick = onMainButtonClick
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun FetchingDecksWarningView(onRestartApp: () -> Unit) {
+    FullBackgroundDialog(
+        onBackgroundClick = {},
+        topContent = {
+            RoundedIcon(background = Color.Transparent, iconId = R.drawable.ic_sad_face_24)
+        },
+        mainContent = {
+            Text(
+                text = stringResource(id = R.string.problem_fetching_decks_view_message),
+                textAlign = TextAlign.Center
+            )
+        },
+        bottomContent = {
             RoundButton(
-                background = MainTheme.colors.materialColors.primary,
-                iconId = R.drawable.ic_add_24,
-                onClick = onMainButtonClick,
-                modifier = Modifier
-                    .align(alignment = Alignment.BottomEnd)
-                    .padding(bottom = 48.dp, end = 48.dp),
-                elevation = 4.dp
+                background = MainTheme.colors.neutralDialogButton,
+                iconId = R.drawable.ic_close_24,
+                onClick = { onRestartApp() }
+            )
+        }
+    )
+}
+
+@Composable
+private fun BoxScope.DecksContentView(
+    decks: List<Deck>,
+    onItemClick: (deck: Deck) -> Unit,
+    onLongItemClick: (deck: Deck) -> Unit,
+    onMainButtonClick: () -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 124.dp)
+    ) {
+        itemsIndexed(
+            items = decks,
+            key = { _, deck -> deck.id }
+        ) { index, deck ->
+            DeckItemView(
+                deck = deck,
+                position = index,
+                onItemClick = onItemClick,
+                onLongItemClick = onLongItemClick,
             )
         }
     }
+
+    RoundButton(
+        background = MainTheme.colors.materialColors.primary,
+        iconId = R.drawable.ic_add_24,
+        onClick = onMainButtonClick,
+        modifier = Modifier
+            .align(alignment = Alignment.BottomEnd)
+            .padding(bottom = 48.dp, end = 48.dp),
+        elevation = 4.dp
+    )
 }
 
 @Suppress("OPT_IN_IS_NOT_ENABLED")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun LazyItemScope.DeckItemView(
-    viewModel: BaseDeckListViewModel,
     deck: Deck,
     position: Int,
+    onItemClick: (deck: Deck) -> Unit,
+    onLongItemClick: (deck: Deck) -> Unit
 ) {
     var animationFloat by rememberAsMutableStateOf(value = 0F)
     val animationFloatState by animateFloatAsState(
@@ -101,14 +155,8 @@ private fun LazyItemScope.DeckItemView(
             .scale(animationFloatState)
             .alpha(animationFloatState)
             .combinedClickable(
-                onClick = {
-                    viewModel.navigate(event = DeckListNavigationEvent.ToFragment(deck = deck))
-                },
-                onLongClick = {
-                    viewModel.navigate(
-                        event = DeckListNavigationEvent.ToDeckNavigationDialog(deck = deck)
-                    )
-                }
+                onClick = { onItemClick(deck) },
+                onLongClick = { onLongItemClick(deck) }
             ),
         backgroundColor = getCardBackgroundColorByPosition(position),
         elevation = 4.dp,
