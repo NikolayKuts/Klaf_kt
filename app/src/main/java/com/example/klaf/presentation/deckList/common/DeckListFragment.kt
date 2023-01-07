@@ -16,6 +16,7 @@ import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+
 @AndroidEntryPoint
 class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
 
@@ -39,7 +40,8 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
                     DeckListScreen(
                         viewModel = viewModel,
                         onMainButtonClick = ::navigateToDeckCreationDialog,
-                        onSwipeRefresh = ::navigateToDataSynchronizationDialog
+                        onSwipeRefresh = ::navigateToDataSynchronizationDialog,
+                        onRestartApp = ::restartApp,
                     )
                 }
             }
@@ -101,5 +103,10 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
         DeckListFragmentDirections.actionDeckListFragmentToCardTransferringFragment(
             sourceDeckId = deckId
         ).also { navController.navigate(directions = it) }
+    }
+
+    private fun restartApp() {
+        viewModel.reopenApp()
+        requireActivity().finish()
     }
 }

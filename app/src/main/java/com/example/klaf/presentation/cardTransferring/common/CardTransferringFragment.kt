@@ -80,7 +80,7 @@ class CardTransferringFragment : Fragment(R.layout.fragment_interim_deck) {
 
     private fun observeEventMessage(view: View) {
         viewModel.eventMessage.collectWhenStarted(lifecycleOwner = viewLifecycleOwner) { message ->
-            view.showSnackBar(messageId = message.resId)
+//            view.showSnackBar(messageId = message.resId) //////////////////////////////////////////////////////////////////////
         }
     }
 

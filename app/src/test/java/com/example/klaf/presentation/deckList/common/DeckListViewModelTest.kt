@@ -37,7 +37,7 @@ class DeckListViewModelTest {
         val viewModel = createViewModel(fetchDeckSource = fetchDeckSourceUseCase)
 
         verify(exactly = 1) { fetchDeckSourceUseCase.invoke() }
-        viewModel.testEventMassageIdEquals(expectedMassageId = R.string.problem_with_fetching_decks)
+        viewModel.testEventMassageIdEquals(expectedMassageId = R.string.problem_fetching_decks)
     }
 
     @ExperimentalCoroutinesApi

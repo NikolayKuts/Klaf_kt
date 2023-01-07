@@ -40,7 +40,7 @@ class CardDeletingDialogFragment : TransparentDialogFragment(R.layout.dialog_car
         viewModel.eventMessage.collectWhenStarted(
             lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
-            requireContext().showToast(messageId = eventMessage.resId)
+//            requireContext().showToast(messageId = eventMessage.resId)    ////////////////////////////////////
         }
     }
 
