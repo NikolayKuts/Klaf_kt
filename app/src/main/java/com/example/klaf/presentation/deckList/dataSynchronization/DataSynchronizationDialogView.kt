@@ -95,17 +95,23 @@ private fun SynchronizationStateView(synchronizationData: String) {
         onBackgroundClick = { },
         topContent = { AnimatedSynchronizationLabel() },
         mainContent = {
-            Text(
-                style = MainTheme.typographies.dialogTextStyle,
-                text = stringResource(R.string.data_synchronization_dialog_sync_state_text)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = synchronizationData,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1
-            )
+            Column {
+                Text(
+                    style = MainTheme.typographies.dialogTextStyle,
+                    text = stringResource(R.string.data_synchronization_dialog_sync_state_text)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (synchronizationData.isNotEmpty()) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = synchronizationData,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1
+                    )
+                }
+            }
         },
     )
 }
