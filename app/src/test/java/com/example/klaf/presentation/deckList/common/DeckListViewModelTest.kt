@@ -8,7 +8,7 @@ import com.example.klaf.common.launchEventMassageIdEqualsTest
 import com.example.klaf.common.testEventMassageIdEquals
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
-import com.example.klaf.presentation.common.NotificationChannelInitializer
+import com.example.klaf.data.common.notifications.NotificationChannelInitializer
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow

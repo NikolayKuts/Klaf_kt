@@ -5,6 +5,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.navigation.NavDeepLinkBuilder
 import androidx.work.*
 import com.example.klaf.R
+import com.example.klaf.data.common.notifications.AppRestartNotifier
 import com.example.klaf.presentation.common.MainActivity
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
