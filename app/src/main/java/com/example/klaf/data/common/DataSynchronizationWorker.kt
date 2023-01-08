@@ -7,7 +7,7 @@ import androidx.work.*
 import com.example.klaf.data.common.DataSynchronizationState.*
 import com.example.klaf.domain.common.ifTrue
 import com.example.klaf.domain.useCases.SynchronizeLocalAndRemoteDataUseCase
-import com.example.klaf.presentation.deckList.dataSynchronization.DataSynchronizationNotifier
+import com.example.klaf.data.common.notifications.DataSynchronizationNotifier
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.Flow

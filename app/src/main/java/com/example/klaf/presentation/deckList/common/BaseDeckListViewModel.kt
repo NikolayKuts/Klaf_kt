@@ -14,7 +14,7 @@ abstract class BaseDeckListViewModel : ViewModel(), EventMessageSource {
     abstract val renamingState: StateFlow<DeckRenamingState>
     abstract val deckCreationState: StateFlow<DeckCreationState>
     abstract val dataSynchronizationState: StateFlow<DataSynchronizationState>
-    abstract val deckSource: StateFlow<List<Deck>>
+    abstract val deckSource: StateFlow<List<Deck>?>
     abstract val navigationDestination: SharedFlow<DeckListNavigationDestination>
 
     abstract fun resetSynchronizationState()
@@ -26,4 +26,5 @@ abstract class BaseDeckListViewModel : ViewModel(), EventMessageSource {
     abstract fun getDeckById(deckId: Int): Deck?
     abstract fun synchronizeData()
     abstract fun navigate(event: DeckListNavigationEvent)
+    abstract fun reopenApp()
 }

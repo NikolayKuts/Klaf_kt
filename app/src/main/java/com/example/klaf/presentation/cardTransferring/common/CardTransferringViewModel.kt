@@ -4,7 +4,6 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.R
 import com.example.klaf.domain.common.launchWithExceptionHandler
-import com.example.klaf.domain.common.simplifiedItemFilterNot
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
@@ -47,8 +46,9 @@ class CardTransferringViewModel @AssistedInject constructor(
         MutableStateFlow(value = NON)
 
     override val decks: StateFlow<List<Deck>> = fetchDeckSource()
-        .catch { emitEventMessage(messageId = R.string.problem_with_fetching_decks) }
-        .simplifiedItemFilterNot { deck -> deck.id == sourceDeckId }
+        .catch { emitEventMessage(messageId = R.string.problem_fetching_decks) }
+        .filterNotNull()
+//        .simplifiedItemFilterNot { deck -> deck.id == sourceDeckId }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,

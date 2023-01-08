@@ -26,7 +26,8 @@
     <!--    deck-->
     <string name="deck_is_not_found">The deck isn\'t found</string>
     <string name="problem_with_fetching_deck">There is a problem with fetching deck</string>
-    <string name="problem_with_fetching_decks">There is a problem with fetching decks</string>
+    <string name="problem_fetching_decks_view_message">There is a problem getting decks, click on the button to restart the app.</string>
+    <string name="problem_fetching_decks">There is a problem getting decks, click on the button to restart the app.</string>
     <string name="such_deck_is_already_exist">A deck with such name is already exist</string>
     <string name="deck_has_been_created">The deck has been created</string>
     <string name='would_you_like_to_remove_deck'>Would you like to remove the deck \"%1$s\"</string>
@@ -42,21 +43,21 @@
     <string name="problem_with_creating_deck">There is a problem with creating deck</string>
     <string name="problem_with_updating_deck">There is a problem with updating deck</string>
     <string name="deck_deleting_title">Would you like to delete the deck</string>
-    <string name="deck_navigation_diaog_item_delete_deck">Delete deck</string>
-    <string name="deck_navigation_diaog_item_rename_deck">Rename deck</string>
+    <string name="deck_navigation_dialog_item_delete_deck">Delete deck</string>
+    <string name="deck_navigation_dialog_item_rename_deck">Rename deck</string>
     <string name="deck_name_label">Deck name</string>
     <string name="deck_creation_dialog_title">Create a deck</string>
     <string name="warning_deck_name_empty">Deck name must not be empty</string>
 
     <string name="pointer_foreign">F</string>
     <string name="pointer_native">N</string>
-    <string name="deck_repetition_channel_name">Deck repetition</string>
     <string name="deck_repetition_channel_description">Notify when the decks should be repeated</string>
     <string name="deck_repetition_notification_template">It is time to repeat the deck \"%s\"</string>
     <string name="deck_repetition_summery_notification_content_text">There are some decks to repeat</string>
     <string name="deck_repetition_summery_notification_big_content_title">%d notifications</string>
-    <string name="deck_repetition_summery_notification_summery_text">It\'s time to repeat %s decks</string>
+    <string name="deck_repetition_summery_notification_summery_text">It\'s time to repeat %d decks</string>
     <string name="problem_with_playing_audio">Problem with playing audio</string>
+    <string name="app_restart_notification_template">App restarting</string>
 
     <string name="year_pointer">%dy</string>
     <string name="month_pointer">%dm</string>
@@ -67,8 +68,8 @@
     <string name="time_pointer_now">now</string>
     <string name="repetition_quantity_pointer">r</string>
     <string name="card_quantity_pointer">c</string>
-    <string name="deck_navigation_diaog_item_browse_cards">Browse cards</string>
-    <string name="deck_navigation_diaog_item_add_cards">Add cards</string>
+    <string name="deck_navigation_dialog_item_browse_cards">Browse cards</string>
+    <string name="deck_navigation_dialog_item_add_cards">Add cards</string>
     <string name="label_native_word">native</string>
     <string name="label_foreign_word">foreign</string>
     <string name="label_ipa">ipa</string>
@@ -79,7 +80,7 @@
     <string name="good">good</string>
     <string name="easy">easy</string>
     <string name="data_synchronization_dialog_title">Would you like to synchronize the data with the remote storage?</string>
-    <string name="data_synchronization_channel_description">This channel is required for data synchronization notification and execution</string>
+    <string name="work_logic_notification_channel_description">This channel is necessary for the correct work of the application and for data synchronization. For predictable behavior of the application, the channel must be enabled.</string>
     <string name="data_synchronization_notifier_content_text">Local and remote data synchronization</string>
     <string name="data_synchronization_dialog_sync_state_text">Local and remote data synchronization</string>
     <string name="data_synchronization_dialog_finish_state_text">The local and the remote data are synchronized</string>

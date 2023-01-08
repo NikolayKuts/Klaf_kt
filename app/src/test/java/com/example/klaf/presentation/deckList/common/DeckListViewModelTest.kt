@@ -8,7 +8,7 @@ import com.example.klaf.common.launchEventMassageIdEqualsTest
 import com.example.klaf.common.testEventMassageIdEquals
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
-import com.example.klaf.presentation.common.NotificationChannelInitializer
+import com.example.klaf.data.common.notifications.NotificationChannelInitializer
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
@@ -37,7 +37,7 @@ class DeckListViewModelTest {
         val viewModel = createViewModel(fetchDeckSource = fetchDeckSourceUseCase)
 
         verify(exactly = 1) { fetchDeckSourceUseCase.invoke() }
-        viewModel.testEventMassageIdEquals(expectedMassageId = R.string.problem_with_fetching_decks)
+        viewModel.testEventMassageIdEquals(expectedMassageId = R.string.problem_fetching_decks)
     }
 
     @ExperimentalCoroutinesApi

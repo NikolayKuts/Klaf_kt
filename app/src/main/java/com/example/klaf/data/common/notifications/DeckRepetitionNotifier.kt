@@ -1,16 +1,15 @@
-package com.example.klaf.presentation.deckRepetition
+package com.example.klaf.data.common.notifications
 
 import android.app.Notification
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
-import android.graphics.Color
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.NavDeepLinkBuilder
 import com.example.klaf.R
+import com.example.klaf.data.common.notifications.NotificationChannelInitializer.Companion.DECK_REPETITION_CHANNEL_ID
 import com.example.klaf.domain.common.DECK_ID_KEY
 import com.example.klaf.presentation.common.MainActivity
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -23,43 +22,23 @@ class DeckRepetitionNotifier @Inject constructor(
 
     companion object {
 
-        private const val CHANNEL_ID = "channel_id"
         private const val DECK_REPETITION_GROUP_KEY = "deck_repetition_group"
         private const val SUMMERY_NOTIFICATION_ID = 435243543
         private const val MIN_NOTIFICATION_FOR_GROUP = 4
-    }
-
-    fun createDeckRepetitionNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelName = context.getString(R.string.deck_repetition_channel_name)
-            val descriptionText =
-                context.getString(R.string.deck_repetition_channel_description)
-            val importance = NotificationManager.IMPORTANCE_MAX
-
-            val notificationChannel = NotificationChannel(
-                CHANNEL_ID,
-                channelName,
-                importance
-            ).apply {
-                description = descriptionText
-                lightColor = Color.GREEN
-                enableLights(true)
-                enableVibration(true)
-            }
-
-            notificationManager.createNotificationChannel(notificationChannel)
-        }
     }
 
     fun showNotification(deckName: String, deckId: Int) {
         val notification = createDeckRepetitionNotification(deckName = deckName, deckId = deckId)
 
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)
-        showSummeryNotificationIfSdkLessThan24()
+        showSummeryNotificationIfSdkLessThan24AndMoreThan22()
     }
 
-    private fun showSummeryNotificationIfSdkLessThan24() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+    private fun showSummeryNotificationIfSdkLessThan24AndMoreThan22() {
+        if (
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.N
+            && Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1
+        ) {
             if (notificationManager.activeNotifications.size >= MIN_NOTIFICATION_FOR_GROUP) {
                 val summeryNotification =
                     createSummeryNotification(notificationManager.activeNotifications.size)
@@ -69,12 +48,11 @@ class DeckRepetitionNotifier @Inject constructor(
     }
 
     private fun createDeckRepetitionNotification(deckName: String, deckId: Int): Notification {
-        return NotificationCompat.Builder(context, CHANNEL_ID)
+        return NotificationCompat.Builder(context, DECK_REPETITION_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_deck_repetition_notification_24)
             .setContentTitle(context.getString(R.string.app_name))
             .setContentText(
-                context.getString(R.string.deck_repetition_notification_template, deckName
-                )
+                context.getString(R.string.deck_repetition_notification_template, deckName)
             )
             .setGroupIfSdkLessThan24(groupKey = DECK_REPETITION_GROUP_KEY)
             .setAutoCancel(true)
@@ -84,7 +62,7 @@ class DeckRepetitionNotifier @Inject constructor(
     }
 
     private fun createSummeryNotification(notificationQuantity: Int): Notification {
-        return NotificationCompat.Builder(context, CHANNEL_ID)
+        return NotificationCompat.Builder(context, DECK_REPETITION_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_deck_repetition_notification_24)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)

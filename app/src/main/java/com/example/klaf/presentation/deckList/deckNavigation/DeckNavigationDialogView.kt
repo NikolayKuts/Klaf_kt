@@ -31,22 +31,22 @@ fun DeckNavigationDialogView(
             Column {
                 DialogTitle(deckName = deckName)
                 DialogItem(
-                    textId = R.string.deck_navigation_diaog_item_delete_deck,
+                    textId = R.string.deck_navigation_dialog_item_delete_deck,
                     onClick = onDeleteDeckClick
                 )
                 SeparationLine()
                 DialogItem(
-                    textId = R.string.deck_navigation_diaog_item_rename_deck,
+                    textId = R.string.deck_navigation_dialog_item_rename_deck,
                     onClick = onRenameDeckClick
                 )
                 SeparationLine()
                 DialogItem(
-                    textId = R.string.deck_navigation_diaog_item_browse_cards,
+                    textId = R.string.deck_navigation_dialog_item_browse_cards,
                     onClick = onBrowseDeckClick
                 )
                 SeparationLine()
                 DialogItem(
-                    textId = R.string.deck_navigation_diaog_item_add_cards,
+                    textId = R.string.deck_navigation_dialog_item_add_cards,
                     onClick = onAddCardsClick
                 )
                 SeparationLine()

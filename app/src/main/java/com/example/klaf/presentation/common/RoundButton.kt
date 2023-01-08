@@ -43,3 +43,28 @@ fun RoundButton(
         )
     }
 }
+
+@Composable
+fun RoundedIcon(
+    background: Color,
+    @DrawableRes iconId: Int,
+    modifier: Modifier = Modifier,
+    contentDescription: String = "",
+    elevation: Dp = 0.dp,
+) {
+    Card(
+        shape = RoundedCornerShape(DIALOG_BUTTON_SIZE.dp),
+        modifier = modifier
+            .size(DIALOG_BUTTON_SIZE.dp),
+        elevation = elevation,
+    ) {
+        Icon(
+            modifier = Modifier
+                .size(20.dp)
+                .background(background)
+                .padding(8.dp),
+            painter = painterResource(id = iconId),
+            contentDescription = contentDescription,
+        )
+    }
+}
