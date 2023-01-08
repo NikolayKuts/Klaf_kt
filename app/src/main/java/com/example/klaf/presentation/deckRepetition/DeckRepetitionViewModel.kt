@@ -6,8 +6,6 @@ import com.example.klaf.R
 import com.example.klaf.data.common.DeckRepetitionReminder.Companion.scheduleDeckRepetition
 import com.example.klaf.data.common.lastIterationSuccessMark
 import com.example.klaf.data.common.notifications.DeckRepetitionNotifier
-import com.example.klaf.domain.entities.DeckRepetitionInfo
-import com.example.klaf.domain.entities.DeckRepetitionSuccessMark
 import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.domain.common.*
 import com.example.klaf.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE
@@ -16,6 +14,8 @@ import com.example.klaf.domain.common.CardSide.BACK
 import com.example.klaf.domain.common.CardSide.FRONT
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
+import com.example.klaf.domain.entities.DeckRepetitionInfo
+import com.example.klaf.domain.entities.DeckRepetitionSuccessMark
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.domain.enums.DifficultyRecallingLevel.*
 import com.example.klaf.domain.useCases.*
@@ -164,26 +164,29 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         if (repetitionCards.value.isEmpty()) {
             eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
         } else if (cardForMoving != null) {
-            val updatedCardList =
-                getUpdatedCardList(cardForMoving = cardForMoving, level = level)
-
-            repetitionCards.value = updatedCardList
-            checkRepetitionStartPosition()
+            var actualLevel: DifficultyRecallingLevel = level
 
             when (level) {
                 EASY -> {
-                    if (goodeCards.contains(cardForMoving)) {
+                    if (cardForMoving in goodeCards) {
                         goodeCards.remove(cardForMoving)
-                    } else if (hardCards.contains(cardForMoving)) {
+                    } else if (cardForMoving in hardCards) {
                         hardCards.remove(cardForMoving)
                         goodeCards.add(cardForMoving)
-                    }
-                    if (mustRepetitionBeFinished()) {
-                        finishRepetition()
+                        actualLevel = GOOD
                     }
                 }
                 GOOD -> goodeCards.add(cardForMoving)
                 HARD -> hardCards.add(cardForMoving)
+            }
+
+            repetitionCards.value =
+                getUpdatedCardList(cardForMoving = cardForMoving, level = actualLevel)
+
+            checkRepetitionStartPosition()
+
+            if (actualLevel == EASY && mustRepetitionBeFinished()) {
+                finishRepetition()
             }
 
             manageCardSide()
@@ -206,7 +209,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             },
             onCompletion = { eventMessage.tryEmit(messageId = R.string.card_has_been_deleted) }
         ) {
-            deleteCardsFromDeck(deckId = deckId, cardIds = intArrayOf(cardId)   )
+            deleteCardsFromDeck(deckId = deckId, cardIds = intArrayOf(cardId))
         }
     }
 
@@ -275,8 +278,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     ): Int {
         return when (level) {
             EASY -> updatedCards.size
-            GOOD -> (updatedCards.size * ONE_QUARTER).toInt()
-            HARD -> (updatedCards.size * THREE_QUADS).toInt()
+            GOOD -> (updatedCards.size * THREE_QUADS).toInt()
+            HARD -> (updatedCards.size * ONE_QUARTER).toInt()
         }
     }
 
