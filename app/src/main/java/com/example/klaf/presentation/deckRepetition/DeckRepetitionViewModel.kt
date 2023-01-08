@@ -5,6 +5,7 @@ import androidx.work.WorkManager
 import com.example.klaf.R
 import com.example.klaf.data.common.DeckRepetitionReminder.Companion.scheduleDeckRepetition
 import com.example.klaf.data.common.lastIterationSuccessMark
+import com.example.klaf.data.common.notifications.DeckRepetitionNotifier
 import com.example.klaf.domain.entities.DeckRepetitionInfo
 import com.example.klaf.domain.entities.DeckRepetitionSuccessMark
 import com.example.klaf.data.networking.CardAudioPlayer
@@ -38,6 +39,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     private val workManager: WorkManager,
     fetchDeckRepetitionInfo: FetchDeckRepetitionInfoUseCase,
     private val saveDeckRepetitionInfo: SaveDeckRepetitionInfoUseCase,
+    private val deckRepetitionNotifier: DeckRepetitionNotifier,
 ) : BaseDeckRepetitionViewModel() {
 
     companion object {
@@ -335,7 +337,10 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 eventMessage.tryEmit(messageId = R.string.problem_with_updating_deck)
             },
             onCompletion = {
-                scheduleDeckRepetition(repeatedDeck = repeatedDeck, updatedDeck = updatedDeck)
+                manageSchedulingAndNotificationState(
+                    repeatedDeck = repeatedDeck,
+                    updatedDeck = updatedDeck
+                )
                 screenState.value = FinishState
             }
         ) {
@@ -411,7 +416,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         }
     }
 
-    private fun scheduleDeckRepetition(repeatedDeck: Deck, updatedDeck: Deck) {
+    private fun manageSchedulingAndNotificationState(repeatedDeck: Deck, updatedDeck: Deck) {
         val currentTime = System.currentTimeMillis()
         val scheduledDate = updatedDeck.scheduledDate ?: return
 
@@ -425,6 +430,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 deckId = repeatedDeck.id,
                 atTime = scheduledDate
             )
+
+            deckRepetitionNotifier.removeNotificationFromNotificationBar(deckId = repeatedDeck.id)
         }
     }
 }
