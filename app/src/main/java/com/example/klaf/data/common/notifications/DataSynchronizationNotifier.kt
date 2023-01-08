@@ -1,10 +1,10 @@
-package com.example.klaf.presentation.deckList.dataSynchronization
+package com.example.klaf.data.common.notifications
 
 import android.app.Notification
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import com.example.klaf.R
-import com.example.klaf.presentation.common.NotificationChannelInitializer.Companion.WORK_LOGIC_NOTIFICATION_CHANNEL_ID
+import com.example.klaf.data.common.notifications.NotificationChannelInitializer.Companion.WORK_LOGIC_NOTIFICATION_CHANNEL_ID
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
