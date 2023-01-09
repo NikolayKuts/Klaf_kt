@@ -1,5 +1,6 @@
 package com.example.klaf.presentation.deckRepetition
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -30,7 +31,6 @@ import com.example.klaf.domain.common.CardRepetitionOrder
 import com.example.klaf.domain.common.CardSide
 import com.example.klaf.domain.common.DeckRepetitionState
 import com.example.klaf.domain.common.ifFalse
-import com.example.klaf.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.domain.enums.DifficultyRecallingLevel.*
 import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.ipa.decodeToIpaPrompts
@@ -363,12 +363,11 @@ private fun RepetitionButtons(
         RepetitionScreenState.StartState -> {
             isOnFinishCalled = false
 
-            Button(
-                modifier = Modifier.layoutId(START_BUTTON_ID),
+            RepetitionButton(
+                layoutId = START_BUTTON_ID,
+                textId = R.string.start,
                 onClick = onStartButtonClick
-            ) {
-                Text(text = stringResource(id = R.string.start))
-            }
+            )
         }
 
         RepetitionScreenState.RepetitionState -> {
@@ -379,26 +378,23 @@ private fun RepetitionButtons(
                 onClick = onCardButtonClick
             )
 
-            Button(
-                modifier = Modifier.layoutId(HARD_BUTTON_ID),
+            RepetitionButton(
+                layoutId = HARD_BUTTON_ID,
+                textId = R.string.hard,
                 onClick = onHardButtonClick
-            ) {
-                Text(text = stringResource(R.string.hard))
-            }
+            )
 
-            Button(
-                modifier = Modifier.layoutId(GOOD_BUTTON_ID),
+            RepetitionButton(
+                layoutId = GOOD_BUTTON_ID,
+                textId = R.string.good,
                 onClick = onGoodButtonClick
-            ) {
-                Text(text = stringResource(R.string.good))
-            }
+            )
 
-            Button(
-                modifier = Modifier.layoutId(EASY_BUTTON_ID),
+            RepetitionButton(
+                layoutId = EASY_BUTTON_ID,
+                textId = R.string.easy,
                 onClick = onEasyButtonClick
-            ) {
-                Text(text = stringResource(R.string.easy))
-            }
+            )
         }
 
         is RepetitionScreenState.FinishState -> {
@@ -407,6 +403,16 @@ private fun RepetitionButtons(
                 onFinish()
             }
         }
+    }
+}
+
+@Composable
+private fun RepetitionButton(layoutId: String, @StringRes textId: Int, onClick: () -> Unit) {
+    Button(
+        modifier = Modifier.layoutId(layoutId),
+        onClick = onClick
+    ) {
+        Text(text = stringResource(textId))
     }
 }
 

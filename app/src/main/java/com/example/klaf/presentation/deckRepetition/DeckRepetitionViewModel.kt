@@ -141,8 +141,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     override fun turnCard() {
-        val side = if (cardSide.value == FRONT) BACK else FRONT
-        cardSide.value = side
+        cardSide.value = if (cardSide.value == FRONT) BACK else FRONT
     }
 
     override fun changeRepetitionOrder() {
