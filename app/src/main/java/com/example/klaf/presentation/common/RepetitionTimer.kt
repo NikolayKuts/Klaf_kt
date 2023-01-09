@@ -22,17 +22,16 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
 
     var savedTotalTime: Long = 0
         private set
-    val savedTotalTimeAsString get() = savedTotalTime.timeAsString
 
-    private val _time = MutableStateFlow(value = INITIAL_TIME_VALUE.timeAsString)
-    private val timerCountingState = MutableStateFlow(STOPED)
+    private val time = MutableStateFlow(value = INITIAL_TIME_VALUE.timeAsString)
+    private val timerCountingState = MutableStateFlow(STOPPED)
 
-    val timerState = combine(_time, timerCountingState) { time, countingState ->
+    val timerState = combine(time, timerCountingState) { time, countingState ->
         RepetitionTimerState(time = time, countingState = countingState)
     }.stateIn(
         scope = scope,
         started = SharingStarted.Lazily,
-        initialValue = RepetitionTimerState(_time.value, countingState = timerCountingState.value)
+        initialValue = RepetitionTimerState(time.value, countingState = timerCountingState.value)
     )
 
     override fun onResume(owner: LifecycleOwner) {
@@ -45,14 +44,15 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
     override fun onPause(owner: LifecycleOwner) {
         super.onPause(owner)
         if (timerCountingState.value == RUN) {
-            pauseCounting()
+            job?.cancel()
+            timerCountingState.value = PAUSED
         }
     }
 
     override fun onDestroy(owner: LifecycleOwner) {
         super.onDestroy(owner)
         scope.cancel()
-        timerCountingState.value = STOPED
+        timerCountingState.value = STOPPED
     }
 
     fun runCounting() {
@@ -63,7 +63,7 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
                 while (timerCountingState.value == RUN) {
                     delay(DELAY_INTERVAL)
                     totalSeconds++
-                    _time.value = totalSeconds.timeAsString
+                    time.value = totalSeconds.timeAsString
                 }
             }
         }
@@ -71,14 +71,14 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
 
     fun stopCounting() {
         job?.cancel()
-        timerCountingState.value = STOPED
+        timerCountingState.value = STOPPED
         savedTotalTime = totalSeconds
         totalSeconds = 0
-        _time.value = totalSeconds.timeAsString
+        time.value = totalSeconds.timeAsString
     }
 
     fun resumeCounting() {
-        if (timerCountingState.value == PAUSED) {
+        if (timerCountingState.value == PAUSED || timerCountingState.value == FORCIBLY_PAUSED) {
             runCounting()
         }
     }
@@ -86,7 +86,7 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
     fun pauseCounting() {
         if (timerCountingState.value == RUN) {
             job?.cancel()
-            timerCountingState.value = PAUSED
+            timerCountingState.value = FORCIBLY_PAUSED
         }
     }
 }

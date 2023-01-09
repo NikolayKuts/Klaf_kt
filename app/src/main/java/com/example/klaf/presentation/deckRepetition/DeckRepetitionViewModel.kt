@@ -19,9 +19,7 @@ import com.example.klaf.domain.entities.DeckRepetitionSuccessMark
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.domain.enums.DifficultyRecallingLevel.*
 import com.example.klaf.domain.useCases.*
-import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.RepetitionTimer
-import com.example.klaf.presentation.common.tryEmit
+import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.deckRepetition.RepetitionScreenState.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -58,6 +56,9 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             replay = 1
         )
 
+    override val mainButtonState = MutableStateFlow(value = ButtonState.UNPRESSED)
+    override val screenState = MutableStateFlow<RepetitionScreenState>(StartState)
+
     private val cardsSource: SharedFlow<List<Card>> = fetchCards(deckId)
         .catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards) }
         .shareIn(
@@ -75,18 +76,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             replay = 1
         )
 
-    override val screenState = MutableStateFlow<RepetitionScreenState>(StartState)
-
-    private val savedProgressCards: MutableList<Card> = LinkedList()
-
     private val cardSide = MutableStateFlow(FRONT)
     private val repetitionOrder = MutableStateFlow(value = NATIVE_TO_FOREIGN)
-
-    private var startRepetitionCard: Card? = null
-
-    private val goodeCards = mutableSetOf<Card>()
-    private val hardCards = mutableSetOf<Card>()
-    private var isWaitingForFinish = false
 
     override val cardState = combine(
         currentCard,
@@ -101,15 +92,19 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     )
 
     override val deckRepetitionInfo: SharedFlow<DeckRepetitionInfo?> =
-        fetchDeckRepetitionInfo(deckId = deckId)
-            .catch {
-                eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck_repetition_info)
-            }
-            .shareIn(
-                scope = viewModelScope,
-                started = SharingStarted.Eagerly,
-                replay = 1
-            )
+        fetchDeckRepetitionInfo(deckId = deckId).catch {
+            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck_repetition_info)
+        }.shareIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            replay = 1
+        )
+
+    private var startRepetitionCard: Card? = null
+    private val goodeCards = mutableSetOf<Card>()
+    private val hardCards = mutableSetOf<Card>()
+    private var isWaitingForFinish = false
+    private val savedProgressCards: MutableList<Card> = LinkedList()
 
     init {
         observeCardSource()
@@ -121,7 +116,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             val repetitionOrder = cardRepetitionState.repetitionOrder
             val cardSide = cardRepetitionState.side
 
-            if ((repetitionOrder == NATIVE_TO_FOREIGN && cardSide == BACK)
+            if (
+                (repetitionOrder == NATIVE_TO_FOREIGN && cardSide == BACK)
                 || (repetitionOrder == FOREIGN_TO_NATIVE && cardSide == FRONT)
             ) {
                 audioPlayer.play()
@@ -136,6 +132,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             startRepetitionCard = currentCard.replayCache.first()
             screenState.value = RepetitionState
             timer.runCounting()
+            mainButtonState.value = ButtonState.UNPRESSED
         }
     }
 
@@ -149,13 +146,10 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     override fun changeRepetitionOrder() {
-        val order = if (repetitionOrder.value == NATIVE_TO_FOREIGN) {
-            FOREIGN_TO_NATIVE
-        } else {
-            NATIVE_TO_FOREIGN
+        repetitionOrder.value = when (repetitionOrder.value) {
+            NATIVE_TO_FOREIGN -> FOREIGN_TO_NATIVE
+            else -> NATIVE_TO_FOREIGN
         }
-
-        repetitionOrder.value = order
     }
 
     override fun moveCardByDifficultyRecallingLevel(level: DifficultyRecallingLevel) {
@@ -180,9 +174,9 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 HARD -> hardCards.add(cardForMoving)
             }
 
+            timer.runCounting()
             repetitionCards.value =
                 getUpdatedCardList(cardForMoving = cardForMoving, level = actualLevel)
-
             checkRepetitionStartPosition()
 
             if (actualLevel == EASY && mustRepetitionBeFinished()) {
@@ -191,6 +185,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
             manageCardSide()
             saveRepetitionProgress(cards = repetitionCards.value)
+            mainButtonState.value = ButtonState.UNPRESSED
         }
     }
 
@@ -210,6 +205,19 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             onCompletion = { eventMessage.tryEmit(messageId = R.string.card_has_been_deleted) }
         ) {
             deleteCardsFromDeck(deckId = deckId, cardIds = intArrayOf(cardId))
+        }
+    }
+
+    override fun changeStateOnMainButtonClick() {
+        when (mainButtonState.value) {
+            ButtonState.PRESSED -> {
+                mainButtonState.value = ButtonState.UNPRESSED
+                timer.resumeCounting()
+            }
+            ButtonState.UNPRESSED -> {
+                mainButtonState.value = ButtonState.PRESSED
+                timer.pauseCounting()
+            }
         }
     }
 
