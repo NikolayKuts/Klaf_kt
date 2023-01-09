@@ -19,7 +19,10 @@ import com.example.klaf.domain.entities.DeckRepetitionSuccessMark
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.domain.enums.DifficultyRecallingLevel.*
 import com.example.klaf.domain.useCases.*
-import com.example.klaf.presentation.common.*
+import com.example.klaf.presentation.common.ButtonState
+import com.example.klaf.presentation.common.EventMessage
+import com.example.klaf.presentation.common.RepetitionTimer
+import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.deckRepetition.RepetitionScreenState.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -200,10 +203,10 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         viewModelScope.launchWithExceptionHandler(
             onException = { _, _ ->
                 eventMessage.tryEmit(messageId = R.string.problem_with_removing_card)
-            },
-            onCompletion = { eventMessage.tryEmit(messageId = R.string.card_has_been_deleted) }
+            }
         ) {
             deleteCardsFromDeck(deckId = deckId, cardIds = intArrayOf(cardId))
+            eventMessage.tryEmit(messageId = R.string.card_has_been_deleted)
         }
     }
 
@@ -240,6 +243,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                     && (receivedCards.size != repetitionCards.value.size)
                 ) {
                     screenState.value = StartState
+                    timer.stopCounting()
                 }
 
                 repetitionCards.value = getCardsByProgress(receivedCards = receivedCards)
@@ -345,13 +349,6 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         viewModelScope.launchWithExceptionHandler(
             onException = { _, _ ->
                 eventMessage.tryEmit(messageId = R.string.problem_with_updating_deck)
-            },
-            onCompletion = {
-                manageSchedulingAndNotificationState(
-                    repeatedDeck = repeatedDeck,
-                    updatedDeck = updatedDeck
-                )
-                screenState.value = FinishState
             }
         ) {
             val currentIterationDuration: Long
@@ -379,6 +376,11 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                     previousIterationSuccessMark = repeatedDeck.lastIterationSuccessMark
                 )
             )
+            manageSchedulingAndNotificationState(
+                repeatedDeck = repeatedDeck,
+                updatedDeck = updatedDeck
+            )
+            screenState.value = FinishState
         }
     }
 
