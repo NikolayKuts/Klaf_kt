@@ -10,6 +10,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.presentation.common.collectWhenStarted
+import com.example.klaf.presentation.common.showToast
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -66,7 +67,7 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
         viewModel.eventMessage.collectWhenStarted(
             lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
-//            requireContext().showToast(messageId = eventMessage.resId)    /////////////////////////////////////////
+            requireContext().showToast(messageId = eventMessage.resId)
         }
     }
 

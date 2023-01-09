@@ -6,6 +6,7 @@ import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.domain.common.DeckRepetitionState
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.enums.DifficultyRecallingLevel
+import com.example.klaf.presentation.common.ButtonState
 import com.example.klaf.presentation.common.EventMessageSource
 import com.example.klaf.presentation.common.RepetitionTimer
 import kotlinx.coroutines.flow.SharedFlow
@@ -19,6 +20,7 @@ abstract class BaseDeckRepetitionViewModel : ViewModel(), EventMessageSource {
     abstract val screenState: StateFlow<RepetitionScreenState>
     abstract val cardState: SharedFlow<DeckRepetitionState>
     abstract val deckRepetitionInfo: SharedFlow<DeckRepetitionInfo?>
+    abstract val mainButtonState: StateFlow<ButtonState>
 
     abstract fun pronounceWord()
     abstract fun startRepeating()
@@ -29,4 +31,5 @@ abstract class BaseDeckRepetitionViewModel : ViewModel(), EventMessageSource {
     abstract fun resumeTimerCounting()
     abstract fun pauseTimerCounting()
     abstract fun deleteCard(cardId: Int, deckId: Int)
+    abstract fun changeStateOnMainButtonClick()
 }
