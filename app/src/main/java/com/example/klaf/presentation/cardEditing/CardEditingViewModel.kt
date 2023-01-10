@@ -93,13 +93,11 @@ class CardEditingViewModel @AssistedInject constructor(
                 viewModelScope.launchWithExceptionHandler(
                     onException = { _, _ ->
                         eventMessage.tryEmit(messageId = R.string.problem_with_updating_card)
-                    },
-                    onCompletion = {
-                        eventMessage.tryEmit(R.string.card_has_been_changed)
-                        cardEditingState.value = CardEditingState.CHANGED
                     }
                 ) {
                     updateCard(newCard = updatedCard)
+                    eventMessage.tryEmit(R.string.card_has_been_changed)
+                    cardEditingState.value = CardEditingState.CHANGED
                 }
             }
         }
