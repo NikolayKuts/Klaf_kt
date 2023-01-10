@@ -1,14 +1,10 @@
 package com.example.klaf.domain.common
 
-import androidx.core.text.HtmlCompat
 import com.example.klaf.domain.ipa.LetterInfo
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 fun <T> MutableList<T>.update(newData: List<T>) {
@@ -19,18 +15,13 @@ fun <T> MutableList<T>.update(newData: List<T>) {
 fun CoroutineScope.launchWithExceptionHandler(
     context: CoroutineContext = this.coroutineContext,
     onException: (CoroutineContext, Throwable) -> Unit,
-    onCompletion: () -> Unit = {},
     task: suspend CoroutineScope.() -> Unit,
 ): Job {
     val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
         onException(coroutineContext, throwable)
     }
 
-    return launch(context = context + exceptionHandler) { task() }.apply {
-        invokeOnCompletion { cause: Throwable? ->
-            cause.ifNull { onCompletion() }
-        }
-    }
+    return launch(context = context + exceptionHandler) { task() }
 }
 
 fun <T, R> Flow<List<T>>.simplifiedItemMap(transform: suspend (T) -> R): Flow<List<R>> {
@@ -97,5 +88,5 @@ inline fun <T> T.ifNotNull(block: (T) -> Unit) {
 fun Int.toFloatPercents(): Float = this / 100.0F
 
 fun <T> List<T>.updatedAt(index: Int, updateValue: T): List<T> {
-    return  this.toMutableList().apply { this[index] = updateValue }
+    return this.toMutableList().apply { this[index] = updateValue }
 }

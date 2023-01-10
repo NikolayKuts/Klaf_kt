@@ -125,14 +125,13 @@ class CardAdditionViewModel @AssistedInject constructor(
             viewModelScope.launchWithExceptionHandler(
                 onException = { _, _ ->
                     eventMessage.tryEmit(messageId = R.string.exception_adding_card)
-                },
-                onCompletion = {
-                    resetAddingState()
-                    cardAdditionState.value = CardAdditionState.Finished
-                    eventMessage.tryEmit(messageId = R.string.card_has_been_added)
-                },
-                task = { addNewCardIntoDeck(card = newCard) }
-            )
+                }
+            ) {
+                addNewCardIntoDeck(card = newCard)
+                resetAddingState()
+                cardAdditionState.value = CardAdditionState.Finished
+                eventMessage.tryEmit(messageId = R.string.card_has_been_added)
+            }
         }
     }
 
