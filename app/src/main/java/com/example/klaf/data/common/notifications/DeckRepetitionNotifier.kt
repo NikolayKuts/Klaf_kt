@@ -30,8 +30,12 @@ class DeckRepetitionNotifier @Inject constructor(
     fun showNotification(deckName: String, deckId: Int) {
         val notification = createDeckRepetitionNotification(deckName = deckName, deckId = deckId)
 
-        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
+        notificationManager.notify(deckId, notification)
         showSummeryNotificationIfSdkLessThan24AndMoreThan22()
+    }
+
+    fun removeNotificationFromNotificationBar(deckId: Int) {
+        notificationManager.cancel(deckId)
     }
 
     private fun showSummeryNotificationIfSdkLessThan24AndMoreThan22() {

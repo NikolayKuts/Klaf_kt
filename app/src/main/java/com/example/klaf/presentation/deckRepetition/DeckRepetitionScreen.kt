@@ -1,5 +1,6 @@
 package com.example.klaf.presentation.deckRepetition
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -30,7 +31,7 @@ import com.example.klaf.domain.common.CardRepetitionOrder
 import com.example.klaf.domain.common.CardSide
 import com.example.klaf.domain.common.DeckRepetitionState
 import com.example.klaf.domain.common.ifFalse
-import com.example.klaf.domain.enums.DifficultyRecallingLevel
+import com.example.klaf.domain.enums.DifficultyRecallingLevel.*
 import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.domain.ipa.decodeToIpaPrompts
 import com.example.klaf.presentation.common.*
@@ -66,7 +67,8 @@ fun DeckRepetitionScreen(
 ) {
     val deckRepetitionState by viewModel.cardState.collectAsState(initial = null)
     val deck by viewModel.deck.collectAsState(initial = null)
-    var additionalButtonsEnabled by rememberAsMutableStateOf(value = false)
+    val mainButtonState by viewModel.mainButtonState.collectAsState()
+    val screenState by viewModel.screenState.collectAsState()
 
     val repetitionState = deckRepetitionState ?: return
     val receivedDeck = deck ?: return
@@ -87,11 +89,16 @@ fun DeckRepetitionScreen(
         )
         RepetitionButtons(
             deckRepetitionState = repetitionState,
-            viewModel = viewModel,
+            screenState = screenState,
+            onStartButtonClick = { viewModel.startRepeating() },
+            onEasyButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = EASY) },
+            onGoodButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = GOOD) },
+            onHardButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = HARD) },
+            onCardButtonClick = { viewModel.turnCard() },
             onFinish = onFinishRepetition,
         )
         AdditionalButtons(
-            additionalButtonsEnabled = additionalButtonsEnabled,
+            additionalButtonsEnabled = mainButtonState == ButtonState.PRESSED,
             onDeleteClick = {
                 repetitionState.card?.id?.let { cardId -> onDeleteCardClick(cardId) }
             },
@@ -99,15 +106,7 @@ fun DeckRepetitionScreen(
             onEditClick = {
                 repetitionState.card?.id?.let { cardId -> onEditCardClick(cardId) }
             },
-            onMainButtonClick = {
-                additionalButtonsEnabled = !additionalButtonsEnabled
-
-                if (additionalButtonsEnabled) {
-                    viewModel.pauseTimerCounting()
-                } else {
-                    viewModel.resumeTimerCounting()
-                }
-            }
+            onMainButtonClick = { viewModel.changeStateOnMainButtonClick() }
         )
     }
 }
@@ -351,68 +350,69 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
 @Composable
 private fun RepetitionButtons(
     deckRepetitionState: DeckRepetitionState,
-    viewModel: BaseDeckRepetitionViewModel,
+    screenState: RepetitionScreenState,
+    onStartButtonClick: () -> Unit,
+    onEasyButtonClick: () -> Unit,
+    onGoodButtonClick: () -> Unit,
+    onHardButtonClick: () -> Unit,
+    onCardButtonClick: () -> Unit,
     onFinish: () -> Unit,
 ) {
-    val screenStateState = viewModel.screenState.collectAsState()
     var isOnFinishCalled by rememberAsMutableStateOf(value = false)
-
-    when (screenStateState.value) {
+    when (screenState) {
         RepetitionScreenState.StartState -> {
             isOnFinishCalled = false
 
-            Button(
-                modifier = Modifier.layoutId(START_BUTTON_ID),
-                onClick = { viewModel.startRepeating() }
-            ) {
-                Text(text = stringResource(id = R.string.start))
-            }
+            RepetitionButton(
+                layoutId = START_BUTTON_ID,
+                textId = R.string.start,
+                onClick = onStartButtonClick
+            )
         }
+
         RepetitionScreenState.RepetitionState -> {
             isOnFinishCalled = false
 
             CardButton(
                 cardSide = deckRepetitionState.side,
-                onClick = { viewModel.turnCard() }
+                onClick = onCardButtonClick
             )
 
-            Button(
-                modifier = Modifier.layoutId(HARD_BUTTON_ID),
-                onClick = {
-                    viewModel.moveCardByDifficultyRecallingLevel(
-                        level = DifficultyRecallingLevel.HARD
-                    )
-                }
-            ) {
-                Text(text = stringResource(R.string.hard))
-            }
-            Button(
-                modifier = Modifier.layoutId(GOOD_BUTTON_ID),
-                onClick = {
-                    viewModel.moveCardByDifficultyRecallingLevel(
-                        level = DifficultyRecallingLevel.GOOD
-                    )
-                }
-            ) {
-                Text(text = stringResource(R.string.good))
-            }
-            Button(
-                modifier = Modifier.layoutId(EASY_BUTTON_ID),
-                onClick = {
-                    viewModel.moveCardByDifficultyRecallingLevel(
-                        level = DifficultyRecallingLevel.EASY
-                    )
-                }
-            ) {
-                Text(text = stringResource(R.string.easy))
-            }
+            RepetitionButton(
+                layoutId = HARD_BUTTON_ID,
+                textId = R.string.hard,
+                onClick = onHardButtonClick
+            )
+
+            RepetitionButton(
+                layoutId = GOOD_BUTTON_ID,
+                textId = R.string.good,
+                onClick = onGoodButtonClick
+            )
+
+            RepetitionButton(
+                layoutId = EASY_BUTTON_ID,
+                textId = R.string.easy,
+                onClick = onEasyButtonClick
+            )
         }
+
         is RepetitionScreenState.FinishState -> {
             isOnFinishCalled.ifFalse {
                 isOnFinishCalled = true
                 onFinish()
             }
         }
+    }
+}
+
+@Composable
+private fun RepetitionButton(layoutId: String, @StringRes textId: Int, onClick: () -> Unit) {
+    Button(
+        modifier = Modifier.layoutId(layoutId),
+        onClick = onClick
+    ) {
+        Text(text = stringResource(textId))
     }
 }
 

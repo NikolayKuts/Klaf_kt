@@ -67,7 +67,7 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
         viewModel.eventMessage.collectWhenStarted(
             lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
-//            requireContext().showToast(messageId = eventMessage.resId)    /////////////////////////////////////////
+            requireContext().showToast(messageId = eventMessage.resId)
         }
     }
 

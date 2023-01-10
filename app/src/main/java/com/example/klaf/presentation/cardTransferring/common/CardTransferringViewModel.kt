@@ -6,13 +6,12 @@ import com.example.klaf.R
 import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
-import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.emit
 import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingState
 import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingState.*
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
-import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardTransferringFragment
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
+import com.example.klaf.presentation.common.EventMessage
+import com.example.klaf.presentation.common.emit
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -104,18 +103,14 @@ class CardTransferringViewModel @AssistedInject constructor(
                 viewModelScope.launchWithExceptionHandler(
                     onException = { _, _ ->
                         emitEventMessage(messageId = R.string.problem_with_removing_cards)
-                    },
-                    onCompletion = {
-                        cardDeletingState.value = FINISHED
-                        emitEventMessage(
-                            messageId = R.string.message_deletion_completed_successfully
-                        )
                     }
                 ) {
                     deleteCardsFromDeckUseCase(
                         cardIds = cardIds.toIntArray(),
                         deckId = sourceDeckId
                     )
+                    cardDeletingState.value = FINISHED
+                    emitEventMessage(messageId = R.string.message_deletion_completed_successfully)
                 }
             }
     }
@@ -124,17 +119,16 @@ class CardTransferringViewModel @AssistedInject constructor(
         viewModelScope.launchWithExceptionHandler(
             onException = { _, _ ->
                 emitEventMessage(messageId = R.string.problem_with_moving_cards)
-            },
-            onCompletion = {
-                emitDestination(destination = CardTransferringFragment)
-                emitEventMessage(messageId = (R.string.message_transfer_completed_successfully))
             }
         ) {
             sourceDeck.replayCache.first()?.let { sourceDeck ->
                 moveCardsToDeck(
                     sourceDeck = sourceDeck,
                     targetDeck = targetDeck,
-                    cards = selectedCards.value.toTypedArray())
+                    cards = selectedCards.value.toTypedArray()
+                )
+                emitDestination(destination = CardTransferringFragment)
+                emitEventMessage(messageId = (R.string.message_transfer_completed_successfully))
             }
         }
     }
