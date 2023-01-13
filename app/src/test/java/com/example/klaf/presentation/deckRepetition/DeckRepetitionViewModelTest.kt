@@ -5,6 +5,7 @@ import app.cash.turbine.test
 import com.example.klaf.R
 import com.example.klaf.common.MainDispatcherRule
 import com.example.klaf.common.launchEventMassageIdEqualsTest
+import com.example.klaf.data.common.notifications.DeckRepetitionNotifier
 import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
@@ -159,7 +160,7 @@ class DeckRepetitionViewModelTest {
         workManager: WorkManager = mockk(relaxed = true),
         fetchDeckRepetitionInfo: FetchDeckRepetitionInfoUseCase = mockk(relaxed = true),
         saveDeckRepetitionInfo: SaveDeckRepetitionInfoUseCase = mockk(relaxed = true),
-
+        deckRepetitionNotifier: DeckRepetitionNotifier = mockk(relaxed = true)
     ): BaseDeckRepetitionViewModel = DeckRepetitionViewModel(
         deckId = deckId,
         fetchCards = fetchCards,
@@ -171,5 +172,6 @@ class DeckRepetitionViewModelTest {
         workManager = workManager,
         fetchDeckRepetitionInfo = fetchDeckRepetitionInfo,
         saveDeckRepetitionInfo = saveDeckRepetitionInfo,
+        deckRepetitionNotifier = deckRepetitionNotifier
     )
 }
