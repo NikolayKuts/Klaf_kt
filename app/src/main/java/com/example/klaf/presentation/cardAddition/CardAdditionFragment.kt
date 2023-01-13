@@ -50,7 +50,7 @@ class CardAdditionFragment : Fragment(R.layout.fragment_card_addition) {
 
     private fun setEventMessageObserver(view: View) {
         viewModel.eventMessage.collectWhenStarted(lifecycleOwner = this) { eventMessage ->
-//            view.showSnackBar(messageId = eventMessage.resId)  ////////////////////////////////////////////////////////////////////////
+            view.showSnackBar(messageId = eventMessage.resId)
         }
     }
 
