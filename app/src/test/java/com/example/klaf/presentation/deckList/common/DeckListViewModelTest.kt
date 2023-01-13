@@ -5,16 +5,15 @@ import app.cash.turbine.test
 import com.example.klaf.R
 import com.example.klaf.common.MainDispatcherRule
 import com.example.klaf.common.launchEventMassageIdEqualsTest
-import com.example.klaf.common.testEventMassageIdEquals
+import com.example.klaf.data.common.notifications.NotificationChannelInitializer
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
-import com.example.klaf.data.common.notifications.NotificationChannelInitializer
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -24,20 +23,26 @@ class DeckListViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    @Before
-    fun setUp() {
-    }
-
     @ExperimentalCoroutinesApi
     @Test
-    fun `getting problem message when getting decks is failed`() = runTest {
+    fun `get null when getting fetching is failed`() = runTest {
         val fetchDeckSourceUseCase: FetchDeckSourceUseCase = mockk {
             every { this@mockk.invoke() } returns flow { throw Exception() }
         }
         val viewModel = createViewModel(fetchDeckSource = fetchDeckSourceUseCase)
 
         verify(exactly = 1) { fetchDeckSourceUseCase.invoke() }
-        viewModel.testEventMassageIdEquals(expectedMassageId = R.string.problem_fetching_decks)
+        assertEquals(null, viewModel.deckSource.value)
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    fun `get empty list by default when fetching decks`() = runTest {
+        val fetchDeckSourceUseCase: FetchDeckSourceUseCase = mockk {
+            every { this@mockk.invoke() } returns flow { }
+        }
+        val viewModel = createViewModel(fetchDeckSource = fetchDeckSourceUseCase)
+        assertEquals(true, viewModel.deckSource.value?.isEmpty())
     }
 
     @ExperimentalCoroutinesApi
@@ -80,6 +85,7 @@ class DeckListViewModelTest {
             expectedMassageId = R.string.such_deck_is_already_exist,
         )
 
+        delay(100)
         viewModel.createNewDeck(deckName = newDeck.name)
         testJob.join()
     }
@@ -94,6 +100,7 @@ class DeckListViewModelTest {
             expectedMassageId = R.string.warning_deck_name_empty,
         )
 
+        delay(100)
         viewModel.createNewDeck(deckName = emptyDeckName)
         testJob.join()
     }
@@ -109,6 +116,7 @@ class DeckListViewModelTest {
             expectedMassageId = R.string.deck_has_been_created,
         )
 
+        delay(100)
         viewModel.createNewDeck(deckName = deckName)
         coVerify(exactly = 1) { createDeckUseCase.invoke(deck = any()) }
         testJob.join()
@@ -127,6 +135,7 @@ class DeckListViewModelTest {
             expectedMassageId = R.string.problem_with_creating_deck
         )
 
+        delay(100)
         viewModel.createNewDeck(deckName = deckName)
         coVerify(exactly = 1) { createDeckUseCase.invoke(deck = any()) }
         testJob.join()
@@ -143,6 +152,7 @@ class DeckListViewModelTest {
             expectedMassageId = R.string.type_new_deck_name
         )
 
+        delay(100)
         viewModel.renameDeck(deck = oldDeck, newName = newEmptyName)
         testJob.join()
     }
@@ -157,6 +167,7 @@ class DeckListViewModelTest {
             expectedMassageId = R.string.deck_name_is_not_changed
         )
 
+        delay(100)
         viewModel.renameDeck(deck = oldDeck, newName = oldDeck.name)
         testJob.join()
     }
@@ -176,6 +187,7 @@ class DeckListViewModelTest {
             expectedMassageId = R.string.such_deck_is_already_exist
         )
 
+        delay(100)
         viewModel.renameDeck(deck = oldDeck, newName = existingDeckName)
         testJob.join()
     }
@@ -191,6 +203,7 @@ class DeckListViewModelTest {
             expectedMassageId = R.string.deck_has_been_renamed
         )
 
+        delay(100)
         viewModel.renameDeck(deck = oldDeck, newName = newDeckName)
         testJob.join()
     }
@@ -211,6 +224,7 @@ class DeckListViewModelTest {
             expectedMassageId = R.string.problem_with_renaming_deck
         )
 
+        delay(100)
         viewModel.renameDeck(deck = oldDeck, newName = newDeckName)
         testJob.join()
     }
@@ -226,6 +240,7 @@ class DeckListViewModelTest {
             expectedMassageId = R.string.the_deck_has_been_removed
         )
 
+        delay(100)
         viewModel.deleteDeck(deckId = deckId)
     }
 
@@ -243,6 +258,7 @@ class DeckListViewModelTest {
             expectedMassageId = R.string.problem_with_removing_deck
         )
 
+        delay(100)
         viewModel.deleteDeck(deckId = deckId)
     }
 
