@@ -26,47 +26,52 @@ fun List<LetterInfo>.convertToUncompletedIpa(): String {
 }
 
 fun List<LetterInfo>.convertToEncodedIpa(ipaTemplate: String): String {
-
-    val result = java.lang.StringBuilder()
+    val result = StringBuilder()
     val clearedIpaTemplate: String = ipaTemplate.replace(
+        regex = Regex(pattern = "^\\s*"),
+        replacement = ""
+    ).replace(
+        regex = Regex(pattern = "\\n\\s*"),
+        replacement = "\n"
+    ).replace(
+        regex = Regex(pattern = "\\s*$"),
+        replacement = ""
+    ).replace(
+        regex = Regex(pattern = "\\s*\\n"),
+        replacement = "\n"
+    ).replace(
         regex = Regex(pattern = "\\s*=[^\n\\w]*"),
         replacement = "="
     )
 
-    var ipaTemplateBuilder = java.lang.StringBuilder(clearedIpaTemplate)
-
+    var ipaTemplateBuilder = StringBuilder(clearedIpaTemplate)
     var index = 0
+
     while (index < this.size) {
         val letterInfo: LetterInfo = this[index]
 
         if (letterInfo.isChecked) {
             when {
                 index == 0 -> result.append("/")
-                index > 0 && this[index - 1].isNotChecked -> result.append("/")
-                index > 0 && this[index - 1].isChecked -> result.append("//")
+                this[index - 1].isNotChecked -> result.append("/")
+                this[index - 1].isChecked -> result.append("//")
+            }
+
+            if (ipaTemplateBuilder.startsWith(prefix = "\n")) {
+                ipaTemplateBuilder = StringBuilder(ipaTemplateBuilder.substring(1))
             }
 
             val ipaCouple = when {
-                ipaTemplateBuilder.isNotEmpty()
-                        && ipaTemplateBuilder.substring(1).contains("\n") -> {
-                    if (ipaTemplateBuilder.startsWith("\n")) {
-                        ipaTemplateBuilder =
-                            java.lang.StringBuilder(ipaTemplateBuilder.substring(1))
-                    }
+                ipaTemplateBuilder.isNotEmpty() && "\n" in ipaTemplateBuilder.substring(1) -> {
                     ipaTemplateBuilder.substring(0, ipaTemplateBuilder.indexOf("\n"))
                 }
-                else -> {
-                    if (ipaTemplateBuilder.startsWith("\n")) {
-                        ipaTemplateBuilder =
-                            java.lang.StringBuilder(ipaTemplateBuilder.substring(1))
-                    }
-                    ipaTemplateBuilder.substring(0)
-                }
+                else -> ipaTemplateBuilder.substring(0)
             }
 
             val replacedLetters: String =
                 ipaTemplateBuilder.substring(0, ipaTemplateBuilder.indexOf("="))
-            index += replacedLetters.length - 1
+
+            index += replacedLetters.lastIndex
             result.append(ipaCouple)
             ipaTemplateBuilder.delete(0, ipaCouple.length)
 
@@ -74,10 +79,13 @@ fun List<LetterInfo>.convertToEncodedIpa(ipaTemplate: String): String {
             if (index > 0 && this[index - 1].isChecked) {
                 result.append("/")
             }
+
             result.append(letterInfo.letter)
         }
+
         index++
     }
+
     return result.toString()
 }
 
