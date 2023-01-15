@@ -1,10 +1,19 @@
 package com.example.klaf.domain.ipa
 
-import com.example.klaf.presentation.common.log
+import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.junit.Assert.*
 
 internal class IpaProcessingKtTest {
+
+    private val expectedLetterEncodedIpa = "/l=l/e/tt=t/er"
+    private val wordLetterInfos: List<LetterInfo> = listOf(
+        LetterInfo(letter = "l", isChecked = true),
+        LetterInfo(letter = "e", isChecked = false),
+        LetterInfo(letter = "t", isChecked = true),
+        LetterInfo(letter = "t", isChecked = true),
+        LetterInfo(letter = "e", isChecked = false),
+        LetterInfo(letter = "r", isChecked = false),
+    )
 
     @Test
     fun convertToUncompletedIpa1() {
@@ -105,5 +114,53 @@ internal class IpaProcessingKtTest {
         val expected = "s = \nm = \nh = \nn = "
         val actual = letterInfo.convertToUncompletedIpa()
         assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `test converting letter infos to encoded Ipa when there are spaces around equal sign`() {
+        val ipa = "l    =    l\ntt   =    t"
+        val encodedIpa = wordLetterInfos.convertToEncodedIpa(ipaTemplate = ipa)
+
+        assertEquals(expectedLetterEncodedIpa, encodedIpa)
+    }
+
+    @Test
+    fun `test converting letter infos to encoded Ipa when there are not spaces around equal sign`() {
+        val ipa = "l=l\ntt=t"
+        val encodedIpa = wordLetterInfos.convertToEncodedIpa(ipaTemplate = ipa)
+
+        assertEquals(expectedLetterEncodedIpa, encodedIpa)
+    }
+
+    @Test
+    fun `test converting letter infos to encoded Ipa when there are spaces at the beginning of the lines`() {
+        val ipa = "   l = l\n   tt = t"
+        val encodedIpa = wordLetterInfos.convertToEncodedIpa(ipaTemplate = ipa)
+
+        assertEquals(expectedLetterEncodedIpa, encodedIpa)
+    }
+
+    @Test
+    fun `test converting letter infos to encoded Ipa when there are spaces at the end of the lines`() {
+        val ipa = "l = l     \ntt = t     "
+        val encodedIpa = wordLetterInfos.convertToEncodedIpa(ipaTemplate = ipa)
+
+        assertEquals(expectedLetterEncodedIpa, encodedIpa)
+    }
+
+    @Test
+    fun `test converting letter info's to encoded Ipa when there are spaces at the end and beginning of the lines`() {
+        val ipa = "     l = l     \n     tt = t     "
+        val encodedIpa = wordLetterInfos.convertToEncodedIpa(ipaTemplate = ipa)
+
+        assertEquals(expectedLetterEncodedIpa, encodedIpa)
+    }
+
+    @Test
+    fun `test converting letter info's to encoded Ipa when there are spaces at the end, beginning of the lines and around equal signs`() {
+        val ipa = "     l    =    l     \n     tt     =     t     "
+        val encodedIpa = wordLetterInfos.convertToEncodedIpa(ipaTemplate = ipa)
+
+        assertEquals(expectedLetterEncodedIpa, encodedIpa)
     }
 }

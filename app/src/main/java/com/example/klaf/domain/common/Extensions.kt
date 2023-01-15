@@ -87,6 +87,6 @@ inline fun <T> T.ifNotNull(block: (T) -> Unit) {
 
 fun Int.toFloatPercents(): Float = this / 100.0F
 
-fun <T> List<T>.updatedAt(index: Int, updateValue: T): List<T> {
-    return this.toMutableList().apply { this[index] = updateValue }
+fun <T> List<T>.updatedAt(index: Int, newValue: T): List<T> {
+    return this.toMutableList().apply { this[index] = newValue }
 }
