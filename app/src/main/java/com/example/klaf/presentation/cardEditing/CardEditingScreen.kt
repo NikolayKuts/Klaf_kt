@@ -46,7 +46,7 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
 
                     letterInfosState = letterInfosState.updatedAt(
                         index = index,
-                        updateValue = letterInfo.copy(isChecked = updatedIsChecked)
+                        newValue = letterInfo.copy(isChecked = updatedIsChecked)
                     )
                     ipaTemplateState = letterInfosState.convertToUncompletedIpa()
                 },
