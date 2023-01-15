@@ -144,7 +144,7 @@ class CardAdditionViewModel @AssistedInject constructor(
         letterInfosState.update { infos ->
             infos.updatedAt(
                 index = index,
-                updateValue = letterInfo.copy(isChecked = updatedIsChecked)
+                newValue = letterInfo.copy(isChecked = updatedIsChecked)
             )
         }
 
@@ -180,9 +180,10 @@ class CardAdditionViewModel @AssistedInject constructor(
         ipaTemplateState.value = ipa
     }
 
+
     private fun resetAddingState() {
         letterInfosState.value = emptyList()
         nativeWordState.value = ""
-        letterInfosState.value = emptyList()
+        ipaTemplateState.value = ""
     }
 }
