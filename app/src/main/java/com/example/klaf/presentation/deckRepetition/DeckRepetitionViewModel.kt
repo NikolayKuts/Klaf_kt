@@ -12,6 +12,8 @@ import com.example.klaf.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE
 import com.example.klaf.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN
 import com.example.klaf.domain.common.CardSide.BACK
 import com.example.klaf.domain.common.CardSide.FRONT
+import com.example.klaf.domain.common.CoroutineStateHolder.Companion.launchWithState
+import com.example.klaf.domain.common.CoroutineStateHolder.Companion.onException
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.entities.DeckRepetitionInfo
@@ -200,13 +202,11 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     override fun deleteCard(cardId: Int, deckId: Int) {
-        viewModelScope.launchWithExceptionHandler(
-            onException = { _, _ ->
-                eventMessage.tryEmit(messageId = R.string.problem_with_removing_card)
-            }
-        ) {
+        viewModelScope.launchWithState {
             deleteCardsFromDeck(deckId = deckId, cardIds = intArrayOf(cardId))
             eventMessage.tryEmit(messageId = R.string.card_has_been_deleted)
+        } onException { _, _ ->
+            eventMessage.tryEmit(messageId = R.string.problem_with_removing_card)
         }
     }
 
@@ -232,11 +232,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     private fun observeCardSource() {
-        viewModelScope.launchWithExceptionHandler(
-            onException = { _, _ ->
-                eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
-            }
-        ) {
+        viewModelScope.launchWithState {
             cardsSource.collect { receivedCards ->
                 if (
                     (screenState.value !is StartState)
@@ -248,6 +244,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
                 repetitionCards.value = getCardsByProgress(receivedCards = receivedCards)
             }
+        } onException { _, _ ->
+            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
         }
     }
 
@@ -346,11 +344,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
         val updatedDeck = getUpdatedDesk(deckForUpdating = repeatedDeck)
 
-        viewModelScope.launchWithExceptionHandler(
-            onException = { _, _ ->
-                eventMessage.tryEmit(messageId = R.string.problem_with_updating_deck)
-            }
-        ) {
+        viewModelScope.launchWithState {
             val currentIterationDuration: Long
             val currentIterationSuccessMark: DeckRepetitionSuccessMark
 
@@ -381,6 +375,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 updatedDeck = updatedDeck
             )
             screenState.value = FinishState
+        } onException { _, _ ->
+            eventMessage.tryEmit(messageId = R.string.problem_with_updating_deck)
         }
     }
 
