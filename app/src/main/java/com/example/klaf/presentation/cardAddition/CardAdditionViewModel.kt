@@ -3,8 +3,9 @@ package com.example.klaf.presentation.cardAddition
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.R
 import com.example.klaf.data.networking.CardAudioPlayer
+import com.example.klaf.domain.common.CoroutineStateHolder.Companion.launchWithState
+import com.example.klaf.domain.common.CoroutineStateHolder.Companion.onException
 import com.example.klaf.domain.common.generateLetterInfos
-import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.common.updatedAt
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
@@ -122,15 +123,13 @@ class CardAdditionViewModel @AssistedInject constructor(
                 ipa = letterInfos.convertToEncodedIpa(ipaTemplate = ipaTemplate)
             )
 
-            viewModelScope.launchWithExceptionHandler(
-                onException = { _, _ ->
-                    eventMessage.tryEmit(messageId = R.string.exception_adding_card)
-                }
-            ) {
+            viewModelScope.launchWithState {
                 addNewCardIntoDeck(card = newCard)
                 resetAddingState()
                 cardAdditionState.value = CardAdditionState.Finished
                 eventMessage.tryEmit(messageId = R.string.card_has_been_added)
+            } onException { _, _ ->
+                eventMessage.tryEmit(messageId = R.string.exception_adding_card)
             }
         }
     }

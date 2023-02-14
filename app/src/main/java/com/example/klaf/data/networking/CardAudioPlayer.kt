@@ -4,9 +4,10 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.example.klaf.domain.common.CoroutineStateHolder.Companion.launchWithState
+import com.example.klaf.domain.common.CoroutineStateHolder.Companion.onException
 import com.example.klaf.domain.common.ifNull
 import com.example.klaf.domain.common.ifTrue
-import com.example.klaf.domain.common.launchWithExceptionHandler
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
@@ -54,9 +55,7 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
 
     fun preparePronunciation(word: String) {
         preparingJob?.cancel()
-        preparingJob = coroutineScope?.launchWithExceptionHandler(
-            onException = { _, _ -> mediaPlayer?.reset() }
-        ) {
+        preparingJob = coroutineScope?.launchWithState {
             mediaPlayer?.apply {
                 preparingJob?.ensureActive()
                 wordForPreparing = word
@@ -66,7 +65,7 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
                 setDataSource(word.buildAudioUri())
                 prepare()
             }
-        }
+        }?.onException { _, _ -> mediaPlayer?.reset() }
     }
 
     fun play() {

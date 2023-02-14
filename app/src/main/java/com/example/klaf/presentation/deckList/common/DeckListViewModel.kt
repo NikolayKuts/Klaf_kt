@@ -8,8 +8,9 @@ import com.example.klaf.data.common.DataSynchronizationState
 import com.example.klaf.data.common.DataSynchronizationWorker.Companion.getDataSynchronizationProgressState
 import com.example.klaf.data.common.DataSynchronizationWorker.Companion.performDataSynchronization
 import com.example.klaf.data.common.notifications.NotificationChannelInitializer
+import com.example.klaf.domain.common.CoroutineStateHolder.Companion.launchWithState
+import com.example.klaf.domain.common.CoroutineStateHolder.Companion.onException
 import com.example.klaf.domain.common.getCurrentDateAsLong
-import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
@@ -78,16 +79,14 @@ class DeckListViewModel @AssistedInject constructor(
                     eventMessage.tryEmit(messageId = R.string.warning_deck_name_empty)
                 }
                 else -> {
-                    viewModelScope.launchWithExceptionHandler(
-                        onException = { _, _ ->
-                            eventMessage.tryEmit(messageId = R.string.problem_with_creating_deck)
-                        }
-                    ) {
+                    viewModelScope.launchWithState {
                         createDeck(
                             deck = Deck(name = deckName, creationDate = getCurrentDateAsLong())
                         )
                         eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
                         deckCreationState.value = DeckCreationState.CREATED
+                    } onException { _, _ ->
+                        eventMessage.tryEmit(messageId = R.string.problem_with_creating_deck)
                     }
                 }
             }
@@ -116,14 +115,12 @@ class DeckListViewModel @AssistedInject constructor(
                     eventMessage.tryEmit(messageId = R.string.such_deck_is_already_exist)
                 }
                 else -> {
-                    viewModelScope.launchWithExceptionHandler(
-                        onException = { _, _ ->
-                            eventMessage.tryEmit(messageId = R.string.problem_with_renaming_deck)
-                        }
-                    ) {
+                    viewModelScope.launchWithState {
                         renameDeck(oldDeck = deck, name = updatedName)
                         eventMessage.tryEmit(messageId = R.string.deck_has_been_renamed)
                         renamingState.value = DeckRenamingState.RENAMED
+                    } onException { _, _ ->
+                        eventMessage.tryEmit(messageId = R.string.problem_with_renaming_deck)
                     }
                 }
             }
@@ -135,13 +132,11 @@ class DeckListViewModel @AssistedInject constructor(
     }
 
     override fun deleteDeck(deckId: Int) {
-        viewModelScope.launchWithExceptionHandler(
-            onException = { _, _ ->
-                eventMessage.tryEmit(messageId = R.string.problem_with_removing_deck)
-            }
-        ) {
+        viewModelScope.launchWithState {
             removeDeck(deckId = deckId)
             eventMessage.tryEmit(messageId = R.string.the_deck_has_been_removed)
+        } onException { _, _ ->
+            eventMessage.tryEmit(messageId = R.string.problem_with_removing_deck)
         }
     }
 
