@@ -3,8 +3,9 @@ package com.example.klaf.presentation.cardEditing
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.R
 import com.example.klaf.data.networking.CardAudioPlayer
+import com.example.klaf.domain.common.CoroutineStateHolder.Companion.launchWithState
+import com.example.klaf.domain.common.CoroutineStateHolder.Companion.onException
 import com.example.klaf.domain.common.ifNotNull
-import com.example.klaf.domain.common.launchWithExceptionHandler
 import com.example.klaf.domain.entities.Card
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.ipa.LetterInfo
@@ -90,14 +91,12 @@ class CardEditingViewModel @AssistedInject constructor(
                 eventMessage.tryEmit(messageId = R.string.card_has_not_been_changed)
             }
             else -> {
-                viewModelScope.launchWithExceptionHandler(
-                    onException = { _, _ ->
-                        eventMessage.tryEmit(messageId = R.string.problem_with_updating_card)
-                    }
-                ) {
+                viewModelScope.launchWithState {
                     updateCard(newCard = updatedCard)
                     eventMessage.tryEmit(R.string.card_has_been_changed)
                     cardEditingState.value = CardEditingState.CHANGED
+                } onException { _, _ ->
+                    eventMessage.tryEmit(messageId = R.string.problem_with_updating_card)
                 }
             }
         }

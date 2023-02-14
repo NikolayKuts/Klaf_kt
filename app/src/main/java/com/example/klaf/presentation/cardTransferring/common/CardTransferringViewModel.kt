@@ -3,7 +3,8 @@ package com.example.klaf.presentation.cardTransferring.common
 import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.R
-import com.example.klaf.domain.common.launchWithExceptionHandler
+import com.example.klaf.domain.common.CoroutineStateHolder.Companion.launchWithState
+import com.example.klaf.domain.common.CoroutineStateHolder.Companion.onException
 import com.example.klaf.domain.entities.Deck
 import com.example.klaf.domain.useCases.*
 import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingState
@@ -47,7 +48,6 @@ class CardTransferringViewModel @AssistedInject constructor(
     override val decks: StateFlow<List<Deck>> = fetchDeckSource()
         .catch { emitEventMessage(messageId = R.string.problem_fetching_decks) }
         .filterNotNull()
-//        .simplifiedItemFilterNot { deck -> deck.id == sourceDeckId }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -100,27 +100,21 @@ class CardTransferringViewModel @AssistedInject constructor(
         selectedCards.value
             .map { card -> card.id }
             .also { cardIds ->
-                viewModelScope.launchWithExceptionHandler(
-                    onException = { _, _ ->
-                        emitEventMessage(messageId = R.string.problem_with_removing_cards)
-                    }
-                ) {
+                viewModelScope.launchWithState {
                     deleteCardsFromDeckUseCase(
                         cardIds = cardIds.toIntArray(),
                         deckId = sourceDeckId
                     )
                     cardDeletingState.value = FINISHED
                     emitEventMessage(messageId = R.string.message_deletion_completed_successfully)
+                } onException { _, _ ->
+                    emitEventMessage(messageId = R.string.problem_with_removing_cards)
                 }
             }
     }
 
     override fun moveCards(targetDeck: Deck) {
-        viewModelScope.launchWithExceptionHandler(
-            onException = { _, _ ->
-                emitEventMessage(messageId = R.string.problem_with_moving_cards)
-            }
-        ) {
+        viewModelScope.launchWithState {
             sourceDeck.replayCache.first()?.let { sourceDeck ->
                 moveCardsToDeck(
                     sourceDeck = sourceDeck,
@@ -130,6 +124,8 @@ class CardTransferringViewModel @AssistedInject constructor(
                 emitDestination(destination = CardTransferringFragment)
                 emitEventMessage(messageId = (R.string.message_transfer_completed_successfully))
             }
+        } onException { _, _ ->
+            emitEventMessage(messageId = R.string.problem_with_moving_cards)
         }
     }
 
