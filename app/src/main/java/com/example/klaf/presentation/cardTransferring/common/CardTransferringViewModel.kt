@@ -47,7 +47,7 @@ class CardTransferringViewModel @AssistedInject constructor(
 
     override val decks: StateFlow<List<Deck>> = fetchDeckSource()
         .catch { emitEventMessage(messageId = R.string.problem_fetching_decks) }
-        .filterNotNull()
+        .filterNotCurrentAndInterimDecks()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -137,6 +137,14 @@ class CardTransferringViewModel @AssistedInject constructor(
         viewModelScope.launch {
             fetchCards(deckId = sourceDeckId).collect { cards ->
                 cardHolders.value = cards.map { card -> SelectableCardHolder(card = card) }
+            }
+        }
+    }
+
+    private fun Flow<List<Deck>>.filterNotCurrentAndInterimDecks(): Flow<List<Deck>> {
+        return map { fetchedDecks ->
+            fetchedDecks.filterNot { deck ->
+                deck.id == sourceDeckId || deck.id == Deck.INTERIM_DECK_ID
             }
         }
     }
