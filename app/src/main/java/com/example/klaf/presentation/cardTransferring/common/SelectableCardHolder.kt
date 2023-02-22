@@ -1,6 +1,6 @@
 package com.example.klaf.presentation.cardTransferring.common
 
-import com.example.klaf.domain.entities.Card
+import com.example.domain.entities.Card
 
 data class SelectableCardHolder(
     val card: Card,

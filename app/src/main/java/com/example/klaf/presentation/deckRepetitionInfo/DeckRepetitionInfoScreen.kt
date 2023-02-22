@@ -19,14 +19,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.domain.common.DeckRepetitionSuccessMark
+import com.example.domain.common.DeckRepetitionSuccessMark.*
+import com.example.domain.entities.Deck
 import com.example.klaf.R
-import com.example.klaf.data.common.currentDurationAsTimeOrUnassigned
-import com.example.klaf.domain.common.calculateDetailedLastIterationRange
-import com.example.klaf.domain.common.calculateDetailedPreviousScheduledRange
-import com.example.klaf.domain.common.calculateDetailedScheduledRange
-import com.example.klaf.domain.entities.Deck
-import com.example.klaf.domain.entities.DeckRepetitionSuccessMark
-import com.example.klaf.domain.entities.DeckRepetitionSuccessMark.*
+import com.example.klaf.data.common.*
 import com.example.klaf.presentation.common.timeAsString
 import com.example.klaf.presentation.deckRepetition.BaseDeckRepetitionViewModel
 import com.example.klaf.presentation.theme.MainTheme
@@ -91,8 +88,9 @@ fun DeckRepetitionInfoView(viewModel: BaseDeckRepetitionViewModel) {
 
 @Composable
 private fun InfoHeader(deck: Deck) {
-    Row(modifier = Modifier
-        .fillMaxWidth(), verticalAlignment = Alignment.Bottom
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(), verticalAlignment = Alignment.Bottom
     ) {
         Text(
             text = stringResource(id = R.string.pointer_deck) + ":",
@@ -179,7 +177,8 @@ private fun DualInfoItemWithValueBackground(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     modifier = Modifier.weight(1F),
-                    text = secondPointer)
+                    text = secondPointer
+                )
                 Text(
                     modifier = Modifier.valuePadding(),
                     text = secondValue,

@@ -1,9 +1,9 @@
 package com.example.klaf.presentation.cardEditing
 
 import androidx.lifecycle.ViewModel
-import com.example.klaf.domain.entities.Card
-import com.example.klaf.domain.entities.Deck
-import com.example.klaf.domain.ipa.LetterInfo
+import com.example.domain.entities.Card
+import com.example.domain.entities.Deck
+import com.example.domain.ipa.LetterInfo
 import com.example.klaf.presentation.cardAddition.AutocompleteState
 import com.example.klaf.presentation.common.EventMessageSource
 import kotlinx.coroutines.flow.SharedFlow

@@ -8,11 +8,11 @@ import com.example.klaf.data.common.DataSynchronizationState
 import com.example.klaf.data.common.DataSynchronizationWorker.Companion.getDataSynchronizationProgressState
 import com.example.klaf.data.common.DataSynchronizationWorker.Companion.performDataSynchronization
 import com.example.klaf.data.common.notifications.NotificationChannelInitializer
-import com.example.klaf.domain.common.CoroutineStateHolder.Companion.launchWithState
-import com.example.klaf.domain.common.CoroutineStateHolder.Companion.onException
-import com.example.klaf.domain.common.getCurrentDateAsLong
-import com.example.klaf.domain.entities.Deck
-import com.example.klaf.domain.useCases.*
+import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
+import com.example.domain.common.CoroutineStateHolder.Companion.onException
+import com.example.domain.common.getCurrentDateAsLong
+import com.example.domain.entities.Deck
+import com.example.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.*

@@ -11,8 +11,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.klaf.domain.entities.Card
-import com.example.klaf.domain.ipa.decodeToCompletedViewingIpa
+import com.example.domain.entities.Card
+import com.example.domain.ipa.decodeToCompletedViewingIpa
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable

@@ -4,10 +4,10 @@ import com.example.klaf.data.firestore.entities.FirestoreAutocompleteWord
 import com.example.klaf.data.firestore.entities.FirestoreCard
 import com.example.klaf.data.firestore.entities.FirestoreDeck
 import com.example.klaf.data.firestore.entities.FirestoreStorageSaveVersion
-import com.example.klaf.domain.entities.AutocompleteWord
-import com.example.klaf.domain.entities.Card
-import com.example.klaf.domain.entities.Deck
-import com.example.klaf.domain.entities.StorageSaveVersion
+import com.example.domain.entities.AutocompleteWord
+import com.example.domain.entities.Card
+import com.example.domain.entities.Deck
+import com.example.domain.entities.StorageSaveVersion
 
 fun FirestoreDeck.mapToDomainEntity(): Deck = Deck(
     name = name,

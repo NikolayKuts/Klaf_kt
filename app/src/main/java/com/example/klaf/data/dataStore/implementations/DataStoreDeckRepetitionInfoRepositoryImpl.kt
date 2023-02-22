@@ -1,9 +1,9 @@
 package com.example.klaf.data.dataStore.implementations
 
 import androidx.datastore.core.DataStore
-import com.example.klaf.domain.entities.DeckRepetitionInfo
-import com.example.klaf.domain.entities.DeckRepetitionInfos
-import com.example.klaf.domain.repositories.DeckRepetitionInfoRepository
+import com.example.domain.entities.DeckRepetitionInfo
+import com.example.domain.entities.DeckRepetitionInfos
+import com.example.domain.repositories.DeckRepetitionInfoRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

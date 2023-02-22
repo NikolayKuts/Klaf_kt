@@ -3,10 +3,10 @@ package com.example.klaf.presentation.cardViewing
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.R
-import com.example.klaf.domain.entities.Card
-import com.example.klaf.domain.entities.Deck
-import com.example.klaf.domain.useCases.FetchCardsUseCase
-import com.example.klaf.domain.useCases.FetchDeckByIdUseCase
+import com.example.domain.entities.Card
+import com.example.domain.entities.Deck
+import com.example.domain.useCases.FetchCardsUseCase
+import com.example.domain.useCases.FetchDeckByIdUseCase
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.tryEmit
 import dagger.assisted.Assisted
