@@ -27,13 +27,11 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import com.example.klaf.R
-import com.example.klaf.domain.common.CardRepetitionOrder
-import com.example.klaf.domain.common.CardSide
-import com.example.klaf.domain.common.DeckRepetitionState
-import com.example.klaf.domain.common.ifFalse
-import com.example.klaf.domain.enums.DifficultyRecallingLevel.*
-import com.example.klaf.domain.ipa.LetterInfo
-import com.example.klaf.domain.ipa.decodeToIpaPrompts
+import com.example.domain.common.DeckRepetitionState
+import com.example.domain.common.ifFalse
+import com.example.domain.enums.DifficultyRecallingLevel.*
+import com.example.domain.ipa.LetterInfo
+import com.example.domain.ipa.decodeToIpaPrompts
 import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
 
@@ -229,15 +227,15 @@ private fun DeckInfo(deckName: String) {
 
 @Composable
 private fun OrderPointers(
-    order: CardRepetitionOrder,
+    order: com.example.domain.common.CardRepetitionOrder,
 ) {
     val frontSidePointerText = when (order) {
-        CardRepetitionOrder.NATIVE_TO_FOREIGN -> stringResource(id = R.string.pointer_native)
-        CardRepetitionOrder.FOREIGN_TO_NATIVE -> stringResource(id = R.string.pointer_foreign)
+        com.example.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN -> stringResource(id = R.string.pointer_native)
+        com.example.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE -> stringResource(id = R.string.pointer_foreign)
     }
     val backSidePointerText = when (order) {
-        CardRepetitionOrder.NATIVE_TO_FOREIGN -> stringResource(id = R.string.pointer_foreign)
-        CardRepetitionOrder.FOREIGN_TO_NATIVE -> stringResource(id = R.string.pointer_native)
+        com.example.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN -> stringResource(id = R.string.pointer_foreign)
+        com.example.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE -> stringResource(id = R.string.pointer_native)
     }
 
     Text(
@@ -292,25 +290,25 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
 
 
     when (deckRepetitionState.repetitionOrder) {
-        CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
+        com.example.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
             when (deckRepetitionState.side) {
-                CardSide.FRONT -> {
+                com.example.domain.common.CardSide.FRONT -> {
                     word = card.nativeWord
                     ipaPrompt = emptyList()
                 }
-                CardSide.BACK -> {
+                com.example.domain.common.CardSide.BACK -> {
                     word = card.foreignWord
                     ipaPrompt = card.decodeToIpaPrompts()
                 }
             }
         }
-        CardRepetitionOrder.FOREIGN_TO_NATIVE -> {
+        com.example.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE -> {
             when (deckRepetitionState.side) {
-                CardSide.FRONT -> {
+                com.example.domain.common.CardSide.FRONT -> {
                     word = card.foreignWord
                     ipaPrompt = card.decodeToIpaPrompts()
                 }
-                CardSide.BACK -> {
+                com.example.domain.common.CardSide.BACK -> {
                     word = card.nativeWord
                     ipaPrompt = emptyList()
                 }
@@ -319,8 +317,8 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
     }
 
     val wordTextStyle = when (deckRepetitionState.side) {
-        CardSide.FRONT -> MainTheme.typographies.frontSideCardWordTextStyle
-        CardSide.BACK -> MainTheme.typographies.backSideCardWordTextStyle
+        com.example.domain.common.CardSide.FRONT -> MainTheme.typographies.frontSideCardWordTextStyle
+        com.example.domain.common.CardSide.BACK -> MainTheme.typographies.backSideCardWordTextStyle
     }
 
     Text(
@@ -545,17 +543,17 @@ private fun MoreButton(
 }
 
 @Composable
-fun CardButton(cardSide: CardSide, onClick: () -> Unit) {
+fun CardButton(cardSide: com.example.domain.common.CardSide, onClick: () -> Unit) {
     val rotationValue: Float
     val backgroundColor: Color
     val animationDuration = 500
 
     when (cardSide) {
-        CardSide.FRONT -> {
+        com.example.domain.common.CardSide.FRONT -> {
             rotationValue = 180F
             backgroundColor = MainTheme.colors.deckRepetitionScreenColors.frontSideCardButton
         }
-        CardSide.BACK -> {
+        com.example.domain.common.CardSide.BACK -> {
             rotationValue = 0F
             backgroundColor = MainTheme.colors.deckRepetitionScreenColors.backSideCardButton
         }

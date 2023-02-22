@@ -1,9 +1,9 @@
 package com.example.klaf.presentation.cardTransferring.common
 
 import androidx.lifecycle.ViewModel
-import com.example.klaf.domain.entities.Deck
-import com.example.klaf.presentation.common.EventMessageSource
+import com.example.domain.entities.Deck
 import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingState
+import com.example.klaf.presentation.common.EventMessageSource
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 

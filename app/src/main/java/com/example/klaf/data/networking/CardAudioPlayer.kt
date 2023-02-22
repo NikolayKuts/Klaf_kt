@@ -4,10 +4,10 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.example.klaf.domain.common.CoroutineStateHolder.Companion.launchWithState
-import com.example.klaf.domain.common.CoroutineStateHolder.Companion.onException
-import com.example.klaf.domain.common.ifNull
-import com.example.klaf.domain.common.ifTrue
+import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
+import com.example.domain.common.CoroutineStateHolder.Companion.onException
+import com.example.domain.common.ifNull
+import com.example.domain.common.ifTrue
 import kotlinx.coroutines.*
 import javax.inject.Inject
 

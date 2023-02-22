@@ -1,6 +1,6 @@
 package com.example.klaf.presentation.cardAddition
 
-import com.example.klaf.domain.ipa.LetterInfo
+import com.example.domain.ipa.LetterInfo
 
 sealed class CardAdditionState(
     val letterInfos: List<LetterInfo>,

@@ -10,7 +10,7 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavDeepLinkBuilder
 import com.example.klaf.R
 import com.example.klaf.data.common.notifications.NotificationChannelInitializer.Companion.DECK_REPETITION_CHANNEL_ID
-import com.example.klaf.domain.common.DECK_ID_KEY
+import com.example.domain.common.DECK_ID_KEY
 import com.example.klaf.presentation.common.MainActivity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject

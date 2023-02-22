@@ -7,7 +7,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
-import com.example.klaf.domain.entities.Deck
+import com.example.domain.entities.Deck
 import com.example.klaf.presentation.common.TransparentDialogFragment
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showSnackBar

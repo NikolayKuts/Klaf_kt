@@ -4,12 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import com.example.klaf.domain.common.generateLetterInfos
-import com.example.klaf.domain.common.updatedAt
-import com.example.klaf.domain.ipa.LetterInfo
-import com.example.klaf.domain.ipa.convertToUncompletedIpa
-import com.example.klaf.domain.ipa.decodeToCompletedIpa
-import com.example.klaf.domain.ipa.decodeToInfos
+import com.example.domain.common.generateLetterInfos
+import com.example.domain.common.updatedAt
+import com.example.domain.ipa.LetterInfo
+import com.example.domain.ipa.convertToUncompletedIpa
+import com.example.domain.ipa.decodeToCompletedIpa
+import com.example.domain.ipa.decodeToInfos
 import com.example.klaf.presentation.common.CardManagementView
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
 

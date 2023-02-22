@@ -2,15 +2,15 @@ package com.example.klaf.data.common
 
 import android.content.Context
 import android.net.Uri
+import com.example.domain.common.CardRepositoryRoomImp
+import com.example.domain.common.DeckRepositoryRoomImp
+import com.example.domain.entities.Card
+import com.example.domain.entities.Deck
+import com.example.domain.repositories.CardRepository
+import com.example.domain.repositories.DeckRepository
+import com.example.domain.repositories.OldAppKlafDataTransferRepository
 import com.example.klaf.data.room.entities.RoomCard.Companion.CARD_TABLE_NAME
 import com.example.klaf.data.room.entities.RoomDeck.Companion.DECK_TABLE_NAME
-import com.example.klaf.di.CardRepositoryRoomImp
-import com.example.klaf.di.DeckRepositoryRoomImp
-import com.example.klaf.domain.entities.Card
-import com.example.klaf.domain.entities.Deck
-import com.example.klaf.domain.repositories.CardRepository
-import com.example.klaf.domain.repositories.DeckRepository
-import com.example.klaf.domain.repositories.OldAppKlafDataTransferRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

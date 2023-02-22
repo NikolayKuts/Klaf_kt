@@ -1,16 +1,14 @@
 package com.example.klaf.data.firestore.repositoryImplementations
 
-import androidx.lifecycle.LiveData
+import com.example.domain.entities.Card
+import com.example.domain.repositories.CardRepository
 import com.example.klaf.data.firestore.MAIN_COLLECTION_NAME
 import com.example.klaf.data.firestore.entities.FirestoreCard
 import com.example.klaf.data.firestore.mapToDomainEntity
 import com.example.klaf.data.firestore.mapToFirestoreEntity
-import com.example.klaf.domain.entities.Card
-import com.example.klaf.domain.repositories.CardRepository
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -23,10 +21,6 @@ class CardRepositoryFirestoreImp @Inject constructor(
 
         private const val CARD_DOCUMENT_NAME = "cards"
         private const val CARD_SUB_COLLECTION_NAME = "card_collection"
-    }
-
-    override suspend fun fetchObservableCardQuantityByDeckId(deckId: Int): LiveData<Int> {
-        TODO("Not yet implemented")
     }
 
     override suspend fun fetchCardQuantityByDeckId(deckId: Int): Int {

@@ -4,8 +4,8 @@ import com.example.klaf.data.firestore.MAIN_COLLECTION_NAME
 import com.example.klaf.data.firestore.entities.FirestoreStorageSaveVersion
 import com.example.klaf.data.firestore.mapToDomainEntity
 import com.example.klaf.data.firestore.mapToFirestoreEntity
-import com.example.klaf.domain.entities.StorageSaveVersion
-import com.example.klaf.domain.repositories.StorageSaveVersionRepository
+import com.example.domain.entities.StorageSaveVersion
+import com.example.domain.repositories.StorageSaveVersionRepository
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject

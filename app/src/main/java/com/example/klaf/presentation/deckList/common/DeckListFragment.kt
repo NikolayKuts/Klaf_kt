@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
-import com.example.klaf.domain.entities.Deck
+import com.example.domain.entities.Deck
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.*

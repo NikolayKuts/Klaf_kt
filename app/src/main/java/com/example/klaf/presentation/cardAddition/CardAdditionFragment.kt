@@ -9,9 +9,9 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
+import com.example.domain.common.ifTrue
 import com.example.klaf.R
 import com.example.klaf.data.common.MIME_TYPE_TEXT_PLAIN
-import com.example.klaf.domain.common.ifTrue
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.theme.MainTheme

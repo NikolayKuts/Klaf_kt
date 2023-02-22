@@ -3,10 +3,10 @@ package com.example.klaf.presentation.cardTransferring.common
 import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
 import com.example.klaf.R
-import com.example.klaf.domain.common.CoroutineStateHolder.Companion.launchWithState
-import com.example.klaf.domain.common.CoroutineStateHolder.Companion.onException
-import com.example.klaf.domain.entities.Deck
-import com.example.klaf.domain.useCases.*
+import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
+import com.example.domain.common.CoroutineStateHolder.Companion.onException
+import com.example.domain.entities.Deck
+import com.example.domain.useCases.*
 import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingState
 import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingState.*
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
