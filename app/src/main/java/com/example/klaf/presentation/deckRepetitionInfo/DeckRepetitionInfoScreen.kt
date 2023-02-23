@@ -23,8 +23,7 @@ import com.example.domain.common.DeckRepetitionSuccessMark
 import com.example.domain.common.DeckRepetitionSuccessMark.*
 import com.example.domain.entities.Deck
 import com.example.klaf.R
-import com.example.klaf.data.common.*
-import com.example.klaf.presentation.common.timeAsString
+import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.deckRepetition.BaseDeckRepetitionViewModel
 import com.example.klaf.presentation.theme.MainTheme
 import kotlin.math.max

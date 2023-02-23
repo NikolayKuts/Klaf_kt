@@ -1,5 +1,9 @@
 package com.example.domain.common
 
+import com.example.domain.common.DeckRepetitionSuccessMark.FAILURE
+import com.example.domain.common.DeckRepetitionSuccessMark.SUCCESS
+import com.example.domain.entities.Deck
+import com.example.domain.entities.DeckRepetitionInfo
 import com.example.domain.ipa.LetterInfo
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -10,6 +14,12 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.coroutines.CoroutineContext
+
+val DeckRepetitionInfo.isCurrentDurationUnassigned: Boolean
+    get() = currentDuration == UNASSIGNED_LONG_VALUE
+
+val Deck.lastIterationSuccessMark: DeckRepetitionSuccessMark
+    get() = if (this.isLastIterationSucceeded) SUCCESS else FAILURE
 
 fun <T> MutableList<T>.update(newData: List<T>) {
     clear()

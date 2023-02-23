@@ -5,6 +5,7 @@ import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
 import com.example.domain.entities.StorageSaveVersion
 import com.example.domain.entities.StorageSaveVersion.Companion.INITIAL_SAVE_VERSION
+import com.example.domain.entities.StorageSaveVersionValidationData
 import com.example.domain.repositories.CardRepository
 import com.example.domain.repositories.DeckRepository
 import com.example.domain.repositories.StorageSaveVersionRepository

@@ -2,7 +2,7 @@ package com.example.klaf.presentation.cardAddition
 
 import androidx.lifecycle.ViewModel
 import com.example.domain.entities.Deck
-import com.example.klaf.data.networking.CardAudioPlayer
+import com.example.data.networking.CardAudioPlayer
 import com.example.klaf.presentation.common.EventMessageSource
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow

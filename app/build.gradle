@@ -5,27 +5,21 @@ plugins {
     id 'androidx.navigation.safeargs.kotlin'
     id 'dagger.hilt.android.plugin'
     id 'com.google.gms.google-services'
-
-    /** kotlin serialization **/
     id 'org.jetbrains.kotlin.plugin.serialization' version "$kotlin_plugin_serialization"
 }
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion rootProject.ext.target_sdk_version
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.example.klaf"
-        minSdkVersion 21
-        targetSdkVersion 33
+        minSdkVersion rootProject.ext.min_sdk_version
+        targetSdkVersion rootProject.ext.target_sdk_version
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        kapt {
-            arguments { arg("room.schemaLocation", "$projectDir/schemas") }
-        }
     }
 
     buildTypes {
@@ -58,8 +52,8 @@ dependencies {
 
     /** common **/
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.7.10"
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation("androidx.core:core-ktx:$core_ktx_version")
+    implementation ("androidx.appcompat:appcompat:$appcompat_version")
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
@@ -80,28 +74,26 @@ dependencies {
     implementation "androidx.navigation:navigation-dynamic-features-fragment:2.4.2"
 
     /** room **/
-    implementation "androidx.room:room-runtime:2.4.3"
-    implementation "androidx.room:room-ktx:2.4.3"
-    kapt "androidx.room:room-compiler:2.4.3"
+    implementation("androidx.room:room-runtime:$room_vwrsion")
+    implementation("androidx.room:room-ktx:$room_vwrsion")
+    kapt("androidx.room:room-compiler:$room_vwrsion")
 
     /** lifecycle **/
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.4.1"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.4.1"
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version")
 
     implementation 'androidx.preference:preference-ktx:1.2.0'
 
     /** hilt **/
-    implementation "com.google.dagger:hilt-android:2.44"
-    kapt "com.google.dagger:hilt-compiler:2.44.2"
-    kapt 'androidx.hilt:hilt-compiler:1.0.0'
-    implementation 'androidx.hilt:hilt-work:1.0.0'
+    implementation("com.google.dagger:hilt-android:$hilt_android_version")
+    kapt("com.google.dagger:hilt-compiler:$dagger_hilt_compiler_version")
+    kapt("androidx.hilt:hilt-compiler:$hilt_compiler_version")
+    implementation("androidx.hilt:hilt-work:$hilt_work_version")
 
-    /** firebase **/
-    implementation platform('com.google.firebase:firebase-bom:30.2.0')
-    implementation 'com.google.firebase:firebase-analytics-ktx'
+//    /** firebase **/
+    implementation platform("com.google.firebase:firebase-bom:$firebase_bom_version")
     implementation 'com.google.firebase:firebase-firestore-ktx'
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.1"
 
     /** compose **/
     implementation "androidx.compose.runtime:runtime:$compose_version"
@@ -119,17 +111,17 @@ dependencies {
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
 
     /** work manager **/
-    implementation "androidx.work:work-runtime-ktx:2.7.1"
+    implementation("androidx.work:work-runtime-ktx:$work_manager_version")
 
     /** serialization **/
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinx_serialization_json_virsion"
 
     /** DataStore **/
-    implementation "androidx.datastore:datastore:1.0.0"
+    implementation("androidx.datastore:datastore:$datastore_version")
 
     /** Retrofit **/
-    def retrofitVersion = "2.9.0"
-    implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
+    implementation("com.squareup.retrofit2:retrofit:$retrofit_version")
 
     implementation project(':domain')
+    implementation project(':data')
 }

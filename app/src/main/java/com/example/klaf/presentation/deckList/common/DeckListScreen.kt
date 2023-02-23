@@ -24,15 +24,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import com.example.domain.common.ScheduledDateState
+import com.example.domain.entities.ScheduledDateState
 import com.example.domain.common.isEven
 import com.example.domain.entities.Deck
 import com.example.klaf.R
-import com.example.klaf.data.common.getScheduledDateStateByByCalculatedRange
-import com.example.klaf.presentation.common.FullBackgroundDialog
-import com.example.klaf.presentation.common.RoundButton
-import com.example.klaf.presentation.common.RoundedIcon
-import com.example.klaf.presentation.common.rememberAsMutableStateOf
+import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState

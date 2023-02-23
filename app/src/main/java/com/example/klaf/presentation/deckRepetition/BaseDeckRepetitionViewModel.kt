@@ -1,9 +1,9 @@
 package com.example.klaf.presentation.deckRepetition
 
 import androidx.lifecycle.ViewModel
-import com.example.klaf.data.networking.CardAudioPlayer
+import com.example.data.networking.CardAudioPlayer
 import com.example.domain.entities.DeckRepetitionInfo
-import com.example.domain.common.DeckRepetitionState
+import com.example.domain.entities.DeckRepetitionState
 import com.example.domain.entities.Deck
 import com.example.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.presentation.common.ButtonState

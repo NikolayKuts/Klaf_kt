@@ -1,7 +1,7 @@
 package com.example.domain.common
 
-import com.example.domain.common.StorageSaveVersionValidationData
-import com.example.domain.common.StorageSaveVersionValidationData.Companion.UNDEFINED_SAVE_VERSION
+import com.example.domain.entities.StorageSaveVersionValidationData
+import com.example.domain.entities.StorageSaveVersionValidationData.Companion.UNDEFINED_SAVE_VERSION
 import javax.inject.Inject
 
 class DataSynchronizationValidator @Inject constructor() {

@@ -15,7 +15,7 @@ import com.example.domain.useCases.AddNewCardIntoDeckUseCase
 import com.example.domain.useCases.FetchDeckByIdUseCase
 import com.example.domain.useCases.FetchWordAutocompleteUseCase
 import com.example.klaf.R
-import com.example.klaf.data.networking.CardAudioPlayer
+import com.example.data.networking.CardAudioPlayer
 import com.example.klaf.presentation.cardAddition.CardAdditionEvent.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.tryEmit

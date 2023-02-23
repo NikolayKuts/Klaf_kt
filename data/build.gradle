@@ -1,0 +1,88 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
+    id 'org.jetbrains.kotlin.plugin.serialization' version "$kotlin_plugin_serialization"
+}
+
+android {
+    namespace 'com.example.data'
+    compileSdk rootProject.ext.target_sdk_version
+
+    defaultConfig {
+        minSdk rootProject.ext.min_sdk_version
+        targetSdk rootProject.ext.target_sdk_version
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+
+        kapt {
+            arguments { arg("room.schemaLocation", "$projectDir/schemas") }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+
+    /** core **/
+    implementation("androidx.core:core-ktx:$core_ktx_version")
+    implementation("androidx.appcompat:appcompat:$appcompat_version")
+
+    /** tests **/
+    testImplementation("junit:junit:$junit_version")
+
+    /** navigation **/
+    implementation("androidx.navigation:navigation-runtime-ktx:$navigation_runtime_ktx_version")
+
+    /** lifecycle **/
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version")
+
+    /** room **/
+    implementation("androidx.room:room-runtime:$room_vwrsion")
+    implementation("androidx.room:room-ktx:$room_vwrsion")
+    kapt("androidx.room:room-compiler:$room_vwrsion")
+
+    /** hilt **/
+    implementation("com.google.dagger:hilt-android:$hilt_android_version")
+    kapt("com.google.dagger:hilt-compiler:$dagger_hilt_compiler_version")
+    kapt("androidx.hilt:hilt-compiler:$hilt_compiler_version")
+    implementation("androidx.hilt:hilt-work:$hilt_work_version")
+
+    /** firebase **/
+    implementation platform("com.google.firebase:firebase-bom:$firebase_bom_version")
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$coroutines_play_services_version")
+
+    /** work manager **/
+    implementation("androidx.work:work-runtime-ktx:$work_manager_version")
+
+    /** serialization **/
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinx_serialization_json_virsion"
+
+    /** DataStore **/
+    implementation("androidx.datastore:datastore:$datastore_version")
+
+    /** Retrofit **/
+    implementation("com.squareup.retrofit2:retrofit:$retrofit_version")
+
+    /** modules **/
+    implementation project(":domain")
+}

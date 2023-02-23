@@ -3,11 +3,11 @@ package com.example.klaf.presentation.deckList.common
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.example.klaf.R
-import com.example.klaf.data.common.AppReopeningWorker.Companion.scheduleAppReopening
-import com.example.klaf.data.common.DataSynchronizationState
-import com.example.klaf.data.common.DataSynchronizationWorker.Companion.getDataSynchronizationProgressState
-import com.example.klaf.data.common.DataSynchronizationWorker.Companion.performDataSynchronization
-import com.example.klaf.data.common.notifications.NotificationChannelInitializer
+import com.example.data.common.AppReopeningWorker.Companion.scheduleAppReopening
+import com.example.data.common.DataSynchronizationState
+import com.example.data.common.DataSynchronizationWorker.Companion.getDataSynchronizationProgressState
+import com.example.data.common.DataSynchronizationWorker.Companion.performDataSynchronization
+import com.example.klaf.presentation.common.notifications.NotificationChannelInitializer
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
 import com.example.domain.common.getCurrentDateAsLong

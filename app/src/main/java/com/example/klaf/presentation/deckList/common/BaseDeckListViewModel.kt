@@ -1,7 +1,7 @@
 package com.example.klaf.presentation.deckList.common
 
 import androidx.lifecycle.ViewModel
-import com.example.klaf.data.common.DataSynchronizationState
+import com.example.data.common.DataSynchronizationState
 import com.example.domain.entities.Deck
 import com.example.klaf.presentation.common.EventMessageSource
 import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState

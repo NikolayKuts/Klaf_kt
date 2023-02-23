@@ -27,7 +27,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import com.example.klaf.R
-import com.example.domain.common.DeckRepetitionState
+import com.example.domain.entities.DeckRepetitionState
 import com.example.domain.common.ifFalse
 import com.example.domain.enums.DifficultyRecallingLevel.*
 import com.example.domain.ipa.LetterInfo

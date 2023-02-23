@@ -20,6 +20,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.example.domain.common.DeckRepetitionSuccessMark
+import com.example.domain.common.UNASSIGNED_STRING_VALUE
+import com.example.domain.common.isCurrentDurationUnassigned
+import com.example.domain.entities.DeckRepetitionInfo
+import com.example.klaf.R
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -38,6 +43,22 @@ val Long.timeAsString: String
         val minutes = this / SECOND_QUANTITY_IN_MINUTE
 
         return TIME_FORMAT_TEMPLATE.format(minutes, seconds)
+    }
+
+val DeckRepetitionInfo.currentDurationAsTimeOrUnassigned: String
+    get() {
+        return if (this.isCurrentDurationUnassigned) {
+            UNASSIGNED_STRING_VALUE
+        } else {
+            this.currentDuration.timeAsString
+        }
+    }
+
+val DeckRepetitionSuccessMark.markResId: Int
+    get() = when (this) {
+        DeckRepetitionSuccessMark.UNASSIGNED -> R.string.unassigned_string_value
+        DeckRepetitionSuccessMark.SUCCESS -> R.string.deck_repetition_mark_successful
+        DeckRepetitionSuccessMark.FAILURE -> R.string.deck_repetition_mark_failed
     }
 
 fun Context.showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
