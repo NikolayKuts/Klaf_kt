@@ -1,10 +1,10 @@
 package com.example.data.dataStore.implementations
 
 import androidx.datastore.core.DataStore
+import com.example.domain.common.deleteIf
 import com.example.domain.entities.DeckRepetitionInfo
 import com.example.domain.entities.DeckRepetitionInfos
 import com.example.domain.repositories.DeckRepetitionInfoRepository
-import com.google.common.collect.Iterables.removeIf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -20,10 +20,9 @@ class DataStoreDeckRepetitionInfoRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveDeckRepetitionInfo(info: DeckRepetitionInfo) {
-        TODO("refactor")
         dataStore.updateData { infos ->
             val updatedContent = infos.content.toMutableSet().apply {
-                removeIf { filteredInfo -> filteredInfo.deckId == info.deckId }
+                deleteIf { filteredInfo -> filteredInfo.deckId == info.deckId }
                 add(element = info)
             }
 
@@ -32,11 +31,10 @@ class DataStoreDeckRepetitionInfoRepositoryImpl @Inject constructor(
     }
 
     override suspend fun removeDeckRepetitionInfo(deckId: Int) {
-        TODO("refactor")
         dataStore.updateData { infos ->
             val updatedContent = infos.content.toMutableSet()
                 .apply {
-                    removeIf { filterdInfo -> filterdInfo.deckId == deckId }
+                    deleteIf { filterdInfo -> filterdInfo.deckId == deckId }
                 }
 
             infos.copy(content = updatedContent)

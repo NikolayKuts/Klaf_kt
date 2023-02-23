@@ -108,3 +108,9 @@ fun <T> List<T>.updatedAt(index: Int, newValue: T): List<T> {
 fun getCurrentDateAsLong(): Long {
     return Calendar.getInstance().time.time
 }
+
+inline fun <T> MutableSet<T>.deleteIf(block: (T) -> Boolean) {
+    forEach { element ->
+        block(element).ifTrue { remove(element) }
+    }
+}
