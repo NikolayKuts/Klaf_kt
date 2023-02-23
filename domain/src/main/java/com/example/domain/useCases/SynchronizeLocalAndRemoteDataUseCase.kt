@@ -16,17 +16,17 @@ import kotlinx.coroutines.flow.channelFlow
 import javax.inject.Inject
 
 class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
-    @DeckRepositoryRoomImp
+    @LocalDeckRepositoryImp
     private val localDeckRepository: DeckRepository,
-    @CardRepositoryRoomImp
+    @LocalCardRepositoryImp
     private val localCardRepository: CardRepository,
-    @StorageSaveVersionRepositoryRoomImp
+    @LocalStorageSaveVersionRepositoryImp
     private val localStorageSaveVersionRepository: StorageSaveVersionRepository,
-    @DeckRepositoryFirestoreImp
+    @RemoteDeckRepositoryImp
     private val remoteDeckRepository: DeckRepository,
-    @CardRepositoryFirestoreImp
+    @RemoteCardRepositoryImp
     private val remoteCardRepository: CardRepository,
-    @StorageSaveVersionRepositoryFirestoreImp
+    @RemoteStorageSaveVersionRepositoryImp
     private val remoteStorageSaveVersionRepository: StorageSaveVersionRepository,
     private val dataSynchronizationValidator: DataSynchronizationValidator,
 ) {

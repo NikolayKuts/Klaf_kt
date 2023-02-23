@@ -1,7 +1,7 @@
 package com.example.domain.useCases
 
-import com.example.domain.common.DeckRepositoryRoomImp
-import com.example.domain.common.StorageSaveVersionRepositoryRoomImp
+import com.example.domain.common.LocalDeckRepositoryImp
+import com.example.domain.common.LocalStorageSaveVersionRepositoryImp
 import com.example.domain.common.getCurrentDateAsLong
 import com.example.domain.common.ifNull
 import com.example.domain.entities.Deck
@@ -13,9 +13,9 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class CreateInterimDeckUseCase @Inject constructor(
-    @DeckRepositoryRoomImp
+    @LocalDeckRepositoryImp
     private val deckRepository: DeckRepository,
-    @StorageSaveVersionRepositoryRoomImp
+    @LocalStorageSaveVersionRepositoryImp
     private val localStorageSaveVersionRepository: StorageSaveVersionRepository,
     private val localStorageTransactionRepository: StorageTransactionRepository,
 ) {

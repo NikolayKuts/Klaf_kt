@@ -1,18 +1,18 @@
 package com.example.domain.useCases
 
-import com.example.domain.common.CardRepositoryRoomImp
-import com.example.domain.common.DeckRepositoryRoomImp
-import com.example.domain.common.StorageSaveVersionRepositoryRoomImp
+import com.example.domain.common.LocalCardRepositoryImp
+import com.example.domain.common.LocalDeckRepositoryImp
+import com.example.domain.common.LocalStorageSaveVersionRepositoryImp
 import com.example.domain.repositories.*
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
 class RemoveDeckUseCase @Inject constructor(
-    @DeckRepositoryRoomImp
+    @LocalDeckRepositoryImp
     private val deckRepository: DeckRepository,
-    @CardRepositoryRoomImp
+    @LocalCardRepositoryImp
     private val cardRepository: CardRepository,
-    @StorageSaveVersionRepositoryRoomImp
+    @LocalStorageSaveVersionRepositoryImp
     private val localStorageSaveVersionRepository: StorageSaveVersionRepository,
     private val localStorageTransactionRepository: StorageTransactionRepository,
     private val deckRepetitionInfoRepository: DeckRepetitionInfoRepository,

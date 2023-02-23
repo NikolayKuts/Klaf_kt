@@ -22,29 +22,29 @@ import dagger.hilt.components.SingletonComponent
 interface DomainModule {
 
     @Binds
-    @com.example.domain.common.DeckRepositoryRoomImp
+    @com.example.domain.common.LocalDeckRepositoryImp
     fun bindRoomDeckRepository(repository: DeckRepositoryRoomImp): DeckRepository
 
     @Binds
-    @com.example.domain.common.CardRepositoryRoomImp
+    @com.example.domain.common.LocalCardRepositoryImp
     fun bindRoomCardRepository(repository: CardRepositoryRoomImp): CardRepository
 
     @Binds
-    @com.example.domain.common.DeckRepositoryFirestoreImp
+    @com.example.domain.common.RemoteDeckRepositoryImp
     fun bindFirestoreDeckRepository(repository: DeckRepositoryFirestoreImp): DeckRepository
 
     @Binds
-    @com.example.domain.common.CardRepositoryFirestoreImp
+    @com.example.domain.common.RemoteCardRepositoryImp
     fun bindFirestoreCardRepository(repository: CardRepositoryFirestoreImp): CardRepository
 
     @Binds
-    @com.example.domain.common.StorageSaveVersionRepositoryRoomImp
+    @com.example.domain.common.LocalStorageSaveVersionRepositoryImp
     fun bindRoomStorageSaveVersionRepository(
         repository: StorageSaveVersionRepositoryRoomImp
     ): StorageSaveVersionRepository
 
     @Binds
-    @com.example.domain.common.StorageSaveVersionRepositoryFirestoreImp
+    @com.example.domain.common.RemoteStorageSaveVersionRepositoryImp
     fun bindFirestoreStorageSaveVersionRepository(
         repository: StorageSaveVersionRepositoryFirestoreImp
     ): StorageSaveVersionRepository

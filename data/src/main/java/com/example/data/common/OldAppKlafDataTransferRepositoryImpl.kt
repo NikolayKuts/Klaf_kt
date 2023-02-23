@@ -4,8 +4,8 @@ import android.content.Context
 import android.net.Uri
 import com.example.data.room.entities.RoomCard.Companion.CARD_TABLE_NAME
 import com.example.data.room.entities.RoomDeck.Companion.DECK_TABLE_NAME
-import com.example.domain.common.CardRepositoryRoomImp
-import com.example.domain.common.DeckRepositoryRoomImp
+import com.example.domain.common.LocalCardRepositoryImp
+import com.example.domain.common.LocalDeckRepositoryImp
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
 import com.example.domain.repositories.CardRepository
@@ -18,9 +18,9 @@ import javax.inject.Inject
 
 class OldAppKlafDataTransferRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-    @DeckRepositoryRoomImp
+    @LocalDeckRepositoryImp
     private val deckRepository: DeckRepository,
-    @CardRepositoryRoomImp
+    @LocalCardRepositoryImp
     private val cardRepository: CardRepository,
 ) : OldAppKlafDataTransferRepository {
 

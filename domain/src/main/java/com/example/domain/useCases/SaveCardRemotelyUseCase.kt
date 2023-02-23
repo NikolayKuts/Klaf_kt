@@ -1,6 +1,6 @@
 package com.example.domain.useCases
 
-import com.example.domain.common.CardRepositoryFirestoreImp
+import com.example.domain.common.RemoteCardRepositoryImp
 import com.example.domain.entities.Card
 import com.example.domain.repositories.CardRepository
 import kotlinx.coroutines.Dispatchers
@@ -8,7 +8,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class SaveCardRemotelyUseCase @Inject constructor(
-    @CardRepositoryFirestoreImp
+    @RemoteCardRepositoryImp
     private val cardRepository: CardRepository,
 ) {
 
