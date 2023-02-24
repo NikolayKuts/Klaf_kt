@@ -5,8 +5,8 @@ import androidx.hilt.work.HiltWorker
 import androidx.lifecycle.asFlow
 import androidx.work.*
 import com.example.klaf.data.common.DataSynchronizationState.*
-import com.example.klaf.domain.common.ifTrue
-import com.example.klaf.domain.useCases.SynchronizeLocalAndRemoteDataUseCase
+import com.example.domain.common.ifTrue
+import com.example.domain.useCases.SynchronizeLocalAndRemoteDataUseCase
 import com.example.klaf.data.common.notifications.DataSynchronizationNotifier
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject

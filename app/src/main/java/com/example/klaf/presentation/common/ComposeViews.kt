@@ -34,9 +34,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Popup
+import com.example.domain.common.ifTrue
+import com.example.domain.ipa.LetterInfo
 import com.example.klaf.R
-import com.example.klaf.domain.common.ifTrue
-import com.example.klaf.domain.ipa.LetterInfo
 import com.example.klaf.presentation.cardAddition.AutocompleteState
 import com.example.klaf.presentation.theme.MainTheme
 

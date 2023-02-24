@@ -1,13 +1,12 @@
 package com.example.klaf.data.room.repositoryImplementations
 
-import androidx.lifecycle.LiveData
+import com.example.domain.common.simplifiedItemMap
+import com.example.domain.entities.Card
+import com.example.domain.repositories.CardRepository
 import com.example.klaf.data.room.databases.KlafRoomDatabase
 import com.example.klaf.data.room.entities.RoomCard
 import com.example.klaf.data.room.mapToDomainEntity
 import com.example.klaf.data.room.mapToRoomEntity
-import com.example.klaf.domain.common.simplifiedItemMap
-import com.example.klaf.domain.entities.Card
-import com.example.klaf.domain.repositories.CardRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -17,10 +16,6 @@ import javax.inject.Singleton
 class CardRepositoryRoomImp @Inject constructor(
     private val roomDatabase: KlafRoomDatabase,
 ) : CardRepository {
-
-    override suspend fun fetchObservableCardQuantityByDeckId(deckId: Int): LiveData<Int> {
-        TODO("Not yet implemented")
-    }
 
     override suspend fun fetchCardQuantityByDeckId(deckId: Int): Int {
         return roomDatabase.cardDao().getCardQuantityInDeckAsInt(deckId = deckId)

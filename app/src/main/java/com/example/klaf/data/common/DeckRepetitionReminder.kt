@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.example.klaf.data.common.notifications.DeckRepetitionNotifier
-import com.example.klaf.domain.common.UNASSIGNED_INT_VALUE
+import com.example.domain.common.UNASSIGNED_INT_VALUE
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit

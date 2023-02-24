@@ -10,12 +10,8 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.*
-
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope.*
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
@@ -31,8 +27,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.domain.common.ifTrue
 import com.example.klaf.R
-import com.example.klaf.domain.common.ifTrue
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
 import com.example.klaf.presentation.common.CustomCheckBox
 import com.example.klaf.presentation.common.RoundButton

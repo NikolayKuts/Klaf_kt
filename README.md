@@ -13,7 +13,7 @@ The application allows you to create cards with the automatic creation of a tran
 
 ## Technology stack
 * The code is written with [_**Kotlin**_](https://kotlinlang.org/)
-* [_**MVVM**_](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel), [_**MVI**_](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter) + [_**Clean Architecture**_](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+* [_**MVVM**_](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel), [_**MVI**_](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter)
 * Access to local storage via [_**Room database**_](https://developer.android.com/jetpack/androidx/releases/room?gclid=Cj0KCQiA4aacBhCUARIsAI55maHsI2AXFdILFEuxiZANnj4osoCdiKzs8wbbReVJ94HUD4Mo_CS3k-UaAlj1EALw_wcB&gclsrc=aw.ds), [_**DataStore**_](https://developer.android.com/topic/libraries/architecture/datastore?gclid=Cj0KCQiA4aacBhCUARIsAI55maF8MzhHpnejUNKEjuWnHm3UNt1YOdiCIfE2Xe_yn37gLw7Ap5rV5r0aAjLfEALw_wcB&gclsrc=aw.ds)
 * Access to remote storage via [_**Firebase**_](https://firebase.google.com/)
 * For asynchronous operations used [_**Coroutines**_](https://kotlinlang.org/docs/coroutines-overview.html) and [_**Coroutine flows**_](https://developer.android.com/kotlin/flow)
@@ -23,9 +23,10 @@ The application allows you to create cards with the automatic creation of a tran
 * For scheduling work used [_**Work Manager**_](https://developer.android.com/topic/libraries/architecture/workmanager?gclid=Cj0KCQiA4aacBhCUARIsAI55maFaZUX1X7MJBVufx-d4U0v-21CXkeivW3igzDQe5cXozmLN4wKd60MaAh_QEALw_wcB&gclsrc=aw.ds)
 * For testing used [_**MockK**_](https://mockk.io/) and [_**JUnit4**_](https://junit.org/junit4/)
 * For uploading and playing the pronunciation of words used [_**Media Player**_](https://developer.android.com/reference/android/media/MediaPlayer)
+* Single Activity pattern
+* [_**Clean Architecture**_](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) + _**Multi-Module**_
 
 ## Features
-* Single Activity pattern
 * Navigation to the app from [Smart Text Seletion Menu](https://developer.android.com/about/versions/marshmallow/android-6.0-changes.html?hl=ru#behavior-text-selection)
 * Ability to listen to the pronunciation of English words
 * Autocomplete suggestions when typing foreign words in English

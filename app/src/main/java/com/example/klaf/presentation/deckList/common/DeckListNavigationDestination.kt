@@ -1,6 +1,6 @@
 package com.example.klaf.presentation.deckList.common
 
-import com.example.klaf.domain.entities.Deck
+import com.example.domain.entities.Deck
 
 sealed class DeckListNavigationDestination {
 

@@ -2,8 +2,8 @@ package com.example.klaf.data.firestore.repositoryImplementations
 
 import com.example.klaf.data.firestore.entities.FirestoreAutocompleteWord
 import com.example.klaf.data.firestore.mapToDomainEntity
-import com.example.klaf.domain.entities.AutocompleteWord
-import com.example.klaf.domain.repositories.WordAutocompleteRepository
+import com.example.domain.entities.AutocompleteWord
+import com.example.domain.repositories.WordAutocompleteRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
 import kotlinx.coroutines.tasks.await

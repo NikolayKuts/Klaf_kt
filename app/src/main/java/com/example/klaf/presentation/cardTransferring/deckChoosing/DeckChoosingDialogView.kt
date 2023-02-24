@@ -17,7 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
-import com.example.klaf.domain.entities.Deck
+import com.example.domain.entities.Deck
 import com.example.klaf.presentation.cardTransferring.common.BaseCardTransferringViewModel
 import com.example.klaf.presentation.common.ClosingButton
 import com.example.klaf.presentation.common.ConfirmationButton

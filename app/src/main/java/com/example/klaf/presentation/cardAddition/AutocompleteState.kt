@@ -1,6 +1,6 @@
 package com.example.klaf.presentation.cardAddition
 
-import com.example.klaf.domain.entities.AutocompleteWord
+import com.example.domain.entities.AutocompleteWord
 
 data class AutocompleteState(
     val prefix: String = "",
