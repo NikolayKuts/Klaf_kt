@@ -1,0 +1,35 @@
+package com.example.presentation.deckRepetition
+
+import androidx.lifecycle.ViewModel
+import com.example.data.networking.CardAudioPlayer
+import com.example.domain.entities.DeckRepetitionInfo
+import com.example.domain.entities.DeckRepetitionState
+import com.example.domain.entities.Deck
+import com.example.domain.enums.DifficultyRecallingLevel
+import com.example.klaf.presentation.common.ButtonState
+import com.example.klaf.presentation.common.EventMessageSource
+import com.example.klaf.presentation.common.RepetitionTimer
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+
+abstract class BaseDeckRepetitionViewModel : ViewModel(), EventMessageSource {
+
+    abstract val timer: RepetitionTimer
+    abstract val audioPlayer: CardAudioPlayer
+    abstract val deck: SharedFlow<Deck?>
+    abstract val screenState: StateFlow<RepetitionScreenState>
+    abstract val cardState: SharedFlow<DeckRepetitionState>
+    abstract val deckRepetitionInfo: SharedFlow<DeckRepetitionInfo?>
+    abstract val mainButtonState: StateFlow<ButtonState>
+
+    abstract fun pronounceWord()
+    abstract fun startRepeating()
+    abstract fun moveToStartScreenState()
+    abstract fun turnCard()
+    abstract fun changeRepetitionOrder()
+    abstract fun moveCardByDifficultyRecallingLevel(level: DifficultyRecallingLevel)
+    abstract fun resumeTimerCounting()
+    abstract fun pauseTimerCounting()
+    abstract fun deleteCard(cardId: Int, deckId: Int)
+    abstract fun changeStateOnMainButtonClick()
+}

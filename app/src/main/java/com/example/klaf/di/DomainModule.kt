@@ -1,6 +1,6 @@
 package com.example.klaf.di
 
-import com.example.data.common.OldAppKlafDataTransferRepositoryImpl
+import com.example.data.common.implementations.OldAppKlafDataTransferRepositoryImpl
 import com.example.data.dataStore.implementations.DataStoreDeckRepetitionInfoRepositoryImpl
 import com.example.data.firestore.repositoryImplementations.CardRepositoryFirestoreImp
 import com.example.data.firestore.repositoryImplementations.DeckRepositoryFirestoreImp
@@ -11,7 +11,7 @@ import com.example.data.room.repositoryImplementations.DeckRepositoryRoomImp
 import com.example.data.room.repositoryImplementations.StorageSaveVersionRepositoryRoomImp
 import com.example.data.room.repositoryImplementations.StorageTransactionRepositoryRoomImp
 import com.example.domain.repositories.*
-import com.example.klaf.presentation.common.notifications.DeckRepetitionNotifier
+import com.example.presentation.common.notifications.DeckRepetitionNotifier
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

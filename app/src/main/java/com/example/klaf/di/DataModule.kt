@@ -1,6 +1,5 @@
 package com.example.klaf.di
 
-import android.app.Notification
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
@@ -10,8 +9,6 @@ import com.example.data.dataStore.DECK_REPETITION_INFO_FILE_NAME
 import com.example.data.dataStore.DeckRepetitionInfosSerializer
 import com.example.data.room.databases.KlafRoomDatabase
 import com.example.domain.entities.DeckRepetitionInfos
-import com.example.klaf.presentation.common.notifications.AppRestartNotifier
-import com.example.klaf.presentation.common.notifications.DataSynchronizationNotifier
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
@@ -56,17 +53,5 @@ class DataModule {
             scope = CoroutineScope(context = Dispatchers.IO + SupervisorJob()),
             produceFile = { appContext.dataStoreFile(fileName = DECK_REPETITION_INFO_FILE_NAME) }
         )
-    }
-
-    @Provides
-    @com.example.data.common.AppRestartNotification
-    fun provideAppReopeningNotification(notifier: AppRestartNotifier): Notification {
-        return notifier.createAppRestartNotification()
-    }
-
-    @Provides
-    @com.example.data.common.DataSynchronizationNotification
-    fun provideDataSynchronizationNotification(notifier: DataSynchronizationNotifier): Notification {
-        return notifier.createNotification()
     }
 }
