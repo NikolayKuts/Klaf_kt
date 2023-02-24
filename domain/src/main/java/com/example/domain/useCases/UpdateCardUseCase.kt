@@ -1,7 +1,7 @@
 package com.example.domain.useCases
 
-import com.example.domain.common.CardRepositoryRoomImp
-import com.example.domain.common.StorageSaveVersionRepositoryRoomImp
+import com.example.domain.common.LocalCardRepositoryImp
+import com.example.domain.common.LocalStorageSaveVersionRepositoryImp
 import com.example.domain.entities.Card
 import com.example.domain.repositories.CardRepository
 import com.example.domain.repositories.StorageSaveVersionRepository
@@ -11,9 +11,9 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class UpdateCardUseCase @Inject constructor(
-    @CardRepositoryRoomImp
+    @LocalCardRepositoryImp
     private val cardRepository: CardRepository,
-    @StorageSaveVersionRepositoryRoomImp
+    @LocalStorageSaveVersionRepositoryImp
     private val localStorageSaveVersionRepository: StorageSaveVersionRepository,
     private val localStorageTransactionRepository: StorageTransactionRepository,
 ) {
