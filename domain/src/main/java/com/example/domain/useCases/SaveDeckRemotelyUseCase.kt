@@ -1,6 +1,6 @@
 package com.example.domain.useCases
 
-import com.example.domain.common.DeckRepositoryFirestoreImp
+import com.example.domain.common.RemoteDeckRepositoryImp
 import com.example.domain.entities.Deck
 import com.example.domain.repositories.DeckRepository
 import kotlinx.coroutines.Dispatchers
@@ -8,7 +8,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class SaveDeckRemotelyUseCase @Inject constructor(
-    @DeckRepositoryFirestoreImp
+    @RemoteDeckRepositoryImp
     private val deckRepository: DeckRepository,
 ) {
 

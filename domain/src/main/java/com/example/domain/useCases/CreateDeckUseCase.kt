@@ -1,7 +1,7 @@
 package com.example.domain.useCases
 
-import com.example.domain.common.DeckRepositoryRoomImp
-import com.example.domain.common.StorageSaveVersionRepositoryRoomImp
+import com.example.domain.common.LocalDeckRepositoryImp
+import com.example.domain.common.LocalStorageSaveVersionRepositoryImp
 import com.example.domain.entities.Deck
 import com.example.domain.repositories.DeckRepository
 import com.example.domain.repositories.StorageSaveVersionRepository
@@ -11,9 +11,9 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class CreateDeckUseCase @Inject constructor(
-    @DeckRepositoryRoomImp
+    @LocalDeckRepositoryImp
     private val deckRepository: DeckRepository,
-    @StorageSaveVersionRepositoryRoomImp
+    @LocalStorageSaveVersionRepositoryImp
     private val localStorageSaveVersionRepository: StorageSaveVersionRepository,
     private val localStorageTransactionRepository: StorageTransactionRepository,
 ) {

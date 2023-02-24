@@ -1,8 +1,8 @@
 package com.example.domain.useCases
 
-import com.example.domain.common.CardRepositoryRoomImp
-import com.example.domain.common.DeckRepositoryRoomImp
-import com.example.domain.common.StorageSaveVersionRepositoryRoomImp
+import com.example.domain.common.LocalCardRepositoryImp
+import com.example.domain.common.LocalDeckRepositoryImp
+import com.example.domain.common.LocalStorageSaveVersionRepositoryImp
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
 import com.example.domain.repositories.CardRepository
@@ -13,11 +13,11 @@ import kotlinx.coroutines.*
 import javax.inject.Inject
 
 class TransferCardsToDeckUseCase @Inject constructor(
-    @CardRepositoryRoomImp
+    @LocalCardRepositoryImp
     private val cardRepository: CardRepository,
-    @DeckRepositoryRoomImp
+    @LocalDeckRepositoryImp
     private val deckRepository: DeckRepository,
-    @StorageSaveVersionRepositoryRoomImp
+    @LocalStorageSaveVersionRepositoryImp
     private val localStorageSaveVersionRepository: StorageSaveVersionRepository,
     private val localStorageTransactionRepository: StorageTransactionRepository,
 ) {

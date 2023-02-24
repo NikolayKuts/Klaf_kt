@@ -3,19 +3,19 @@ package com.example.domain.common
 import javax.inject.Qualifier
 
 @Qualifier
-annotation class DeckRepositoryRoomImp
+annotation class LocalDeckRepositoryImp
 
 @Qualifier
-annotation class DeckRepositoryFirestoreImp
+annotation class RemoteDeckRepositoryImp
 
 @Qualifier
-annotation class CardRepositoryRoomImp
+annotation class LocalCardRepositoryImp
 
 @Qualifier
-annotation class CardRepositoryFirestoreImp
+annotation class RemoteCardRepositoryImp
 
 @Qualifier
-annotation class StorageSaveVersionRepositoryRoomImp
+annotation class LocalStorageSaveVersionRepositoryImp
 
 @Qualifier
-annotation class StorageSaveVersionRepositoryFirestoreImp
+annotation class RemoteStorageSaveVersionRepositoryImp
