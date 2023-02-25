@@ -1,3 +1,7 @@
+import com.example.klaf.di.dependencies.Core
+import com.example.klaf.di.dependencies.Serialization
+import com.example.klaf.di.dependencies.Tests
+
 plugins {
     id 'java-library'
     id 'org.jetbrains.kotlin.jvm'
@@ -12,14 +16,14 @@ java {
 dependencies {
 
     /** core **/
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$coroutines_core_version"
-    implementation("javax.inject:javax.inject:1")
+    implementation(Core.CoroutinesCoreJvm)
+    implementation(Core.JavaxInject)
 
     /** tests **/
-    testImplementation("junit:junit:$junit_version")
-    testImplementation 'org.jetbrains.kotlin:kotlin-test'
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinx_coroutines_test_version")
+    testImplementation(Tests.JunitCore)
+    testImplementation(Tests.Kotlin)
+    testImplementation(Tests.Coroutine)
 
     /** serialization **/
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinx_serialization_json_virsion"
+    implementation(Serialization.Core)
 }
