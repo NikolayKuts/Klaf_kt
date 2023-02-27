@@ -16,6 +16,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -26,12 +27,14 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
-import com.example.klaf.R
+import com.example.domain.common.CardRepetitionOrder
+import com.example.domain.common.CardSide
 import com.example.domain.common.DeckRepetitionState
 import com.example.domain.common.ifFalse
 import com.example.domain.enums.DifficultyRecallingLevel.*
 import com.example.domain.ipa.LetterInfo
 import com.example.domain.ipa.decodeToIpaPrompts
+import com.example.klaf.R
 import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
 
@@ -78,8 +81,11 @@ fun DeckRepetitionScreen(
             .padding(16.dp)
     ) {
         DeckInfo(deckName = receivedDeck.name)
-        OrderPointers(order = repetitionState.repetitionOrder)
-        SwitchOrderButton(onClick = { viewModel.changeRepetitionOrder() })
+        OrderPointers(
+            order = repetitionState.repetitionOrder,
+            onSwitchIconClick = { viewModel.changeRepetitionOrder() }
+        )
+//        SwitchOrderButton(onClick = { viewModel.changeRepetitionOrder() })
         Time(viewModel = viewModel)
         DeckCard(
             deckRepetitionState = repetitionState,
@@ -120,97 +126,90 @@ private fun getConstraints(): ConstraintSet {
         }
 
         val frontSidePointerRef = constrainRefFor(id = FRONT_SIDE_POINTER_ID) {
-            top.linkTo(deckInfoRef.bottom, margin = 8.dp)
-            start.linkTo(parent.start)
-        }
-
-        val arrowPointerRef = constrainRefFor(id = ARROW_POINTER_ID) {
-            top.linkTo(frontSidePointerRef.top)
-            start.linkTo(frontSidePointerRef.end)
-            bottom.linkTo(frontSidePointerRef.bottom)
-        }
-
-        val backSidePointerRef = constrainRefFor(id = BACK_SIDE_POINTER_ID) {
-            top.linkTo(frontSidePointerRef.top)
-            start.linkTo(arrowPointerRef.end)
+            top.linkTo(anchor = deckInfoRef.bottom, margin = 8.dp)
+            start.linkTo(anchor = parent.start)
         }
 
         val rotateButtonRef = constrainRefFor(id = SWITCH_ORDER_BUTTON_VIEW_ID) {
-            top.linkTo(frontSidePointerRef.bottom)
-            start.linkTo(arrowPointerRef.start)
-            end.linkTo(arrowPointerRef.end)
+            top.linkTo(anchor = frontSidePointerRef.top)
+            start.linkTo(anchor = frontSidePointerRef.end)
+        }
+
+        val backSidePointerRef = constrainRefFor(id = BACK_SIDE_POINTER_ID) {
+            top.linkTo(anchor = frontSidePointerRef.top)
+            start.linkTo(anchor = rotateButtonRef.end)
         }
 
         val timerRef = constrainRefFor(id = TIMER_VIEW_ID) {
-            top.linkTo(deckInfoRef.bottom, margin = 8.dp)
-            start.linkTo(parent.start)
-            end.linkTo(parent.end)
+            top.linkTo(anchor = deckInfoRef.bottom, margin = 8.dp)
+            start.linkTo(anchor = parent.start)
+            end.linkTo(anchor = parent.end)
         }
 
         val wordGuideline = createGuidelineFromTop(fraction = 0.4F)
 
         val wordRef = constrainRefFor(id = WORD_VIEW_ID) {
-            top.linkTo(wordGuideline)
-            start.linkTo(parent.start)
-            end.linkTo(parent.end)
+            top.linkTo(anchor = wordGuideline)
+            start.linkTo(anchor = parent.start)
+            end.linkTo(anchor = parent.end)
         }
 
         val ipaPromptsRef = constrainRefFor(id = IPA_PROMPTS_VIEW_ID) {
-            top.linkTo(wordRef.bottom)
-            start.linkTo(wordRef.start)
-            end.linkTo(wordRef.end)
+            top.linkTo(anchor = wordRef.bottom)
+            start.linkTo(anchor = wordRef.start)
+            end.linkTo(anchor = wordRef.end)
         }
 
         val buttonsGuideline = createGuidelineFromBottom(fraction = 0.2F)
 
         val startButtonRef = constrainRefFor(id = START_BUTTON_ID) {
-            top.linkTo(buttonsGuideline)
-            start.linkTo(parent.start)
-            end.linkTo(parent.end)
+            top.linkTo(anchor = buttonsGuideline)
+            start.linkTo(anchor = parent.start)
+            end.linkTo(anchor = parent.end)
         }
 
         val easyButtonRef = createRefFor(id = EASY_BUTTON_ID)
 
         val turnButtonRef = constrainRefFor(id = TURN_BUTTON_ID) {
-            top.linkTo(buttonsGuideline)
-            end.linkTo(easyButtonRef.end)
+            top.linkTo(anchor = buttonsGuideline)
+            end.linkTo(anchor = easyButtonRef.end)
         }
 
         val hardButtonRef = constrainRefFor(id = HARD_BUTTON_ID) {
-            top.linkTo(turnButtonRef.bottom)
-            bottom.linkTo(parent.bottom)
+            top.linkTo(anchor = turnButtonRef.bottom)
+            bottom.linkTo(anchor = parent.bottom)
         }
 
         val goodButtonRef = constrainRefFor(id = GOOD_BUTTON_ID) {
-            top.linkTo(turnButtonRef.bottom)
-            bottom.linkTo(parent.bottom)
+            top.linkTo(anchor = turnButtonRef.bottom)
+            bottom.linkTo(anchor = parent.bottom)
         }
 
         constrain(easyButtonRef) {
-            top.linkTo(turnButtonRef.bottom)
-            bottom.linkTo(parent.bottom)
+            top.linkTo(anchor = turnButtonRef.bottom)
+            bottom.linkTo(anchor = parent.bottom)
         }
 
         createHorizontalChain(hardButtonRef, goodButtonRef, easyButtonRef)
 
         val mainButtonRef = constrainRefFor(id = MAIN_BUTTON_ID) {
-            top.linkTo(deckInfoRef.bottom, margin = 32.dp)
-            end.linkTo(parent.end)
+            top.linkTo(anchor = deckInfoRef.bottom, margin = 32.dp)
+            end.linkTo(anchor = parent.end)
         }
 
         val deleteButtonRef = constrainRefFor(id = DELETE_BUTTON_ID) {
-            top.linkTo(mainButtonRef.top)
-            end.linkTo(mainButtonRef.start, margin = 32.dp)
+            top.linkTo(anchor = mainButtonRef.top)
+            end.linkTo(anchor = mainButtonRef.start, margin = 32.dp)
         }
 
         val addButtonRef = constrainRefFor(id = ADD_BUTTON_ID) {
-            top.linkTo(mainButtonRef.bottom, margin = 32.dp)
-            end.linkTo(parent.end)
+            top.linkTo(anchor = mainButtonRef.bottom, margin = 32.dp)
+            end.linkTo(anchor = parent.end)
         }
 
         val editButtonRef = constrainRefFor(id = EDIT_BUTTON_ID) {
-            top.linkTo(deleteButtonRef.bottom, margin = 8.dp)
-            end.linkTo(addButtonRef.start, margin = 8.dp)
+            top.linkTo(anchor = deleteButtonRef.bottom, margin = 8.dp)
+            end.linkTo(anchor = addButtonRef.start, margin = 8.dp)
         }
 
     }
@@ -227,15 +226,16 @@ private fun DeckInfo(deckName: String) {
 
 @Composable
 private fun OrderPointers(
-    order: com.example.domain.common.CardRepetitionOrder,
+    order: CardRepetitionOrder,
+    onSwitchIconClick: () -> Unit,
 ) {
     val frontSidePointerText = when (order) {
-        com.example.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN -> stringResource(id = R.string.pointer_native)
-        com.example.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE -> stringResource(id = R.string.pointer_foreign)
+        CardRepetitionOrder.NATIVE_TO_FOREIGN -> stringResource(id = R.string.pointer_native)
+        CardRepetitionOrder.FOREIGN_TO_NATIVE -> stringResource(id = R.string.pointer_foreign)
     }
     val backSidePointerText = when (order) {
-        com.example.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN -> stringResource(id = R.string.pointer_foreign)
-        com.example.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE -> stringResource(id = R.string.pointer_native)
+        CardRepetitionOrder.NATIVE_TO_FOREIGN -> stringResource(id = R.string.pointer_foreign)
+        CardRepetitionOrder.FOREIGN_TO_NATIVE -> stringResource(id = R.string.pointer_native)
     }
 
     Text(
@@ -243,26 +243,20 @@ private fun OrderPointers(
         text = frontSidePointerText,
         style = MainTheme.typographies.frontSideOrderPointer
     )
+
     Icon(
-        modifier = Modifier.layoutId(ARROW_POINTER_ID),
-        painter = painterResource(id = R.drawable.ic_order_arow_24),
+        modifier = Modifier
+            .layoutId(SWITCH_ORDER_BUTTON_VIEW_ID)
+            .padding(start = 8.dp, end = 4.dp)
+            .clip(shape = RoundedCornerShape(50.dp))
+            .clickable { onSwitchIconClick() },
+        painter = painterResource(id = R.drawable.ic_rotate_24),
         contentDescription = null
     )
     Text(
         modifier = Modifier.layoutId(BACK_SIDE_POINTER_ID),
         text = backSidePointerText,
         style = MainTheme.typographies.backSideOrderPointer
-    )
-}
-
-@Composable
-private fun SwitchOrderButton(onClick: () -> Unit) {
-    Icon(
-        modifier = Modifier
-            .layoutId(SWITCH_ORDER_BUTTON_VIEW_ID)
-            .clickable { onClick() },
-        painter = painterResource(id = R.drawable.ic_rotate_24),
-        contentDescription = null
     )
 }
 
@@ -290,25 +284,25 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
 
 
     when (deckRepetitionState.repetitionOrder) {
-        com.example.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
+        CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
             when (deckRepetitionState.side) {
-                com.example.domain.common.CardSide.FRONT -> {
+                CardSide.FRONT -> {
                     word = card.nativeWord
                     ipaPrompt = emptyList()
                 }
-                com.example.domain.common.CardSide.BACK -> {
+                CardSide.BACK -> {
                     word = card.foreignWord
                     ipaPrompt = card.decodeToIpaPrompts()
                 }
             }
         }
-        com.example.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE -> {
+        CardRepetitionOrder.FOREIGN_TO_NATIVE -> {
             when (deckRepetitionState.side) {
-                com.example.domain.common.CardSide.FRONT -> {
+                CardSide.FRONT -> {
                     word = card.foreignWord
                     ipaPrompt = card.decodeToIpaPrompts()
                 }
-                com.example.domain.common.CardSide.BACK -> {
+                CardSide.BACK -> {
                     word = card.nativeWord
                     ipaPrompt = emptyList()
                 }
@@ -317,8 +311,8 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
     }
 
     val wordTextStyle = when (deckRepetitionState.side) {
-        com.example.domain.common.CardSide.FRONT -> MainTheme.typographies.frontSideCardWordTextStyle
-        com.example.domain.common.CardSide.BACK -> MainTheme.typographies.backSideCardWordTextStyle
+        CardSide.FRONT -> MainTheme.typographies.frontSideCardWordTextStyle
+        CardSide.BACK -> MainTheme.typographies.backSideCardWordTextStyle
     }
 
     Text(
@@ -543,17 +537,17 @@ private fun MoreButton(
 }
 
 @Composable
-fun CardButton(cardSide: com.example.domain.common.CardSide, onClick: () -> Unit) {
+fun CardButton(cardSide: CardSide, onClick: () -> Unit) {
     val rotationValue: Float
     val backgroundColor: Color
     val animationDuration = 500
 
     when (cardSide) {
-        com.example.domain.common.CardSide.FRONT -> {
+        CardSide.FRONT -> {
             rotationValue = 180F
             backgroundColor = MainTheme.colors.deckRepetitionScreenColors.frontSideCardButton
         }
-        com.example.domain.common.CardSide.BACK -> {
+        CardSide.BACK -> {
             rotationValue = 0F
             backgroundColor = MainTheme.colors.deckRepetitionScreenColors.backSideCardButton
         }
