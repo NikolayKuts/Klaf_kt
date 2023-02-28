@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.DialogFragment
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.presentation.deckRepetition.BaseDeckRepetitionViewModel
@@ -30,9 +31,16 @@ class DeckRepetitionInfoDialogFragment : DialogFragment(R.layout.dialog_deck_rep
 
         view.findViewById<ComposeView>(R.id.compose_view_repetition_info).setContent {
             MainTheme {
-                DeckRepetitionInfoView(viewModel = viewModel)
+                DeckRepetitionInfoView(
+                    viewModel = viewModel,
+                    onCloseClick = ::closeDialog
+                )
             }
         }
+    }
+
+    private fun closeDialog() {
+        findNavController().popBackStack()
     }
 
     override fun onDismiss(dialog: DialogInterface) {

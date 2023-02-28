@@ -383,7 +383,6 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     private fun getUpdatedDesk(deckForUpdating: Deck): Deck {
-
         return if (deckForUpdating.repetitionQuantity.isEven()) {
             deckForUpdating.copy(
                 repetitionQuantity = deckForUpdating.repetitionQuantity + 1,
