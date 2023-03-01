@@ -108,4 +108,5 @@
     <string name="message_deletion_completed_successfully">Deletion completed successfully</string>
     <string name="message_transfer_completed_successfully">Transfer completed successfully</string>
     <string name="deck_navigation_diaog_item_transger_cards">Transfer cards</string>
+    <string name="deck_navigation_dialog_item_info">Repetiton info</string>
 </resources>
