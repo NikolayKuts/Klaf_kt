@@ -20,35 +20,32 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.domain.common.DeckRepetitionSuccessMark
 import com.example.domain.common.DeckRepetitionSuccessMark.*
-import com.example.domain.entities.Deck
 import com.example.klaf.R
-import com.example.klaf.data.common.*
+import com.example.klaf.data.common.calculateDetailedPreviousScheduledRange
+import com.example.klaf.data.common.calculateDetailedScheduledRange
+import com.example.klaf.data.common.currentDurationAsTimeOrUnassigned
+import com.example.klaf.data.common.markResId
 import com.example.klaf.presentation.common.ClosingButton
 import com.example.klaf.presentation.common.FullBackgroundDialog
 import com.example.klaf.presentation.common.timeAsString
-import com.example.klaf.presentation.deckRepetition.BaseDeckRepetitionViewModel
 import com.example.klaf.presentation.theme.MainTheme
 import kotlin.math.max
 
 @Composable
 fun DeckRepetitionInfoView(
-    viewModel: BaseDeckRepetitionViewModel,
+    viewModel: DeckRepetitionInfoViewModel,
+    deckName: String,
     onCloseClick: () -> Unit,
 ) {
-    val deckRepetitionInfo by viewModel.deckRepetitionInfo.collectAsState(initial = null)
-    val deck = viewModel.deck.collectAsState(initial = null).value ?: return
+    val deckRepetitionInfo by viewModel.repetitionInfo.collectAsState(initial = null)
     val context = LocalContext.current
 
     deckRepetitionInfo?.let { info ->
         FullBackgroundDialog(
             onBackgroundClick = {},
             mainContent = {
-                Column(
-                    modifier = Modifier
-                        .defaultMinSize(minWidth = 300.dp)
-//                        .padding(24.dp),
-                ) {
-                    InfoHeader(deck = deck)
+                Column(modifier = Modifier.defaultMinSize(minWidth = 300.dp)) {
+                    InfoHeader(deckName = deckName)
                     Spacer(modifier = Modifier.height(16.dp))
 
                     DualInfoItem(
@@ -86,7 +83,7 @@ fun DeckRepetitionInfoView(
 }
 
 @Composable
-private fun InfoHeader(deck: Deck) {
+private fun InfoHeader(deckName: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth(), verticalAlignment = Alignment.Bottom
@@ -96,7 +93,7 @@ private fun InfoHeader(deck: Deck) {
         )
         Text(
             modifier = Modifier.weight(1F),
-            text = deck.name,
+            text = deckName,
             textAlign = TextAlign.End,
             style = MainTheme.typographies.deckRepetitionInfoScreenTextStyles.deckName
         )

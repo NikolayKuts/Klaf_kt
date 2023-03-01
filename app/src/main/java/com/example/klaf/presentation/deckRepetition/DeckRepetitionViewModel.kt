@@ -2,16 +2,11 @@ package com.example.klaf.presentation.deckRepetition
 
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
-import com.example.klaf.R
-import com.example.klaf.data.common.DeckRepetitionReminder.Companion.scheduleDeckRepetition
-import com.example.klaf.data.common.lastIterationSuccessMark
-import com.example.klaf.data.common.notifications.DeckRepetitionNotifier
-import com.example.klaf.data.networking.CardAudioPlayer
+import com.example.domain.common.*
 import com.example.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE
 import com.example.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN
 import com.example.domain.common.CardSide.BACK
 import com.example.domain.common.CardSide.FRONT
-import com.example.domain.common.*
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
 import com.example.domain.entities.Card
@@ -20,9 +15,14 @@ import com.example.domain.entities.DeckRepetitionInfo
 import com.example.domain.enums.DifficultyRecallingLevel
 import com.example.domain.enums.DifficultyRecallingLevel.*
 import com.example.domain.useCases.*
+import com.example.klaf.R
+import com.example.klaf.data.common.DeckRepetitionReminder.Companion.scheduleDeckRepetition
 import com.example.klaf.data.common.calculateNextScheduledRepeatDate
 import com.example.klaf.data.common.getNewInterval
 import com.example.klaf.data.common.isRepetitionSucceeded
+import com.example.klaf.data.common.lastIterationSuccessMark
+import com.example.klaf.data.common.notifications.DeckRepetitionNotifier
+import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.presentation.common.ButtonState
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.RepetitionTimer
@@ -42,7 +42,6 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     private val updateDeck: UpdateDeckUseCase,
     private val deleteCardsFromDeck: DeleteCardsFromDeckUseCase,
     private val workManager: WorkManager,
-    fetchDeckRepetitionInfo: FetchDeckRepetitionInfoUseCase,
     private val saveDeckRepetitionInfo: SaveDeckRepetitionInfoUseCase,
     private val deckRepetitionNotifier: DeckRepetitionNotifier,
 ) : BaseDeckRepetitionViewModel() {
@@ -98,15 +97,6 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         replay = 1
     )
 
-    override val deckRepetitionInfo: SharedFlow<DeckRepetitionInfo?> =
-        fetchDeckRepetitionInfo(deckId = deckId).catch {
-            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck_repetition_info)
-        }.shareIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            replay = 1
-        )
-
     private var startRepetitionCard: Card? = null
     private val goodeCards = mutableSetOf<Card>()
     private val hardCards = mutableSetOf<Card>()
@@ -141,10 +131,6 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             timer.runCounting()
             mainButtonState.value = ButtonState.UNPRESSED
         }
-    }
-
-    override fun moveToStartScreenState() {
-        screenState.value = StartState
     }
 
     override fun turnCard() {
@@ -377,6 +363,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 updatedDeck = updatedDeck
             )
             screenState.value = FinishState
+            screenState.value = StartState
         } onException { _, _ ->
             eventMessage.tryEmit(messageId = R.string.problem_with_updating_deck)
         }

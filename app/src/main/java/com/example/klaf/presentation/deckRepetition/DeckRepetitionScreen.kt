@@ -64,7 +64,6 @@ fun DeckRepetitionScreen(
     onDeleteCardClick: (cardId: Int) -> Unit,
     onAddCardClick: () -> Unit,
     onEditCardClick: (cardId: Int) -> Unit,
-    onFinishRepetition: () -> Unit,
 ) {
     val deckRepetitionState by viewModel.cardState.collectAsState(initial = null)
     val deck by viewModel.deck.collectAsState(initial = null)
@@ -85,7 +84,6 @@ fun DeckRepetitionScreen(
             order = repetitionState.repetitionOrder,
             onSwitchIconClick = { viewModel.changeRepetitionOrder() }
         )
-//        SwitchOrderButton(onClick = { viewModel.changeRepetitionOrder() })
         Time(viewModel = viewModel)
         DeckCard(
             deckRepetitionState = repetitionState,
@@ -99,7 +97,6 @@ fun DeckRepetitionScreen(
             onGoodButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = GOOD) },
             onHardButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = HARD) },
             onCardButtonClick = { viewModel.turnCard() },
-            onFinish = onFinishRepetition,
         )
         AdditionalButtons(
             additionalButtonsEnabled = mainButtonState == ButtonState.PRESSED,
@@ -348,9 +345,9 @@ private fun RepetitionButtons(
     onGoodButtonClick: () -> Unit,
     onHardButtonClick: () -> Unit,
     onCardButtonClick: () -> Unit,
-    onFinish: () -> Unit,
 ) {
     var isOnFinishCalled by rememberAsMutableStateOf(value = false)
+
     when (screenState) {
         RepetitionScreenState.StartState -> {
             isOnFinishCalled = false
@@ -389,12 +386,7 @@ private fun RepetitionButtons(
             )
         }
 
-        is RepetitionScreenState.FinishState -> {
-            isOnFinishCalled.ifFalse {
-                isOnFinishCalled = true
-                onFinish()
-            }
-        }
+        is RepetitionScreenState.FinishState -> {}
     }
 }
 
