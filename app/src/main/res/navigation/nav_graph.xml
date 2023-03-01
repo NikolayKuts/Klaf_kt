@@ -107,6 +107,12 @@
         android:name="com.example.klaf.presentation.deckRepetitionInfo.DeckRepetitionInfoDialogFragment"
         android:label="dialog_deck_repetition_info"
         tools:layout="@layout/dialog_deck_repetition_info">
+        <argument
+            android:name="deckId"
+            app:argType="integer" />
+        <argument
+            android:name="deckName"
+            app:argType="string" />
     </dialog>
     <dialog
         android:id="@+id/deckNavigationDialog"
@@ -138,6 +144,13 @@
         <action
             android:id="@+id/action_deckNavigationDialog_to_cardTransferringFragment"
             app:destination="@id/cardTransferringFragment" />
+        <action
+            android:id="@+id/action_deckNavigationDialog_self"
+            app:destination="@id/deckNavigationDialog" />
+        <action
+            android:id="@+id/action_deckNavigationDialog_to_deckRepetitionInfoDialogFragment"
+            app:destination="@id/deckRepetitionInfoDialogFragment"
+            app:popUpTo="@id/deckListFragment" />
     </dialog>
     <dialog
         android:id="@+id/deckDeletingDialogFragment"
@@ -174,6 +187,9 @@
         <argument
             android:name="deckId"
             app:argType="integer" />
+        <argument
+            android:name="deckName"
+            app:argType="string" />
     </fragment>
     <dialog
         android:id="@+id/dataSynchronizationDialogFragment"

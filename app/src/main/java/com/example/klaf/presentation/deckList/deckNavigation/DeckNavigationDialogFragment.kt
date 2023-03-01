@@ -27,7 +27,7 @@ class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.dialog_d
                     onBrowseDeckClick = ::navigateToCardViewerFragment,
                     onAddCardsClick = ::navigateToCardAdditionFragment,
                     onTransferCardsClick = ::navigateToCardTransferringFragment,
-                    onRepetitionInfoClick = { TODO("implement") },
+                    onRepetitionInfoClick = ::navigateToDeckRepetitionInfoDialogFragment,
                     onCloseDialogClick = { findNavController().popBackStack() }
                 )
             }
@@ -64,5 +64,13 @@ class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.dialog_d
         DeckNavigationDialogFragmentDirections.actionDeckNavigationDialogToCardTransferringFragment(
             sourceDeckId = args.deckId
         ).also { navController.navigate(directions = it) }
+    }
+
+    private fun navigateToDeckRepetitionInfoDialogFragment() {
+        DeckNavigationDialogFragmentDirections
+            .actionDeckNavigationDialogToDeckRepetitionInfoDialogFragment(
+                deckId = args.deckId,
+                deckName = args.deckName,
+            ).also { navController.navigate(directions = it) }
     }
 }
