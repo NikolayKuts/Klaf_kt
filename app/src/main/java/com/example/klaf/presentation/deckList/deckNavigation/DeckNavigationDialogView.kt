@@ -23,6 +23,7 @@ fun DeckNavigationDialogView(
     onBrowseDeckClick: () -> Unit,
     onAddCardsClick: () -> Unit,
     onTransferCardsClick: () -> Unit,
+    onRepetitionInfoClick: () -> Unit,
     onCloseDialogClick: () -> Unit,
 ) {
     FullBackgroundDialog(
@@ -53,6 +54,11 @@ fun DeckNavigationDialogView(
                 DialogItem(
                     textId = R.string.deck_navigation_diaog_item_transger_cards,
                     onClick = onTransferCardsClick
+                )
+                SeparationLine()
+                DialogItem(
+                    textId = R.string.deck_navigation_dialog_item_info,
+                    onClick = onRepetitionInfoClick
                 )
             }
         },

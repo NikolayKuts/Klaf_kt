@@ -27,6 +27,7 @@ class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.dialog_d
                     onBrowseDeckClick = ::navigateToCardViewerFragment,
                     onAddCardsClick = ::navigateToCardAdditionFragment,
                     onTransferCardsClick = ::navigateToCardTransferringFragment,
+                    onRepetitionInfoClick = { TODO("implement") },
                     onCloseDialogClick = { findNavController().popBackStack() }
                 )
             }
