@@ -38,11 +38,11 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
                         onDeleteCardClick = ::navigateToCardRemovingDialogFragment,
                         onAddCardClick = ::navigateToCardAdditionFragment,
                         onEditCardClick = ::navigateToCardEditingFragment,
-                        onFinishRepetition = ::navigateToDeckRepetitionInfoDialogFragment,
                     )
                 }
             }
         }
+
 
         subscribeObservers()
     }
@@ -54,6 +54,7 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
 
     private fun subscribeObservers() {
         setEventMessageObserver()
+        setScreenStateObserver()
         lifecycle.addObserver(viewModel.timer)
         lifecycle.addObserver(viewModel.audioPlayer)
     }
@@ -68,6 +69,14 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
             lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
             requireContext().showToast(messageId = eventMessage.resId)
+        }
+    }
+
+    private fun setScreenStateObserver() {
+        viewModel.screenState.collectWhenStarted(this) {
+            if (it is RepetitionScreenState.FinishState) {
+                navigateToDeckRepetitionInfoDialogFragment()
+            }
         }
     }
 
@@ -92,8 +101,10 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
     }
 
     private fun navigateToDeckRepetitionInfoDialogFragment() {
-        navController.navigate(
-            resId = R.id.action_deckRepetitionFragment_to_deckRepetitionInfoDialogFragment
-        )
+        DeckRepetitionFragmentDirections
+            .actionDeckRepetitionFragmentToDeckRepetitionInfoDialogFragment(
+            deckId = args.deckId,
+            deckName = args.deckName
+        ).also { navController.navigate(it) }
     }
 }

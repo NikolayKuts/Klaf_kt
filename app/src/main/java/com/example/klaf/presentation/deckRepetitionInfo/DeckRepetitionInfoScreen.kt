@@ -3,7 +3,6 @@ package com.example.klaf.presentation.deckRepetitionInfo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -21,73 +20,89 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.domain.common.DeckRepetitionSuccessMark
 import com.example.domain.common.DeckRepetitionSuccessMark.*
-import com.example.domain.entities.Deck
+import com.example.domain.common.Emptiable
 import com.example.klaf.R
-import com.example.klaf.data.common.*
+import com.example.klaf.data.common.calculateDetailedPreviousScheduledRange
+import com.example.klaf.data.common.calculateDetailedScheduledRange
+import com.example.klaf.data.common.currentDurationAsTimeOrUnassigned
+import com.example.klaf.data.common.markResId
+import com.example.klaf.presentation.common.ClosingButton
+import com.example.klaf.presentation.common.FullBackgroundDialog
 import com.example.klaf.presentation.common.timeAsString
-import com.example.klaf.presentation.deckRepetition.BaseDeckRepetitionViewModel
 import com.example.klaf.presentation.theme.MainTheme
 import kotlin.math.max
 
 @Composable
-fun DeckRepetitionInfoView(viewModel: BaseDeckRepetitionViewModel) {
-    val deckRepetitionInfo by viewModel.deckRepetitionInfo.collectAsState(initial = null)
-    val deck = viewModel.deck.collectAsState(initial = null).value ?: return
+fun DeckRepetitionInfoView(
+    viewModel: DeckRepetitionInfoViewModel,
+    deckName: String,
+    onCloseClick: () -> Unit,
+) {
+    val deckRepetitionInfo by viewModel.repetitionInfo.collectAsState()
     val context = LocalContext.current
 
-    deckRepetitionInfo?.let { info ->
-        Card(
-            shape = RoundedCornerShape(24.dp),
-            elevation = 4.dp,
-        ) {
-            Column(
-                modifier = Modifier
-                    .defaultMinSize(minWidth = 300.dp)
-                    .padding(24.dp),
-            ) {
-                InfoHeader(deck = deck)
-                Spacer(modifier = Modifier.height(16.dp))
+    when (val infoContent = deckRepetitionInfo) {
+        is Emptiable.Empty -> {}
+        is Emptiable.Content -> {
+            val info = infoContent.data
 
-                DualInfoItem(
-                    title = stringResource(R.string.pointer_iteration_duration),
-                    currentValue = info.currentDurationAsTimeOrUnassigned,
-                    previousValue = info.previousDuration.timeAsString,
-                    currentMark = info.currentIterationSuccessMark,
-                )
-                InfoItemDivider()
+            FullBackgroundDialog(
+                onBackgroundClick = {},
+                mainContent = {
+                    if (info == null) {
+                        Text(
+                            text = stringResource(id = R.string.deck_repetition_info_dialog_no_info),
+                            textAlign = TextAlign.Center
+                        )
+                    } else {
+                        Column(modifier = Modifier.defaultMinSize(minWidth = 300.dp)) {
+                            InfoHeader(deckName = deckName)
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                ScheduledDateItem(
-                    title = stringResource(R.string.pointer_scheduled_repetition),
-                    nextValue = info.calculateDetailedScheduledRange(context = context),
-                    previousValue = info.calculateDetailedPreviousScheduledRange(context = context),
-                )
-                InfoItemDivider()
+                            DualInfoItem(
+                                title = stringResource(R.string.pointer_iteration_duration),
+                                currentValue = info.currentDurationAsTimeOrUnassigned,
+                                previousValue = info.previousDuration.timeAsString,
+                                currentMark = info.currentIterationSuccessMark,
+                            )
+                            InfoItemDivider()
 
-                DualInfoItem(
-                    title = stringResource(R.string.pointer_last_iteration_success_mark),
-                    currentValue = stringResource(id = info.currentIterationSuccessMark.markResId),
-                    previousValue = stringResource(id = info.previousIterationSuccessMark.markResId),
-                    currentMark = info.currentIterationSuccessMark,
-                )
-                InfoItemDivider()
+                            ScheduledDateItem(
+                                title = stringResource(R.string.pointer_scheduled_repetition),
+                                nextValue = info.calculateDetailedScheduledRange(context = context),
+                                previousValue = info.calculateDetailedPreviousScheduledRange(
+                                    context = context
+                                ),
+                            )
+                            InfoItemDivider()
 
-                FlowableInfoItem(
-                    textPointer = stringResource(R.string.pointer_last_iteration_date),
-                    infoValue = info.calculateDetailedLastIterationRange(context = context)
-                )
-                InfoItemDivider()
+                            DualInfoItem(
+                                title = stringResource(R.string.pointer_iteration_success_mark),
+                                currentValue = stringResource(
+                                    id = info.currentIterationSuccessMark.markResId
+                                ),
+                                previousValue = stringResource(
+                                    id = info.previousIterationSuccessMark.markResId
+                                ),
+                                currentMark = info.currentIterationSuccessMark,
+                            )
+                            InfoItemDivider()
 
-                FlowableInfoItem(
-                    textPointer = stringResource(R.string.pointer_repetition_quantity),
-                    infoValue = info.repetitionQuantity.toString(),
-                )
-            }
+                            FlowableInfoItem(
+                                textPointer = stringResource(R.string.pointer_repetition_quantity),
+                                infoValue = info.repetitionQuantity.toString(),
+                            )
+                        }
+                    }
+                },
+                bottomContent = { ClosingButton(onClick = onCloseClick) },
+            )
         }
     }
 }
 
 @Composable
-private fun InfoHeader(deck: Deck) {
+private fun InfoHeader(deckName: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth(), verticalAlignment = Alignment.Bottom
@@ -97,7 +112,7 @@ private fun InfoHeader(deck: Deck) {
         )
         Text(
             modifier = Modifier.weight(1F),
-            text = deck.name,
+            text = deckName,
             textAlign = TextAlign.End,
             style = MainTheme.typographies.deckRepetitionInfoScreenTextStyles.deckName
         )

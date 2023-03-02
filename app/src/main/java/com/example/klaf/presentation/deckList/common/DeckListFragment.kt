@@ -63,7 +63,7 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
             when (destination) {
                 DeckCreationDialogDestination -> navigateToDeckCreationDialog()
                 is DeckRepetitionFragmentDestination -> {
-                    navigateToRepeatFragment(deck = destination.deck)
+                    navigateToRepetitionFragment(deck = destination.deck)
                 }
                 is DeckNavigationDialogDestination -> {
                     navigateToDeckNavigationDialog(deck = destination.deck)
@@ -82,9 +82,10 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
         navController.navigate(R.id.action_deckListFragment_to_deckCreationDialogFragment)
     }
 
-    private fun navigateToRepeatFragment(deck: Deck) {
+    private fun navigateToRepetitionFragment(deck: Deck) {
         DeckListFragmentDirections.actionDeckListFragmentToDeckRepetitionFragment(
-            deckId = deck.id
+            deckId = deck.id,
+            deckName = deck.name
         ).also { navController.navigate(it) }
     }
 

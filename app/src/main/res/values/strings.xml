@@ -91,7 +91,7 @@
     <string name="pointer_scheduled_repetition">scheduled repetition</string>
     <string name="pointer_last_iteration_date">last iteration date</string>
     <string name="pointer_repetition_quantity">repetition quantity</string>
-    <string name="pointer_last_iteration_success_mark">last iteration success mark</string>
+    <string name="pointer_iteration_success_mark">iteration success mark</string>
     <string name="deck_repetition_mark_successful">successful</string>
     <string name="deck_repetition_mark_failed">failed</string>
     <string name="unassigned_string_value">---</string>
@@ -108,4 +108,6 @@
     <string name="message_deletion_completed_successfully">Deletion completed successfully</string>
     <string name="message_transfer_completed_successfully">Transfer completed successfully</string>
     <string name="deck_navigation_diaog_item_transger_cards">Transfer cards</string>
+    <string name="deck_navigation_dialog_item_info">Repetiton info</string>
+    <string name="deck_repetition_info_dialog_no_info">There is no info</string>
 </resources>
