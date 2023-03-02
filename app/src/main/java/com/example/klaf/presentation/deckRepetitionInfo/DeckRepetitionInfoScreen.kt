@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.domain.common.DeckRepetitionSuccessMark
 import com.example.domain.common.DeckRepetitionSuccessMark.*
+import com.example.domain.common.Emptiable
 import com.example.klaf.R
 import com.example.klaf.data.common.calculateDetailedPreviousScheduledRange
 import com.example.klaf.data.common.calculateDetailedScheduledRange
@@ -37,48 +38,66 @@ fun DeckRepetitionInfoView(
     deckName: String,
     onCloseClick: () -> Unit,
 ) {
-    val deckRepetitionInfo by viewModel.repetitionInfo.collectAsState(initial = null)
+    val deckRepetitionInfo by viewModel.repetitionInfo.collectAsState()
     val context = LocalContext.current
 
-    deckRepetitionInfo?.let { info ->
-        FullBackgroundDialog(
-            onBackgroundClick = {},
-            mainContent = {
-                Column(modifier = Modifier.defaultMinSize(minWidth = 300.dp)) {
-                    InfoHeader(deckName = deckName)
-                    Spacer(modifier = Modifier.height(16.dp))
+    when (val infoContent = deckRepetitionInfo) {
+        is Emptiable.Empty -> {}
+        is Emptiable.Content -> {
+            val info = infoContent.data
 
-                    DualInfoItem(
-                        title = stringResource(R.string.pointer_iteration_duration),
-                        currentValue = info.currentDurationAsTimeOrUnassigned,
-                        previousValue = info.previousDuration.timeAsString,
-                        currentMark = info.currentIterationSuccessMark,
-                    )
-                    InfoItemDivider()
+            FullBackgroundDialog(
+                onBackgroundClick = {},
+                mainContent = {
+                    if (info == null) {
+                        Text(
+                            text = stringResource(id = R.string.deck_repetition_info_dialog_no_info),
+                            textAlign = TextAlign.Center
+                        )
+                    } else {
+                        Column(modifier = Modifier.defaultMinSize(minWidth = 300.dp)) {
+                            InfoHeader(deckName = deckName)
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                    ScheduledDateItem(
-                        title = stringResource(R.string.pointer_scheduled_repetition),
-                        nextValue = info.calculateDetailedScheduledRange(context = context),
-                        previousValue = info.calculateDetailedPreviousScheduledRange(context = context),
-                    )
-                    InfoItemDivider()
+                            DualInfoItem(
+                                title = stringResource(R.string.pointer_iteration_duration),
+                                currentValue = info.currentDurationAsTimeOrUnassigned,
+                                previousValue = info.previousDuration.timeAsString,
+                                currentMark = info.currentIterationSuccessMark,
+                            )
+                            InfoItemDivider()
 
-                    DualInfoItem(
-                        title = stringResource(R.string.pointer_iteration_success_mark),
-                        currentValue = stringResource(id = info.currentIterationSuccessMark.markResId),
-                        previousValue = stringResource(id = info.previousIterationSuccessMark.markResId),
-                        currentMark = info.currentIterationSuccessMark,
-                    )
-                    InfoItemDivider()
+                            ScheduledDateItem(
+                                title = stringResource(R.string.pointer_scheduled_repetition),
+                                nextValue = info.calculateDetailedScheduledRange(context = context),
+                                previousValue = info.calculateDetailedPreviousScheduledRange(
+                                    context = context
+                                ),
+                            )
+                            InfoItemDivider()
 
-                    FlowableInfoItem(
-                        textPointer = stringResource(R.string.pointer_repetition_quantity),
-                        infoValue = info.repetitionQuantity.toString(),
-                    )
-                }
-            },
-            bottomContent = { ClosingButton(onClick = onCloseClick) },
-        )
+                            DualInfoItem(
+                                title = stringResource(R.string.pointer_iteration_success_mark),
+                                currentValue = stringResource(
+                                    id = info.currentIterationSuccessMark.markResId
+                                ),
+                                previousValue = stringResource(
+                                    id = info.previousIterationSuccessMark.markResId
+                                ),
+                                currentMark = info.currentIterationSuccessMark,
+                            )
+                            InfoItemDivider()
+
+                            FlowableInfoItem(
+                                textPointer = stringResource(R.string.pointer_repetition_quantity),
+                                infoValue = info.repetitionQuantity.toString(),
+                            )
+                        }
+                    }
+                },
+                bottomContent = { ClosingButton(onClick = onCloseClick) },
+            )
+        }
     }
 }
 
