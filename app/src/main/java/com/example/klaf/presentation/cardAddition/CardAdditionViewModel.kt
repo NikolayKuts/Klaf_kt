@@ -7,10 +7,7 @@ import com.example.domain.common.generateLetterInfos
 import com.example.domain.common.updatedAt
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
-import com.example.domain.ipa.LetterInfo
-import com.example.domain.ipa.convertToEncodedIpa
-import com.example.domain.ipa.convertToUncompletedIpa
-import com.example.domain.ipa.toWord
+import com.example.domain.ipa.*
 import com.example.domain.useCases.AddNewCardIntoDeckUseCase
 import com.example.domain.useCases.FetchDeckByIdUseCase
 import com.example.domain.useCases.FetchWordAutocompleteUseCase
@@ -56,7 +53,7 @@ class CardAdditionViewModel @AssistedInject constructor(
 
     private val letterInfosState = MutableStateFlow(value = cardAdditionState.value.letterInfos)
     private val nativeWordState = MutableStateFlow(value = cardAdditionState.value.nativeWord)
-    private val ipaTemplateState = MutableStateFlow(value = cardAdditionState.value.ipaTemplate)
+    private val ipaHoldersState = MutableStateFlow(value = cardAdditionState.value.ipaHolders)
 
     private var autocompleteFetchingJob: Job? = null
 
@@ -64,13 +61,13 @@ class CardAdditionViewModel @AssistedInject constructor(
         combine(
             letterInfosState,
             nativeWordState,
-            ipaTemplateState
-        ) { letterInfos, nativeWord, ipaTemplate ->
+            ipaHoldersState
+        ) { letterInfos, nativeWord, ipaHolders ->
             CardAdditionState.Adding(
                 letterInfos = letterInfos,
                 nativeWord = nativeWord,
                 foreignWord = letterInfos.toWord(),
-                ipaTemplate = ipaTemplate
+                ipaTemplate = ipaHolders
             )
         }.onEach { addingState ->
             cardAdditionState.value = addingState
@@ -86,18 +83,21 @@ class CardAdditionViewModel @AssistedInject constructor(
                     letterInfo = event.letterInfo
                 )
             }
-            is UpdateDataOnForeignWordChaneged -> updateDataOnForeignWordChanged(word = event.word)
+            is UpdateDataOnForeignWordChanged -> updateDataOnForeignWordChanged(word = event.word)
             is UpdateDataOnAutocompleteSelected -> updateDataOnAutocompleteSelected(word = event.word)
-            is UpdateIpaTemplate -> updateIpa(ipa = event.ipa)
+            is UpdateIpaTemplate -> {
+                updateIpa(letterGroupIndex = event.letterGroupIndex, ipa = event.ipa)
+            }
             is UpdateNativeWord -> updateNativeWord(word = event.word)
             is AddNewCard -> {
-                addNewCard(
-                    deckId = event.deckId,
-                    nativeWord = event.nativeWord,
-                    foreignWord = event.foreignWord,
-                    letterInfos = event.letterInfos,
-                    ipaTemplate = event.ipaTemplate
-                )
+                TODO("refactor saving a new card")
+//                addNewCard(
+//                    deckId = event.deckId,
+//                    nativeWord = event.nativeWord,
+//                    foreignWord = event.foreignWord,
+//                    letterInfos = event.letterInfos,
+//                    ipaTemplate = event.ipaHolders
+//                )
             }
             PronounceForeignWord -> audioPlayer.play()
             CloseAutocompleteMenu -> {
@@ -135,27 +135,19 @@ class CardAdditionViewModel @AssistedInject constructor(
     }
 
     private fun changeLetterSelectionWithIpaTemplate(index: Int, letterInfo: LetterInfo) {
-        val updatedIsChecked = when (letterInfo.letter) {
+        val updatedCheckState = when (letterInfo.letter) {
             LetterInfo.EMPTY_LETTER -> false
-            else -> !letterInfo.isChecked
+            else -> letterInfo.isNotChecked
         }
 
         letterInfosState.update { infos ->
             infos.updatedAt(
                 index = index,
-                newValue = letterInfo.copy(isChecked = updatedIsChecked)
+                newValue = letterInfo.copy(isChecked = updatedCheckState)
             )
         }
 
-//        ipaTemplateState.value = letterInfosState.value.convertToUncompletedIpa()
-        ipaTemplateState.value = letterInfosState.value.filter { it.isChecked }
-            .map {
-                IpaItemHolder(
-                    letter = it.letter,
-                    value = "",
-                    letterIndex = index
-                )
-            }
+        ipaHoldersState.value = letterInfosState.value.toRowIpaItemHolders()
     }
 
     private fun updateNativeWord(word: String) {
@@ -165,8 +157,7 @@ class CardAdditionViewModel @AssistedInject constructor(
     private fun updateDataOnForeignWordChanged(word: String) {
         val clearedWord = word.trim()
         letterInfosState.value = clearedWord.generateLetterInfos()
-//        ipaTemplateState.value = letterInfosState.value.convertToUncompletedIpa()
-        ipaTemplateState.value = emptyList()
+        ipaHoldersState.value = emptyList()
 
         autocompleteFetchingJob?.cancel()
         autocompleteFetchingJob = viewModelScope.launch(Dispatchers.IO) {
@@ -180,19 +171,21 @@ class CardAdditionViewModel @AssistedInject constructor(
 
     private fun updateDataOnAutocompleteSelected(word: String) {
         letterInfosState.value = word.generateLetterInfos()
-//        ipaTemplateState.value = letterInfosState.value.convertToUncompletedIpa()
-        ipaTemplateState.value = emptyList()
+        ipaHoldersState.value = emptyList()
         autocompleteState.value = AutocompleteState()
     }
 
-    private fun updateIpa(ipa: String) {
-//        ipaTemplateState.value = ipa
+    private fun updateIpa(letterGroupIndex: Int, ipa: String) {
+        ipaHoldersState.update { ipaHolders ->
+            ipaHolders.updatedAt(index = letterGroupIndex) { oldValue ->
+                oldValue.copy(ipa = ipa.trim())
+            }
+        }
     }
-
 
     private fun resetAddingState() {
         letterInfosState.value = emptyList()
         nativeWordState.value = ""
-//        ipaTemplateState.value = ""
+        ipaHoldersState.value = emptyList()
     }
 }

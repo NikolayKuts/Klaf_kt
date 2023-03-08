@@ -25,7 +25,37 @@ fun List<LetterInfo>.convertToUncompletedIpa(): String {
     return result.toString()
 }
 
-fun String.toFormatedIpa(): String {
+fun List<LetterInfo>.toRowIpaItemHolders(): List<IpaHolder> {
+    val result = mutableMapOf<Int, String>()
+    var pointer = 0
+    var lastInputIndex = 0
+
+    while (pointer < this.size) {
+        if (this[pointer].isChecked) {
+            val letters = when {
+                pointer == 0 -> this[pointer].letter
+                this[pointer - 1].isChecked -> result[lastInputIndex] + this[pointer].letter
+                else -> {
+                    lastInputIndex = pointer
+                    this[pointer].letter
+                }
+            }
+            result[lastInputIndex] = letters
+        }
+
+        pointer++
+    }
+
+    return result.map {
+        IpaHolder(
+            letter = it.value,
+            ipa = "",
+            letterIndex = it.key
+        )
+    }
+}
+
+fun String.toFormattedIpa(): String {
     return replace(
         regex = Regex(pattern = "^\\s*"),
         replacement = ""
@@ -46,9 +76,7 @@ fun String.toFormatedIpa(): String {
 
 fun List<LetterInfo>.toEncodedIpa(ipaTemplate: String): String {
     val result = StringBuilder()
-//    val clearedIpaTemplate: String = ipaTemplate.formated()
-
-    var ipaTemplateBuilder = StringBuilder(ipaTemplate.toFormatedIpa())
+    val ipaTemplateBuilder = StringBuilder(ipaTemplate.toFormattedIpa())
     var pointer = 0
 
     while (pointer < this.size) {
@@ -60,10 +88,6 @@ fun List<LetterInfo>.toEncodedIpa(ipaTemplate: String): String {
                 this[pointer - 1].isNotChecked -> result.append("<")
                 this[pointer - 1].isChecked -> result.append("><")
             }
-
-//            if (ipaTemplateBuilder.startsWith(prefix = "\n")) {
-//                ipaTemplateBuilder = StringBuilder(ipaTemplateBuilder.substring(1))
-//            }
 
             val ipaCouple = when {
                 ipaTemplateBuilder.isNotEmpty() && "\n" in ipaTemplateBuilder.substring(1) -> {

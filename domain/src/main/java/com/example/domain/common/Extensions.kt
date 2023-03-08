@@ -95,6 +95,10 @@ fun <T> List<T>.updatedAt(index: Int, newValue: T): List<T> {
     return this.toMutableList().apply { this[index] = newValue }
 }
 
+inline fun <R> List<R>.updatedAt(index: Int, block: (oldValue: R) -> R): List<R> {
+    return this.toMutableList().apply {  this[index] = block(this[index]) }
+}
+
 fun getCurrentDateAsLong(): Long {
     return Calendar.getInstance().time.time
 }

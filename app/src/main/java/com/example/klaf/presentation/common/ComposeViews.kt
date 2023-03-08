@@ -34,10 +34,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Popup
 import com.example.domain.common.ifTrue
+import com.example.domain.ipa.IpaHolder
 import com.example.domain.ipa.LetterInfo
 import com.example.klaf.R
 import com.example.klaf.presentation.cardAddition.AutocompleteState
-import com.example.klaf.presentation.cardAddition.IpaItemHolder
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -109,12 +109,13 @@ fun CardManagementView(
     letterInfos: List<LetterInfo>,
     nativeWord: String,
     foreignWord: String,
-    ipaTemplate: List<IpaItemHolder>,
+    ipaHolders: List<IpaHolder>,
     autocompleteState: AutocompleteState,
     onDismissRequest: () -> Unit,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
     onNativeWordChange: (String) -> Unit,
     onForeignWordChange: (String) -> Unit,
+    onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
     onConfirmClick: () -> Unit,
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
@@ -142,10 +143,11 @@ fun CardManagementView(
                 modifier = Modifier.align(alignment = Alignment.TopCenter),
                 nativeWord = nativeWord,
                 foreignWord = foreignWord,
-                ipaLetters = ipaTemplate.map { it.letter },
+                ipaHolders = ipaHolders,
                 autocompleteState = autocompleteState,
                 onNativeWordChange = onNativeWordChange,
                 onForeignWordChange = onForeignWordChange,
+                onIpaChange = onIpaChange,
                 onPronounceIconClick = onPronounceIconClick,
                 onAutocompleteItemClick = onAutocompleteItemClick
             )
@@ -255,10 +257,11 @@ fun Pointer(
 fun CardManagementFields(
     nativeWord: String,
     foreignWord: String,
-    ipaLetters: List<String>,
+    ipaHolders: List<IpaHolder>,
     autocompleteState: AutocompleteState,
     onNativeWordChange: (String) -> Unit,
     onForeignWordChange: (String) -> Unit,
+    onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
     modifier: Modifier = Modifier,
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
@@ -283,7 +286,10 @@ fun CardManagementFields(
             onAutocompleteItemClick = onAutocompleteItemClick
         )
 
-        IpaSection(chosenLetters = ipaLetters)
+        IpaSection(
+            ipaHolders = ipaHolders,
+            onIpaChange = onIpaChange
+        )
     }
 }
 
@@ -331,16 +337,15 @@ fun CardManagementFields(
 }
 
 @Composable
-fun IpaSection(chosenLetters: List<String>) {
-    LazyColumn(
-        modifier = Modifier.padding(start = 16.dp, top = 6.dp),
-    ) {
+fun IpaSection(
+    ipaHolders: List<IpaHolder>,
+    onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
+) {
+    LazyColumn(modifier = Modifier.padding(start = 16.dp, top = 6.dp)) {
         val cellShape = RoundedCornerShape(size = 6.dp)
         val equalSing = "="
 
-        items(chosenLetters) { letter ->
-            var text by rememberAsMutableStateOf(value = "")
-
+        itemsIndexed(items = ipaHolders) { letterGroupIndex, ipaHolder ->
             Row(
                 modifier = Modifier.padding(top = 3.dp, bottom = 3.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -350,7 +355,7 @@ fun IpaSection(chosenLetters: List<String>) {
                         .clip(shape = cellShape)
                         .background(color = MainTheme.colors.cardManagementViewColors.checkedLetterCell)
                         .padding(6.dp),
-                    text = letter
+                    text = ipaHolder.letter
                 )
 
                 Text(
@@ -365,7 +370,7 @@ fun IpaSection(chosenLetters: List<String>) {
                         .clip(shape = cellShape)
                         .background(Color(0x70EBBD79))
                         .padding(6.dp),
-                    value = text,
+                    value = ipaHolder.ipa,
                     cursorBrush = Brush.verticalGradient(
                         0.00f to Color.Transparent,
                         0.15f to Color.Transparent,
@@ -374,7 +379,7 @@ fun IpaSection(chosenLetters: List<String>) {
                         0.90f to Color.Transparent,
                         1.00f to Color.Transparent,
                     ),
-                    onValueChange = { newText -> text = newText },
+                    onValueChange = { newText -> onIpaChange(letterGroupIndex, newText) },
                     textStyle = MainTheme.typographies.cardManagementViewTextStyles.ipaValue
                 )
             }
