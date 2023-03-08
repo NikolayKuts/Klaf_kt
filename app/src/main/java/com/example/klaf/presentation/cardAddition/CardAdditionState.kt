@@ -6,14 +6,14 @@ sealed class CardAdditionState(
     val letterInfos: List<LetterInfo>,
     val nativeWord: String,
     val foreignWord: String,
-    val ipaTemplate: String,
+    val ipaTemplate: List<IpaItemHolder>,
 ) {
 
     class Adding(
         letterInfos: List<LetterInfo>,
         nativeWord: String = "",
         foreignWord: String = "",
-        ipaTemplate: String = "",
+        ipaTemplate: List<IpaItemHolder> = emptyList(),
     ) : CardAdditionState(
         letterInfos = letterInfos,
         nativeWord = nativeWord,
@@ -25,6 +25,12 @@ sealed class CardAdditionState(
         letterInfos = emptyList(),
         nativeWord = "",
         foreignWord = "",
-        ipaTemplate = "",
+        ipaTemplate = emptyList(),
     )
 }
+
+data class IpaItemHolder(
+    val letter: String,
+    val value: String,
+    val letterIndex: Int,
+)

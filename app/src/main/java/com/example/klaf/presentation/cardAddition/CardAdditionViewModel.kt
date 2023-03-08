@@ -147,7 +147,15 @@ class CardAdditionViewModel @AssistedInject constructor(
             )
         }
 
-        ipaTemplateState.value = letterInfosState.value.convertToUncompletedIpa()
+//        ipaTemplateState.value = letterInfosState.value.convertToUncompletedIpa()
+        ipaTemplateState.value = letterInfosState.value.filter { it.isChecked }
+            .map {
+                IpaItemHolder(
+                    letter = it.letter,
+                    value = "",
+                    letterIndex = index
+                )
+            }
     }
 
     private fun updateNativeWord(word: String) {
@@ -157,7 +165,8 @@ class CardAdditionViewModel @AssistedInject constructor(
     private fun updateDataOnForeignWordChanged(word: String) {
         val clearedWord = word.trim()
         letterInfosState.value = clearedWord.generateLetterInfos()
-        ipaTemplateState.value = letterInfosState.value.convertToUncompletedIpa()
+//        ipaTemplateState.value = letterInfosState.value.convertToUncompletedIpa()
+        ipaTemplateState.value = emptyList()
 
         autocompleteFetchingJob?.cancel()
         autocompleteFetchingJob = viewModelScope.launch(Dispatchers.IO) {
@@ -171,18 +180,19 @@ class CardAdditionViewModel @AssistedInject constructor(
 
     private fun updateDataOnAutocompleteSelected(word: String) {
         letterInfosState.value = word.generateLetterInfos()
-        ipaTemplateState.value = letterInfosState.value.convertToUncompletedIpa()
+//        ipaTemplateState.value = letterInfosState.value.convertToUncompletedIpa()
+        ipaTemplateState.value = emptyList()
         autocompleteState.value = AutocompleteState()
     }
 
     private fun updateIpa(ipa: String) {
-        ipaTemplateState.value = ipa
+//        ipaTemplateState.value = ipa
     }
 
 
     private fun resetAddingState() {
         letterInfosState.value = emptyList()
         nativeWordState.value = ""
-        ipaTemplateState.value = ""
+//        ipaTemplateState.value = ""
     }
 }

@@ -7,10 +7,10 @@ import com.example.klaf.common.MainDispatcherRule
 import com.example.klaf.common.launchEventMassageIdEqualsTest
 import com.example.klaf.data.common.notifications.DeckRepetitionNotifier
 import com.example.klaf.data.networking.CardAudioPlayer
-import com.example.klaf.domain.entities.Card
-import com.example.klaf.domain.entities.Deck
-import com.example.klaf.domain.enums.DifficultyRecallingLevel
-import com.example.klaf.domain.useCases.*
+import com.example.domain.entities.Card
+import com.example.domain.entities.Deck
+import com.example.domain.enums.DifficultyRecallingLevel
+import com.example.domain.useCases.*
 import com.example.klaf.presentation.common.RepetitionTimer
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -158,7 +158,6 @@ class DeckRepetitionViewModelTest {
         updateDeck: UpdateDeckUseCase = mockk(relaxed = true),
         deleteCardFromDeck: DeleteCardsFromDeckUseCase = mockk(relaxed = true),
         workManager: WorkManager = mockk(relaxed = true),
-        fetchDeckRepetitionInfo: FetchDeckRepetitionInfoUseCase = mockk(relaxed = true),
         saveDeckRepetitionInfo: SaveDeckRepetitionInfoUseCase = mockk(relaxed = true),
         deckRepetitionNotifier: DeckRepetitionNotifier = mockk(relaxed = true)
     ): BaseDeckRepetitionViewModel = DeckRepetitionViewModel(
@@ -170,7 +169,6 @@ class DeckRepetitionViewModelTest {
         updateDeck = updateDeck,
         deleteCardsFromDeck = deleteCardFromDeck,
         workManager = workManager,
-        fetchDeckRepetitionInfo = fetchDeckRepetitionInfo,
         saveDeckRepetitionInfo = saveDeckRepetitionInfo,
         deckRepetitionNotifier = deckRepetitionNotifier
     )

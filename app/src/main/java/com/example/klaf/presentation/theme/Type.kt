@@ -33,7 +33,7 @@ data class MainTopographies(
     val viewingCardOrdinal: TextStyle,
     val deckRepetitionInfoScreenTextStyles: DeckRepetitionInfoScreenTextStyles,
     val cardTransferringScreenTextStyles: CardTransferringScreenTextStyles,
-    val foreignWordAutocompleteSpanStyle: SpanStyle,
+    val cardManagementViewTextStyles: CardManagementViewTextStyles,
 )
 
 data class DeckRepetitionInfoScreenTextStyles(
@@ -48,16 +48,35 @@ data class CardTransferringScreenTextStyles(
     val choosingContent: TextStyle,
 )
 
+data class CardManagementViewTextStyles(
+    val foreignWordAutocompleteSpanStyle: SpanStyle,
+    val ipaValue: TextStyle
+) {
+
+    companion object {
+
+        val Light = CardManagementViewTextStyles(
+            foreignWordAutocompleteSpanStyle = LightForeignWordAutocompleteSpanStyle,
+            ipaValue = LightIpaValueTextStyle,
+        )
+
+        val Dark = CardManagementViewTextStyles(
+            foreignWordAutocompleteSpanStyle = DarkForeignWordAutocompleteSpanStyle,
+            ipaValue = DarkIpaValueTextStyle,
+        )
+    }
+}
+
 private val Typography = Typography(
-    body1 = Body1,
+    body1 = MainTextStyle,
     caption = Caption,
     subtitle1 = Subtitle1,
     button = Button,
 )
 
 private val CommonDeckRepetitionInfoScreenTextStyles = DeckRepetitionInfoScreenTextStyles(
-    pointer = Body1.copy(fontStyle = FontStyle.Italic),
-    deckName = Body1.copy(
+    pointer = MainTextStyle.copy(fontStyle = FontStyle.Italic),
+    deckName = MainTextStyle.copy(
         fontStyle = FontStyle.Italic,
         fontSize = CommonDimension.deckRepetitionInfoScreenDimensions.deckName,
         fontWeight = FontWeight.Bold
@@ -91,7 +110,7 @@ val LightMainTypographies = MainTopographies(
     viewingCardOrdinal = LightViewingCardOrdinal,
     deckRepetitionInfoScreenTextStyles = CommonDeckRepetitionInfoScreenTextStyles,
     cardTransferringScreenTextStyles = CannonCardTransferringScreenTextStyles,
-    foreignWordAutocompleteSpanStyle = LightForeignWordAutocompleteSpanStyle,
+    cardManagementViewTextStyles = CardManagementViewTextStyles.Light,
 )
 
 val DarkMainTypographies = MainTopographies(
@@ -121,5 +140,5 @@ val DarkMainTypographies = MainTopographies(
     viewingCardOrdinal = DarkViewingCardOrdinal,
     deckRepetitionInfoScreenTextStyles = CommonDeckRepetitionInfoScreenTextStyles,
     cardTransferringScreenTextStyles = CannonCardTransferringScreenTextStyles,
-    foreignWordAutocompleteSpanStyle = DarkForeignWordAutocompleteSpanStyle,
+    cardManagementViewTextStyles = CardManagementViewTextStyles.Dark,
 )
