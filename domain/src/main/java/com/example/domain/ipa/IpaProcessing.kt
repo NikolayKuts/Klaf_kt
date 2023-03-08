@@ -25,6 +25,74 @@ fun List<LetterInfo>.convertToUncompletedIpa(): String {
     return result.toString()
 }
 
+fun String.toFormatedIpa(): String {
+    return replace(
+        regex = Regex(pattern = "^\\s*"),
+        replacement = ""
+    ).replace(
+        regex = Regex(pattern = "\\n\\s*"),
+        replacement = "\n"
+    ).replace(
+        regex = Regex(pattern = "\\s*$"),
+        replacement = ""
+    ).replace(
+        regex = Regex(pattern = "\\s*\\n"),
+        replacement = "\n"
+    ).replace(
+        regex = Regex(pattern = "\\s*=[^\n\\w]*"),
+        replacement = "="
+    )
+}
+
+fun List<LetterInfo>.toEncodedIpa(ipaTemplate: String): String {
+    val result = StringBuilder()
+//    val clearedIpaTemplate: String = ipaTemplate.formated()
+
+    var ipaTemplateBuilder = StringBuilder(ipaTemplate.toFormatedIpa())
+    var pointer = 0
+
+    while (pointer < this.size) {
+        val letterInfo = this[pointer]
+
+        if (letterInfo.isChecked) {
+            when {
+                pointer == 0 -> result.append("<")
+                this[pointer - 1].isNotChecked -> result.append("<")
+                this[pointer - 1].isChecked -> result.append("><")
+            }
+
+//            if (ipaTemplateBuilder.startsWith(prefix = "\n")) {
+//                ipaTemplateBuilder = StringBuilder(ipaTemplateBuilder.substring(1))
+//            }
+
+            val ipaCouple = when {
+                ipaTemplateBuilder.isNotEmpty() && "\n" in ipaTemplateBuilder.substring(1) -> {
+                    ipaTemplateBuilder.substring(0, ipaTemplateBuilder.indexOf("\n"))
+                }
+                else -> ipaTemplateBuilder.substring(0)
+            }
+
+            val replacedLetters: String =
+                ipaTemplateBuilder.substring(0, ipaTemplateBuilder.indexOf("="))
+
+            pointer += replacedLetters.lastIndex
+            result.append(ipaCouple)
+            ipaTemplateBuilder.delete(0, ipaCouple.length)
+
+        } else {
+            if (pointer > 0 && this[pointer - 1].isChecked) {
+                result.append("<")
+            }
+
+            result.append(letterInfo.letter)
+        }
+
+        pointer++
+    }
+
+    return result.toString()
+}
+
 fun List<LetterInfo>.convertToEncodedIpa(ipaTemplate: String): String {
     val result = StringBuilder()
     val clearedIpaTemplate: String = ipaTemplate.replace(

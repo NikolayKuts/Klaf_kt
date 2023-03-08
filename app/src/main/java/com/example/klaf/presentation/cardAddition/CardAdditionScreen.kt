@@ -48,7 +48,8 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
                         nativeWord = nativeWord,
                         foreignWord = foreignWord,
                         letterInfos = letterInfos,
-                        ipaTemplate = ipaTemplate
+    //                        ipaTemplate = ipaTemplate
+                        ipaTemplate = "ipaTemplate"
                     )
                 )
             },

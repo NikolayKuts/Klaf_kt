@@ -24,8 +24,6 @@ data class MainColors(
     val negativeDialogButton: Color,
     val neutralDialogButton: Color,
     val deckNavigationDialogSeparator: Color,
-    val checkedLetterCell: Color,
-    val uncheckedLetterCell: Color,
     val cardManagementViewColors: CardManagementViewColors,
     val deckRepetitionScreenColors: DeckRepetitionScreenColors,
     val viewingCardForeignWord: Color,
@@ -37,6 +35,8 @@ data class MainColors(
 )
 
 data class CardManagementViewColors(
+    val checkedLetterCell: Color,
+    val uncheckedLetterCell: Color,
     val textFieldBackground: Color,
     val nativeWord: Color,
     val foreignWord: Color,
@@ -97,6 +97,8 @@ private val LightMaterialColors = lightColors(
 )
 
 private val LightCardManagementViewColors = CardManagementViewColors(
+    checkedLetterCell = Color(0xFFB0D9DF),
+    uncheckedLetterCell = Color(0xFFE9E9E9),
     textFieldBackground = Color.Transparent,
     nativeWord = Color(0xFFC0914C),
     foreignWord = Color(0xFFAD7DB4),
@@ -166,8 +168,6 @@ val LightMainPalettes = MainColors(
     negativeDialogButton = Color(0xFFEBAEB1),
     neutralDialogButton = Color(0xFFB9E5EB),
     deckNavigationDialogSeparator = Color(0xFF818181),
-    checkedLetterCell = Color(0xFFB0D9DF),
-    uncheckedLetterCell = Color(0xFFE9E9E9),
     cardManagementViewColors = LightCardManagementViewColors,
     deckRepetitionScreenColors = LightDeckRepetitionScreenColors,
     viewingCardForeignWord = Color(0xFFA078AA),
@@ -184,6 +184,8 @@ private val DarkMaterialColors = darkColors(
 )
 
 private val DarkCardManagementViewColors = CardManagementViewColors(
+    checkedLetterCell = Color(0xFF94B172),
+    uncheckedLetterCell = Color(0xFF63665F),
     textFieldBackground = Color.Transparent,
     nativeWord = Color(0xFFA9CA84),
     foreignWord = Color(0xFFD3AA6E),
@@ -253,8 +255,6 @@ val DarkMainPalettes = MainColors(
     negativeDialogButton = Color(0xFFD17670),
     neutralDialogButton = DarkPrimaryColor,
     deckNavigationDialogSeparator = Color(0xFF4D4D4D),
-    checkedLetterCell = Color(0xFF94B172),
-    uncheckedLetterCell = Color(0xFF63665F),
     cardManagementViewColors = DarkCardManagementViewColors,
     deckRepetitionScreenColors = DarkDeckRepetitionScreenColors,
     viewingCardForeignWord = Color(0xFFA5CA79),
