@@ -13,7 +13,7 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
     val letterInfos = cardState.letterInfos
     val foreignWord = cardState.foreignWord
     val nativeWord = cardState.nativeWord
-    val ipaTemplate = cardState.ipaTemplate
+    val ipaHolders = cardState.ipaHolders
     val autocompleteState by viewModel.autocompleteState.collectAsState()
 
     deck.value?.let { receivedDeck ->
@@ -23,7 +23,7 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
             letterInfos = letterInfos,
             nativeWord = nativeWord,
             foreignWord = foreignWord,
-            ipaTemplate = ipaTemplate,
+            ipaHolders = ipaHolders,
             autocompleteState = autocompleteState,
             onDismissRequest = { viewModel.sendEvent(event = CloseAutocompleteMenu) },
             onLetterClick = { index, letterInfo ->
@@ -38,9 +38,13 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
                 viewModel.sendEvent(event = UpdateNativeWord(word = word))
             },
             onForeignWordChange = { word ->
-                viewModel.sendEvent(event = UpdateDataOnForeignWordChaneged(word = word))
+                viewModel.sendEvent(event = UpdateDataOnForeignWordChanged(word = word))
             },
-            onIpaChange = { ipa -> viewModel.sendEvent(event = UpdateIpaTemplate(ipa = ipa)) },
+            onIpaChange = { letterGroupIndex, ipa ->
+                viewModel.sendEvent(
+                    event = UpdateIpaTemplate(letterGroupIndex = letterGroupIndex, ipa = ipa)
+                )
+            },
             onConfirmClick = {
                 viewModel.sendEvent(
                     event = AddNewCard(
@@ -48,8 +52,7 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
                         nativeWord = nativeWord,
                         foreignWord = foreignWord,
                         letterInfos = letterInfos,
-    //                        ipaTemplate = ipaTemplate
-                        ipaTemplate = "ipaTemplate"
+                        ipaHolders = ipaHolders,
                     )
                 )
             },

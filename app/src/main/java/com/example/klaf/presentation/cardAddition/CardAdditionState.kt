@@ -1,36 +1,31 @@
 package com.example.klaf.presentation.cardAddition
 
+import com.example.domain.ipa.IpaHolder
 import com.example.domain.ipa.LetterInfo
 
 sealed class CardAdditionState(
     val letterInfos: List<LetterInfo>,
     val nativeWord: String,
     val foreignWord: String,
-    val ipaTemplate: List<IpaItemHolder>,
+    val ipaHolders: List<IpaHolder>,
 ) {
 
     class Adding(
         letterInfos: List<LetterInfo>,
         nativeWord: String = "",
         foreignWord: String = "",
-        ipaTemplate: List<IpaItemHolder> = emptyList(),
+        ipaTemplate: List<IpaHolder> = emptyList(),
     ) : CardAdditionState(
         letterInfos = letterInfos,
         nativeWord = nativeWord,
         foreignWord = foreignWord,
-        ipaTemplate = ipaTemplate,
+        ipaHolders = ipaTemplate,
     )
 
     object Finished : CardAdditionState(
         letterInfos = emptyList(),
         nativeWord = "",
         foreignWord = "",
-        ipaTemplate = emptyList(),
+        ipaHolders = emptyList(),
     )
 }
-
-data class IpaItemHolder(
-    val letter: String,
-    val value: String,
-    val letterIndex: Int,
-)
