@@ -67,7 +67,7 @@ class CardAdditionViewModel @AssistedInject constructor(
                 letterInfos = letterInfos,
                 nativeWord = nativeWord,
                 foreignWord = letterInfos.toWord(),
-                ipaTemplate = ipaHolders
+                ipaHolders = ipaHolders
             )
         }.onEach { addingState ->
             cardAdditionState.value = addingState

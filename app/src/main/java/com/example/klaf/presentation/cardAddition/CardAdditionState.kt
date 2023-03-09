@@ -14,12 +14,12 @@ sealed class CardAdditionState(
         letterInfos: List<LetterInfo>,
         nativeWord: String = "",
         foreignWord: String = "",
-        ipaTemplate: List<IpaHolder> = emptyList(),
+        ipaHolders: List<IpaHolder> = emptyList(),
     ) : CardAdditionState(
         letterInfos = letterInfos,
         nativeWord = nativeWord,
         foreignWord = foreignWord,
-        ipaHolders = ipaTemplate,
+        ipaHolders = ipaHolders,
     )
 
     object Finished : CardAdditionState(

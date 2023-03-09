@@ -267,7 +267,7 @@ val DarkForeignWordAutocompleteSpanStyle = MainSpanStyle.copy(
 
 val LightIpaValueTextStyle = MainTextStyle.copy(color = LightMainPalettes.materialColors.onPrimary)
 
-val DarkIpaValueTextStyle = MainTextStyle.copy(color = LightMainPalettes.materialColors.onPrimary)
+val DarkIpaValueTextStyle = MainTextStyle.copy(color = DarkMainPalettes.materialColors.onPrimary)
 
 val commonDeckNavigationDialogTitle = MainTextStyle.copy(
     fontSize = 30.sp,

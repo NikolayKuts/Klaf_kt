@@ -53,14 +53,14 @@ data class CardManagementViewTextStyles(
     val ipaValue: TextStyle
 ) {
 
-    companion object {
+    object Theme : Themable<CardManagementViewTextStyles> {
 
-        val Light = CardManagementViewTextStyles(
+        override val light: CardManagementViewTextStyles = CardManagementViewTextStyles(
             foreignWordAutocompleteSpanStyle = LightForeignWordAutocompleteSpanStyle,
             ipaValue = LightIpaValueTextStyle,
         )
 
-        val Dark = CardManagementViewTextStyles(
+        override val dark: CardManagementViewTextStyles = CardManagementViewTextStyles(
             foreignWordAutocompleteSpanStyle = DarkForeignWordAutocompleteSpanStyle,
             ipaValue = DarkIpaValueTextStyle,
         )
@@ -110,7 +110,7 @@ val LightMainTypographies = MainTopographies(
     viewingCardOrdinal = LightViewingCardOrdinal,
     deckRepetitionInfoScreenTextStyles = CommonDeckRepetitionInfoScreenTextStyles,
     cardTransferringScreenTextStyles = CannonCardTransferringScreenTextStyles,
-    cardManagementViewTextStyles = CardManagementViewTextStyles.Light,
+    cardManagementViewTextStyles = CardManagementViewTextStyles.Theme.light,
 )
 
 val DarkMainTypographies = MainTopographies(
@@ -140,5 +140,5 @@ val DarkMainTypographies = MainTopographies(
     viewingCardOrdinal = DarkViewingCardOrdinal,
     deckRepetitionInfoScreenTextStyles = CommonDeckRepetitionInfoScreenTextStyles,
     cardTransferringScreenTextStyles = CannonCardTransferringScreenTextStyles,
-    cardManagementViewTextStyles = CardManagementViewTextStyles.Dark,
+    cardManagementViewTextStyles = CardManagementViewTextStyles.Theme.dark,
 )
