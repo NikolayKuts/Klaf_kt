@@ -361,7 +361,7 @@ fun IpaSection(
                         .clip(shape = cellShape)
                         .background(color = MainTheme.colors.cardManagementViewColors.checkedLetterCell)
                         .padding(6.dp),
-                    text = ipaHolder.letter
+                    text = ipaHolder.letterGroup
                 )
 
                 Text(

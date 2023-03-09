@@ -48,9 +48,9 @@ fun List<LetterInfo>.toRowIpaItemHolders(): List<IpaHolder> {
 
     return result.map {
         IpaHolder(
-            letter = it.value,
+            letterGroup = it.value,
             ipa = "",
-            letterIndex = it.key
+            groupIndex = it.key
         )
     }
 }
@@ -181,36 +181,20 @@ fun List<LetterInfo>.convertToEncodedIpa(ipaTemplate: String): String {
     return result.toString()
 }
 
-fun Card.decodeToInfos(): List<LetterInfo> {
-    return ArrayList<LetterInfo>().apply {
+fun Card.toInfos(): List<LetterInfo> {
+    val result = foreignWord.toList()
+        .map { LetterInfo(letter = it.toString(), isChecked = false) }
+        .toMutableList()
 
-//        val foreignWordBuilder = StringBuilder(ipa)
-        val foreignWordBuilder = StringBuilder() // remove
-        while (foreignWordBuilder.isNotEmpty()) {
-
-            if (foreignWordBuilder.substring(0, 1) == "/") {
-                foreignWordBuilder.delete(0, 1)
-                val equalsIndex = foreignWordBuilder.indexOf("=")
-                val letters = foreignWordBuilder.substring(0, equalsIndex)
-
-                for (index in letters.indices) {
-                    this.add(LetterInfo(letters.substring(index, index + 1), true))
-                }
-
-                if (foreignWordBuilder.toString().contains("/")) {
-                    foreignWordBuilder.delete(0, foreignWordBuilder.indexOf("/") + 1)
-                } else {
-                    foreignWordBuilder.delete(0, foreignWordBuilder.length)
-                }
-
-            } else {
-                this.add(LetterInfo(foreignWordBuilder.substring(0, 1), false))
-                foreignWordBuilder.delete(0, 1)
-            }
+    ipa.forEach { ipaHolder ->
+        ipaHolder.letterGroup.forEachIndexed { index, letter ->
+            result[ipaHolder.groupIndex + index] =
+                LetterInfo(letter = letter.toString(), isChecked = true)
         }
     }
-}
 
+    return result
+}
 
 fun Card.decodeToCompletedViewingIpa(): String {
     return decodeToCompletedIpa().replace("\n", ", ")
