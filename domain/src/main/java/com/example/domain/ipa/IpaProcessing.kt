@@ -184,7 +184,8 @@ fun List<LetterInfo>.convertToEncodedIpa(ipaTemplate: String): String {
 fun Card.decodeToInfos(): List<LetterInfo> {
     return ArrayList<LetterInfo>().apply {
 
-        val foreignWordBuilder = java.lang.StringBuilder(ipa)
+//        val foreignWordBuilder = StringBuilder(ipa)
+        val foreignWordBuilder = StringBuilder() // remove
         while (foreignWordBuilder.isNotEmpty()) {
 
             if (foreignWordBuilder.substring(0, 1) == "/") {
@@ -218,7 +219,8 @@ fun Card.decodeToCompletedViewingIpa(): String {
 fun Card.decodeToCompletedIpa(): String {
     // TODO("refactore - there is a problem")
     val result = java.lang.StringBuilder()
-    val ipa = java.lang.StringBuilder(this.ipa)
+//    val ipa = StringBuilder(this.ipa)
+    val ipa = StringBuilder() // remove
 
     while (ipa.isNotEmpty()) {
         if (ipa.substring(0, 1) == "/") {
@@ -247,7 +249,8 @@ fun Card.decodeToCompletedIpa(): String {
 
 
 fun Card.decodeToIpaPrompts(): List<LetterInfo> {
-    val ipa = java.lang.StringBuilder(this.ipa)
+//    val ipa = java.lang.StringBuilder(this.ipa)
+    val ipa = StringBuilder() // remove
     val result: MutableList<LetterInfo> = ArrayList()
 
     while (ipa.toString() != "") {

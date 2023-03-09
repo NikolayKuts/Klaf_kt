@@ -337,7 +337,6 @@ fun CardManagementFields(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun IpaSection(
     ipaHolders: List<IpaHolder>,

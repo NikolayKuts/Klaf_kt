@@ -100,7 +100,7 @@ class OldAppKlafDataTransferRepositoryImpl @Inject constructor(
                     deckId = cursor.getInt(cursor.getColumnIndex(Card::deckId.name)),
                     nativeWord = cursor.getString(cursor.getColumnIndex(Card::nativeWord.name)),
                     foreignWord = cursor.getString(cursor.getColumnIndex(Card::foreignWord.name)),
-                    ipa = cursor.getString(cursor.getColumnIndex(Card::ipa.name)),
+                    ipa = emptyList(),
                     id = cursor.getInt(cursor.getColumnIndex(Card::id.name)),
                 )
 

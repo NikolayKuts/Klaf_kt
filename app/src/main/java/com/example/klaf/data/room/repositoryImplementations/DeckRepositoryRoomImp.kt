@@ -2,8 +2,8 @@ package com.example.klaf.data.room.repositoryImplementations
 
 import com.example.klaf.data.room.databases.KlafRoomDatabase
 import com.example.klaf.data.room.entities.RoomDeck
-import com.example.klaf.data.room.mapToDomainEntity
-import com.example.klaf.data.room.mapToRoomEntity
+import com.example.klaf.data.room.toDomainEntity
+import com.example.klaf.data.room.toRoomEntity
 import com.example.domain.common.simplifiedItemMap
 import com.example.domain.entities.Deck
 import com.example.domain.repositories.DeckRepository
@@ -20,23 +20,23 @@ class DeckRepositoryRoomImp @Inject constructor(
     override fun fetchDeckSource(): Flow<List<Deck>> {
         return roomDatabase.deckDao()
             .getObservableDecks()
-            .simplifiedItemMap { roomDeck -> roomDeck.mapToDomainEntity() }
+            .simplifiedItemMap { roomDeck -> roomDeck.toDomainEntity() }
     }
 
     override suspend fun fetchAllDecks(): List<Deck> {
         return roomDatabase.deckDao()
             .getAllDecks()
-            .map { roomDeck -> roomDeck.mapToDomainEntity() }
+            .map { roomDeck -> roomDeck.toDomainEntity() }
     }
 
     override fun fetchObservableDeckById(deckId: Int): Flow<Deck?> {
         return roomDatabase.deckDao()
             .getObservableDeckById(deckId = deckId)
-            .map { roomDeck: RoomDeck? -> roomDeck?.mapToDomainEntity() }
+            .map { roomDeck: RoomDeck? -> roomDeck?.toDomainEntity() }
     }
 
     override suspend fun insertDeck(deck: Deck) {
-        roomDatabase.deckDao().insertDeck(deck = deck.mapToRoomEntity())
+        roomDatabase.deckDao().insertDeck(deck = deck.toRoomEntity())
     }
 
     override suspend fun removeDeck(deckId: Int) {
@@ -44,7 +44,7 @@ class DeckRepositoryRoomImp @Inject constructor(
     }
 
     override suspend fun getDeckById(deckId: Int): Deck? {
-        return roomDatabase.deckDao().getDeckById(deckId)?.mapToDomainEntity()
+        return roomDatabase.deckDao().getDeckById(deckId)?.toDomainEntity()
     }
 
     override suspend fun getCardQuantityInDeck(deckId: Int): Int {

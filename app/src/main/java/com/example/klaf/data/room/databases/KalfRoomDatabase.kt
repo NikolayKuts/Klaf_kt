@@ -16,7 +16,7 @@ import com.example.klaf.data.room.entities.RoomStorageSaveVersion
         RoomCard::class,
         RoomStorageSaveVersion::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
     autoMigrations = [AutoMigration(from = 1, to = 2)]
 )
@@ -30,6 +30,7 @@ abstract class KlafRoomDatabase : RoomDatabase() {
 
         fun getInstance(context: Context): KlafRoomDatabase = synchronized(LOCK) {
             database ?: Room.databaseBuilder(context, KlafRoomDatabase::class.java, DB_NAME)
+                .addMigrations(Migrations.from3To4)
                 .build()
                 .also { database = it }
         }

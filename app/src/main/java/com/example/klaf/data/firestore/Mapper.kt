@@ -8,8 +8,11 @@ import com.example.domain.entities.AutocompleteWord
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
 import com.example.domain.entities.StorageSaveVersion
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-fun FirestoreDeck.mapToDomainEntity(): Deck = Deck(
+fun FirestoreDeck.toDomainEntity(): Deck = Deck(
     name = name,
     creationDate = creationDate,
     repetitionIterationDates = repetitionIterationDates,
@@ -24,7 +27,7 @@ fun FirestoreDeck.mapToDomainEntity(): Deck = Deck(
     id = id
 )
 
-fun Deck.mapToFirestoreEntity(): FirestoreDeck = FirestoreDeck(
+fun Deck.toFirestoreEntity(): FirestoreDeck = FirestoreDeck(
     name = name,
     creationDate = creationDate,
     repetitionIterationDates = repetitionIterationDates,
@@ -39,36 +42,36 @@ fun Deck.mapToFirestoreEntity(): FirestoreDeck = FirestoreDeck(
     id = id
 )
 
-fun FirestoreCard.mapToDomainEntity(): Card = Card(
+fun FirestoreCard.toDomainEntity(): Card = Card(
     deckId = deckId,
     nativeWord = nativeWord,
     foreignWord = foreignWord,
-    ipa = ipa,
+    ipa = Json.decodeFromString(string = ipa),
     id = id
 )
 
-fun Card.mapToFirestoreEntity(): FirestoreCard = FirestoreCard(
+fun Card.toFirestoreEntity(): FirestoreCard = FirestoreCard(
     deckId = deckId,
     nativeWord = nativeWord,
     foreignWord = foreignWord,
-    ipa = ipa,
+    ipa = Json.encodeToString(value = ipa),
     id = id
 )
 
-fun FirestoreStorageSaveVersion.mapToDomainEntity(): StorageSaveVersion = StorageSaveVersion(
+fun FirestoreStorageSaveVersion.toDomainEntity(): StorageSaveVersion = StorageSaveVersion(
     version = version
 )
 
-fun StorageSaveVersion.mapToFirestoreEntity(): FirestoreStorageSaveVersion {
+fun StorageSaveVersion.toFirestoreEntity(): FirestoreStorageSaveVersion {
     return FirestoreStorageSaveVersion(
         version = version
     )
 }
 
-fun FirestoreAutocompleteWord.mapToDomainEntity(): AutocompleteWord = AutocompleteWord(
+fun FirestoreAutocompleteWord.toDomainEntity(): AutocompleteWord = AutocompleteWord(
     value = word
 )
 
-fun AutocompleteWord.mapToDomainEntity(): FirestoreAutocompleteWord = FirestoreAutocompleteWord(
+fun AutocompleteWord.toDomainEntity(): FirestoreAutocompleteWord = FirestoreAutocompleteWord(
     word = value
 )
