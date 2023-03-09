@@ -196,6 +196,10 @@ fun Card.toInfos(): List<LetterInfo> {
     return result
 }
 
+fun String.toInfos(): List<LetterInfo> = toList().map { letterChar ->
+    LetterInfo(letter = letterChar.toString(), isChecked = false)
+}
+
 fun Card.toCompletedViewingIpa(): String = ipa.joinToString(separator = " ") { ipaHolder ->
     "${ipaHolder.letterGroup} = ${ipaHolder.ipa}"
 }

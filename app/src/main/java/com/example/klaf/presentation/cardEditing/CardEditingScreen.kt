@@ -72,6 +72,7 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                 onPronounceIconClick = { viewModel.pronounce() },
                 onAutocompleteItemClick = { chosenWord ->
                     foreignWordState = chosenWord
+                    letterInfosState = chosenWord.toInfos()
                     viewModel.setSelectedAutocomplete(selectedWord = chosenWord)
                 }
             )
