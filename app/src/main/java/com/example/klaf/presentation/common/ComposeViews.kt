@@ -1,6 +1,7 @@
 package com.example.klaf.presentation.common
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -200,7 +201,7 @@ fun LazyItemScope.LetterItem(
 
     Text(
         modifier = Modifier
-            .animateItemPlacement()
+            .animateItemPlacement(animationSpec = tween(durationMillis = 700))
             .padding(4.dp)
             .clickable { onClick() }
             .clip(shape = RoundedCornerShape(4.dp))
@@ -336,16 +337,22 @@ fun CardManagementFields(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun IpaSection(
     ipaHolders: List<IpaHolder>,
     onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
 ) {
-    LazyColumn(modifier = Modifier.padding(start = 16.dp, top = 6.dp)) {
+    LazyColumn(
+        modifier = Modifier.padding(start = 16.dp, top = 6.dp),
+        state = rememberLazyListState()
+    ) {
         val cellShape = RoundedCornerShape(size = 6.dp)
         val equalSing = "="
 
-        itemsIndexed(items = ipaHolders) { letterGroupIndex, ipaHolder ->
+        itemsIndexed(
+            items = ipaHolders,
+        ) { letterGroupIndex, ipaHolder ->
             Row(
                 modifier = Modifier.padding(top = 3.dp, bottom = 3.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -368,7 +375,7 @@ fun IpaSection(
                         .defaultMinSize(minWidth = 30.dp)
                         .width(IntrinsicSize.Min)
                         .clip(shape = cellShape)
-                        .background(Color(0x70EBBD79))
+                        .background(MainTheme.colors.cardManagementViewColors.ipaCellBackground)
                         .padding(6.dp),
                     value = ipaHolder.ipa,
                     cursorBrush = Brush.verticalGradient(
