@@ -196,41 +196,9 @@ fun Card.toInfos(): List<LetterInfo> {
     return result
 }
 
-fun Card.decodeToCompletedViewingIpa(): String {
-    return decodeToCompletedIpa().replace("\n", ", ")
+fun Card.toCompletedViewingIpa(): String = ipa.joinToString(separator = " ") { ipaHolder ->
+    "${ipaHolder.letterGroup} = ${ipaHolder.ipa}"
 }
-
-fun Card.decodeToCompletedIpa(): String {
-    // TODO("refactore - there is a problem")
-    val result = java.lang.StringBuilder()
-//    val ipa = StringBuilder(this.ipa)
-    val ipa = StringBuilder() // remove
-
-    while (ipa.isNotEmpty()) {
-        if (ipa.substring(0, 1) == "/") {
-            ipa.delete(0, 1)
-            var couple: String
-            if (ipa.contains("/")) {
-                val index = ipa.indexOf("/")
-                couple = "${ipa.substring(0, index)}\n"
-                ipa.delete(0, index + 1)
-            } else {
-                couple = ipa.substring(0, ipa.length)
-                ipa.delete(0, ipa.length)
-            }
-            result.append(couple)
-        } else {
-            ipa.delete(0, 1)
-        }
-    }
-    if (result.endsWith("\n")) {
-        val resultLength = result.length
-        result.delete(resultLength - 1, resultLength)
-    }
-
-    return result.toString().replace("=", " = ")
-}
-
 
 fun Card.decodeToIpaPrompts(): List<LetterInfo> {
 //    val ipa = java.lang.StringBuilder(this.ipa)
