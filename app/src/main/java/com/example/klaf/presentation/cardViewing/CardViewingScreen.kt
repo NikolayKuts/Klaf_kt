@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.domain.entities.Card
-import com.example.domain.ipa.decodeToCompletedViewingIpa
+import com.example.domain.ipa.toCompletedViewingIpa
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -69,7 +69,7 @@ private fun CardItem(card: Card, ordinal: Int) {
         ItemContentSpacer()
         Text(
             style = MainTheme.typographies.viewingCardIpa,
-            text = card.decodeToCompletedViewingIpa()
+            text = card.toCompletedViewingIpa()
         )
     }
 }
