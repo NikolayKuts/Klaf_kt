@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class IpaHolder(
-    val letter: String,
+    val letterGroup: String,
     val ipa: String,
-    val letterIndex: Int,
+    val groupIndex: Int,
 )

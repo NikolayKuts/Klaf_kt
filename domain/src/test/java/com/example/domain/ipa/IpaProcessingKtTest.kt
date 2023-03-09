@@ -1,7 +1,6 @@
 package com.example.domain.ipa
 
 //import org.junit.Assert.assertEquals
-import com.example.domain.entities.Card
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -164,53 +163,5 @@ internal class IpaProcessingKtTest {
         val encodedIpa = wordLetterInfos.convertToEncodedIpa(ipaTemplate = ipa)
 
         assertEquals(expectedLetterEncodedIpa, encodedIpa)
-    }
-
-    @Test
-    fun test() {
-        /** processing **/
-        val letterInfos = listOf(
-            LetterInfo(letter = "p", isChecked = true),
-            LetterInfo(letter = "r", isChecked = false),
-            LetterInfo(letter = "o", isChecked = false),
-            LetterInfo(letter = "c", isChecked = true),
-            LetterInfo(letter = "e", isChecked = true),
-            LetterInfo(letter = "s", isChecked = true),
-            LetterInfo(letter = "s", isChecked = true),
-            LetterInfo(letter = "i", isChecked = false),
-            LetterInfo(letter = "n", isChecked = false),
-            LetterInfo(letter = "g", isChecked = true),
-        )
-        val ipa = "p = q\n ce = qq\nss = qq\ng=qqq"
-        val ipas = listOf(
-            "p = q\n ce = qq\nss = qq\ng=qqq",
-//    "p =      $\n ce =     ##\nss =      @@",
-//    "p = $       \n ce = ##         \nss = @@      ",
-//    "p=$\nce=##\nss=@@",
-//    "p     =$\n ce       =##\nss=      @@",
-//    "p = $\n ce = ##\nss = @@",
-//    "        p=$\n       ce=##\n        ss=@@",
-//    "      p      =      $     \n        ce      =      ##    \n     ss     =    @@    ",
-        )
-
-        val result = letterInfos.toEncodedIpa(ipaTemplate = ipa)
-
-        assertEquals(expected = "<p=q>ro<ce=qq><ss=qq>in<g=qqq>", actual = result)
-    }
-
-    @Test
-    fun testCard() {
-        val cards = listOf(
-            Card(deckId = 0, nativeWord = "***", foreignWord = "donut", ipa = "d/o=ªu/nut", id = 0),
-            Card(deckId = 0, nativeWord = "***", foreignWord = "meat grinder", ipa = "meat gr/i=aı/nder", id = 0),
-            Card(deckId = 0, nativeWord = "***", foreignWord = "corkscrew", ipa = "corkscr/ew=u:", id = 0),
-            Card(deckId = 0, nativeWord = "***", foreignWord = "bathrobe", ipa = "bathr/o=ºu/be", id = 0),
-            Card(deckId = 0, nativeWord = "***", foreignWord = "tights", ipa = "t/igh=aı/ts", id = 0),
-            Card(deckId = 0, nativeWord = "***", foreignWord = "soap", ipa = "s/oa=ºu/p", id = 0),
-            Card(deckId = 0, nativeWord = "***", foreignWord = "scissors", ipa = "/sc=s/issors", id = 0),
-        )
-
-        cards.map { it.decodeToInfos()}
-            .forEach { println() }
     }
 }

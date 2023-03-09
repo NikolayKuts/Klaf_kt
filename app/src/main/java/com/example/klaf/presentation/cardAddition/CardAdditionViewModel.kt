@@ -85,7 +85,7 @@ class CardAdditionViewModel @AssistedInject constructor(
             }
             is UpdateDataOnForeignWordChanged -> updateDataOnForeignWordChanged(word = event.word)
             is UpdateDataOnAutocompleteSelected -> updateDataOnAutocompleteSelected(word = event.word)
-            is UpdateIpaTemplate -> {
+            is UpdateIpa -> {
                 updateIpa(letterGroupIndex = event.letterGroupIndex, ipa = event.ipa)
             }
             is UpdateNativeWord -> updateNativeWord(word = event.word)

@@ -7,9 +7,8 @@ import androidx.compose.runtime.setValue
 import com.example.domain.common.generateLetterInfos
 import com.example.domain.common.updatedAt
 import com.example.domain.ipa.LetterInfo
-import com.example.domain.ipa.convertToUncompletedIpa
-import com.example.domain.ipa.decodeToCompletedIpa
-import com.example.domain.ipa.decodeToInfos
+import com.example.domain.ipa.toInfos
+import com.example.domain.ipa.toRowIpaItemHolders
 import com.example.klaf.presentation.common.CardManagementView
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
 
@@ -21,13 +20,10 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
 
     deck?.let { receivedDeck ->
         card?.let { receivedCard ->
-            var letterInfosState by rememberAsMutableStateOf(
-                value = receivedCard.decodeToInfos()
-            )
+            var letterInfosState by rememberAsMutableStateOf(value = receivedCard.toInfos())
             var nativeWordState by rememberAsMutableStateOf(value = receivedCard.nativeWord)
             var foreignWordState by rememberAsMutableStateOf(value = receivedCard.foreignWord)
-            var ipaTemplateState
-                    by rememberAsMutableStateOf(value = receivedCard.decodeToCompletedIpa())
+            var ipaHoldersState by rememberAsMutableStateOf(value = receivedCard.ipa)
 
             CardManagementView(
                 deckName = receivedDeck.name,
@@ -35,29 +31,34 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                 letterInfos = letterInfosState,
                 nativeWord = nativeWordState,
                 foreignWord = foreignWordState,
-                ipaTemplate = ipaTemplateState,
+                ipaHolders = ipaHoldersState,
                 autocompleteState = autocompleteState,
                 onDismissRequest = { viewModel.closeAutocompleteMenu() },
                 onLetterClick = { index, letterInfo ->
                     val updatedIsChecked = when (letterInfo.letter) {
                         LetterInfo.EMPTY_LETTER -> false
-                        else -> !letterInfo.isChecked
+                        else -> letterInfo.isNotChecked
                     }
 
                     letterInfosState = letterInfosState.updatedAt(
                         index = index,
                         newValue = letterInfo.copy(isChecked = updatedIsChecked)
                     )
-                    ipaTemplateState = letterInfosState.convertToUncompletedIpa()
+                    ipaHoldersState = letterInfosState.toRowIpaItemHolders()
                 },
                 onNativeWordChange = { nativeWord -> nativeWordState = nativeWord },
                 onForeignWordChange = { foreignWord ->
                     foreignWordState = foreignWord
                     letterInfosState = foreignWord.generateLetterInfos()
-                    ipaTemplateState = letterInfosState.convertToUncompletedIpa()
+                    ipaHoldersState = emptyList()
                     viewModel.updateAutocompleteState(word = foreignWord)
                 },
-                onIpaChange = { ipaTemplate -> ipaTemplateState = ipaTemplate },
+                onIpaChange = { letterGroupIndex: Int, ipa: String ->
+                    ipaHoldersState =
+                        ipaHoldersState.updatedAt(index = letterGroupIndex) { oldValue ->
+                            oldValue.copy(ipa = ipa.trim())
+                        }
+                },
                 onConfirmClick = {
                     viewModel.updateCard(
                         oldCard = receivedCard,
@@ -65,7 +66,7 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                         nativeWord = nativeWordState,
                         foreignWord = foreignWordState,
                         letterInfos = letterInfosState,
-                        ipaTemplate = ipaTemplateState,
+                        ipaHolders = ipaHoldersState,
                     )
                 },
                 onPronounceIconClick = { viewModel.pronounce() },

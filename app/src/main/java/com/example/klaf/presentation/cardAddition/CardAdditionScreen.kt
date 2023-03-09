@@ -42,7 +42,7 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
             },
             onIpaChange = { letterGroupIndex, ipa ->
                 viewModel.sendEvent(
-                    event = UpdateIpaTemplate(letterGroupIndex = letterGroupIndex, ipa = ipa)
+                    event = UpdateIpa(letterGroupIndex = letterGroupIndex, ipa = ipa)
                 )
             },
             onConfirmClick = {

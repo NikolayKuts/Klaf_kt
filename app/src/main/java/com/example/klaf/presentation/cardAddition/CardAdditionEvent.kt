@@ -12,7 +12,7 @@ sealed interface CardAdditionEvent {
 
     data class UpdateDataOnAutocompleteSelected(val word: String) : CardAdditionEvent
 
-    data class UpdateIpaTemplate(val letterGroupIndex: Int, val ipa: String) : CardAdditionEvent
+    data class UpdateIpa(val letterGroupIndex: Int, val ipa: String) : CardAdditionEvent
 
     data class ChangeLetterSelectionWithIpaTemplate(
         val index: Int,
