@@ -63,8 +63,7 @@ class CardEditingViewModel @AssistedInject constructor(
 
     override val cardEditingState = MutableStateFlow(value = CardEditingState.NOT_CHANGED)
 
-    override val autocompleteState: MutableStateFlow<AutocompleteState> =
-        MutableStateFlow(value = AutocompleteState())
+    override val autocompleteState = MutableStateFlow(value = AutocompleteState())
 
     private var autocompleteFetchingJob: Job? = null
 
