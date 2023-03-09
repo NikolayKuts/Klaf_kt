@@ -1,7 +1,7 @@
 package com.example.klaf.data.firestore.repositoryImplementations
 
 import com.example.klaf.data.firestore.entities.FirestoreAutocompleteWord
-import com.example.klaf.data.firestore.mapToDomainEntity
+import com.example.klaf.data.firestore.toDomainEntity
 import com.example.domain.entities.AutocompleteWord
 import com.example.domain.repositories.WordAutocompleteRepository
 import com.google.firebase.firestore.FirebaseFirestore
@@ -42,7 +42,7 @@ class WordAutocompleteFirestoreImp @Inject constructor(
                 .get()
                 .await()
                 .documents.mapNotNull { document -> document.toObject<FirestoreAutocompleteWord>() }
-                .map { firestoreAutocompleteWord -> firestoreAutocompleteWord.mapToDomainEntity() }
+                .map { firestoreAutocompleteWord -> firestoreAutocompleteWord.toDomainEntity() }
                 .map { autocompleteWord -> AutocompleteWord(value = autocompleteWord.value.trim()) }
                 .filter { autocompleteWord -> autocompleteWord.value.length > MIN_WORD_LENGTH }
         }

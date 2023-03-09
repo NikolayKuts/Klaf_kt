@@ -90,14 +90,12 @@ class CardAdditionViewModel @AssistedInject constructor(
             }
             is UpdateNativeWord -> updateNativeWord(word = event.word)
             is AddNewCard -> {
-                TODO("refactor saving a new card")
-//                addNewCard(
-//                    deckId = event.deckId,
-//                    nativeWord = event.nativeWord,
-//                    foreignWord = event.foreignWord,
-//                    letterInfos = event.letterInfos,
-//                    ipaTemplate = event.ipaHolders
-//                )
+                addNewCard(
+                    deckId = event.deckId,
+                    nativeWord = event.nativeWord,
+                    foreignWord = event.foreignWord,
+                    ipaHolders = event.ipaHolders
+                )
             }
             PronounceForeignWord -> audioPlayer.play()
             CloseAutocompleteMenu -> {
@@ -110,8 +108,7 @@ class CardAdditionViewModel @AssistedInject constructor(
         deckId: Int,
         nativeWord: String,
         foreignWord: String,
-        letterInfos: List<LetterInfo>,
-        ipaTemplate: String,
+        ipaHolders: List<IpaHolder>,
     ) {
         if (nativeWordState.value.isEmpty() || foreignWord.isEmpty()) {
             eventMessage.tryEmit(messageId = R.string.native_and_foreign_words_must_be_filled)
@@ -120,7 +117,7 @@ class CardAdditionViewModel @AssistedInject constructor(
                 deckId = deckId,
                 nativeWord = nativeWord,
                 foreignWord = foreignWord,
-                ipa = letterInfos.convertToEncodedIpa(ipaTemplate = ipaTemplate)
+                ipa = ipaHolders
             )
 
             viewModelScope.launchWithState {

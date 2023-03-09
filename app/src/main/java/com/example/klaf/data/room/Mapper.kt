@@ -6,8 +6,11 @@ import com.example.klaf.data.room.entities.RoomStorageSaveVersion
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
 import com.example.domain.entities.StorageSaveVersion
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-fun RoomDeck.mapToDomainEntity(): Deck = Deck(
+fun RoomDeck.toDomainEntity(): Deck = Deck(
     name = name,
     creationDate = creationDate,
     repetitionIterationDates = repetitionIterationDates,
@@ -23,7 +26,7 @@ fun RoomDeck.mapToDomainEntity(): Deck = Deck(
 
 )
 
-fun Deck.mapToRoomEntity(): RoomDeck = RoomDeck(
+fun Deck.toRoomEntity(): RoomDeck = RoomDeck(
     name = name,
     creationDate = creationDate,
     repetitionIterationDates = repetitionIterationDates,
@@ -38,26 +41,26 @@ fun Deck.mapToRoomEntity(): RoomDeck = RoomDeck(
     id = id,
 )
 
-fun RoomCard.mapToDomainEntity(): Card = Card(
+fun RoomCard.toDomainEntity(): Card = Card(
     deckId = deckId,
     nativeWord = nativeWord,
     foreignWord = foreignWord,
-    ipa = ipa,
+    ipa = Json.decodeFromString(string = ipa),
     id = id
 )
 
-fun Card.mapToRoomEntity(): RoomCard = RoomCard(
+fun Card.toRoomEntity(): RoomCard = RoomCard(
     deckId = deckId,
     nativeWord = nativeWord,
     foreignWord = foreignWord,
-    ipa = ipa,
+    ipa = Json.encodeToString(value = ipa),
     id = id
 )
 
-fun StorageSaveVersion.mapToRoomEntity(): RoomStorageSaveVersion = RoomStorageSaveVersion(
+fun StorageSaveVersion.toRoomEntity(): RoomStorageSaveVersion = RoomStorageSaveVersion(
     version = version
 )
 
-fun RoomStorageSaveVersion.mapToDomainEntity(): StorageSaveVersion = StorageSaveVersion(
+fun RoomStorageSaveVersion.toDomainEntity(): StorageSaveVersion = StorageSaveVersion(
     version = version
 )

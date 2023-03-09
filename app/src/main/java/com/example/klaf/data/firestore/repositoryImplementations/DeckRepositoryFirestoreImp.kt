@@ -2,8 +2,8 @@ package com.example.klaf.data.firestore.repositoryImplementations
 
 import com.example.klaf.data.firestore.MAIN_COLLECTION_NAME
 import com.example.klaf.data.firestore.entities.FirestoreDeck
-import com.example.klaf.data.firestore.mapToDomainEntity
-import com.example.klaf.data.firestore.mapToFirestoreEntity
+import com.example.klaf.data.firestore.toDomainEntity
+import com.example.klaf.data.firestore.toFirestoreEntity
 import com.example.domain.entities.Deck
 import com.example.domain.repositories.DeckRepository
 import com.google.firebase.firestore.CollectionReference
@@ -33,7 +33,7 @@ class DeckRepositoryFirestoreImp @Inject constructor(
             .await()
             .documents
             .mapNotNull { documentSnapshot -> documentSnapshot.toObject<FirestoreDeck>() }
-            .map { firestoreDeck -> firestoreDeck.mapToDomainEntity() }
+            .map { firestoreDeck -> firestoreDeck.toDomainEntity() }
     }
 
     override fun fetchObservableDeckById(deckId: Int): Flow<Deck?> {
@@ -43,7 +43,7 @@ class DeckRepositoryFirestoreImp @Inject constructor(
     override suspend fun insertDeck(deck: Deck) {
         getDeckSubCollection()
             .document(deck.id.toString())
-            .set(deck.mapToFirestoreEntity())
+            .set(deck.toFirestoreEntity())
             .await()
     }
 

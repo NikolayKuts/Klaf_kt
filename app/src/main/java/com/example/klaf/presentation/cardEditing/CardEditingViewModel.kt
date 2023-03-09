@@ -80,7 +80,8 @@ class CardEditingViewModel @AssistedInject constructor(
             deckId = deckId,
             nativeWord = nativeWord,
             foreignWord = foreignWord,
-            ipa = letterInfos.convertToEncodedIpa(ipaTemplate = ipaTemplate),
+//            ipa = letterInfos.convertToEncodedIpa(ipaTemplate = ipaTemplate),
+            ipa = emptyList(), // TODO("refactor")
         )
 
         when {
