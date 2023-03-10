@@ -5,8 +5,8 @@ import com.example.domain.entities.Card
 import com.example.domain.repositories.CardRepository
 import com.example.klaf.data.room.databases.KlafRoomDatabase
 import com.example.klaf.data.room.entities.RoomCard
-import com.example.klaf.data.room.mapToDomainEntity
-import com.example.klaf.data.room.mapToRoomEntity
+import com.example.klaf.data.room.toDomainEntity
+import com.example.klaf.data.room.toRoomEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -24,29 +24,29 @@ class CardRepositoryRoomImp @Inject constructor(
     override suspend fun fetchAllCards(): List<Card> {
         return roomDatabase.cardDao()
             .getAllCards()
-            .map { roomCard -> roomCard.mapToDomainEntity() }
+            .map { roomCard -> roomCard.toDomainEntity() }
     }
 
     override suspend fun insertCard(card: Card) {
-        roomDatabase.cardDao().insetCard(card = card.mapToRoomEntity())
+        roomDatabase.cardDao().insetCard(card = card.toRoomEntity())
     }
 
     override fun fetchObservableCardById(cardId: Int): Flow<Card?> {
         return roomDatabase.cardDao()
             .getObservableCardById(cardId = cardId)
-            .map { roomCard: RoomCard? -> roomCard?.mapToDomainEntity() }
+            .map { roomCard: RoomCard? -> roomCard?.toDomainEntity() }
     }
 
     override fun fetchObservableCardsByDeckId(deckId: Int): Flow<List<Card>> {
         return roomDatabase.cardDao()
             .getObservableCardsByDeckId(deckId = deckId)
-            .simplifiedItemMap { roomCard: RoomCard -> roomCard.mapToDomainEntity() }
+            .simplifiedItemMap { roomCard: RoomCard -> roomCard.toDomainEntity() }
     }
 
     override fun fetchCardsByDeckId(deckId: Int): List<Card> {
         return roomDatabase.cardDao()
             .getCardsByDeckId(deckId = deckId)
-            .map { roomCard -> roomCard.mapToDomainEntity() }
+            .map { roomCard -> roomCard.toDomainEntity() }
     }
 
     override suspend fun deleteCard(cardId: Int) {

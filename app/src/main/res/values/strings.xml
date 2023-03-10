@@ -103,11 +103,11 @@
     <string name="multiple_cards_deleting_dialog_title">Would you like to delete %d cards?</string>
     <string name="single_cards_deleting_dialog_title">Would you like to delete 1 card?</string>
     <string name="title_card_moving_dialog">Choose the deck where you would like to transfer</string>
-    <string name="problem_with_moving_cards">There is a poblem with moving the cards</string>
+    <string name="problem_with_moving_cards">There is a problem with moving the cards</string>
     <string name="message_no_cards_selected">No cards selected</string>
     <string name="message_deletion_completed_successfully">Deletion completed successfully</string>
     <string name="message_transfer_completed_successfully">Transfer completed successfully</string>
-    <string name="deck_navigation_diaog_item_transger_cards">Transfer cards</string>
-    <string name="deck_navigation_dialog_item_info">Repetiton info</string>
+    <string name="deck_navigation_dialog_item_transfer_cards">Transfer cards</string>
+    <string name="deck_navigation_dialog_item_info">Repetition info</string>
     <string name="deck_repetition_info_dialog_no_info">There is no info</string>
 </resources>

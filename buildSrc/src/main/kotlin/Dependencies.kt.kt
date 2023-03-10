@@ -81,7 +81,7 @@ object Compose {
     const val Material = "androidx.compose.material:material"
     const val RuntimeLivedata = "androidx.compose.runtime:runtime-livedata"
     const val UiTooling = "androidx.compose.ui:ui-tooling"
-    const val Activity = "androidx.activity:activity-compose"
+    const val Activity = "androidx.activity:activity-compose:1.6.1"
     const val UiToolingPreview = "androidx.compose.ui:ui-tooling-preview"
     const val ConstraintLayout = "androidx.constraintlayout:constraintlayout-compose:${Versions.ComposeConstraintLayout}"
     const val ThemeAdapter = "com.google.android.material:compose-theme-adapter:${Versions.ComposeThemeAdapter}"

@@ -2,8 +2,8 @@ package com.example.klaf.data.firestore.repositoryImplementations
 
 import com.example.klaf.data.firestore.MAIN_COLLECTION_NAME
 import com.example.klaf.data.firestore.entities.FirestoreStorageSaveVersion
-import com.example.klaf.data.firestore.mapToDomainEntity
-import com.example.klaf.data.firestore.mapToFirestoreEntity
+import com.example.klaf.data.firestore.toDomainEntity
+import com.example.klaf.data.firestore.toFirestoreEntity
 import com.example.domain.entities.StorageSaveVersion
 import com.example.domain.repositories.StorageSaveVersionRepository
 import com.google.firebase.firestore.DocumentReference
@@ -28,13 +28,13 @@ class StorageSaveVersionRepositoryFirestoreImp @Inject constructor(
             .get()
             .await()
             .toObject<FirestoreStorageSaveVersion>()
-            ?.mapToDomainEntity()
+            ?.toDomainEntity()
     }
 
     override suspend fun insertVersion(version: StorageSaveVersion) {
         withContext(Dispatchers.IO) {
             getStorageSaveVersionDocument()
-                .set(version.mapToFirestoreEntity())
+                .set(version.toFirestoreEntity())
                 .await()
         }
     }

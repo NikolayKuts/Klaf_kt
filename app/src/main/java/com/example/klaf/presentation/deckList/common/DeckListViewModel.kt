@@ -2,17 +2,17 @@ package com.example.klaf.presentation.deckList.common
 
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
+import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
+import com.example.domain.common.CoroutineStateHolder.Companion.onException
+import com.example.domain.common.getCurrentDateAsLong
+import com.example.domain.entities.Deck
+import com.example.domain.useCases.*
 import com.example.klaf.R
 import com.example.klaf.data.common.AppReopeningWorker.Companion.scheduleAppReopening
 import com.example.klaf.data.common.DataSynchronizationState
 import com.example.klaf.data.common.DataSynchronizationWorker.Companion.getDataSynchronizationProgressState
 import com.example.klaf.data.common.DataSynchronizationWorker.Companion.performDataSynchronization
 import com.example.klaf.data.common.notifications.NotificationChannelInitializer
-import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
-import com.example.domain.common.CoroutineStateHolder.Companion.onException
-import com.example.domain.common.getCurrentDateAsLong
-import com.example.domain.entities.Deck
-import com.example.domain.useCases.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.*

@@ -6,8 +6,8 @@ import com.example.domain.common.CoroutineStateHolder.Companion.onException
 import com.example.domain.common.ifNotNull
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
+import com.example.domain.ipa.IpaHolder
 import com.example.domain.ipa.LetterInfo
-import com.example.domain.ipa.convertToEncodedIpa
 import com.example.domain.useCases.FetchCardUseCase
 import com.example.domain.useCases.FetchDeckByIdUseCase
 import com.example.domain.useCases.FetchWordAutocompleteUseCase
@@ -63,8 +63,7 @@ class CardEditingViewModel @AssistedInject constructor(
 
     override val cardEditingState = MutableStateFlow(value = CardEditingState.NOT_CHANGED)
 
-    override val autocompleteState: MutableStateFlow<AutocompleteState> =
-        MutableStateFlow(value = AutocompleteState())
+    override val autocompleteState = MutableStateFlow(value = AutocompleteState())
 
     private var autocompleteFetchingJob: Job? = null
 
@@ -74,13 +73,13 @@ class CardEditingViewModel @AssistedInject constructor(
         nativeWord: String,
         foreignWord: String,
         letterInfos: List<LetterInfo>,
-        ipaTemplate: String,
+        ipaHolders: List<IpaHolder>,
     ) {
         val updatedCard = oldCard.copy(
             deckId = deckId,
             nativeWord = nativeWord,
             foreignWord = foreignWord,
-            ipa = letterInfos.convertToEncodedIpa(ipaTemplate = ipaTemplate),
+            ipa = ipaHolders
         )
 
         when {

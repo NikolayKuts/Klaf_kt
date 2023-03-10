@@ -52,7 +52,7 @@ fun DeckNavigationDialogView(
                 )
                 SeparationLine()
                 DialogItem(
-                    textId = R.string.deck_navigation_diaog_item_transger_cards,
+                    textId = R.string.deck_navigation_dialog_item_transfer_cards,
                     onClick = onTransferCardsClick
                 )
                 SeparationLine()

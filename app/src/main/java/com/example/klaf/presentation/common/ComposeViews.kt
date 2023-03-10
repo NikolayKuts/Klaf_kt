@@ -1,14 +1,13 @@
 package com.example.klaf.presentation.common
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -19,6 +18,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -35,6 +35,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Popup
 import com.example.domain.common.ifTrue
+import com.example.domain.ipa.IpaHolder
 import com.example.domain.ipa.LetterInfo
 import com.example.klaf.R
 import com.example.klaf.presentation.cardAddition.AutocompleteState
@@ -103,6 +104,69 @@ fun CardManagementView(
 }
 
 @Composable
+fun CardManagementView(
+    deckName: String,
+    cardQuantity: Int,
+    letterInfos: List<LetterInfo>,
+    nativeWord: String,
+    foreignWord: String,
+    ipaHolders: List<IpaHolder>,
+    autocompleteState: AutocompleteState,
+    onDismissRequest: () -> Unit,
+    onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
+    onNativeWordChange: (String) -> Unit,
+    onForeignWordChange: (String) -> Unit,
+    onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
+    onConfirmClick: () -> Unit,
+    onPronounceIconClick: () -> Unit,
+    onAutocompleteItemClick: (chosenWord: String) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .noRippleClickable { onDismissRequest() }
+            .padding(32.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.3F),
+        ) {
+            DeckInfo(name = deckName, cardQuantity = cardQuantity)
+            ForeignWordLettersSelector(
+                letterInfos = letterInfos,
+                onLetterClick = onLetterClick,
+            )
+        }
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            CardManagementFields(
+                modifier = Modifier.align(alignment = Alignment.TopCenter),
+                nativeWord = nativeWord,
+                foreignWord = foreignWord,
+                ipaHolders = ipaHolders,
+                autocompleteState = autocompleteState,
+                onNativeWordChange = onNativeWordChange,
+                onForeignWordChange = onForeignWordChange,
+                onIpaChange = onIpaChange,
+                onPronounceIconClick = onPronounceIconClick,
+                onAutocompleteItemClick = onAutocompleteItemClick
+            )
+
+            RoundButton(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 16.dp),
+                background = MainTheme.colors.positiveDialogButton,
+                iconId = R.drawable.ic_confirmation_24,
+                onClick = onConfirmClick
+            )
+        }
+    }
+}
+
+
+@Composable
 fun ColumnScope.ForeignWordLettersSelector(
     letterInfos: List<LetterInfo>,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit
@@ -131,13 +195,13 @@ fun LazyItemScope.LetterItem(
     onClick: () -> Unit,
 ) {
     val cellColor = when {
-        letterInfo.isChecked -> MainTheme.colors.checkedLetterCell
-        else -> MainTheme.colors.uncheckedLetterCell
+        letterInfo.isChecked -> MainTheme.colors.cardManagementViewColors.checkedLetterCell
+        else -> MainTheme.colors.cardManagementViewColors.uncheckedLetterCell
     }
 
     Text(
         modifier = Modifier
-            .animateItemPlacement()
+            .animateItemPlacement(animationSpec = tween(durationMillis = 700))
             .padding(4.dp)
             .clickable { onClick() }
             .clip(shape = RoundedCornerShape(4.dp))
@@ -194,6 +258,47 @@ fun Pointer(
 fun CardManagementFields(
     nativeWord: String,
     foreignWord: String,
+    ipaHolders: List<IpaHolder>,
+    autocompleteState: AutocompleteState,
+    onNativeWordChange: (String) -> Unit,
+    onForeignWordChange: (String) -> Unit,
+    onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
+    modifier: Modifier = Modifier,
+    onPronounceIconClick: () -> Unit,
+    onAutocompleteItemClick: (chosenWord: String) -> Unit,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.Start,
+    ) {
+        WordTextField(
+            value = nativeWord,
+            labelTextId = R.string.label_native_word,
+            textColor = MainTheme.colors.cardManagementViewColors.nativeWord,
+            onValueChange = onNativeWordChange,
+        )
+
+        DropDownAutocompleteFiled(
+            expanded = autocompleteState.isActive && autocompleteState.autocomplete.isNotEmpty(),
+            typedWord = foreignWord,
+            onTypedWordChange = onForeignWordChange,
+            onPronounceIconClick = onPronounceIconClick,
+            autocompleteState = autocompleteState,
+            onAutocompleteItemClick = onAutocompleteItemClick
+        )
+
+        IpaSection(
+            ipaHolders = ipaHolders,
+            onIpaChange = onIpaChange
+        )
+    }
+}
+
+
+@Composable
+fun CardManagementFields(
+    nativeWord: String,
+    foreignWord: String,
     ipaTemplate: String,
     autocompleteState: AutocompleteState,
     onNativeWordChange: (String) -> Unit,
@@ -229,6 +334,62 @@ fun CardManagementFields(
             textColor = MainTheme.colors.cardManagementViewColors.ipa,
             onValueChange = onIpaChange
         )
+    }
+}
+
+@Composable
+fun IpaSection(
+    ipaHolders: List<IpaHolder>,
+    onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.padding(start = 16.dp, top = 6.dp),
+        state = rememberLazyListState()
+    ) {
+        val cellShape = RoundedCornerShape(size = 6.dp)
+        val equalSing = "="
+
+        itemsIndexed(
+            items = ipaHolders,
+        ) { letterGroupIndex, ipaHolder ->
+            Row(
+                modifier = Modifier.padding(top = 3.dp, bottom = 3.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    modifier = Modifier
+                        .clip(shape = cellShape)
+                        .background(color = MainTheme.colors.cardManagementViewColors.checkedLetterCell)
+                        .padding(6.dp),
+                    text = ipaHolder.letterGroup
+                )
+
+                Text(
+                    modifier = Modifier.padding(start = 6.dp, end = 6.dp),
+                    text = equalSing,
+                )
+
+                BasicTextField(
+                    modifier = Modifier
+                        .defaultMinSize(minWidth = 30.dp)
+                        .width(IntrinsicSize.Min)
+                        .clip(shape = cellShape)
+                        .background(MainTheme.colors.cardManagementViewColors.ipaCellBackground)
+                        .padding(6.dp),
+                    value = ipaHolder.ipa,
+                    cursorBrush = Brush.verticalGradient(
+                        0.00f to Color.Transparent,
+                        0.15f to Color.Transparent,
+                        0.15f to MainTheme.colors.materialColors.onPrimary,
+                        0.90f to MainTheme.colors.materialColors.onPrimary,
+                        0.90f to Color.Transparent,
+                        1.00f to Color.Transparent,
+                    ),
+                    onValueChange = { newText -> onIpaChange(letterGroupIndex, newText) },
+                    textStyle = MainTheme.typographies.cardManagementViewTextStyles.ipaValue
+                )
+            }
+        }
     }
 }
 
@@ -303,9 +464,14 @@ private fun AutocompleteWordItem(
             .fillMaxWidth()
             .clickable { onAutocompleteItemClick(word) },
         text = buildAnnotatedString {
-            withStyle(style = MainTheme.typographies.foreignWordAutocompleteSpanStyle) {
+            withStyle(
+                style = MainTheme.typographies
+                    .cardManagementViewTextStyles
+                    .foreignWordAutocompleteSpanStyle
+            ) {
                 append(prefix)
             }
+
             append(word.drop(prefix.length))
         },
         fontStyle = FontStyle.Italic

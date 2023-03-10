@@ -2,8 +2,9 @@ package com.example.domain.ipa
 
 data class LetterInfo(
     val letter: String,
-    val isChecked: Boolean
+    val isChecked: Boolean = false,
 ) {
+
     val isNotChecked get() = !isChecked
 
     companion object {

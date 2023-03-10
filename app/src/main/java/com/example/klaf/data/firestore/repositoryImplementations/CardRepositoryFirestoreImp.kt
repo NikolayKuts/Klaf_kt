@@ -4,8 +4,8 @@ import com.example.domain.entities.Card
 import com.example.domain.repositories.CardRepository
 import com.example.klaf.data.firestore.MAIN_COLLECTION_NAME
 import com.example.klaf.data.firestore.entities.FirestoreCard
-import com.example.klaf.data.firestore.mapToDomainEntity
-import com.example.klaf.data.firestore.mapToFirestoreEntity
+import com.example.klaf.data.firestore.toDomainEntity
+import com.example.klaf.data.firestore.toFirestoreEntity
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
@@ -33,14 +33,14 @@ class CardRepositoryFirestoreImp @Inject constructor(
             .await()
             .documents
             .mapNotNull { documentSnapshot -> documentSnapshot.toObject<FirestoreCard>() }
-            .map { firestoreCard -> firestoreCard.mapToDomainEntity() }
+            .map { firestoreCard -> firestoreCard.toDomainEntity() }
     }
 
     override suspend fun insertCard(card: Card) {
 //        delay((1000..3000).random().toLong())
         getCardSubCollection()
             .document(card.id.toString())
-            .set(card.mapToFirestoreEntity())
+            .set(card.toFirestoreEntity())
             .await()
     }
 
