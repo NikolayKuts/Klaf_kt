@@ -7,7 +7,8 @@ import androidx.compose.runtime.setValue
 import com.example.domain.common.generateLetterInfos
 import com.example.domain.common.updatedAt
 import com.example.domain.ipa.LetterInfo
-import com.example.domain.ipa.toInfos
+import com.example.domain.ipa.toRowInfos
+import com.example.domain.ipa.toLetterInfos
 import com.example.domain.ipa.toRowIpaItemHolders
 import com.example.klaf.presentation.common.CardManagementView
 import com.example.klaf.presentation.common.rememberAsMutableStateOf
@@ -20,7 +21,7 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
 
     deck?.let { receivedDeck ->
         card?.let { receivedCard ->
-            var letterInfosState by rememberAsMutableStateOf(value = receivedCard.toInfos())
+            var letterInfosState by rememberAsMutableStateOf(value = receivedCard.toLetterInfos())
             var nativeWordState by rememberAsMutableStateOf(value = receivedCard.nativeWord)
             var foreignWordState by rememberAsMutableStateOf(value = receivedCard.foreignWord)
             var ipaHoldersState by rememberAsMutableStateOf(value = receivedCard.ipa)
@@ -72,7 +73,7 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                 onPronounceIconClick = { viewModel.pronounce() },
                 onAutocompleteItemClick = { chosenWord ->
                     foreignWordState = chosenWord
-                    letterInfosState = chosenWord.toInfos()
+                    letterInfosState = chosenWord.toRowInfos()
                     viewModel.setSelectedAutocomplete(selectedWord = chosenWord)
                 }
             )
