@@ -30,10 +30,9 @@ import androidx.constraintlayout.compose.Dimension
 import com.example.domain.common.CardRepetitionOrder
 import com.example.domain.common.CardSide
 import com.example.domain.common.DeckRepetitionState
-import com.example.domain.common.ifFalse
 import com.example.domain.enums.DifficultyRecallingLevel.*
 import com.example.domain.ipa.LetterInfo
-import com.example.domain.ipa.decodeToIpaPrompts
+import com.example.domain.ipa.toIpaPrompts
 import com.example.klaf.R
 import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
@@ -279,7 +278,6 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
     val word: String
     var ipaPrompt = emptyList<LetterInfo>()
 
-
     when (deckRepetitionState.repetitionOrder) {
         CardRepetitionOrder.NATIVE_TO_FOREIGN -> {
             when (deckRepetitionState.side) {
@@ -289,7 +287,7 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
                 }
                 CardSide.BACK -> {
                     word = card.foreignWord
-                    ipaPrompt = card.decodeToIpaPrompts()
+                    ipaPrompt = card.toIpaPrompts()
                 }
             }
         }
@@ -297,7 +295,7 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
             when (deckRepetitionState.side) {
                 CardSide.FRONT -> {
                     word = card.foreignWord
-                    ipaPrompt = card.decodeToIpaPrompts()
+                    ipaPrompt = card.toIpaPrompts()
                 }
                 CardSide.BACK -> {
                     word = card.nativeWord
