@@ -12,6 +12,7 @@ import com.example.klaf.data.common.AppReopeningWorker.Companion.scheduleAppReop
 import com.example.klaf.data.common.DataSynchronizationState
 import com.example.klaf.data.common.DataSynchronizationWorker.Companion.getDataSynchronizationProgressState
 import com.example.klaf.data.common.DataSynchronizationWorker.Companion.performDataSynchronization
+import com.example.klaf.data.common.DeckRepetitionReminderChecker.Companion.scheduleDeckRepetitionChecking
 import com.example.klaf.data.common.notifications.NotificationChannelInitializer
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.tryEmit
@@ -60,6 +61,7 @@ class DeckListViewModel @AssistedInject constructor(
         notificationChannelInitializer.initialize()
         viewModelScope.launch { createInterimDeck() }
         observeDataSynchronizationStateWorker()
+        workManager.scheduleDeckRepetitionChecking()
     }
 
     override fun createNewDeck(deckName: String) {

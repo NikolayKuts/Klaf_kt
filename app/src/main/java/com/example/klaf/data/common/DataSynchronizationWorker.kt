@@ -83,7 +83,7 @@ class DataSynchronizationWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result = try {
         synchronizeLocalAndRemoteData()
-            .catch { TODO("implement error handling")}
+            .catch { TODO("implement error handling") }
             .collect { progress ->
                 setProgress(workDataOf(PROGRESS_STATE_KEY to progress))
             }

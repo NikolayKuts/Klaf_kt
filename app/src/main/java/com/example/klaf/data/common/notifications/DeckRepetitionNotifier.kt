@@ -23,7 +23,7 @@ class DeckRepetitionNotifier @Inject constructor(
     companion object {
 
         private const val DECK_REPETITION_GROUP_KEY = "deck_repetition_group"
-        private const val SUMMERY_NOTIFICATION_ID = 435243543
+        private const val COMMON_NOTIFICATION_ID = 435243543
         private const val MIN_NOTIFICATION_FOR_GROUP = 4
     }
 
@@ -32,6 +32,10 @@ class DeckRepetitionNotifier @Inject constructor(
 
         notificationManager.notify(deckId, notification)
         showSummeryNotificationIfSdkLessThan24AndMoreThan22()
+    }
+
+    fun showCommonNotification() {
+        notificationManager.notify(COMMON_NOTIFICATION_ID, createCommonDeckRepetitionNotification())
     }
 
     fun removeNotificationFromNotificationBar(deckId: Int) {
@@ -46,7 +50,7 @@ class DeckRepetitionNotifier @Inject constructor(
             if (notificationManager.activeNotifications.size >= MIN_NOTIFICATION_FOR_GROUP) {
                 val summeryNotification =
                     createSummeryNotification(notificationManager.activeNotifications.size)
-                notificationManager.notify(SUMMERY_NOTIFICATION_ID, summeryNotification)
+                notificationManager.notify(COMMON_NOTIFICATION_ID, summeryNotification)
             }
         }
     }
@@ -76,7 +80,20 @@ class DeckRepetitionNotifier @Inject constructor(
                 context.getString(R.string.deck_repetition_summery_notification_content_text)
             )
             .setSummeryStyle(notificationQuantity = notificationQuantity)
-            .setContentIntent(createSummeryPendingIntent())
+            .setContentIntent(createCommonPendingIntent())
+            .build()
+    }
+
+    private fun createCommonDeckRepetitionNotification(): Notification {
+        return  NotificationCompat.Builder(context, DECK_REPETITION_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_deck_repetition_notification_24)
+            .setContentTitle(context.getString(R.string.app_name))
+            .setContentText(
+                context.getString(R.string.deck_repetition_common_notification_template)
+            )
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(createCommonPendingIntent())
             .build()
     }
 
@@ -119,7 +136,7 @@ class DeckRepetitionNotifier @Inject constructor(
             .createPendingIntent()
     }
 
-    private fun createSummeryPendingIntent(): PendingIntent {
+    private fun createCommonPendingIntent(): PendingIntent {
         return NavDeepLinkBuilder(context)
             .setComponentName(MainActivity::class.java)
             .setGraph(R.navigation.nav_graph)

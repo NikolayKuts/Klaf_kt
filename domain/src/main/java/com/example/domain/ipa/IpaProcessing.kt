@@ -80,3 +80,7 @@ fun Card.toIpaPrompts(): List<LetterInfo> {
 
     return result
 }
+
+fun List<LetterInfo>.toWord(): String {
+    return this.joinToString(separator = "") { info -> info.letter }
+}
