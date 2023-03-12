@@ -58,8 +58,8 @@ https://github.com/NikolayKuts/Klaf
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_navigation_dialog_light_theme.png)
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_navigation_dialog_dark_theme.png)
 
-![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_repetition_screen_dark_theme.png)
-![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_repetition_screen_light_theme.png)
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_repetition_screen_dark_theme.JPEG)
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_repetition_screen_light_theme.JPEG)
 
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/card_addition_screen_light_theme.JPEG)
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/card_editing_screen_dark_theme.JPEG)
