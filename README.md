@@ -50,6 +50,7 @@ https://github.com/NikolayKuts/Klaf
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_list_item_animation_dark_them.gif)
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/card_transferring_fragment_buttons_animation_dark_theme.gif)
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_repetition_screen_animation.gif)
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/deck_repetition_screen/preview/smart_text_selection.gif)
 
 ## Screen samples
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_list_screen_dark_theme.png)
