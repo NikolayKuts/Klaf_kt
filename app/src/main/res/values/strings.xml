@@ -53,6 +53,7 @@
     <string name="pointer_native">N</string>
     <string name="deck_repetition_channel_description">Notify when the decks should be repeated</string>
     <string name="deck_repetition_notification_template">It is time to repeat the deck \"%s\"</string>
+    <string name="deck_repetition_common_notification_template">Some decks require repetition"</string>
     <string name="deck_repetition_summery_notification_content_text">There are some decks to repeat</string>
     <string name="deck_repetition_summery_notification_big_content_title">%d notifications</string>
     <string name="deck_repetition_summery_notification_summery_text">It\'s time to repeat %d decks</string>

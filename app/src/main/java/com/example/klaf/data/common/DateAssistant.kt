@@ -143,6 +143,7 @@ fun Long?.calculateDetailedScheduledRange(context: Context): String {
 
 fun Deck.getScheduledDateStateByByCalculatedRange(context: Context): ScheduledDateState {
     val range = this.calculateDetailedScheduledRange(context = context)
+
     return ScheduledDateState(
         range = range,
         isOverdue = range.firstOrNull()?.toString() == MINUS_SYMBOL
