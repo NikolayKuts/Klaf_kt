@@ -1,14 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="checked_letter_background">#77FFEB3B</color>
-    <color name="unchecked_letter_background">#F8F8F8</color>
-    <color name="ipa_prompt_color">#EA7C7C</color>
-
-    <color name="empty_card_content_color">#9C9A9A</color>
-    <color name="front_card_content_color">#CFD685</color>
-    <color name="back_card_content_color">#81B7BD</color>
-
-    <color name="back_side_pointer_color">#81B7BD</color>
-    <color name="front_side_pointer_color">#CFD685</color>
+    <color name="primary_color">#3F3F3F</color>
 </resources>
