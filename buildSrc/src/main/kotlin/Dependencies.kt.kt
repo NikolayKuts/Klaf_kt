@@ -68,6 +68,7 @@ object Firebase {
     const val AnalyticsKts = "com.google.firebase:firebase-analytics-ktx"
     const val FirestoreKtx = "com.google.firebase:firebase-firestore-ktx"
     const val CoroutinePlayServices = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:${Versions.FirebaseCoroutinePlayServices}"
+    const val Authentication = "com.google.firebase:firebase-auth-ktx"
 }
 
 object Compose {
