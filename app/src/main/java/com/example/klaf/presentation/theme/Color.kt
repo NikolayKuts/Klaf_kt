@@ -32,6 +32,7 @@ data class MainColors(
     val dataSynchronizationViewColors: DataSynchronizationViewColors,
     val deckRepetitionInfoScreenColors: DeckRepetitionInfoScreenColors,
     val cardTransferringScreenColors: CardTransferringScreenColors,
+    val appLabel: Color,
 )
 
 data class CardManagementViewColors(
@@ -123,7 +124,6 @@ private val LightMaterialColors = lightColors(
     onBackground = Color(0xFF474747),
 )
 
-
 private val LightDeckRepetitionScreenColors = DeckRepetitionScreenColors(
     frontSideOrderPointer = Color(0xFF6EA0A7),
     backSideOrderPointer = Color(0xFF639766),
@@ -194,6 +194,7 @@ val LightMainPalettes = MainColors(
     dataSynchronizationViewColors = LightDataSynchronizationViewColors,
     deckRepetitionInfoScreenColors = LightDeckRepetitionInfoScreenColors,
     cardTransferringScreenColors = LightCadTransferringScreenColors,
+    appLabel = Color(0xFF4A6780),
 )
 
 private val DarkMaterialColors = darkColors(
@@ -233,7 +234,7 @@ private val DarkDeckRepetitionInfoScreenColors =
         failureMark = Color(0x4DE98077),
     )
 
-private val DarkCadTransferringScreenColors =
+private val DarkCardTransferringScreenColors =
     CardTransferringScreenColors(
         quantityPointerBackground = Color(0x4B707070),
         cardOrdinal = Color(0xFF525252),
@@ -272,5 +273,6 @@ val DarkMainPalettes = MainColors(
     viewingCardOrdinal = Color(0xFF6B6B6B),
     dataSynchronizationViewColors = DarkDataSynchronizationViewColors,
     deckRepetitionInfoScreenColors = DarkDeckRepetitionInfoScreenColors,
-    cardTransferringScreenColors = DarkCadTransferringScreenColors,
+    cardTransferringScreenColors = DarkCardTransferringScreenColors,
+    appLabel = Color(0xFF6D99C0)
 )
