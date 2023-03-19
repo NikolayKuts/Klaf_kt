@@ -558,13 +558,17 @@ fun FullBackgroundDialog(
     mainContent: @Composable BoxScope.() -> Unit,
     bottomContent: @Composable (RowScope.() -> Unit)? = null,
     topContent: @Composable (RowScope.() -> Unit)? = null,
+    corners: Shape = RoundedCornerShape(10.dp),
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .noRippleClickable(onClick = onBackgroundClick)
     ) {
-        Box(modifier = Modifier.align(Alignment.Center)) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+        ) {
             Card(
                 modifier = Modifier
                     .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
@@ -572,6 +576,7 @@ fun FullBackgroundDialog(
                         top = (DIALOG_BUTTON_SIZE / 2).dp,
                         bottom = (DIALOG_BUTTON_SIZE / 2).dp,
                     )
+                    .clip(shape = corners),
             ) {
                 Box(
                     modifier = Modifier

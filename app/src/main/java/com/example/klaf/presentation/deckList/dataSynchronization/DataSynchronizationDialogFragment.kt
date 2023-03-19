@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
+import com.example.klaf.presentation.authentication.SigningTypeChoosingView
 import com.example.klaf.presentation.common.TransparentDialogFragment
 import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
 import com.example.klaf.presentation.theme.MainTheme
@@ -23,10 +24,11 @@ class DataSynchronizationDialogFragment : TransparentDialogFragment(
 
         view.findViewById<ComposeView>(R.id.compose_view_data_synchronization).setContent {
             MainTheme {
-                DataSynchronizationDialogView(
-                    viewModel = viewModel,
-                    onCloseClick = ::closeDialog,
-                )
+                SigningTypeChoosingView()
+//                DataSynchronizationDialogView(
+//                    viewModel = viewModel,
+//                    onCloseClick = ::closeDialog,
+//                )
             }
         }
     }
