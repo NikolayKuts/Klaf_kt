@@ -7,15 +7,14 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
-import com.example.klaf.R
 import com.example.domain.entities.Deck
+import com.example.klaf.R
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.*
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-
 
 @AndroidEntryPoint
 class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
@@ -40,7 +39,6 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
                     DeckListScreen(
                         viewModel = viewModel,
                         onMainButtonClick = ::navigateToDeckCreationDialog,
-                        onSwipeRefresh = ::navigateToDataSynchronizationDialog,
                         onRestartApp = ::restartApp,
                     )
                 }
@@ -61,19 +59,18 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
             lifecycleOwner = viewLifecycleOwner
         ) { destination ->
             when (destination) {
-                DeckCreationDialogDestination -> navigateToDeckCreationDialog()
-                is DeckRepetitionFragmentDestination -> {
+                DeckCreationDialog -> navigateToDeckCreationDialog()
+                is DeckRepetitionScreen -> {
                     navigateToRepetitionFragment(deck = destination.deck)
                 }
-                is DeckNavigationDialogDestination -> {
+                is DeckNavigationDialog -> {
                     navigateToDeckNavigationDialog(deck = destination.deck)
                 }
-                DataSynchronizationDialogDestination -> {
-                    navigateToDataSynchronizationDialog()
-                }
-                is CardTransferringDestination -> {
+                DataSynchronizationDialog -> navigateToDataSynchronizationDialog()
+                is CardTransferringScreen -> {
                     navigateCardTransferringFragment(deckId = destination.deckId)
                 }
+                SigningTypeChoosingDialog -> {}
             }
         }
     }

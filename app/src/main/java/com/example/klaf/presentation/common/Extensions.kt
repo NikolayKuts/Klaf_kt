@@ -63,6 +63,17 @@ inline fun <T> Flow<T>.collectWhenStarted(
     }
 }
 
+inline fun <T> Flow<T>.collectWhenResumed(
+    lifecycleOwner: LifecycleOwner,
+    crossinline onEach: (T) -> Unit,
+): Job {
+    return lifecycleOwner.lifecycleScope.launch {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            collect { element -> onEach(element) }
+        }
+    }
+}
+
 fun MutableSharedFlow<EventMessage>.tryEmit(@StringRes messageId: Int) {
     tryEmit(value = EventMessage(resId = messageId))
 }
