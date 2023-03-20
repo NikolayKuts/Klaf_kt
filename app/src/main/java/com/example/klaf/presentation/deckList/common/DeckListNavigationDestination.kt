@@ -2,15 +2,17 @@ package com.example.klaf.presentation.deckList.common
 
 import com.example.domain.entities.Deck
 
-sealed class DeckListNavigationDestination {
+sealed interface DeckListNavigationDestination {
 
-    object DeckCreationDialogDestination : DeckListNavigationDestination()
+    object DeckCreationDialog : DeckListNavigationDestination
 
-    data class DeckRepetitionFragmentDestination(val deck: Deck) : DeckListNavigationDestination()
+    data class DeckRepetitionScreen(val deck: Deck) : DeckListNavigationDestination
 
-    data class DeckNavigationDialogDestination(val deck: Deck) : DeckListNavigationDestination()
+    data class DeckNavigationDialog(val deck: Deck) : DeckListNavigationDestination
 
-    object DataSynchronizationDialogDestination : DeckListNavigationDestination()
+    object DataSynchronizationDialog : DeckListNavigationDestination
 
-    data class CardTransferringDestination(val deckId: Int) : DeckListNavigationDestination()
+    data class CardTransferringScreen(val deckId: Int) : DeckListNavigationDestination
+
+    object SigningTypeChoosingDialog : DeckListNavigationDestination
 }

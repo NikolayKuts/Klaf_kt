@@ -195,7 +195,12 @@
         android:id="@+id/dataSynchronizationDialogFragment"
         android:name="com.example.klaf.presentation.deckList.dataSynchronization.DataSynchronizationDialogFragment"
         android:label="dialog_data_synchronization"
-        tools:layout="@layout/dialog_data_synchronization" />
+        tools:layout="@layout/dialog_data_synchronization" >
+        <action
+            android:id="@+id/action_dataSynchronizationDialogFragment_to_signingTypeChoosingDialogFragment"
+            app:destination="@id/signingTypeChoosingDialogFragment"
+            app:popUpTo="@id/deckListFragment" />
+    </dialog>
     <fragment
         android:id="@+id/cardTransferringFragment"
         android:name="com.example.klaf.presentation.cardTransferring.common.CardTransferringFragment"
@@ -229,5 +234,9 @@
         android:id="@+id/cardMovingDialogFragment"
         android:name="com.example.klaf.presentation.cardTransferring.deckChoosing.DeckChoosingDialogFragment"
         android:label="CardMovingDialogFragment" />
+    <dialog
+        android:id="@+id/signingTypeChoosingDialogFragment"
+        android:name="com.example.klaf.presentation.authentication.SigningTypeChoosingDialogFragment"
+        android:label="SigningTypeChoosingDialogFragment" />
 
 </navigation>
