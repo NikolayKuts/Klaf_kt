@@ -11,18 +11,25 @@ import com.example.klaf.R
 import com.example.klaf.data.common.AppReopeningWorker.Companion.scheduleAppReopening
 import com.example.klaf.data.common.DataSynchronizationState
 import com.example.klaf.data.common.DataSynchronizationWorker.Companion.getDataSynchronizationProgressState
-import com.example.klaf.data.common.DataSynchronizationWorker.Companion.performDataSynchronization
 import com.example.klaf.data.common.DeckRepetitionReminderChecker.Companion.scheduleDeckRepetitionChecking
 import com.example.klaf.data.common.notifications.NotificationChannelInitializer
 import com.example.klaf.presentation.common.EventMessage
+import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.*
 import com.example.klaf.presentation.deckList.common.DeckListNavigationEvent.*
 import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class DeckListViewModel @AssistedInject constructor(
     fetchDeckSource: FetchDeckSourceUseCase,
@@ -32,6 +39,7 @@ class DeckListViewModel @AssistedInject constructor(
     createInterimDeck: CreateInterimDeckUseCase,
     notificationChannelInitializer: NotificationChannelInitializer,
     private val workManager: WorkManager,
+    private val auth: FirebaseAuth,
 ) : BaseDeckListViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
@@ -153,23 +161,24 @@ class DeckListViewModel @AssistedInject constructor(
     }
 
     override fun synchronizeData() {
-        workManager.performDataSynchronization()
+        log(auth.currentUser, "snch user")
+        viewModelScope.launch { navigationDestination.emit(value = SigningTypeChoosingDialog) }
     }
 
     override fun navigate(event: DeckListNavigationEvent) {
         val destination = when (event) {
-            ToDeckCreationDialog -> DeckCreationDialogDestination
-            ToDataSynchronizationDialog -> DataSynchronizationDialogDestination
+            ToDeckCreationDialog -> DeckCreationDialog
+            ToDataSynchronizationDialog -> DataSynchronizationDialog
             is ToDeckNavigationDialog -> {
                 getDestinationByDeckId(
                     deckId = event.deck.id,
-                    ifDeckIsNotInterim = { DeckNavigationDialogDestination(deck = event.deck) }
+                    ifDeckIsNotInterim = { DeckNavigationDialog(deck = event.deck) }
                 )
             }
             is ToFragment -> {
                 getDestinationByDeckId(
                     deckId = event.deck.id,
-                    ifDeckIsNotInterim = { DeckRepetitionFragmentDestination(deck = event.deck) }
+                    ifDeckIsNotInterim = { DeckRepetitionScreen(deck = event.deck) }
                 )
             }
         }
@@ -193,7 +202,7 @@ class DeckListViewModel @AssistedInject constructor(
         ifDeckIsNotInterim: () -> DeckListNavigationDestination,
     ): DeckListNavigationDestination {
         return if (deckId == Deck.INTERIM_DECK_ID) {
-            CardTransferringDestination(deckId = deckId)
+            CardTransferringScreen(deckId = deckId)
         } else {
             ifDeckIsNotInterim()
         }

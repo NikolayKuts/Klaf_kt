@@ -237,6 +237,15 @@
     <dialog
         android:id="@+id/signingTypeChoosingDialogFragment"
         android:name="com.example.klaf.presentation.authentication.SigningTypeChoosingDialogFragment"
-        android:label="SigningTypeChoosingDialogFragment" />
+        android:label="SigningTypeChoosingDialogFragment" >
+        <action
+            android:id="@+id/action_signingTypeChoosingDialogFragment_to_authenticationFragment"
+            app:destination="@id/authenticationFragment"
+            app:popUpTo="@id/deckListFragment" />
+    </dialog>
+    <fragment
+        android:id="@+id/authenticationFragment"
+        android:name="com.example.klaf.presentation.authentication.AuthenticationFragment"
+        android:label="AuthenticationFragment" />
 
 </navigation>

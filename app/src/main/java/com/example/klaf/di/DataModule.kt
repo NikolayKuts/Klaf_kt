@@ -9,6 +9,7 @@ import com.example.klaf.data.dataStore.DECK_REPETITION_INFO_FILE_NAME
 import com.example.domain.entities.DeckRepetitionInfos
 import com.example.klaf.data.dataStore.DeckRepetitionInfosSerializer
 import com.example.klaf.data.room.databases.KlafRoomDatabase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
@@ -54,4 +55,8 @@ class DataModule {
             produceFile = { appContext.dataStoreFile(fileName = DECK_REPETITION_INFO_FILE_NAME) }
         )
     }
+
+    @Singleton
+    @Provides
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 }
