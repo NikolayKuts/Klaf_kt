@@ -20,9 +20,13 @@ import com.example.klaf.presentation.common.FullBackgroundDialog
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
-fun SigningTypeChoosingView() {
+fun SigningTypeChoosingView(
+    onSignInButtonClick: () -> Unit,
+    onSignUpButtonClick: () -> Unit,
+    onCloseButtonClick: () -> Unit
+) {
     FullBackgroundDialog(
-        onBackgroundClick = {},
+        onBackgroundClick = onCloseButtonClick,
         topContent = {
             Image(
                 modifier = Modifier
@@ -46,14 +50,14 @@ fun SigningTypeChoosingView() {
                     modifier = Modifier
                         .fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF809962)),
-                    onClick = { /*TODO*/ }
+                    onClick = onSignInButtonClick
                 ) {
                     Text(text = "Sine in")
                 }
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF809962)),
-                    onClick = { /*TODO*/ }
+                    onClick = onSignUpButtonClick
                 ) {
                     Text(text = "Sine up")
                 }
@@ -61,9 +65,7 @@ fun SigningTypeChoosingView() {
 
         },
         bottomContent = {
-            ClosingButton {
-
-            }
+            ClosingButton(onClick = onCloseButtonClick)
         },
     )
 }
