@@ -194,7 +194,7 @@ val LightMainPalettes = MainColors(
     dataSynchronizationViewColors = LightDataSynchronizationViewColors,
     deckRepetitionInfoScreenColors = LightDeckRepetitionInfoScreenColors,
     cardTransferringScreenColors = LightCadTransferringScreenColors,
-    appLabel = Color(0xFF4A6780),
+    appLabel = Color(0xFF314A5E),
 )
 
 private val DarkMaterialColors = darkColors(
@@ -274,5 +274,5 @@ val DarkMainPalettes = MainColors(
     dataSynchronizationViewColors = DarkDataSynchronizationViewColors,
     deckRepetitionInfoScreenColors = DarkDeckRepetitionInfoScreenColors,
     cardTransferringScreenColors = DarkCardTransferringScreenColors,
-    appLabel = Color(0xFF6D99C0)
+    appLabel = Color(0xFF7E7E7E)
 )
