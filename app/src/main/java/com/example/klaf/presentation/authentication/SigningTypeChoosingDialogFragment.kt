@@ -22,10 +22,16 @@ class SigningTypeChoosingDialogFragment :
             MainTheme {
                 SigningTypeChoosingView(
                     onSignInButtonClick = {
-                        navController.navigate(R.id.action_signingTypeChoosingDialogFragment_to_authenticationFragment)
+                        SigningTypeChoosingDialogFragmentDirections
+                            .actionSigningTypeChoosingDialogFragmentToAuthenticationFragment(
+                            authenticationAction = AuthenticationAction.SIGN_IN
+                        ).also { navController.navigate(directions = it) }
                     },
                     onSignUpButtonClick = {
-                        navController.navigate(R.id.action_signingTypeChoosingDialogFragment_to_authenticationFragment)
+                        SigningTypeChoosingDialogFragmentDirections
+                            .actionSigningTypeChoosingDialogFragmentToAuthenticationFragment(
+                            authenticationAction = AuthenticationAction.SIGN_UP
+                        ).also { navController.navigate(directions = it) }
                     },
                     onCloseButtonClick = {
                         navController.popBackStack()

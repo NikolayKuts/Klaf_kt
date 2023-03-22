@@ -1,172 +1,141 @@
 package com.example.klaf.presentation.authentication
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
-import com.example.klaf.presentation.common.log
-import com.google.firebase.auth.EmailAuthProvider
+import com.example.domain.common.ifFalse
+import com.example.domain.common.ifTrue
+import com.example.klaf.R
+import com.example.klaf.presentation.authentication.EmailValidator.EmailValidationResult.*
+import com.example.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult
+import com.example.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult.ToLong
+import com.example.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult.ToShort
+import com.example.klaf.presentation.common.EventMessage
+import com.example.klaf.presentation.common.tryEmit
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthenticationViewModel @Inject constructor(
     private val auth: FirebaseAuth
-): ViewModel() {
+) : BaseAuthenticationViewModel() {
 
-    init {
+    override val inputState = MutableStateFlow(
+        value = AuthenticationTypingState(
+            emailHolder = TypingStateHolder(),
+            passwordHolder = TypingStateHolder()
+        )
+    )
 
+    override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
-//        auth.currentUser?.delete()
-
-        auth.addAuthStateListener { auth ->
-            val user = auth.currentUser
-//            log(user?.email, "user is email verified")
-            log(user?.isEmailVerified, "auth state is email verified")
-            log(user?.displayName, "auth state user name")
-//            log(user?.isAnonymous, "user isAnonymous")
-//            log(user?.metadata., "user ")
-//            log(user, "user ")
-//            log(user, "user ")
-//            viewModelScope.launchWithState(Dispatchers.IO) {
-//                delay(3000)
-//                val profileUpdates = userProfileChangeRequest {
-//                    displayName = "11111111111111111111111"
-//                }
-
-//                user?.apply {
-//                    updateProfile(profileUpdates).await()
-//                    log("name is updated")
-//                }
-//                log(user?.displayName, "name after updating")
-//                    .addOnCompleteListener { task ->
-//                        if (task.isSuccessful) {
-//                            Log.d(TAG, "User profile updated.")
-//                        }
-//                    }
-//                }
-
-//                auth.currentUser?.reload()
-//            }
+    override fun updateEmail(value: String) {
+        inputState.update { state ->
+            val emailHolder = state.emailHolder.copy(text = value.trim(), isError = false)
+            state.copy(emailHolder = emailHolder)
         }
-        auth.addIdTokenListener { firebaseAuth: FirebaseAuth ->
-            log(firebaseAuth.currentUser?.isEmailVerified, "token listener isEmailVerified")
-//            val user = firebaseAuth.currentUser
-//            if (user != null) {
-//                val isEmailVerified = user.isEmailVerified
-//                // Update your UI or perform any necessary action based on the email verification state.
-//            }
+    }
+
+    override fun updatePassword(value: String) {
+        inputState.update { state ->
+            val passwordHolder = state.passwordHolder.copy(text = value.trim(), isError = false)
+            state.copy(passwordHolder = passwordHolder)
         }
+    }
 
-        viewModelScope.launchWithState(Dispatchers.IO) {
-            repeat(times = 100) {
-                delay(5000)
-                log(auth.currentUser?.isEmailVerified, "email checker isEmailVerified")
-            }
-        }
+    override fun signIn() {
+        val email = inputState.value.emailHolder.text.trim()
+        val password = inputState.value.passwordHolder.text.trim()
+        val validationResult = manageValidation(email = email, password = password)
 
-
-
-
-
-
-
-        val user = auth.currentUser
-        log(user, "------ user -------")
-
-        if (user != null) {
-
+        validationResult.ifTrue {
             viewModelScope.launchWithState {
-                user.delete().await()
-//                    auth.signOut()
-                log("sign out or deleting is completed")
+                auth.signInWithEmailAndPassword(email, password).await()
             } onException { _, error ->
-                log(error, "sign out or deleting task exception")
-                viewModelScope.launchWithState {
-                    user.reauthenticate(
-                        EmailAuthProvider.getCredential("survivenik@gmail.com", "password")
-                    ).await()
-                    log("reuthentication is finished")
-                } onException { _, reauthError ->
-                    log(reauthError, "reauthentication is failed")
-                }
-
-            }
-
-//            log(user.isEmailVerified, "is email verified?")
-
-//            if (user.isEmailVerified) {
-//                viewModelScope.launchWithState {
-//                    user.delete().await()
-////                    auth.signOut()
-//                    log("sign out or deleting is completed")
-//                } onException { _, error ->
-//                    log(error, "sign out or deleting task exception")
-//                    viewModelScope.launchWithState {
-//                        user.reauthenticate(
-//                            EmailAuthProvider.getCredential("survivenik@gmail.com", "password")
-//                        ).await()
-//                        log("reuthentication is finished")
-//                    } onException { _, reauthError ->
-//                        log(reauthError, "reauthentication is failed")
-//                    }
-//
-//                }
-//            } else {
-////                viewModelScope.launchWithState(Dispatchers.IO) {
-////                    log("start email verification ")
-////
-////                    user.sendEmailVerification().await()
-////
-////                    log("finish email verification")
-////                    log(user.isEmailVerified, "is email verified after sending request?")
-////                } onException { _, error ->
-////                    log(error, "email verification is failed")
-////                }
-//            }
-
-//            workManager.performDataSynchronization()
-        } else {
-            /** sine up **/
-            val job = viewModelScope.launchWithState {
-                val some = auth.createUserWithEmailAndPassword(
-                    "survivenik@gmail.com",
-                    "password"
-                ).await()
-                log(some.user, "sign up result")
-            } onException { _, error ->
-                log(error, "sign up is failed")
-                if (error is com.google.firebase.auth.FirebaseAuthUserCollisionException) {
-                    viewModelScope.launchWithState {
-                        val authResult = auth.signInWithEmailAndPassword(
-                            "survivenik@gmail.com",
-                            "password"
-                        ).await()
-                        log(authResult.user, "sign in is finished")
-                    } onException { _, error ->
-                        log(error, "sign in is failed")
+                val errorMessageId = when (error) {
+                    is FirebaseAuthInvalidUserException -> {
+                        R.string.authentication_warning_no_user_record
                     }
+                    is FirebaseAuthInvalidCredentialsException -> {
+                        R.string.authentication_warning_invalid_password
+                    }
+                    else -> R.string.authentication_warning_common_error_message
+                }
+
+                eventMessage.tryEmit(messageId = errorMessageId)
+            }
+        }
+    }
+
+    override fun signUp() {
+        val email = inputState.value.emailHolder.text.trim()
+        val password = inputState.value.passwordHolder.text.trim()
+        val validationResult = manageValidation(email = email, password = password)
+
+        validationResult.ifTrue {
+            viewModelScope.launchWithState {
+                auth.createUserWithEmailAndPassword(email, password).await()
+            } onException { _, error ->
+                val errorMessageId = if (error is FirebaseAuthUserCollisionException) {
+                    R.string.authentication_warning_email_already_in_use
+                } else {
+                    R.string.authentication_warning_common_error_message
+                }
+
+                eventMessage.tryEmit(messageId = errorMessageId)
+            }
+        }
+    }
+
+    private fun manageValidation(email: String, password: String): Boolean {
+        var isEmailValid = false
+        var isPasswordValid = false
+
+        val emailValidationMessageId: Int? = when (EmailValidator().validate(data = email)) {
+            Empty -> R.string.authentication_warning_type_email
+            WrongFormat -> R.string.authentication_warning_invalid_email_format
+            Valid -> {
+                isEmailValid = true
+                null
+            }
+        }
+
+        val passwordValidationMessageId: Int? =
+            when (PasswordValidator().validate(data = password)) {
+                PasswordValidationResult.Empty -> R.string.authentication_warning_type_password
+                ToLong -> R.string.authentication_warning_password_too_long
+                ToShort -> R.string.authentication_warning_password_too_short
+                PasswordValidationResult.Valid -> {
+                    isPasswordValid = true
+                    null
                 }
             }
 
-//            viewModelScope.launchWithState {
-//                job.join()
-//                val some = auth.signInWithEmailAndPassword(
-//                    "survivenik@gmail.com",
-//                    "password"
-//                ).await()
-//                log(some.user, "sign in result ")
-//            } onException { _, _ ->
-//                log("sign is failed")
-//            }
+        passwordValidationMessageId?.let { eventMessage.tryEmit(messageId = it) }
+        emailValidationMessageId?.let { eventMessage.tryEmit(messageId = it) }
 
-
+        isEmailValid.ifFalse {
+            inputState.update { state ->
+                val emailHolder = state.emailHolder.copy(isError = true)
+                state.copy(emailHolder = emailHolder)
+            }
         }
+
+        isPasswordValid.ifFalse {
+            inputState.update { state ->
+                val passwordHolder = state.passwordHolder.copy(isError = true)
+                state.copy(passwordHolder = passwordHolder)
+            }
+        }
+
+        return isEmailValid and isPasswordValid
     }
 }

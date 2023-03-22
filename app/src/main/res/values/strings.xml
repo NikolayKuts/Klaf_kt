@@ -111,4 +111,13 @@
     <string name="deck_navigation_dialog_item_transfer_cards">Transfer cards</string>
     <string name="deck_navigation_dialog_item_info">Repetition info</string>
     <string name="deck_repetition_info_dialog_no_info">There is no info</string>
+    <string name="authentication_warning_type_email">Type email</string>
+    <string name="authentication_warning_invalid_email_format">Invalid email format</string>
+    <string name="authentication_warning_type_password">Type password</string>
+    <string name="authentication_warning_password_too_long">Password too long</string>
+    <string name="authentication_warning_password_too_short">Password too short</string>
+    <string name="authentication_warning_no_user_record">There is no user record corresponding to this identifier</string>
+    <string name="authentication_warning_common_error_message">Something went wrong</string>
+    <string name="authentication_warning_email_already_in_use">The email address is already in use by another account</string>
+    <string name="authentication_warning_invalid_password">Invalid password</string>
 </resources>

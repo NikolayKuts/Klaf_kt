@@ -246,6 +246,10 @@
     <fragment
         android:id="@+id/authenticationFragment"
         android:name="com.example.klaf.presentation.authentication.AuthenticationFragment"
-        android:label="AuthenticationFragment" />
+        android:label="AuthenticationFragment" >
+        <argument
+            android:name="authenticationAction"
+            app:argType="com.example.klaf.presentation.authentication.AuthenticationAction" />
+    </fragment>
 
 </navigation>
