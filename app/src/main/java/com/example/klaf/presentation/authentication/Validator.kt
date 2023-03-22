@@ -1,8 +1,10 @@
 package com.example.klaf.presentation.authentication
 
-interface Validator<T> {
+import com.example.klaf.presentation.authentication.Validator.*
 
-    fun validate(data: T): ValidationResult
+interface Validator<T, R: ValidationResult> {
 
     sealed interface ValidationResult
+
+    fun validate(data: T): R
 }
