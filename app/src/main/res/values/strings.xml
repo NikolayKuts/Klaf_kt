@@ -120,4 +120,8 @@
     <string name="authentication_warning_common_error_message">Something went wrong</string>
     <string name="authentication_warning_email_already_in_use">The email address is already in use by another account</string>
     <string name="authentication_warning_invalid_password">Invalid password</string>
+    <string name="authentication_email_label">email</string>
+    <string name="authentication_password_label">password</string>
+    <string name="authentication_sign_in_label">Sign in</string>
+    <string name="authentication_sign_up_label">Sign up</string>
 </resources>
