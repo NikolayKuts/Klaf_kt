@@ -33,9 +33,7 @@ class SigningTypeChoosingDialogFragment :
                             authenticationAction = AuthenticationAction.SIGN_UP
                         ).also { navController.navigate(directions = it) }
                     },
-                    onCloseButtonClick = {
-                        navController.popBackStack()
-                    }
+                    onCloseButtonClick = navController::popBackStack
                 )
             }
         }

@@ -8,6 +8,7 @@ import com.example.klaf.common.launchEventMassageIdEqualsTest
 import com.example.klaf.data.common.notifications.NotificationChannelInitializer
 import com.example.domain.entities.Deck
 import com.example.domain.useCases.*
+import com.google.firebase.auth.FirebaseAuth
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -273,6 +274,7 @@ class DeckListViewModelTest {
         createInterimDeck: CreateInterimDeckUseCase = mockk(relaxed = true),
         notificationChannelInitializer: NotificationChannelInitializer = mockk(relaxed = true),
         workManager: WorkManager = mockk(relaxed = true),
+        auth: FirebaseAuth = FirebaseAuth.getInstance(),
     ): BaseDeckListViewModel {
         return DeckListViewModel(
             fetchDeckSource = fetchDeckSource,
@@ -281,7 +283,8 @@ class DeckListViewModelTest {
             removeDeck = removeDeck,
             createInterimDeck = createInterimDeck,
             notificationChannelInitializer = notificationChannelInitializer,
-            workManager = workManager
+            workManager = workManager,
+            auth = auth,
         )
     }
 }
