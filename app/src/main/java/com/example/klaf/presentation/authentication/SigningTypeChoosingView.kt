@@ -28,6 +28,7 @@ fun SigningTypeChoosingView(
     FullBackgroundDialog(
         onBackgroundClick = onCloseButtonClick,
         topContent = {
+            val filterColor = MainTheme.colors.commonColors.appLabelColorFilter
             Image(
                 modifier = Modifier
                     .size(70.dp)
@@ -36,10 +37,7 @@ fun SigningTypeChoosingView(
                     .padding(10.dp),
                 painter = painterResource(id = R.drawable.color_10),
                 contentDescription = null,
-                colorFilter = ColorFilter.lighting(
-                    MainTheme.colors.appLabel,
-                    MainTheme.colors.appLabel
-                )
+                colorFilter = ColorFilter.lighting(filterColor, filterColor)
             )
         },
         mainContent = {

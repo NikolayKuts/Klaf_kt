@@ -5,9 +5,6 @@ import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.ui.graphics.Color
 
-private val DarkPrimaryColor = Color(0xFF5DA3AC)
-private val DarkOnPrimaryColor = Color(0xFFE2E2E2)
-
 data class MainColors(
     val materialColors: Colors,
     val statusBarBackground: Color,
@@ -32,7 +29,8 @@ data class MainColors(
     val dataSynchronizationViewColors: DataSynchronizationViewColors,
     val deckRepetitionInfoScreenColors: DeckRepetitionInfoScreenColors,
     val cardTransferringScreenColors: CardTransferringScreenColors,
-    val appLabel: Color,
+    val authenticationScreenColors: AuthenticationScreenColors,
+    val commonColors: CommonColors,
 )
 
 data class CardManagementViewColors(
@@ -118,12 +116,6 @@ data class CardTransferringScreenColors(
     val unClickedMoreButton: Color,
 )
 
-private val LightMaterialColors = lightColors(
-    primary = Color(0xFFBEDB9C),
-    onPrimary = Color(0xFF636363),
-    onBackground = Color(0xFF474747),
-)
-
 private val LightDeckRepetitionScreenColors = DeckRepetitionScreenColors(
     frontSideOrderPointer = Color(0xFF6EA0A7),
     backSideOrderPointer = Color(0xFF639766),
@@ -166,12 +158,12 @@ val LightCadTransferringScreenColors = CardTransferringScreenColors(
     cardAddingButton = Color(0xFFB3CC96),
     deletingButton = Color(0xFFDA9B96),
     chosenDeckBoxBorder = Color(0xFFB3CC96),
-    clickedMoreButton = LightMaterialColors.primary,
+    clickedMoreButton = MaterialColors.Theme.light.primary,
     unClickedMoreButton = Color(0xFFB8B8B8),
 )
 
 val LightMainPalettes = MainColors(
-    materialColors = LightMaterialColors,
+    materialColors = MaterialColors.Theme.light,
     statusBarBackground = Color(0xFF8AA768),
     lightDeckItemBackground = Color(0xFFFFFFFF),
     darkDeckItemBackground = Color(0xFFEBEBEB),
@@ -194,13 +186,10 @@ val LightMainPalettes = MainColors(
     dataSynchronizationViewColors = LightDataSynchronizationViewColors,
     deckRepetitionInfoScreenColors = LightDeckRepetitionInfoScreenColors,
     cardTransferringScreenColors = LightCadTransferringScreenColors,
-    appLabel = Color(0xFF314A5E),
+    authenticationScreenColors = AuthenticationScreenColors.Theme.light,
+    commonColors = CommonColors.Theme.light,
 )
 
-private val DarkMaterialColors = darkColors(
-    primary = DarkPrimaryColor,
-    onPrimary = DarkOnPrimaryColor,
-)
 
 private val DarkDeckRepetitionScreenColors = DeckRepetitionScreenColors(
     frontSideOrderPointer = Color(0xFF8CA86B),
@@ -246,12 +235,12 @@ private val DarkCardTransferringScreenColors =
         cardAddingButton = Color(0xFF809C5F),
         deletingButton = Color(0xFFC4716A),
         chosenDeckBoxBorder = Color(0xFF8CA76D),
-        clickedMoreButton = DarkMaterialColors.primary,
+        clickedMoreButton = MaterialColors.Theme.dark.primary,
         unClickedMoreButton = Color(0xFF636363),
     )
 
 val DarkMainPalettes = MainColors(
-    materialColors = DarkMaterialColors,
+    materialColors = MaterialColors.Theme.dark,
     statusBarBackground = Color(0xFF464646),
     lightDeckItemBackground = Color(0xFF464646),
     darkDeckItemBackground = Color(0xFF353535),
@@ -264,7 +253,7 @@ val DarkMainPalettes = MainColors(
     deckItemPointer = Color(0xFF969696),
     positiveDialogButton = Color(0xFF96B671),
     negativeDialogButton = Color(0xFFD17670),
-    neutralDialogButton = DarkPrimaryColor,
+    neutralDialogButton = MaterialColors.Theme.dark.primary,
     deckNavigationDialogSeparator = Color(0xFF4D4D4D),
     cardManagementViewColors = CardManagementViewColors.Theme.dark,
     deckRepetitionScreenColors = DarkDeckRepetitionScreenColors,
@@ -274,5 +263,60 @@ val DarkMainPalettes = MainColors(
     dataSynchronizationViewColors = DarkDataSynchronizationViewColors,
     deckRepetitionInfoScreenColors = DarkDeckRepetitionInfoScreenColors,
     cardTransferringScreenColors = DarkCardTransferringScreenColors,
-    appLabel = Color(0xFF7E7E7E)
+    authenticationScreenColors = AuthenticationScreenColors.Theme.dark,
+    commonColors = CommonColors.Theme.dark,
 )
+
+data class MaterialColors(
+    val some: Color
+) {
+
+    object Theme : Themable<Colors> {
+
+        override val light: Colors = lightColors(
+            primary = Color(0xFFBEDB9C),
+            onPrimary = Color(0xFF636363),
+            onBackground = Color(0xFF474747),
+        )
+
+        override val dark: Colors = darkColors(
+            primary = Color(0xFF5DA3AC),
+            onPrimary = Color(0xFFE2E2E2),
+        )
+    }
+}
+
+data class CommonColors(
+    val focusedLabelColor: Color,
+    val appLabelColorFilter: Color,
+) {
+
+    object Theme : Themable<CommonColors> {
+
+        override val light: CommonColors = CommonColors(
+            focusedLabelColor = MaterialColors.Theme.light.onPrimary,
+            appLabelColorFilter = Color(0xFF374D5E),
+        )
+
+        override val dark: CommonColors = CommonColors(
+            focusedLabelColor = MaterialColors.Theme.dark.onPrimary,
+            appLabelColorFilter = Color(0xFF686868),
+        )
+    }
+}
+
+
+data class AuthenticationScreenColors(
+    val textFieldBackground: Color,
+) {
+
+    object Theme : Themable<AuthenticationScreenColors> {
+
+        override val light: AuthenticationScreenColors = AuthenticationScreenColors(
+            textFieldBackground = Color(0xFFF7F6F6),
+        )
+        override val dark: AuthenticationScreenColors = AuthenticationScreenColors(
+            textFieldBackground = Color(0xFF1A1A1A),
+        )
+    }
+}

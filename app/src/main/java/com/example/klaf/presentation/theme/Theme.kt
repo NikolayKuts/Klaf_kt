@@ -1,11 +1,14 @@
 package com.example.klaf.presentation.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Shapes
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun MainTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
@@ -14,11 +17,15 @@ fun MainTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable (
     val typographies = if (darkTheme) DarkMainTypographies else LightMainTypographies
     val dimensions = CommonDimension
 
+    val customTextSelectionColors = TextSelectionColors(
+        handleColor = Color(0xFFEC0D0D), backgroundColor = Color(0xFF154B17)
+    )
+
     CompositionLocalProvider(
         LocalMainColors provides colors,
         LocalCustomTypographies provides typographies,
         LocalCustomShapes provides shapes,
-        LocaleCustomDimensions provides dimensions
+        LocaleCustomDimensions provides dimensions,
     ) {
         MaterialTheme(
             colors = colors.materialColors,

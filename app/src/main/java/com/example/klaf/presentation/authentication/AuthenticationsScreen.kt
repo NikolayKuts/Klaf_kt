@@ -11,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -64,14 +63,15 @@ fun AuthenticationView(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        val color = MainTheme.colors.appLabel
+        val filterColor = MainTheme.colors.commonColors.appLabelColorFilter
+
         Image(
             modifier = Modifier
                 .size(70.dp)
                 .weight(0.8F),
             painter = painterResource(id = R.drawable.color_10),
             contentDescription = null,
-            colorFilter = ColorFilter.lighting(color, color),
+            colorFilter = ColorFilter.lighting(filterColor, filterColor),
             alignment = BiasAlignment(horizontalBias = 0F, verticalBias = 0.2F)
         )
         Text(
@@ -119,6 +119,9 @@ private fun AuthenticationTextField(
         label = { Text(text = labelText, fontStyle = FontStyle.Italic) },
         singleLine = true,
         isError = isError,
-        colors = TextFieldDefaults.textFieldColors(backgroundColor = Color(0xFF181818))
+        colors = TextFieldDefaults.textFieldColors(
+            backgroundColor = MainTheme.colors.authenticationScreenColors.textFieldBackground,
+            focusedLabelColor = MainTheme.colors.commonColors.focusedLabelColor,
+        )
     )
 }
