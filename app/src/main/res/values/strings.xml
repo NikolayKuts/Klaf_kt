@@ -124,4 +124,5 @@
     <string name="authentication_password_label">password</string>
     <string name="authentication_sign_in_label">Sign in</string>
     <string name="authentication_sign_up_label">Sign up</string>
+    <string name="authentication_sync_data_message">To sync data, you must be authenticated</string>
 </resources>
