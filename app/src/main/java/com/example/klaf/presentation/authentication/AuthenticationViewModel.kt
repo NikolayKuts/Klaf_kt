@@ -12,6 +12,7 @@ import com.example.klaf.presentation.authentication.PasswordValidator.PasswordVa
 import com.example.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult.ToShort
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.tryEmit
+import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
@@ -67,6 +68,7 @@ class AuthenticationViewModel @Inject constructor(
                     is FirebaseAuthInvalidCredentialsException -> {
                         R.string.authentication_warning_invalid_password
                     }
+                    is FirebaseNetworkException -> R.string.authentication_warning_network_error
                     else -> R.string.authentication_warning_common_error_message
                 }
 
@@ -84,10 +86,12 @@ class AuthenticationViewModel @Inject constructor(
             viewModelScope.launchWithState {
                 auth.createUserWithEmailAndPassword(email, password).await()
             } onException { _, error ->
-                val errorMessageId = if (error is FirebaseAuthUserCollisionException) {
-                    R.string.authentication_warning_email_already_in_use
-                } else {
-                    R.string.authentication_warning_common_error_message
+                val errorMessageId = when (error) {
+                    is FirebaseAuthUserCollisionException -> {
+                        R.string.authentication_warning_email_already_in_use_error
+                    }
+                    is FirebaseNetworkException -> R.string.authentication_warning_network_error
+                    else -> R.string.authentication_warning_common_error_message
                 }
 
                 eventMessage.tryEmit(messageId = errorMessageId)
