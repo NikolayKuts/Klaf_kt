@@ -17,9 +17,6 @@ data class MainColors(
     val deckItemRepetitionQuantity: Color,
     val deckItemCardQuantity: Color,
     val deckItemPointer: Color,
-    val positiveDialogButton: Color,
-    val negativeDialogButton: Color,
-    val neutralDialogButton: Color,
     val deckNavigationDialogSeparator: Color,
     val cardManagementViewColors: CardManagementViewColors,
     val deckRepetitionScreenColors: DeckRepetitionScreenColors,
@@ -174,9 +171,6 @@ val LightMainPalettes = MainColors(
     deckItemRepetitionQuantity = Color(0xFFFF9800),
     deckItemCardQuantity = Color(0xFFB27DBB),
     deckItemPointer = Color(0xFF7C7C7C),
-    positiveDialogButton = Color(0xFFBFE295),
-    negativeDialogButton = Color(0xFFEBAEB1),
-    neutralDialogButton = Color(0xFFB9E5EB),
     deckNavigationDialogSeparator = Color(0xFF818181),
     cardManagementViewColors = CardManagementViewColors.Theme.light,
     deckRepetitionScreenColors = LightDeckRepetitionScreenColors,
@@ -251,9 +245,6 @@ val DarkMainPalettes = MainColors(
     deckItemRepetitionQuantity = Color(0xFF56C2CF),
     deckItemCardQuantity = Color(0xFFD5C85B),
     deckItemPointer = Color(0xFF969696),
-    positiveDialogButton = Color(0xFF96B671),
-    negativeDialogButton = Color(0xFFD17670),
-    neutralDialogButton = MaterialColors.Theme.dark.primary,
     deckNavigationDialogSeparator = Color(0xFF4D4D4D),
     cardManagementViewColors = CardManagementViewColors.Theme.dark,
     deckRepetitionScreenColors = DarkDeckRepetitionScreenColors,
@@ -289,6 +280,9 @@ data class MaterialColors(
 data class CommonColors(
     val focusedLabelColor: Color,
     val appLabelColorFilter: Color,
+    val positiveDialogButton: Color,
+    val negativeDialogButton: Color,
+    val neutralDialogButton: Color,
 ) {
 
     object Theme : Themable<CommonColors> {
@@ -296,11 +290,17 @@ data class CommonColors(
         override val light: CommonColors = CommonColors(
             focusedLabelColor = MaterialColors.Theme.light.onPrimary,
             appLabelColorFilter = Color(0xFF374D5E),
+            positiveDialogButton = Color(0xFFBFE295),
+            negativeDialogButton = Color(0xFFEBAEB1),
+            neutralDialogButton = Color(0xFFB9E5EB),
         )
 
         override val dark: CommonColors = CommonColors(
             focusedLabelColor = MaterialColors.Theme.dark.onPrimary,
             appLabelColorFilter = Color(0xFF686868),
+            positiveDialogButton = Color(0xFF809B62),
+            negativeDialogButton = Color(0xFFD17670),
+            neutralDialogButton =  Color(0xFF6F797C),
         )
     }
 }

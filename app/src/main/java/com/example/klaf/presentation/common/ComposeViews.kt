@@ -95,7 +95,7 @@ fun CardManagementView(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 16.dp, bottom = 16.dp),
-                background = MainTheme.colors.positiveDialogButton,
+                background = MainTheme.colors.commonColors.positiveDialogButton,
                 iconId = R.drawable.ic_confirmation_24,
                 onClick = onConfirmClick
             )
@@ -157,7 +157,7 @@ fun CardManagementView(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 16.dp, bottom = 16.dp),
-                background = MainTheme.colors.positiveDialogButton,
+                background = MainTheme.colors.commonColors.positiveDialogButton,
                 iconId = R.drawable.ic_confirmation_24,
                 onClick = onConfirmClick
             )
@@ -631,7 +631,7 @@ fun Modifier.bottomPadding(apply: Boolean): Modifier {
 @Composable
 fun DeletingButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.negativeDialogButton,
+        background = MainTheme.colors.commonColors.negativeDialogButton,
         iconId = R.drawable.ic_delete_24,
         onClick = onClick
     )
@@ -640,7 +640,7 @@ fun DeletingButton(onClick: () -> Unit) {
 @Composable
 fun ClosingButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.neutralDialogButton,
+        background = MainTheme.colors.commonColors.neutralDialogButton,
         iconId = R.drawable.ic_close_24,
         onClick = onClick
     )
@@ -649,7 +649,7 @@ fun ClosingButton(onClick: () -> Unit) {
 @Composable
 fun ConfirmationButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.positiveDialogButton,
+        background = MainTheme.colors.commonColors.positiveDialogButton,
         iconId = R.drawable.ic_confirmation_24,
         onClick = onClick
     )
