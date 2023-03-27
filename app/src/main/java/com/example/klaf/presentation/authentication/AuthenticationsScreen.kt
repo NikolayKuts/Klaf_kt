@@ -43,18 +43,33 @@ fun AuthenticationScreen(
     ) {
         val (
             actionLabelTextId: Int,
-            onConfirmationClick: () -> Unit
+            onConfirmationClick: () -> Unit,
+            isPasswordConfirmationEnabled: Boolean,
         ) = when (action) {
-            SIGN_IN -> R.string.authentication_sign_in_label to viewModel::signIn
-            SIGN_UP -> R.string.authentication_sign_up_label to viewModel::signUp
+            SIGN_IN -> {
+                Triple(
+                    first = R.string.authentication_sign_in_label,
+                    second = viewModel::signIn,
+                    third = false
+                )
+            }
+            SIGN_UP -> {
+                Triple(
+                    first = R.string.authentication_sign_up_label,
+                    second = viewModel::signUp,
+                    third = true
+                )
+            }
         }
 
         AuthenticationView(
             typingState = inputState,
             actionLabelText = stringResource(id = actionLabelTextId),
             isLoading = loadingState is LoadingState.Loading,
+            isPasswordConfirmationEnabled = isPasswordConfirmationEnabled,
             onEmailChange = viewModel::updateEmail,
             onPasswordChange = viewModel::updatePassword,
+            onPasswordConfirmationChange = viewModel::updatePasswordConfirmation,
             onConfirmationClick = onConfirmationClick,
         )
     }
@@ -65,24 +80,26 @@ fun AuthenticationView(
     typingState: AuthenticationTypingState,
     actionLabelText: String,
     isLoading: Boolean,
+    isPasswordConfirmationEnabled: Boolean,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
+    onPasswordConfirmationChange: (String) -> Unit,
     onConfirmationClick: () -> Unit,
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         val filterColor = getImageColor(isLoading = isLoading)
 
         Box(
             modifier = Modifier
+                .padding(8.dp)
                 .size(100.dp)
                 .weight(0.8F),
             contentAlignment = Alignment.Center,
         ) {
             isLoading.ifTrue { CircularProgressIndicator(modifier = Modifier.size(100.dp)) }
+
             Image(
-                modifier = Modifier.size(70.dp),
+                modifier = Modifier.size(70.dp).align(Alignment.Center),
                 painter = painterResource(id = R.drawable.color_10),
                 contentDescription = null,
                 colorFilter = ColorFilter.lighting(filterColor, filterColor),
@@ -112,6 +129,17 @@ fun AuthenticationView(
             labelText = stringResource(R.string.authentication_password_label),
             isError = typingState.passwordHolder.isError
         )
+
+        isPasswordConfirmationEnabled.ifTrue {
+            Spacer(modifier = Modifier.height(20.dp))
+
+            AuthenticationTextField(
+                value = typingState.passwordConfirmationHolder?.text ?: "",
+                onValueChange = onPasswordConfirmationChange,
+                labelText = stringResource(R.string.authentication_password_confirmation),
+                isError = typingState.passwordConfirmationHolder?.isError ?: false
+            )
+        }
 
         Box(
             modifier = Modifier.weight(1f),

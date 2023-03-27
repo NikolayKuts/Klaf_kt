@@ -1,23 +1,20 @@
 package com.example.klaf.presentation.authentication
 
 import androidx.lifecycle.viewModelScope
-import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
-import com.example.domain.common.CoroutineStateHolder.Companion.onException
-import com.example.domain.common.LoadingState
-import com.example.domain.common.ifFalse
-import com.example.domain.common.ifTrue
+import com.example.domain.common.*
 import com.example.domain.interactors.AuthenticationInteractor
 import com.example.klaf.R
-import com.example.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.FirebaseLoadingError
-import com.example.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.FirebaseLoadingError.*
+import com.example.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError
+import com.example.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError.*
+import com.example.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError
 import com.example.klaf.presentation.authentication.EmailValidator.EmailValidationResult.*
+import com.example.klaf.presentation.authentication.PasswordConfirmationValidator.PasswordConfirmationValidationResult
+import com.example.klaf.presentation.authentication.PasswordConfirmationValidator.PasswordConfirmationValidationResult.NotIdentical
 import com.example.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult
 import com.example.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult.ToLong
 import com.example.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult.ToShort
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.tryEmit
-import com.google.firebase.FirebaseNetworkException
-import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,6 +52,16 @@ class AuthenticationViewModel @Inject constructor(
         }
     }
 
+    override fun updatePasswordConfirmation(value: String) {
+        typingState.update { state ->
+            val passwordConfirmationHolder =
+                state.passwordConfirmationHolder?.copy(text = value.trim(), isError = false)
+                    ?: TypingStateHolder(text = value)
+
+            state.copy(passwordConfirmationHolder = passwordConfirmationHolder)
+        }
+    }
+
     override fun signIn() {
         val email = typingState.value.emailHolder.text.trim()
         val password = typingState.value.passwordHolder.text.trim()
@@ -69,16 +76,42 @@ class AuthenticationViewModel @Inject constructor(
                     screenLoadingState.value = loadingState
 
                     if (loadingState is LoadingState.Error) {
-                        handleError(loadingState)
+                        handleSigningInError(loadingState)
                     }
                 }
             }
         }
     }
 
-    private fun handleError(loadingState: LoadingState.Error) {
+    override fun signUp() {
+        val email = typingState.value.emailHolder.text.trim()
+        val password = typingState.value.passwordHolder.text.trim()
+        val passwordConfirmation = typingState.value.passwordConfirmationHolder?.text?.trim() ?: ""
+        val validationResult = manageValidation(
+            email = email,
+            password = password,
+            passwordConfirmation = passwordConfirmation
+        )
+
+        validationResult.ifTrue {
+            viewModelScope.launch {
+                authenticationInteractor.signUpWithEmailAndPassword(
+                    email = email,
+                    password = password
+                ).collect { loadingState ->
+                    screenLoadingState.value = loadingState
+
+                    if (loadingState is LoadingState.Error) {
+                        handleSigningUpError(loadingState = loadingState)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun handleSigningInError(loadingState: LoadingState.Error) {
         val errorMessageId = when (val error = loadingState.value) {
-            is FirebaseLoadingError -> {
+            is SigningInLoadingError -> {
                 when (error) {
                     CommonError -> R.string.authentication_warning_common_error_message
                     InvalidPassword -> R.string.authentication_warning_invalid_password
@@ -91,69 +124,103 @@ class AuthenticationViewModel @Inject constructor(
         eventMessage.tryEmit(messageId = errorMessageId)
     }
 
-    override fun signUp() {
-        val email = typingState.value.emailHolder.text.trim()
-        val password = typingState.value.passwordHolder.text.trim()
-        val validationResult = manageValidation(email = email, password = password)
-
-        validationResult.ifTrue {
-            viewModelScope.launchWithState {
-//                auth.createUserWithEmailAndPassword(email, password).await()
-            } onException { _, error ->
-                val errorMessageId = when (error) {
-                    is FirebaseAuthUserCollisionException -> {
+    private fun handleSigningUpError(loadingState: LoadingState.Error) {
+        val errorMessageId = when (val error = loadingState.value) {
+            is SigningUpLoadingError -> {
+                when (error) {
+                    SigningUpLoadingError.EmailAlreadyInUse -> {
                         R.string.authentication_warning_email_already_in_use_error
                     }
-                    is FirebaseNetworkException -> R.string.authentication_warning_network_error
-                    else -> R.string.authentication_warning_common_error_message
+                    SigningUpLoadingError.NetworkError -> {
+                        R.string.authentication_warning_network_error
+                    }
+                    SigningUpLoadingError.CommonError -> {
+                        R.string.authentication_warning_common_error_message
+                    }
                 }
-
-                eventMessage.tryEmit(messageId = errorMessageId)
             }
+            else -> R.string.authentication_warning_common_error_message
         }
+        eventMessage.tryEmit(messageId = errorMessageId)
     }
 
-    private fun manageValidation(email: String, password: String): Boolean {
-        var isEmailValid = false
-        var isPasswordValid = false
+    private fun manageValidation(
+        email: String,
+        password: String,
+        passwordConfirmation: String? = null,
+    ): Boolean {
+        var isValid = true
+        val emailValidationMessageId: Int? = getEmailValidationMessageId(email = email)
+        val passwordValidationMessageId: Int? = getPasswordValidationMessageId(password = password)
 
-        val emailValidationMessageId: Int? = when (EmailValidator().validate(data = email)) {
-            Empty -> R.string.authentication_warning_type_email
-            WrongFormat -> R.string.authentication_warning_invalid_email_format
-            Valid -> {
-                isEmailValid = true
-                null
-            }
-        }
+        passwordConfirmation ifNotNull { confirmation ->
+            val passwordConfirmationMessageId: Int? =
+                getPasswordConfirmationMessageId(password = password, confirmation = confirmation)
 
-        val passwordValidationMessageId: Int? =
-            when (PasswordValidator().validate(data = password)) {
-                PasswordValidationResult.Empty -> R.string.authentication_warning_type_password
-                ToLong -> R.string.authentication_warning_password_too_long
-                ToShort -> R.string.authentication_warning_password_too_short
-                PasswordValidationResult.Valid -> {
-                    isPasswordValid = true
-                    null
+            passwordConfirmationMessageId ifNotNull {
+                eventMessage.tryEmit(messageId = it)
+                isValid = false
+
+                typingState.update { state ->
+                    val passwordConfirmationHolder =
+                        state.passwordConfirmationHolder?.copy(isError = true)
+                            ?: TypingStateHolder(isError = true)
+
+                    state.copy(passwordConfirmationHolder = passwordConfirmationHolder)
                 }
             }
-
-        passwordValidationMessageId?.let { eventMessage.tryEmit(messageId = it) }
-        emailValidationMessageId?.let { eventMessage.tryEmit(messageId = it) }
-
-        isEmailValid.ifFalse {
-            typingState.update { state ->
-                val emailHolder = state.emailHolder.copy(isError = true)
-                state.copy(emailHolder = emailHolder)
-            }
         }
 
-        isPasswordValid.ifFalse {
+        passwordValidationMessageId ifNotNull {
+            eventMessage.tryEmit(messageId = it)
+            isValid = false
+
             typingState.update { state ->
                 val passwordHolder = state.passwordHolder.copy(isError = true)
                 state.copy(passwordHolder = passwordHolder)
             }
         }
 
-        return isEmailValid and isPasswordValid
+        emailValidationMessageId ifNotNull  {
+            eventMessage.tryEmit(messageId = it)
+            isValid = false
+
+            typingState.update { state ->
+                val emailHolder = state.emailHolder.copy(isError = true)
+                state.copy(emailHolder = emailHolder)
+            }
+        }
+
+        return isValid
+    }
+
+    private fun getEmailValidationMessageId(email: String): Int? {
+        return when (EmailValidator().validate(data = email)) {
+            Empty -> R.string.authentication_warning_type_email
+            WrongFormat -> R.string.authentication_warning_invalid_email_format
+            Valid -> null
+        }
+    }
+
+    private fun getPasswordValidationMessageId(password: String): Int? {
+        return when (PasswordValidator().validate(data = password)) {
+            PasswordValidationResult.Empty -> R.string.authentication_warning_type_password
+            ToLong -> R.string.authentication_warning_password_too_long
+            ToShort -> R.string.authentication_warning_password_too_short
+            PasswordValidationResult.Valid -> null
+        }
+    }
+
+    private fun getPasswordConfirmationMessageId(password: String, confirmation: String): Int? {
+        val confirmationState =
+            PasswordConfirmationSate(password = password, confirmation = confirmation)
+
+        return when (PasswordConfirmationValidator().validate(data = confirmationState)) {
+            PasswordConfirmationValidationResult.Empty -> {
+                R.string.authentication_warning_type_password_confirmation
+            }
+            NotIdentical -> R.string.authentication_warning_Invalid_password_confirmation
+            PasswordConfirmationValidationResult.Valid -> null
+        }
     }
 }

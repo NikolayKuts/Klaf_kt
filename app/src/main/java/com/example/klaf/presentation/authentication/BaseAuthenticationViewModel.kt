@@ -13,6 +13,7 @@ abstract class BaseAuthenticationViewModel : ViewModel(), EventMessageSource {
 
     abstract fun updateEmail(value: String)
     abstract fun updatePassword(value: String)
+    abstract fun updatePasswordConfirmation(value: String)
     abstract fun signIn()
     abstract fun signUp()
 }

@@ -3,10 +3,12 @@ package com.example.klaf.data.firestore.repositoryImplementations
 import com.example.domain.common.LoadingError
 import com.example.domain.common.LoadingState
 import com.example.domain.repositories.AuthenticationRepository
+import com.example.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError.*
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -18,15 +20,24 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
     private val auth: FirebaseAuth,
 ) : AuthenticationRepository {
 
-    sealed interface FirebaseLoadingError : LoadingError {
+    sealed interface SigningInLoadingError : LoadingError {
 
-        object NoUserRecord : FirebaseLoadingError
+        object NoUserRecord : SigningInLoadingError
 
-        object InvalidPassword : FirebaseLoadingError
+        object InvalidPassword : SigningInLoadingError
 
-        object NetworkError : FirebaseLoadingError
+        object NetworkError : SigningInLoadingError
 
-        object CommonError : FirebaseLoadingError
+        object CommonError : SigningInLoadingError
+    }
+
+    sealed interface SigningUpLoadingError : LoadingError {
+
+        object EmailAlreadyInUse : SigningUpLoadingError
+
+        object NetworkError : SigningUpLoadingError
+
+        object CommonError : SigningUpLoadingError
     }
 
     override fun signInWithEmailAndPassword(
@@ -34,20 +45,35 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
         password: String
     ): Flow<LoadingState<Unit>> = flow {
         emit(LoadingState.Loading)
+        delay(4000)
         auth.signInWithEmailAndPassword(email, password).await()
         emit(LoadingState.Success(data = Unit))
     }.catch { error ->
         val errorType = when (error) {
-            is FirebaseAuthInvalidUserException -> FirebaseLoadingError.NoUserRecord
-            is FirebaseAuthInvalidCredentialsException -> FirebaseLoadingError.InvalidPassword
-            is FirebaseNetworkException -> FirebaseLoadingError.NetworkError
-            else -> FirebaseLoadingError.CommonError
+            is FirebaseAuthInvalidUserException -> SigningInLoadingError.NoUserRecord
+            is FirebaseAuthInvalidCredentialsException -> SigningInLoadingError.InvalidPassword
+            is FirebaseNetworkException -> SigningInLoadingError.NetworkError
+            else -> SigningInLoadingError.CommonError
         }
 
         emit(LoadingState.Error(value = errorType))
     }
 
-    override fun signUpUserWithEmailAndPassword(): Flow<LoadingState<Unit>> = flow {
-//        auth.createUserWithEmailAndPassword(email, password).await()
+    override fun signUpWithEmailAndPassword(
+        email: String,
+        password: String,
+    ): Flow<LoadingState<Unit>> = flow {
+        emit(LoadingState.Loading)
+        delay(4000)
+        auth.createUserWithEmailAndPassword(email, password).await()
+        emit(LoadingState.Success(data = Unit))
+    }.catch { error ->
+        val errorType = when (error) {
+            is FirebaseAuthUserCollisionException -> EmailAlreadyInUse
+            is FirebaseNetworkException -> NetworkError
+            else -> CommonError
+        }
+
+        emit(LoadingState.Error(value = errorType))
     }
 }
