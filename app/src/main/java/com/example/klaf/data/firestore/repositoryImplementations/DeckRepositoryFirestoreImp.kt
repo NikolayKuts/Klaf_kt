@@ -1,11 +1,11 @@
 package com.example.klaf.data.firestore.repositoryImplementations
 
-import com.example.klaf.data.firestore.MAIN_COLLECTION_NAME
 import com.example.klaf.data.firestore.entities.FirestoreDeck
 import com.example.klaf.data.firestore.toDomainEntity
 import com.example.klaf.data.firestore.toFirestoreEntity
 import com.example.domain.entities.Deck
 import com.example.domain.repositories.DeckRepository
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
@@ -15,6 +15,7 @@ import javax.inject.Inject
 
 class DeckRepositoryFirestoreImp @Inject constructor(
     private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth,
 ) : DeckRepository {
 
     companion object {
@@ -63,7 +64,10 @@ class DeckRepositoryFirestoreImp @Inject constructor(
     }
 
     private fun getDeckSubCollection(): CollectionReference {
-        return firestore.collection(MAIN_COLLECTION_NAME)
+        val collectionName = auth.currentUser?.email
+            ?: throw RuntimeException("There is no authorized user")
+
+        return firestore.collection(collectionName)
             .document(DECK_DOCUMENT_NAME)
             .collection(DECK_SUB_COLLECTION_NAME)
     }
