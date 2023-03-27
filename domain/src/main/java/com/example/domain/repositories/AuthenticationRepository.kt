@@ -7,5 +7,5 @@ interface AuthenticationRepository {
 
     fun signInWithEmailAndPassword(email: String, password: String): Flow<LoadingState<Unit>>
 
-    fun signUpUserWithEmailAndPassword(): Flow<LoadingState<Unit>>
+    fun signUpWithEmailAndPassword(email: String, password: String): Flow<LoadingState<Unit>>
 }

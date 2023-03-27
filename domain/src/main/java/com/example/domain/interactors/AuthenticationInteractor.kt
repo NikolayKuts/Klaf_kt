@@ -12,4 +12,8 @@ class AuthenticationInteractor @Inject constructor(
     fun signInWithEmailAndPassword(email: String, password: String): Flow<LoadingState<Unit>> {
         return authRepository.signInWithEmailAndPassword(email = email, password = password)
     }
+
+    fun signUpWithEmailAndPassword(email: String, password: String): Flow<LoadingState<Unit>> {
+        return authRepository.signUpWithEmailAndPassword(email = email, password = password)
+    }
 }

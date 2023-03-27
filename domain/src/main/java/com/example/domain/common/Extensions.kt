@@ -79,16 +79,6 @@ inline fun Boolean.ifFalse(block: () -> Unit) {
 
 fun <T> T.isNotNull(): Boolean = this != null
 
-inline fun <T> T.ifNull(block: () -> Unit) {
-    if (this == null) block()
-}
-
-inline fun <T> T.ifNotNull(block: (T) -> Unit) {
-    if (this != null) {
-        block(this)
-    }
-}
-
 fun Int.toFloatPercents(): Float = this / 100.0F
 
 fun <T> List<T>.updatedAt(index: Int, newValue: T): List<T> {
@@ -96,9 +86,37 @@ fun <T> List<T>.updatedAt(index: Int, newValue: T): List<T> {
 }
 
 inline fun <R> List<R>.updatedAt(index: Int, block: (oldValue: R) -> R): List<R> {
-    return this.toMutableList().apply {  this[index] = block(this[index]) }
+    return this.toMutableList().apply { this[index] = block(this[index]) }
 }
 
 fun getCurrentDateAsLong(): Long {
     return Calendar.getInstance().time.time
+}
+
+sealed class Conditionable<V> {
+
+    abstract val value: V?
+
+    abstract class ValuableCondition<V>(override val value: V) : Conditionable<V>()
+
+    class ElseCondition<V> : Conditionable<V>() {
+
+        override val value: V? = null
+    }
+}
+
+inline infix fun <T, R> T?.ifNotNull(
+    block: (T) -> R,
+): ConditionableWithReceiver<T, R> = if (this != null) {
+    ConditionableWithReceiver.ValuableCondition(value = block(this), receiver = this)
+} else {
+    ConditionableWithReceiver.ElseCondition()
+}
+
+inline infix fun <T, R> T?.ifNull(
+    block: () -> R,
+): ConditionableWithReversedReceiver<T, R> = if (this == null) {
+    ConditionableWithReversedReceiver.ValuableCondition<T, R>(value = block())
+} else {
+    ConditionableWithReversedReceiver.ElseCondition(receiver = this)
 }
