@@ -2,10 +2,10 @@ package com.example.klaf.data.firestore.repositoryImplementations
 
 import com.example.domain.entities.Card
 import com.example.domain.repositories.CardRepository
-import com.example.klaf.data.firestore.MAIN_COLLECTION_NAME
 import com.example.klaf.data.firestore.entities.FirestoreCard
 import com.example.klaf.data.firestore.toDomainEntity
 import com.example.klaf.data.firestore.toFirestoreEntity
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
@@ -15,6 +15,7 @@ import javax.inject.Inject
 
 class CardRepositoryFirestoreImp @Inject constructor(
     private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth,
 ) : CardRepository {
 
     companion object {
@@ -68,7 +69,10 @@ class CardRepositoryFirestoreImp @Inject constructor(
     }
 
     private fun getCardSubCollection(): CollectionReference {
-        return firestore.collection(MAIN_COLLECTION_NAME)
+        val mainCollectionName = auth.currentUser?.email
+            ?: throw RuntimeException("There is no authorized user")
+
+        return firestore.collection(mainCollectionName)
             .document(CARD_DOCUMENT_NAME)
             .collection(CARD_SUB_COLLECTION_NAME)
     }

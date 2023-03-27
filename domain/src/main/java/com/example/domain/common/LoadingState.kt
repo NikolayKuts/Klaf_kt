@@ -1,12 +1,12 @@
 package com.example.domain.common
 
-sealed class LoadingResult {
+sealed class LoadingState<out T> {
 
-    class Success <T> (val data: T) : LoadingResult()
+    class Success<T>(val data: T) : LoadingState<T>()
 
-    class Loading : LoadingResult()
+    object Loading : LoadingState<Nothing>()
 
-    class Error(value: LoadingError) : LoadingResult()
+    class Error(val value: LoadingError) : LoadingState<Nothing>()
 }
 
-sealed interface LoadingError
+interface LoadingError

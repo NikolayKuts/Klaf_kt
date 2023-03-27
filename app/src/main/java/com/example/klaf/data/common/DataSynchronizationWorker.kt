@@ -8,6 +8,7 @@ import com.example.domain.common.ifTrue
 import com.example.domain.useCases.SynchronizeLocalAndRemoteDataUseCase
 import com.example.klaf.data.common.DataSynchronizationState.*
 import com.example.klaf.data.common.notifications.DataSynchronizationNotifier
+import com.example.klaf.presentation.common.log
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.Flow
@@ -83,7 +84,10 @@ class DataSynchronizationWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result = try {
         synchronizeLocalAndRemoteData()
-            .catch { TODO("implement error handling") }
+            .catch { error ->
+                log(error)
+                TODO("implement error handling")
+            }
             .collect { progress ->
                 setProgress(workDataOf(PROGRESS_STATE_KEY to progress))
             }

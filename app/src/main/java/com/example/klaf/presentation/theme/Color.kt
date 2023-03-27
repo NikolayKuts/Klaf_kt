@@ -280,6 +280,7 @@ data class MaterialColors(
 data class CommonColors(
     val focusedLabelColor: Color,
     val appLabelColorFilter: Color,
+    val animationAppLabelColorFilter: Color,
     val positiveDialogButton: Color,
     val negativeDialogButton: Color,
     val neutralDialogButton: Color,
@@ -290,6 +291,7 @@ data class CommonColors(
         override val light: CommonColors = CommonColors(
             focusedLabelColor = MaterialColors.Theme.light.onPrimary,
             appLabelColorFilter = Color(0xFF374D5E),
+            animationAppLabelColorFilter = Color(0xFF4C5C3A),
             positiveDialogButton = Color(0xFFBFE295),
             negativeDialogButton = Color(0xFFEBAEB1),
             neutralDialogButton = Color(0xFFB9E5EB),
@@ -298,6 +300,7 @@ data class CommonColors(
         override val dark: CommonColors = CommonColors(
             focusedLabelColor = MaterialColors.Theme.dark.onPrimary,
             appLabelColorFilter = Color(0xFF686868),
+            animationAppLabelColorFilter = Color(0xFF4D6C85),
             positiveDialogButton = Color(0xFF809B62),
             negativeDialogButton = Color(0xFFD17670),
             neutralDialogButton =  Color(0xFF6F797C),

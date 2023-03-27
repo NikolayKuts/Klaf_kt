@@ -5,6 +5,7 @@ import com.example.domain.common.LocalStorageSaveVersionRepositoryImp
 import com.example.domain.common.getCurrentDateAsLong
 import com.example.domain.common.ifNull
 import com.example.domain.entities.Deck
+import com.example.domain.entities.StorageSaveVersion
 import com.example.domain.repositories.DeckRepository
 import com.example.domain.repositories.StorageSaveVersionRepository
 import com.example.domain.repositories.StorageTransactionRepository
@@ -34,7 +35,7 @@ class CreateInterimDeckUseCase @Inject constructor(
                         )
                     )
 
-                    localStorageSaveVersionRepository.increaseVersion()
+                    localStorageSaveVersionRepository.insertVersion(version = StorageSaveVersion())
                 }
             }
         }

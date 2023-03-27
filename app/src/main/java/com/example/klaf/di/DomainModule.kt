@@ -3,14 +3,12 @@ package com.example.klaf.di
 import com.example.domain.repositories.*
 import com.example.klaf.data.common.OldAppKlafDataTransferRepositoryImpl
 import com.example.klaf.data.dataStore.implementations.DataStoreDeckRepetitionInfoRepositoryImpl
-import com.example.klaf.data.firestore.repositoryImplementations.CardRepositoryFirestoreImp
-import com.example.klaf.data.firestore.repositoryImplementations.DeckRepositoryFirestoreImp
-import com.example.klaf.data.firestore.repositoryImplementations.StorageSaveVersionRepositoryFirestoreImp
-import com.example.klaf.data.firestore.repositoryImplementations.WordAutocompleteFirestoreImp
+import com.example.klaf.data.firestore.repositoryImplementations.*
 import com.example.klaf.data.room.repositoryImplementations.CardRepositoryRoomImp
 import com.example.klaf.data.room.repositoryImplementations.DeckRepositoryRoomImp
 import com.example.klaf.data.room.repositoryImplementations.StorageSaveVersionRepositoryRoomImp
 import com.example.klaf.data.room.repositoryImplementations.StorageTransactionRepositoryRoomImp
+import com.google.firebase.auth.AuthResult
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -67,4 +65,9 @@ interface DomainModule {
     fun bindWordAutocompleteRepository(
         repository: WordAutocompleteFirestoreImp
     ): WordAutocompleteRepository
+
+    @Binds
+    fun bindAuthenticationRepository(
+        repository: AuthenticationRepositoryFirebaseImp
+    ): AuthenticationRepository
 }

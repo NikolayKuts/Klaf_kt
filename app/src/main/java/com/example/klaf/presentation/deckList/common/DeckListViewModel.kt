@@ -11,6 +11,7 @@ import com.example.klaf.R
 import com.example.klaf.data.common.AppReopeningWorker.Companion.scheduleAppReopening
 import com.example.klaf.data.common.DataSynchronizationState
 import com.example.klaf.data.common.DataSynchronizationWorker.Companion.getDataSynchronizationProgressState
+import com.example.klaf.data.common.DataSynchronizationWorker.Companion.performDataSynchronization
 import com.example.klaf.data.common.DeckRepetitionReminderChecker.Companion.scheduleDeckRepetitionChecking
 import com.example.klaf.data.common.notifications.NotificationChannelInitializer
 import com.example.klaf.presentation.common.EventMessage
@@ -161,8 +162,13 @@ class DeckListViewModel @AssistedInject constructor(
     }
 
     override fun synchronizeData() {
-        log(auth.currentUser, "snch user")
-        viewModelScope.launch { navigationDestination.emit(value = SigningTypeChoosingDialog) }
+        if (auth.currentUser == null) {
+            log(auth.currentUser, "snch user")
+            viewModelScope.launch { navigationDestination.emit(value = SigningTypeChoosingDialog) }
+        } else {
+            workManager.performDataSynchronization()
+            log("synchronization")
+        }
     }
 
     override fun navigate(event: DeckListNavigationEvent) {
