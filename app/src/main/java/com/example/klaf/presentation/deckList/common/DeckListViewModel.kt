@@ -15,22 +15,15 @@ import com.example.klaf.data.common.DataSynchronizationWorker.Companion.performD
 import com.example.klaf.data.common.DeckRepetitionReminderChecker.Companion.scheduleDeckRepetitionChecking
 import com.example.klaf.data.common.notifications.NotificationChannelInitializer
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.*
 import com.example.klaf.presentation.deckList.common.DeckListNavigationEvent.*
 import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
-import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class DeckListViewModel @AssistedInject constructor(
     fetchDeckSource: FetchDeckSourceUseCase,
@@ -162,13 +155,11 @@ class DeckListViewModel @AssistedInject constructor(
     }
 
     override fun synchronizeData() {
-//        if (auth.currentUser == null) {
-//            log(auth.currentUser, "snch user")
+        if (auth.currentUser == null) {
             viewModelScope.launch { navigationDestination.emit(value = SigningTypeChoosingDialog) }
-//        } else {
-//            workManager.performDataSynchronization()
-//            log("synchronization")
-//        }
+        } else {
+            workManager.performDataSynchronization()
+        }
     }
 
     override fun navigate(event: DeckListNavigationEvent) {

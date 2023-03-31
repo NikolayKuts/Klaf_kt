@@ -4,22 +4,17 @@ import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.*
@@ -29,10 +24,15 @@ import com.example.klaf.presentation.authentication.AuthenticationAction.SIGN_IN
 import com.example.klaf.presentation.authentication.AuthenticationAction.SIGN_UP
 import com.example.klaf.presentation.common.AdaptiveBox
 import com.example.klaf.presentation.common.ConfirmationButton
-import com.example.klaf.presentation.common.log
-import com.example.klaf.presentation.common.rememberAsMutableStateOf
+import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
 import com.example.klaf.presentation.theme.MainTheme
-import kotlinx.coroutines.delay
+
+private const val LABEL_ID = "labelBox"
+private const val AUTHENTICATION_ACTION_LABEL_ID = "AuthenticationActionLabel"
+private const val EMAIL_TEXT_FIELD_ID = "EmailTextField"
+private const val PASSWORD_TEXT_FIELD_ID = "PasswordTextField"
+private const val PASSWORD_CONFIRMATION_TEXT_FIELD_ID = "PasswordConfirmationTextField"
+private const val CONFIRMATION_BUTTON_ID = "ConfirmationButton"
 
 @Composable
 fun AuthenticationScreen(
@@ -82,39 +82,35 @@ fun AuthenticationScreen(
     }
 }
 
-private const val ImageBox = "labelBox"
-private const val AuthenticationActionLabelId = "AuthenticationActionLabel"
-private const val EmailTextFieldId = "EmailTextField"
-private const val PasswordTextFieldId = "PasswordTextField"
-private const val PasswordConfirmationTextFieldId = "PasswordConfirmationTextField"
-private const val ConfirmationButtonId = "ConfirmationButton"
-
 @Composable
 private fun getConstraints(): ConstraintSet = ConstraintSet {
-    val imageBox = createRefFor(id = ImageBox)
-    val passwordTextField = createRefFor(id = PasswordTextFieldId)
-    val emailTextField = createRefFor(id = EmailTextFieldId)
-    val authenticationActionLabel = createRefFor(id = AuthenticationActionLabelId)
-    val passwordConfirmationTextField = createRefFor(id = PasswordConfirmationTextFieldId)
-    val confirmationButton = createRefFor(id = ConfirmationButtonId)
+    val imageBox = createRefFor(id = LABEL_ID)
+    val passwordTextField = createRefFor(id = PASSWORD_TEXT_FIELD_ID)
+    val emailTextField = createRefFor(id = EMAIL_TEXT_FIELD_ID)
+    val authenticationActionLabel = createRefFor(id = AUTHENTICATION_ACTION_LABEL_ID)
+    val passwordConfirmationTextField = createRefFor(id = PASSWORD_CONFIRMATION_TEXT_FIELD_ID)
+    val confirmationButton = createRefFor(id = CONFIRMATION_BUTTON_ID)
     val guideLine = createGuidelineFromTop(fraction = 0.45F)
 
-//    imageBox.
+    val imageBoxMargin = 8.dp
+    val authenticationActionLabelMargin = 6.dp
+    val textFieldMargin = 8.dp
+
     constrain(ref = imageBox) {
-        top.linkTo(parent.top)
+        top.linkTo(parent.top, margin = imageBoxMargin)
         bottom.linkTo(authenticationActionLabel.top)
         start.linkTo(parent.start)
         end.linkTo(parent.end)
     }
 
     constrain(ref = authenticationActionLabel) {
-        top.linkTo(imageBox.bottom)
-        bottom.linkTo(emailTextField.top)
+        top.linkTo(imageBox.bottom, margin = authenticationActionLabelMargin)
+        bottom.linkTo(emailTextField.top, margin = authenticationActionLabelMargin)
         start.linkTo(parent.start)
         end.linkTo(parent.end)
     }
     constrain(ref = emailTextField) {
-        bottom.linkTo(passwordTextField.top)
+        bottom.linkTo(passwordTextField.top, margin = textFieldMargin)
         start.linkTo(parent.start)
         end.linkTo(parent.end)
     }
@@ -124,7 +120,7 @@ private fun getConstraints(): ConstraintSet = ConstraintSet {
         end.linkTo(parent.end)
     }
     constrain(ref = passwordConfirmationTextField) {
-        top.linkTo(passwordTextField.bottom)
+        top.linkTo(passwordTextField.bottom, margin = textFieldMargin)
         start.linkTo(parent.start)
         end.linkTo(parent.end)
     }
@@ -148,83 +144,34 @@ fun AuthenticationView(
     onConfirmationClick: () -> Unit,
 ) {
     val filterColor = getImageColor(isLoading = isLoading)
-    var size by rememberAsMutableStateOf(value = 0.dp)
-    val local = LocalDensity.current
 
-    Box(
+    Image(
         modifier = Modifier
-            .layoutId(ImageBox)
-//                .weight(0.8F)
-            .background(Color(0xFFAACE80))
-            .padding(8.dp)
-            .sizeIn(
-                minWidth = 20.dp,
-                minHeight = 20.dp,
-                maxWidth = 100.dp,
-                maxHeight = 100.dp,
-            )
-            .width(intrinsicSize = IntrinsicSize.Max),
-        contentAlignment = Alignment.Center,
-    ) {
-
-
-        Image(
-            modifier = Modifier
-                .background(Color(0xFFDAA19D))
-                .size(70.dp)
-                .align(Alignment.Center)
-                .onGloballyPositioned {
-                    size = local.run { it.size.height.toDp() }
-                },
-            painter = painterResource(id = R.drawable.color_10),
-            contentDescription = null,
-            colorFilter = ColorFilter.lighting(filterColor, filterColor),
-            alignment = BiasAlignment(horizontalBias = 0F, verticalBias = 0.2F)
-        )
-
-        isLoading.ifTrue {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .background(Color(0x7576B8B1))
-//                        .defaultMinSize(100.dp, 1000.dp)
-//                        .fillMaxWidth()
-//                        .sizeIn(
-//                            maxWidth = 100.dp,
-//                            maxHeight = 100.dp,
-//                            minWidth = 30.dp,
-//                            minHeight = 30.dp,
-//                        )
-
-//                        .width(intrinsicSize = IntrinsicSize.Max)
-//                        .width(intrinsicSize = )
-                    .size(size)
-//                        .fillMaxSize()
-//                        .size(100.dp)
-            )
-        }
-    }
+            .layoutId(LABEL_ID)
+            .size(70.dp),
+        painter = painterResource(id = R.drawable.color_10),
+        contentDescription = null,
+        colorFilter = ColorFilter.lighting(filterColor, filterColor),
+        alignment = BiasAlignment(horizontalBias = 0F, verticalBias = 0.2F)
+    )
 
     Text(
-        modifier = Modifier.layoutId(AuthenticationActionLabelId),
+        modifier = Modifier.layoutId(AUTHENTICATION_ACTION_LABEL_ID),
         text = actionLabelText,
         fontSize = 20.sp,
         fontStyle = FontStyle.Italic,
     )
-//        Spacer(modifier = Modifier.height(30.dp))
 
     AuthenticationTextField(
-        layoutId = EmailTextFieldId,
+        layoutId = EMAIL_TEXT_FIELD_ID,
         value = typingState.emailHolder.text,
         onValueChange = onEmailChange,
         labelText = stringResource(R.string.authentication_email_label),
         isError = typingState.emailHolder.isError
     )
 
-//        Spacer(modifier = Modifier.height(20.dp))
-
     AuthenticationTextField(
-        layoutId = PasswordTextFieldId,
+        layoutId = PASSWORD_TEXT_FIELD_ID,
         value = typingState.passwordHolder.text,
         onValueChange = onPasswordChange,
         labelText = stringResource(R.string.authentication_password_label),
@@ -232,10 +179,8 @@ fun AuthenticationView(
     )
 
     isPasswordConfirmationEnabled.ifTrue {
-//            Spacer(modifier = Modifier.height(20.dp))
-
         AuthenticationTextField(
-            layoutId = PasswordConfirmationTextFieldId,
+            layoutId = PASSWORD_CONFIRMATION_TEXT_FIELD_ID,
             value = typingState.passwordConfirmationHolder?.text ?: "",
             onValueChange = onPasswordConfirmationChange,
             labelText = stringResource(R.string.authentication_password_confirmation),
@@ -244,15 +189,19 @@ fun AuthenticationView(
     }
 
     Box(
-        modifier = Modifier
-            .layoutId(ConfirmationButtonId)
-//                .weight(1f)
-        ,
+        modifier = Modifier.layoutId(CONFIRMATION_BUTTON_ID),
         contentAlignment = BiasAlignment(horizontalBias = 0F, verticalBias = -0.2F)
     ) {
-        ConfirmationButton(onClick = onConfirmationClick)
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(DIALOG_BUTTON_SIZE.dp)
+            )
+        } else {
+            ConfirmationButton(onClick = onConfirmationClick)
+        }
     }
-//    }
 }
 
 @Composable
