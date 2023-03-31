@@ -162,13 +162,13 @@ class DeckListViewModel @AssistedInject constructor(
     }
 
     override fun synchronizeData() {
-        if (auth.currentUser == null) {
-            log(auth.currentUser, "snch user")
+//        if (auth.currentUser == null) {
+//            log(auth.currentUser, "snch user")
             viewModelScope.launch { navigationDestination.emit(value = SigningTypeChoosingDialog) }
-        } else {
-            workManager.performDataSynchronization()
-            log("synchronization")
-        }
+//        } else {
+//            workManager.performDataSynchronization()
+//            log("synchronization")
+//        }
     }
 
     override fun navigate(event: DeckListNavigationEvent) {
