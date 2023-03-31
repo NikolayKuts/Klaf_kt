@@ -48,68 +48,6 @@ fun CardManagementView(
     letterInfos: List<LetterInfo>,
     nativeWord: String,
     foreignWord: String,
-    ipaTemplate: String,
-    autocompleteState: AutocompleteState,
-    onDismissRequest: () -> Unit,
-    onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
-    onNativeWordChange: (String) -> Unit,
-    onForeignWordChange: (String) -> Unit,
-    onIpaChange: (String) -> Unit,
-    onConfirmClick: () -> Unit,
-    onPronounceIconClick: () -> Unit,
-    onAutocompleteItemClick: (chosenWord: String) -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .noRippleClickable { onDismissRequest() }
-            .padding(32.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.3F),
-        ) {
-            DeckInfo(name = deckName, cardQuantity = cardQuantity)
-            ForeignWordLettersSelector(
-                letterInfos = letterInfos,
-                onLetterClick = onLetterClick,
-            )
-        }
-
-        Box(modifier = Modifier.fillMaxSize()) {
-            CardManagementFields(
-                modifier = Modifier.align(alignment = Alignment.TopCenter),
-                nativeWord = nativeWord,
-                foreignWord = foreignWord,
-                ipaTemplate = ipaTemplate,
-                autocompleteState = autocompleteState,
-                onNativeWordChange = onNativeWordChange,
-                onForeignWordChange = onForeignWordChange,
-                onIpaChange = onIpaChange,
-                onPronounceIconClick = onPronounceIconClick,
-                onAutocompleteItemClick = onAutocompleteItemClick
-            )
-
-            RoundButton(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp, bottom = 16.dp),
-                background = MainTheme.colors.commonColors.positiveDialogButton,
-                iconId = R.drawable.ic_confirmation_24,
-                onClick = onConfirmClick
-            )
-        }
-    }
-}
-
-@Composable
-fun CardManagementView(
-    deckName: String,
-    cardQuantity: Int,
-    letterInfos: List<LetterInfo>,
-    nativeWord: String,
-    foreignWord: String,
     ipaHolders: List<IpaHolder>,
     autocompleteState: AutocompleteState,
     onDismissRequest: () -> Unit,
