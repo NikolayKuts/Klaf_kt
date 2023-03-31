@@ -29,9 +29,8 @@ class AuthenticationViewModel @Inject constructor(
 
     override val typingState = MutableStateFlow(
         value = AuthenticationTypingState(
-            emailHolder = TypingStateHolder("asdf@asdf.asdf"),
-            passwordHolder = TypingStateHolder("asdfasdf"),
-            passwordConfirmationHolder = TypingStateHolder("asdfasdf")
+            emailHolder = TypingStateHolder(),
+            passwordHolder = TypingStateHolder(),
         )
     )
 

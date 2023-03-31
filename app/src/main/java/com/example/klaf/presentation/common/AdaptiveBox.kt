@@ -43,11 +43,19 @@ fun AdaptiveBox(
                 LaunchedEffect(key1 = containerSize, key2 = contentSize) {
                     contentSize.ifNotNull { notNullChildSize ->
                         isContentVisible = true
-                        val shouldBeScrollable = containerSize < notNullChildSize
-                                || (containerSize < notNullChildSize && containerSize > minContentSize)
 
-                        contentSize = if (shouldBeScrollable) minContentSize else containerSize
-                        isContentScrollable = shouldBeScrollable
+                        contentSize = if (containerSize > notNullChildSize) {
+                            isContentScrollable = false
+                            containerSize
+                        } else {
+                            if (containerSize < minContentSize) {
+                                isContentScrollable = true
+                                minContentSize
+                            } else {
+                                isContentScrollable = false
+                                containerSize
+                            }
+                        }
                     }
                 }
 
