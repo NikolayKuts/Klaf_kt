@@ -3,6 +3,7 @@ package com.example.klaf.data.firestore.repositoryImplementations
 import com.example.domain.common.LoadingError
 import com.example.domain.common.LoadingState
 import com.example.domain.repositories.AuthenticationRepository
+import com.example.klaf.data.firestore.ROOT_COLLECTION_NAME_PREFIX
 import com.example.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError.*
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
@@ -44,7 +45,9 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
         password: String
     ): Flow<LoadingState<Unit>> = flow {
         emit(LoadingState.Loading)
-        auth.signInWithEmailAndPassword(email, password).await()
+        auth.signInWithEmailAndPassword(
+            "$ROOT_COLLECTION_NAME_PREFIX$email",
+            password).await()
         emit(LoadingState.Success(data = Unit))
     }.catch { error ->
         val errorType = when (error) {
@@ -62,7 +65,10 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
         password: String,
     ): Flow<LoadingState<Unit>> = flow {
         emit(LoadingState.Loading)
-        auth.createUserWithEmailAndPassword(email, password).await()
+        auth.createUserWithEmailAndPassword(
+            "$ROOT_COLLECTION_NAME_PREFIX$email",
+            password
+        ).await()
         emit(LoadingState.Success(data = Unit))
     }.catch { error ->
         val errorType = when (error) {

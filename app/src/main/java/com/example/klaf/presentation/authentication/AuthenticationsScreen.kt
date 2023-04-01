@@ -2,10 +2,17 @@ package com.example.klaf.presentation.authentication
 
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
@@ -15,10 +22,15 @@ import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.*
-import com.example.domain.common.*
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.ConstraintSet
+import com.example.domain.common.LoadingState
+import com.example.domain.common.ifTrue
 import com.example.klaf.R
 import com.example.klaf.presentation.authentication.AuthenticationAction.SIGN_IN
 import com.example.klaf.presentation.authentication.AuthenticationAction.SIGN_UP
@@ -172,7 +184,8 @@ fun AuthenticationView(
         value = typingState.emailHolder.text,
         onValueChange = onEmailChange,
         labelText = stringResource(R.string.authentication_email_label),
-        isError = typingState.emailHolder.isError
+        isError = typingState.emailHolder.isError,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
     )
 
     AuthenticationTextField(
@@ -180,7 +193,9 @@ fun AuthenticationView(
         value = typingState.passwordHolder.text,
         onValueChange = onPasswordChange,
         labelText = stringResource(R.string.authentication_password_label),
-        isError = typingState.passwordHolder.isError
+        isError = typingState.passwordHolder.isError,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        visualTransformation = PasswordVisualTransformation(),
     )
 
     isPasswordConfirmationEnabled.ifTrue {
@@ -189,7 +204,9 @@ fun AuthenticationView(
             value = typingState.passwordConfirmationHolder?.text ?: "",
             onValueChange = onPasswordConfirmationChange,
             labelText = stringResource(R.string.authentication_password_confirmation),
-            isError = typingState.passwordConfirmationHolder?.isError ?: false
+            isError = typingState.passwordConfirmationHolder?.isError ?: false,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            visualTransformation = PasswordVisualTransformation(),
         )
     }
 
@@ -216,6 +233,8 @@ private fun AuthenticationTextField(
     onValueChange: (String) -> Unit,
     labelText: String,
     isError: Boolean,
+    keyboardOptions: KeyboardOptions,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     OutlinedTextField(
         modifier = Modifier.layoutId(layoutId),
@@ -227,7 +246,9 @@ private fun AuthenticationTextField(
         colors = TextFieldDefaults.textFieldColors(
             backgroundColor = MainTheme.colors.authenticationScreenColors.textFieldBackground,
             focusedLabelColor = MainTheme.colors.commonColors.focusedLabelColor,
-        )
+        ),
+        keyboardOptions = keyboardOptions,
+        visualTransformation = visualTransformation,
     )
 }
 
