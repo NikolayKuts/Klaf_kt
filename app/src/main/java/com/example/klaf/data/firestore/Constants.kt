@@ -1,4 +1,3 @@
 package com.example.klaf.data.firestore
 
-
-const val MAIN_COLLECTION_NAME = "klaf_collection"
+const val ROOT_COLLECTION_NAME_PREFIX = "root_collection_"

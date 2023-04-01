@@ -105,6 +105,7 @@ dependencies {
     implementation platform(Firebase.Bom)
     implementation(Firebase.AnalyticsKts)
     implementation(Firebase.FirestoreKtx)
+    implementation(Firebase.Authentication)
     implementation(Firebase.CoroutinePlayServices)
 
     /** compose **/

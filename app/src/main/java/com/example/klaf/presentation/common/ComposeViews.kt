@@ -48,68 +48,6 @@ fun CardManagementView(
     letterInfos: List<LetterInfo>,
     nativeWord: String,
     foreignWord: String,
-    ipaTemplate: String,
-    autocompleteState: AutocompleteState,
-    onDismissRequest: () -> Unit,
-    onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
-    onNativeWordChange: (String) -> Unit,
-    onForeignWordChange: (String) -> Unit,
-    onIpaChange: (String) -> Unit,
-    onConfirmClick: () -> Unit,
-    onPronounceIconClick: () -> Unit,
-    onAutocompleteItemClick: (chosenWord: String) -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .noRippleClickable { onDismissRequest() }
-            .padding(32.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.3F),
-        ) {
-            DeckInfo(name = deckName, cardQuantity = cardQuantity)
-            ForeignWordLettersSelector(
-                letterInfos = letterInfos,
-                onLetterClick = onLetterClick,
-            )
-        }
-
-        Box(modifier = Modifier.fillMaxSize()) {
-            CardManagementFields(
-                modifier = Modifier.align(alignment = Alignment.TopCenter),
-                nativeWord = nativeWord,
-                foreignWord = foreignWord,
-                ipaTemplate = ipaTemplate,
-                autocompleteState = autocompleteState,
-                onNativeWordChange = onNativeWordChange,
-                onForeignWordChange = onForeignWordChange,
-                onIpaChange = onIpaChange,
-                onPronounceIconClick = onPronounceIconClick,
-                onAutocompleteItemClick = onAutocompleteItemClick
-            )
-
-            RoundButton(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp, bottom = 16.dp),
-                background = MainTheme.colors.positiveDialogButton,
-                iconId = R.drawable.ic_confirmation_24,
-                onClick = onConfirmClick
-            )
-        }
-    }
-}
-
-@Composable
-fun CardManagementView(
-    deckName: String,
-    cardQuantity: Int,
-    letterInfos: List<LetterInfo>,
-    nativeWord: String,
-    foreignWord: String,
     ipaHolders: List<IpaHolder>,
     autocompleteState: AutocompleteState,
     onDismissRequest: () -> Unit,
@@ -157,7 +95,7 @@ fun CardManagementView(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 16.dp, bottom = 16.dp),
-                background = MainTheme.colors.positiveDialogButton,
+                background = MainTheme.colors.commonColors.positiveDialogButton,
                 iconId = R.drawable.ic_confirmation_24,
                 onClick = onConfirmClick
             )
@@ -558,13 +496,17 @@ fun FullBackgroundDialog(
     mainContent: @Composable BoxScope.() -> Unit,
     bottomContent: @Composable (RowScope.() -> Unit)? = null,
     topContent: @Composable (RowScope.() -> Unit)? = null,
+    corners: Shape = RoundedCornerShape(10.dp),
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .noRippleClickable(onClick = onBackgroundClick)
     ) {
-        Box(modifier = Modifier.align(Alignment.Center)) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+        ) {
             Card(
                 modifier = Modifier
                     .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
@@ -572,6 +514,7 @@ fun FullBackgroundDialog(
                         top = (DIALOG_BUTTON_SIZE / 2).dp,
                         bottom = (DIALOG_BUTTON_SIZE / 2).dp,
                     )
+                    .clip(shape = corners),
             ) {
                 Box(
                     modifier = Modifier
@@ -626,7 +569,7 @@ fun Modifier.bottomPadding(apply: Boolean): Modifier {
 @Composable
 fun DeletingButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.negativeDialogButton,
+        background = MainTheme.colors.commonColors.negativeDialogButton,
         iconId = R.drawable.ic_delete_24,
         onClick = onClick
     )
@@ -635,7 +578,7 @@ fun DeletingButton(onClick: () -> Unit) {
 @Composable
 fun ClosingButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.neutralDialogButton,
+        background = MainTheme.colors.commonColors.neutralDialogButton,
         iconId = R.drawable.ic_close_24,
         onClick = onClick
     )
@@ -644,7 +587,7 @@ fun ClosingButton(onClick: () -> Unit) {
 @Composable
 fun ConfirmationButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.positiveDialogButton,
+        background = MainTheme.colors.commonColors.positiveDialogButton,
         iconId = R.drawable.ic_confirmation_24,
         onClick = onClick
     )

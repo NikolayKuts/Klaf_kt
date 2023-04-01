@@ -41,13 +41,12 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 fun DeckListScreen(
     viewModel: BaseDeckListViewModel,
     onMainButtonClick: () -> Unit,
-    onSwipeRefresh: () -> Unit,
     onRestartApp: () -> Unit,
 ) {
     SwipeRefresh(
         modifier = Modifier.fillMaxSize(),
         state = rememberSwipeRefreshState(isRefreshing = false),
-        onRefresh = onSwipeRefresh
+        onRefresh = { viewModel.navigate(event = DeckListNavigationEvent.ToDataSynchronizationDialog) }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             val decks by viewModel.deckSource.collectAsState()
@@ -87,7 +86,7 @@ private fun FetchingDecksWarningView(onRestartApp: () -> Unit) {
         },
         bottomContent = {
             RoundButton(
-                background = MainTheme.colors.neutralDialogButton,
+                background = MainTheme.colors.commonColors.neutralDialogButton,
                 iconId = R.drawable.ic_close_24,
                 onClick = { onRestartApp() }
             )

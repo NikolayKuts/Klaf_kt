@@ -7,7 +7,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.presentation.common.TransparentDialogFragment
+import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
+import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -26,6 +28,20 @@ class DataSynchronizationDialogFragment : TransparentDialogFragment(
                 DataSynchronizationDialogView(
                     viewModel = viewModel,
                     onCloseClick = ::closeDialog,
+                )
+            }
+        }
+
+        observeNavigationState()
+    }
+
+    private fun observeNavigationState() {
+        viewModel.navigationDestination.collectWhenStarted(
+            lifecycleOwner = viewLifecycleOwner
+        ) { destination ->
+            if (destination == DeckListNavigationDestination.SigningTypeChoosingDialog) {
+                findNavController().navigate(
+                    R.id.action_dataSynchronizationDialogFragment_to_signingTypeChoosingDialogFragment
                 )
             }
         }

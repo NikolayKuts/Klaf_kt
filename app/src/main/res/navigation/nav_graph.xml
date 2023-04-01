@@ -195,7 +195,12 @@
         android:id="@+id/dataSynchronizationDialogFragment"
         android:name="com.example.klaf.presentation.deckList.dataSynchronization.DataSynchronizationDialogFragment"
         android:label="dialog_data_synchronization"
-        tools:layout="@layout/dialog_data_synchronization" />
+        tools:layout="@layout/dialog_data_synchronization" >
+        <action
+            android:id="@+id/action_dataSynchronizationDialogFragment_to_signingTypeChoosingDialogFragment"
+            app:destination="@id/signingTypeChoosingDialogFragment"
+            app:popUpTo="@id/deckListFragment" />
+    </dialog>
     <fragment
         android:id="@+id/cardTransferringFragment"
         android:name="com.example.klaf.presentation.cardTransferring.common.CardTransferringFragment"
@@ -229,5 +234,25 @@
         android:id="@+id/cardMovingDialogFragment"
         android:name="com.example.klaf.presentation.cardTransferring.deckChoosing.DeckChoosingDialogFragment"
         android:label="CardMovingDialogFragment" />
+    <dialog
+        android:id="@+id/signingTypeChoosingDialogFragment"
+        android:name="com.example.klaf.presentation.authentication.SigningTypeChoosingDialogFragment"
+        android:label="SigningTypeChoosingDialogFragment" >
+        <action
+            android:id="@+id/action_signingTypeChoosingDialogFragment_to_authenticationFragment"
+            app:destination="@id/authenticationFragment" />
+    </dialog>
+    <fragment
+        android:id="@+id/authenticationFragment"
+        android:name="com.example.klaf.presentation.authentication.AuthenticationFragment"
+        android:label="AuthenticationFragment" >
+        <argument
+            android:name="authenticationAction"
+            app:argType="com.example.klaf.presentation.authentication.AuthenticationAction" />
+        <action
+            android:id="@+id/action_authenticationFragment_to_dataSynchronizationDialogFragment"
+            app:destination="@id/dataSynchronizationDialogFragment"
+            app:popUpTo="@id/deckListFragment" />
+    </fragment>
 
 </navigation>

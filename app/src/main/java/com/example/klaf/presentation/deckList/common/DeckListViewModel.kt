@@ -20,6 +20,7 @@ import com.example.klaf.presentation.deckList.common.DeckListNavigationDestinati
 import com.example.klaf.presentation.deckList.common.DeckListNavigationEvent.*
 import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
+import com.google.firebase.auth.FirebaseAuth
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -32,6 +33,7 @@ class DeckListViewModel @AssistedInject constructor(
     createInterimDeck: CreateInterimDeckUseCase,
     notificationChannelInitializer: NotificationChannelInitializer,
     private val workManager: WorkManager,
+    private val auth: FirebaseAuth,
 ) : BaseDeckListViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
@@ -153,23 +155,27 @@ class DeckListViewModel @AssistedInject constructor(
     }
 
     override fun synchronizeData() {
-        workManager.performDataSynchronization()
+        if (auth.currentUser == null) {
+            viewModelScope.launch { navigationDestination.emit(value = SigningTypeChoosingDialog) }
+        } else {
+            workManager.performDataSynchronization()
+        }
     }
 
     override fun navigate(event: DeckListNavigationEvent) {
         val destination = when (event) {
-            ToDeckCreationDialog -> DeckCreationDialogDestination
-            ToDataSynchronizationDialog -> DataSynchronizationDialogDestination
+            ToDeckCreationDialog -> DeckCreationDialog
+            ToDataSynchronizationDialog -> DataSynchronizationDialog
             is ToDeckNavigationDialog -> {
                 getDestinationByDeckId(
                     deckId = event.deck.id,
-                    ifDeckIsNotInterim = { DeckNavigationDialogDestination(deck = event.deck) }
+                    ifDeckIsNotInterim = { DeckNavigationDialog(deck = event.deck) }
                 )
             }
             is ToFragment -> {
                 getDestinationByDeckId(
                     deckId = event.deck.id,
-                    ifDeckIsNotInterim = { DeckRepetitionFragmentDestination(deck = event.deck) }
+                    ifDeckIsNotInterim = { DeckRepetitionScreen(deck = event.deck) }
                 )
             }
         }
@@ -193,7 +199,7 @@ class DeckListViewModel @AssistedInject constructor(
         ifDeckIsNotInterim: () -> DeckListNavigationDestination,
     ): DeckListNavigationDestination {
         return if (deckId == Deck.INTERIM_DECK_ID) {
-            CardTransferringDestination(deckId = deckId)
+            CardTransferringScreen(deckId = deckId)
         } else {
             ifDeckIsNotInterim()
         }

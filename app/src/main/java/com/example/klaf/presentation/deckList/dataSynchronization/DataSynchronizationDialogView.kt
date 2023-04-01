@@ -75,13 +75,13 @@ private fun InitialStateView(
         },
         bottomContent = {
             RoundButton(
-                background = MainTheme.colors.positiveDialogButton,
+                background = MainTheme.colors.commonColors.positiveDialogButton,
                 iconId = R.drawable.ic_confirmation_24,
                 onClick = onConfirmClick
             )
 
             RoundButton(
-                background = MainTheme.colors.neutralDialogButton,
+                background = MainTheme.colors.commonColors.neutralDialogButton,
                 iconId = R.drawable.ic_close_24,
                 onClick = onCloseClick
             )
@@ -129,7 +129,7 @@ private fun FinishStateView(onCloseClick: () -> Unit) {
         },
         bottomContent = {
             RoundButton(
-                background = MainTheme.colors.neutralDialogButton,
+                background = MainTheme.colors.commonColors.neutralDialogButton,
                 iconId = R.drawable.ic_close_24,
                 onClick = onCloseClick
             )
