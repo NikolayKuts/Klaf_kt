@@ -129,4 +129,6 @@
     <string name="authentication_password_confirmation">password confirmation</string>
     <string name="authentication_warning_type_password_confirmation">Type password confirmation</string>
     <string name="authentication_warning_Invalid_password_confirmation">Invalid password confirmation</string>
+    <string name="authentication_sign_in_success">You have signed in successfully</string>
+    <string name="authentication_sign_up_success">You have signed up successfully</string>
 </resources>

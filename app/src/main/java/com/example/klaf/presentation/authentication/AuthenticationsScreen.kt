@@ -38,9 +38,14 @@ private const val CONFIRMATION_BUTTON_ID = "ConfirmationButton"
 fun AuthenticationScreen(
     viewModel: BaseAuthenticationViewModel,
     action: AuthenticationAction,
+    onAuthenticationFinished: () -> Unit,
 ) {
     val inputState by viewModel.typingState.collectAsState()
     val loadingState by viewModel.screenLoadingState.collectAsState()
+
+    if (loadingState is LoadingState.Success) {
+        onAuthenticationFinished()
+    }
 
     AdaptiveBox { adaptiveModifier ->
         ConstraintLayout(

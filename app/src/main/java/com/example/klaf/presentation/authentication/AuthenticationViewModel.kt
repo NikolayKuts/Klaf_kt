@@ -75,8 +75,12 @@ class AuthenticationViewModel @Inject constructor(
                 ).collect { loadingState ->
                     screenLoadingState.value = loadingState
 
-                    if (loadingState is LoadingState.Error) {
-                        handleSigningInError(loadingState)
+                    when (loadingState) {
+                        LoadingState.Loading -> {}
+                        is LoadingState.Error -> handleSigningInError(loadingState)
+                        is LoadingState.Success -> {
+                            eventMessage.tryEmit(messageId = R.string.authentication_sign_in_success)
+                        }
                     }
                 }
             }
@@ -101,8 +105,12 @@ class AuthenticationViewModel @Inject constructor(
                 ).collect { loadingState ->
                     screenLoadingState.value = loadingState
 
-                    if (loadingState is LoadingState.Error) {
-                        handleSigningUpError(loadingState = loadingState)
+                    when (loadingState) {
+                        LoadingState.Loading -> {}
+                        is LoadingState.Error -> handleSigningUpError(loadingState = loadingState)
+                        is LoadingState.Success -> {
+                            eventMessage.tryEmit(messageId = R.string.authentication_sign_up_success)
+                        }
                     }
                 }
             }
@@ -121,6 +129,7 @@ class AuthenticationViewModel @Inject constructor(
             }
             else -> R.string.authentication_warning_common_error_message
         }
+
         eventMessage.tryEmit(messageId = errorMessageId)
     }
 
@@ -141,6 +150,7 @@ class AuthenticationViewModel @Inject constructor(
             }
             else -> R.string.authentication_warning_common_error_message
         }
+
         eventMessage.tryEmit(messageId = errorMessageId)
     }
 
