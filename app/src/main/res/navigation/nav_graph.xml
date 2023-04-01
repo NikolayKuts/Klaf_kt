@@ -240,8 +240,7 @@
         android:label="SigningTypeChoosingDialogFragment" >
         <action
             android:id="@+id/action_signingTypeChoosingDialogFragment_to_authenticationFragment"
-            app:destination="@id/authenticationFragment"
-            app:popUpTo="@id/deckListFragment" />
+            app:destination="@id/authenticationFragment" />
     </dialog>
     <fragment
         android:id="@+id/authenticationFragment"
@@ -250,6 +249,10 @@
         <argument
             android:name="authenticationAction"
             app:argType="com.example.klaf.presentation.authentication.AuthenticationAction" />
+        <action
+            android:id="@+id/action_authenticationFragment_to_dataSynchronizationDialogFragment"
+            app:destination="@id/dataSynchronizationDialogFragment"
+            app:popUpTo="@id/deckListFragment" />
     </fragment>
 
 </navigation>

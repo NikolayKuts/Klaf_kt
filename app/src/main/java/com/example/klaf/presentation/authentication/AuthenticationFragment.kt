@@ -6,6 +6,7 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
 import com.example.klaf.presentation.common.collectWhenStarted
@@ -28,7 +29,9 @@ class AuthenticationFragment : Fragment(R.layout.common_compose_layout) {
                 Surface {
                     AuthenticationScreen(
                         action = args.authenticationAction,
-                        viewModel = viewModel)
+                        viewModel = viewModel,
+                        onAuthenticationFinished = ::navigateToDataSynchronizationDialog,
+                    )
                 }
             }
         }
@@ -40,5 +43,11 @@ class AuthenticationFragment : Fragment(R.layout.common_compose_layout) {
         viewModel.eventMessage.collectWhenStarted(lifecycleOwner = viewLifecycleOwner) { message ->
             view.showSnackBar(messageId = message.resId)
         }
+    }
+
+    private fun navigateToDataSynchronizationDialog() {
+        findNavController().navigate(
+            R.id.action_authenticationFragment_to_dataSynchronizationDialogFragment
+        )
     }
 }

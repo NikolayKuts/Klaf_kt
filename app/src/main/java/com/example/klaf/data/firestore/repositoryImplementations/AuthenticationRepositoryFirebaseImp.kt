@@ -9,7 +9,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -45,7 +44,6 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
         password: String
     ): Flow<LoadingState<Unit>> = flow {
         emit(LoadingState.Loading)
-        delay(4000)
         auth.signInWithEmailAndPassword(email, password).await()
         emit(LoadingState.Success(data = Unit))
     }.catch { error ->
@@ -64,7 +62,6 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
         password: String,
     ): Flow<LoadingState<Unit>> = flow {
         emit(LoadingState.Loading)
-        delay(4000)
         auth.createUserWithEmailAndPassword(email, password).await()
         emit(LoadingState.Success(data = Unit))
     }.catch { error ->
