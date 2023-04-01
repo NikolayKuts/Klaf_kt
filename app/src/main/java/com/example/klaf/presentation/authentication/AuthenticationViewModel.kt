@@ -122,9 +122,15 @@ class AuthenticationViewModel @Inject constructor(
             is SigningInLoadingError -> {
                 when (error) {
                     CommonError -> R.string.authentication_warning_common_error_message
-                    InvalidPassword -> R.string.authentication_warning_invalid_password
                     NetworkError -> R.string.authentication_warning_network_error
-                    NoUserRecord -> R.string.authentication_warning_no_user_record
+                    InvalidPassword -> {
+                        setErrorStateForPasswordHolder()
+                        R.string.authentication_warning_invalid_password
+                    }
+                    NoUserRecord -> {
+                        setErrorStateForEmailHolder()
+                        R.string.authentication_warning_no_user_record
+                    }
                 }
             }
             else -> R.string.authentication_warning_common_error_message
@@ -138,6 +144,7 @@ class AuthenticationViewModel @Inject constructor(
             is SigningUpLoadingError -> {
                 when (error) {
                     SigningUpLoadingError.EmailAlreadyInUse -> {
+                        setErrorStateForEmailHolder()
                         R.string.authentication_warning_email_already_in_use_error
                     }
                     SigningUpLoadingError.NetworkError -> {
@@ -170,35 +177,20 @@ class AuthenticationViewModel @Inject constructor(
             passwordConfirmationMessageId ifNotNull {
                 eventMessage.tryEmit(messageId = it)
                 isValid = false
-
-                typingState.update { state ->
-                    val passwordConfirmationHolder =
-                        state.passwordConfirmationHolder?.copy(isError = true)
-                            ?: TypingStateHolder(isError = true)
-
-                    state.copy(passwordConfirmationHolder = passwordConfirmationHolder)
-                }
+                setErrorStateForPasswordConfirmationHolder()
             }
         }
 
         passwordValidationMessageId ifNotNull {
             eventMessage.tryEmit(messageId = it)
             isValid = false
-
-            typingState.update { state ->
-                val passwordHolder = state.passwordHolder.copy(isError = true)
-                state.copy(passwordHolder = passwordHolder)
-            }
+            setErrorStateForPasswordHolder()
         }
 
         emailValidationMessageId ifNotNull  {
             eventMessage.tryEmit(messageId = it)
             isValid = false
-
-            typingState.update { state ->
-                val emailHolder = state.emailHolder.copy(isError = true)
-                state.copy(emailHolder = emailHolder)
-            }
+            setErrorStateForEmailHolder()
         }
 
         return isValid
@@ -231,6 +223,30 @@ class AuthenticationViewModel @Inject constructor(
             }
             NotIdentical -> R.string.authentication_warning_Invalid_password_confirmation
             PasswordConfirmationValidationResult.Valid -> null
+        }
+    }
+
+    private fun setErrorStateForEmailHolder() {
+        typingState.update { state ->
+            val emailHolder = state.emailHolder.copy(isError = true)
+            state.copy(emailHolder = emailHolder)
+        }
+    }
+
+    private fun setErrorStateForPasswordHolder() {
+        typingState.update { state ->
+            val passwordHolder = state.passwordHolder.copy(isError = true)
+            state.copy(passwordHolder = passwordHolder)
+        }
+    }
+
+    private fun setErrorStateForPasswordConfirmationHolder() {
+        typingState.update { state ->
+            val passwordConfirmationHolder =
+                state.passwordConfirmationHolder?.copy(isError = true)
+                    ?: TypingStateHolder(isError = true)
+
+            state.copy(passwordConfirmationHolder = passwordConfirmationHolder)
         }
     }
 }
