@@ -107,6 +107,6 @@ private fun SeparationLine() {
         modifier = Modifier
             .fillMaxWidth()
             .height(1.dp)
-            .background(MainTheme.colors.deckNavigationDialogSeparator)
+            .background(MainTheme.colors.common.separator)
     )
 }

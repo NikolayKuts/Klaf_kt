@@ -204,30 +204,30 @@ val CommonViewingCardDeckNameTextStyle = MainTextStyle.copy(
 val LightViewingCardNativeWord = ViewingCardTextStyle
 
 val LightViewingCardForeignWord = ViewingCardTextStyle.copy(
-    color = LightMainPalettes.viewingCardForeignWord
+    color = LightMainPalettes.cardViewingScreen.foreignWord
 )
 
 val LightViewingCardIpa = ViewingCardTextStyle.copy(
-    color = LightMainPalettes.viewingCardIpa
+    color = LightMainPalettes.cardViewingScreen.ipa
 )
 
 val LightViewingCardOrdinal = ViewingCardTextStyle.copy(
-    color = LightMainPalettes.viewingCardOrdinal,
+    color = LightMainPalettes.cardViewingScreen.ordinal,
     fontStyle = FontStyle.Italic
 )
 
 val DarkViewingCardNativeWord = ViewingCardTextStyle
 
 val DarkViewingCardForeignWord = ViewingCardTextStyle.copy(
-    color = DarkMainPalettes.viewingCardForeignWord
+    color = DarkMainPalettes.cardViewingScreen.foreignWord
 )
 
 val DarkViewingCardIpa = ViewingCardTextStyle.copy(
-    color = DarkMainPalettes.viewingCardIpa
+    color = DarkMainPalettes.cardViewingScreen.ipa
 )
 
 val DarkViewingCardOrdinal = ViewingCardTextStyle.copy(
-    color = DarkMainPalettes.viewingCardOrdinal,
+    color = DarkMainPalettes.cardViewingScreen.ordinal,
     fontStyle = FontStyle.Italic
 )
 
