@@ -35,7 +35,12 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
         mediaPlayer.ifNull { mediaPlayer = getNewPlayerInstance() }
-        wordForPreparing?.let { preparePronunciation(word = it) }
+
+        val word = wordForPreparing
+
+        if (preparingJob == null && word != null) {
+            preparePronunciation(word = word)
+        }
     }
 
     override fun onStop(owner: LifecycleOwner) {
@@ -65,7 +70,9 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
                 setDataSource(word.buildAudioUri())
                 prepare()
             }
-        }?.onException { _, _ -> mediaPlayer?.reset() }
+        }?.onException { _, _ ->
+            mediaPlayer?.reset()
+        }
     }
 
     fun play() {
