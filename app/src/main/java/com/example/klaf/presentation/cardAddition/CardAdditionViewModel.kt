@@ -7,7 +7,10 @@ import com.example.domain.common.generateLetterInfos
 import com.example.domain.common.updatedAt
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
-import com.example.domain.ipa.*
+import com.example.domain.ipa.IpaHolder
+import com.example.domain.ipa.LetterInfo
+import com.example.domain.ipa.toRowIpaItemHolders
+import com.example.domain.ipa.toWord
 import com.example.domain.useCases.AddNewCardIntoDeckUseCase
 import com.example.domain.useCases.FetchDeckByIdUseCase
 import com.example.domain.useCases.FetchWordAutocompleteUseCase
