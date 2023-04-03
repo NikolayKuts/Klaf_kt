@@ -107,7 +107,7 @@ fun CardManagementView(
 @Composable
 fun ColumnScope.ForeignWordLettersSelector(
     letterInfos: List<LetterInfo>,
-    onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit
+    onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
 ) {
     LazyRow(
         state = rememberLazyListState(),
@@ -423,7 +423,7 @@ private fun WordTextField(
     @StringRes labelTextId: Int,
     textColor: Color,
     onValueChange: (String) -> Unit,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
 ) {
     TextField(
         modifier = modifier,
@@ -445,7 +445,7 @@ private fun WordTextFieldForPopupMenu(
     @StringRes labelTextId: Int,
     textColor: Color,
     onValueChange: (String) -> Unit,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
 ) {
     var textFieldValue by rememberAsMutableStateOf(
         value = TextFieldValue(text = value, selection = TextRange(value.length))
@@ -494,19 +494,17 @@ fun DialogBox(
 fun FullBackgroundDialog(
     onBackgroundClick: () -> Unit,
     mainContent: @Composable BoxScope.() -> Unit,
+    fillMaxSize: Boolean = true,
     bottomContent: @Composable (RowScope.() -> Unit)? = null,
     topContent: @Composable (RowScope.() -> Unit)? = null,
     corners: Shape = RoundedCornerShape(10.dp),
 ) {
     Box(
         modifier = Modifier
-            .fillMaxSize()
+            .apply { if (fillMaxSize) fillMaxSize() else wrapContentSize() }
             .noRippleClickable(onClick = onBackgroundClick)
     ) {
-        Box(
-            modifier = Modifier
-                .align(Alignment.Center)
-        ) {
+        Box(modifier = Modifier.align(Alignment.Center)) {
             Card(
                 modifier = Modifier
                     .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
