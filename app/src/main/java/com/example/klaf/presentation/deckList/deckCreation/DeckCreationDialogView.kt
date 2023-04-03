@@ -46,14 +46,21 @@ private fun DialogTitle() {
         style = MainTheme.typographies.dialogTextStyle,
         text = stringResource(id = R.string.deck_creation_dialog_title),
     )
-
 }
 
 @Composable
 private fun DeckNameTextField(deckNameState: MutableState<String>) {
+    val maxNameLength = 30
+
     OutlinedTextField(
         value = deckNameState.value,
-        onValueChange = { updatedName -> deckNameState.value = updatedName },
+        singleLine = true,
+        maxLines = 1,
+        onValueChange = { updatedName ->
+            if (updatedName.length <= maxNameLength) {
+                deckNameState.value = updatedName
+            }
+        },
         label = { Text(text = stringResource(R.string.deck_name_label)) },
         placeholder = { Text(text = stringResource(id = R.string.enter_deck_name)) },
     )
