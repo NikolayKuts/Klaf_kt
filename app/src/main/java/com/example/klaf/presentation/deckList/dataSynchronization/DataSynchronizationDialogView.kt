@@ -75,13 +75,13 @@ private fun InitialStateView(
         },
         bottomContent = {
             RoundButton(
-                background = MainTheme.colors.commonColors.positiveDialogButton,
+                background = MainTheme.colors.common.positiveDialogButton,
                 iconId = R.drawable.ic_confirmation_24,
                 onClick = onConfirmClick
             )
 
             RoundButton(
-                background = MainTheme.colors.commonColors.neutralDialogButton,
+                background = MainTheme.colors.common.neutralDialogButton,
                 iconId = R.drawable.ic_close_24,
                 onClick = onCloseClick
             )
@@ -129,7 +129,7 @@ private fun FinishStateView(onCloseClick: () -> Unit) {
         },
         bottomContent = {
             RoundButton(
-                background = MainTheme.colors.commonColors.neutralDialogButton,
+                background = MainTheme.colors.common.neutralDialogButton,
                 iconId = R.drawable.ic_close_24,
                 onClick = onCloseClick
             )
@@ -153,8 +153,8 @@ private fun AnimatedSynchronizationLabel() {
         )
     )
     val color by infiniteTransition.animateColor(
-        initialValue = MainTheme.colors.dataSynchronizationViewColors.labelBackground,
-        targetValue = MainTheme.colors.dataSynchronizationViewColors.labelBackgroundSecond,
+        initialValue = MainTheme.colors.dataSynchronizationView.labelBackground,
+        targetValue = MainTheme.colors.dataSynchronizationView.labelBackgroundSecond,
         animationSpec = infiniteRepeatable(
             animation = tween(
                 durationMillis = animationDuration,
@@ -178,7 +178,7 @@ private fun AnimatedSynchronizationLabel() {
 private fun SynchronizationLabel(
     modifier: Modifier = Modifier
         .size(20.dp)
-        .background(MainTheme.colors.dataSynchronizationViewColors.labelBackground)
+        .background(MainTheme.colors.dataSynchronizationView.labelBackground)
         .padding(8.dp),
 ) {
     Card(

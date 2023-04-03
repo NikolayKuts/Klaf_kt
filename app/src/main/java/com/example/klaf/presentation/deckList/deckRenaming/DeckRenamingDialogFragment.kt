@@ -24,10 +24,10 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setEvenMessageObserver(view = view)
+        observeEvenMessages(view = view)
 
         view.findViewById<ComposeView>(R.id.dialog_deck_renaming).setContent {
-            setDeckRenamingStateObserver()
+            observeDeckRenamingState()
             viewModel.getDeckById(deckId = args.deckId).let { receivedDeck: Deck? ->
                 if (receivedDeck == null) {
                     navController.popBackStack()
@@ -46,7 +46,7 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
         }
     }
 
-    private fun setEvenMessageObserver(view: View) {
+    private fun observeEvenMessages(view: View) {
         viewModel.eventMessage.collectWhenStarted(
             lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
@@ -54,7 +54,7 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
         }
     }
 
-    private fun setDeckRenamingStateObserver() {
+    private fun observeDeckRenamingState() {
         viewModel.renamingState.collectWhenStarted(
             lifecycleOwner = viewLifecycleOwner
         ) { renamingState ->

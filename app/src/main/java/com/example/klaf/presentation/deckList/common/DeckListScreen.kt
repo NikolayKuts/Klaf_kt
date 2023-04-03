@@ -86,7 +86,7 @@ private fun FetchingDecksWarningView(onRestartApp: () -> Unit) {
         },
         bottomContent = {
             RoundButton(
-                background = MainTheme.colors.commonColors.neutralDialogButton,
+                background = MainTheme.colors.common.neutralDialogButton,
                 iconId = R.drawable.ic_close_24,
                 onClick = { onRestartApp() }
             )
@@ -238,9 +238,9 @@ private fun CardQuantityView(deck: Deck) {
 @Composable
 private fun getCardBackgroundColorByPosition(position: Int): Color {
     return if (position.isEven()) {
-        MainTheme.colors.lightDeckItemBackground
+        MainTheme.colors.deckListScreen.lightDeckItemBackground
     } else {
-        MainTheme.colors.darkDeckItemBackground
+        MainTheme.colors.deckListScreen.darkDeckItemBackground
     }
 }
 
