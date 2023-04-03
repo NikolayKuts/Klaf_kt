@@ -27,6 +27,7 @@ fun DeckRenamingDialog(
     onCloseDialogClick: () -> Unit,
 ) {
     var fieldDeckName by rememberAsMutableStateOf(value = deckName)
+    val maxNameLength = 30
 
     FullBackgroundDialog(onBackgroundClick = onCloseDialogClick,
         mainContent = {
@@ -35,19 +36,23 @@ fun DeckRenamingDialog(
                 Spacer(modifier = Modifier.height(16.dp))
                 RenamingTextField(
                     deckName = fieldDeckName,
-                    onValueChange = { updatedName -> fieldDeckName = updatedName }
+                    onValueChange = { updatedName ->
+                        if (updatedName.length <= maxNameLength) {
+                            fieldDeckName = updatedName
+                        }
+                    }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
         },
         bottomContent = {
             RoundButton(
-                background = MainTheme.colors.commonColors.positiveDialogButton,
+                background = MainTheme.colors.common.positiveDialogButton,
                 iconId = R.drawable.ic_confirmation_24,
                 onClick = { onConfirmRenamingClick(fieldDeckName) }
             )
             RoundButton(
-                background = MainTheme.colors.commonColors.neutralDialogButton,
+                background = MainTheme.colors.common.neutralDialogButton,
                 iconId = R.drawable.ic_close_24,
                 onClick = onCloseDialogClick
             )

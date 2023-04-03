@@ -47,7 +47,7 @@ fun CardDeletingDialogView(
 @Composable
 private fun DeckDeletingConformationButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.commonColors.negativeDialogButton,
+        background = MainTheme.colors.common.negativeDialogButton,
         iconId = R.drawable.ic_delete_24,
         onClick = onClick
     )
@@ -56,7 +56,7 @@ private fun DeckDeletingConformationButton(onClick: () -> Unit) {
 @Composable
 private fun DialogClosingButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.commonColors.neutralDialogButton,
+        background = MainTheme.colors.common.neutralDialogButton,
         iconId = R.drawable.ic_close_24,
         onClick = onClick
     )

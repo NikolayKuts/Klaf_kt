@@ -26,6 +26,6 @@ class MainActivity : AppCompatActivity() {
 
     @Composable
     private fun setStatusBarColor() {
-        window.statusBarColor = MainTheme.colors.statusBarBackground.toArgb()
+        window.statusBarColor = MainTheme.colors.common.statusBarBackground.toArgb()
     }
 }

@@ -46,14 +46,21 @@ private fun DialogTitle() {
         style = MainTheme.typographies.dialogTextStyle,
         text = stringResource(id = R.string.deck_creation_dialog_title),
     )
-
 }
 
 @Composable
 private fun DeckNameTextField(deckNameState: MutableState<String>) {
+    val maxNameLength = 30
+
     OutlinedTextField(
         value = deckNameState.value,
-        onValueChange = { updatedName -> deckNameState.value = updatedName },
+        singleLine = true,
+        maxLines = 1,
+        onValueChange = { updatedName ->
+            if (updatedName.length <= maxNameLength) {
+                deckNameState.value = updatedName
+            }
+        },
         label = { Text(text = stringResource(R.string.deck_name_label)) },
         placeholder = { Text(text = stringResource(id = R.string.enter_deck_name)) },
     )
@@ -62,7 +69,7 @@ private fun DeckNameTextField(deckNameState: MutableState<String>) {
 @Composable
 private fun ConformationButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.commonColors.positiveDialogButton,
+        background = MainTheme.colors.common.positiveDialogButton,
         iconId = R.drawable.ic_confirmation_24,
         onClick = onClick
     )
@@ -71,7 +78,7 @@ private fun ConformationButton(onClick: () -> Unit) {
 @Composable
 private fun DialogClosingButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.commonColors.neutralDialogButton,
+        background = MainTheme.colors.common.neutralDialogButton,
         iconId = R.drawable.ic_close_24,
         onClick = onClick
     )

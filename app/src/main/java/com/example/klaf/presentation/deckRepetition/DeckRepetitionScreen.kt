@@ -260,8 +260,8 @@ private fun OrderPointers(
 private fun Time(viewModel: BaseDeckRepetitionViewModel) {
     val timerState by viewModel.timer.timerState.collectAsState()
     val timerColor = when (timerState.countingState) {
-        TimerCountingState.RUN -> MainTheme.colors.deckRepetitionScreenColors.timerActive
-        else -> MainTheme.colors.deckRepetitionScreenColors.timerInactive
+        TimerCountingState.RUN -> MainTheme.colors.deckRepetitionScreen.timerActive
+        else -> MainTheme.colors.deckRepetitionScreen.timerInactive
     }
 
     Text(
@@ -321,8 +321,8 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
     LazyRow(modifier = Modifier.layoutId(IPA_PROMPTS_VIEW_ID)) {
         itemsIndexed(items = ipaPrompt) { _, letterInfo ->
             val promptColor = when {
-                letterInfo.isChecked -> MainTheme.colors.deckRepetitionScreenColors.ipaPromptChecked
-                else -> MainTheme.colors.deckRepetitionScreenColors.ipaPromptUnchecked
+                letterInfo.isChecked -> MainTheme.colors.deckRepetitionScreen.ipaPromptChecked
+                else -> MainTheme.colors.deckRepetitionScreen.ipaPromptUnchecked
             }
 
             Text(
@@ -420,7 +420,7 @@ private fun DeleteButton(enabled: Boolean, onClick: () -> Unit) {
         xOffset = 60F,
     ) {
         RoundButton(
-            background = MainTheme.colors.deckRepetitionScreenColors.deleteButton,
+            background = MainTheme.colors.deckRepetitionScreen.deleteButton,
             iconId = R.drawable.ic_delete_24,
             onClick = onClick,
             elevation = 4.dp
@@ -436,7 +436,7 @@ private fun AddButton(enabled: Boolean, onClick: () -> Unit) {
         yOffset = -60F
     ) {
         RoundButton(
-            background = MainTheme.colors.deckRepetitionScreenColors.addButton,
+            background = MainTheme.colors.deckRepetitionScreen.addButton,
             iconId = R.drawable.ic_add_24,
             onClick = onClick,
             elevation = 4.dp
@@ -453,7 +453,7 @@ private fun EditButton(enabled: Boolean, onClick: () -> Unit) {
         yOffset = -50F,
     ) {
         RoundButton(
-            background = MainTheme.colors.deckRepetitionScreenColors.editButton,
+            background = MainTheme.colors.deckRepetitionScreen.editButton,
             iconId = R.drawable.ic_edit_24,
             onClick = { onClick() },
             elevation = 4.dp
@@ -509,8 +509,8 @@ private fun MoreButton(
 
     val color by animateColorAsState(
         targetValue = when {
-            clicked -> MainTheme.colors.deckRepetitionScreenColors.mainButtonPressed
-            else -> MainTheme.colors.deckRepetitionScreenColors.mainButtonUnpressed
+            clicked -> MainTheme.colors.deckRepetitionScreen.mainButtonPressed
+            else -> MainTheme.colors.deckRepetitionScreen.mainButtonUnpressed
         },
         animationSpec = tween(durationMillis = 200)
     )
@@ -535,11 +535,11 @@ fun CardButton(cardSide: CardSide, onClick: () -> Unit) {
     when (cardSide) {
         CardSide.FRONT -> {
             rotationValue = 180F
-            backgroundColor = MainTheme.colors.deckRepetitionScreenColors.frontSideCardButton
+            backgroundColor = MainTheme.colors.deckRepetitionScreen.frontSideCardButton
         }
         CardSide.BACK -> {
             rotationValue = 0F
-            backgroundColor = MainTheme.colors.deckRepetitionScreenColors.backSideCardButton
+            backgroundColor = MainTheme.colors.deckRepetitionScreen.backSideCardButton
         }
     }
 

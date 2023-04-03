@@ -9,6 +9,7 @@ import androidx.compose.ui.text.withStyle
 import com.example.klaf.R
 import com.example.klaf.presentation.common.FullBackgroundDialog
 import com.example.klaf.presentation.common.RoundButton
+import com.example.klaf.presentation.common.RoundedIcon
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -19,6 +20,12 @@ fun DeckDeletionDialogView(
 ) {
     FullBackgroundDialog(
         onBackgroundClick = onCloseDialogButtonClick,
+        topContent = {
+            RoundedIcon(
+                background = MainTheme.colors.common.negativeDialogButton,
+                iconId = R.drawable.ic_attention_mark_24,
+            )
+        },
         mainContent = {
             Text(
                 style = MainTheme.typographies.dialogTextStyle,
@@ -43,7 +50,7 @@ fun DeckDeletionDialogView(
 @Composable
 private fun DeckDeletingConformationButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.commonColors.negativeDialogButton,
+        background = MainTheme.colors.common.negativeDialogButton,
         iconId = R.drawable.ic_delete_24,
         onClick = onClick
     )
@@ -52,7 +59,7 @@ private fun DeckDeletingConformationButton(onClick: () -> Unit) {
 @Composable
 private fun DialogClosingButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.commonColors.neutralDialogButton,
+        background = MainTheme.colors.common.neutralDialogButton,
         iconId = R.drawable.ic_close_24,
         onClick = onClick
     )

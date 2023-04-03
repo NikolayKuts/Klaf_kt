@@ -34,7 +34,7 @@ import com.example.domain.common.ifTrue
 import com.example.klaf.R
 import com.example.klaf.presentation.authentication.AuthenticationAction.SIGN_IN
 import com.example.klaf.presentation.authentication.AuthenticationAction.SIGN_UP
-import com.example.klaf.presentation.common.AdaptiveBox
+import com.example.klaf.presentation.common.AdaptiveScalableBox
 import com.example.klaf.presentation.common.ConfirmationButton
 import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
 import com.example.klaf.presentation.theme.MainTheme
@@ -59,7 +59,7 @@ fun AuthenticationScreen(
         onAuthenticationFinished()
     }
 
-    AdaptiveBox { adaptiveModifier ->
+    AdaptiveScalableBox { adaptiveModifier ->
         ConstraintLayout(
             constraintSet = getConstraints(),
             modifier = adaptiveModifier
@@ -244,8 +244,8 @@ private fun AuthenticationTextField(
         singleLine = true,
         isError = isError,
         colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = MainTheme.colors.authenticationScreenColors.textFieldBackground,
-            focusedLabelColor = MainTheme.colors.commonColors.focusedLabelColor,
+            backgroundColor = MainTheme.colors.authenticationScreen.textFieldBackground,
+            focusedLabelColor = MainTheme.colors.common.focusedLabelColor,
         ),
         keyboardOptions = keyboardOptions,
         visualTransformation = visualTransformation,
@@ -255,13 +255,13 @@ private fun AuthenticationTextField(
 @Composable
 private fun getImageColor(isLoading: Boolean): Color = if (isLoading) {
     rememberInfiniteTransition().animateColor(
-        initialValue = MainTheme.colors.commonColors.appLabelColorFilter,
-        targetValue = MainTheme.colors.commonColors.animationAppLabelColorFilter,
+        initialValue = MainTheme.colors.common.appLabelColorFilter,
+        targetValue = MainTheme.colors.common.animationAppLabelColorFilter,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 1000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         )
     ).value
 } else {
-    MainTheme.colors.commonColors.appLabelColorFilter
+    MainTheme.colors.common.appLabelColorFilter
 }

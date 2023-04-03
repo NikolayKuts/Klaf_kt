@@ -19,7 +19,7 @@ import com.example.domain.common.ifNotNull
 import com.example.domain.common.ifNull
 
 @Composable
-fun AdaptiveBox(
+fun AdaptiveScalableBox(
     context: @Composable (adaptiveModifier: Modifier) -> Unit,
 ) {
     val localDensity = LocalDensity.current

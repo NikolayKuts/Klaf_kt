@@ -95,7 +95,7 @@ fun CardManagementView(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 16.dp, bottom = 16.dp),
-                background = MainTheme.colors.commonColors.positiveDialogButton,
+                background = MainTheme.colors.common.positiveDialogButton,
                 iconId = R.drawable.ic_confirmation_24,
                 onClick = onConfirmClick
             )
@@ -107,7 +107,7 @@ fun CardManagementView(
 @Composable
 fun ColumnScope.ForeignWordLettersSelector(
     letterInfos: List<LetterInfo>,
-    onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit
+    onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
 ) {
     LazyRow(
         state = rememberLazyListState(),
@@ -133,8 +133,8 @@ fun LazyItemScope.LetterItem(
     onClick: () -> Unit,
 ) {
     val cellColor = when {
-        letterInfo.isChecked -> MainTheme.colors.cardManagementViewColors.checkedLetterCell
-        else -> MainTheme.colors.cardManagementViewColors.uncheckedLetterCell
+        letterInfo.isChecked -> MainTheme.colors.cardManagementView.checkedLetterCell
+        else -> MainTheme.colors.cardManagementView.uncheckedLetterCell
     }
 
     Text(
@@ -212,7 +212,7 @@ fun CardManagementFields(
         WordTextField(
             value = nativeWord,
             labelTextId = R.string.label_native_word,
-            textColor = MainTheme.colors.cardManagementViewColors.nativeWord,
+            textColor = MainTheme.colors.cardManagementView.nativeWord,
             onValueChange = onNativeWordChange,
         )
 
@@ -253,7 +253,7 @@ fun CardManagementFields(
         WordTextField(
             value = nativeWord,
             labelTextId = R.string.label_native_word,
-            textColor = MainTheme.colors.cardManagementViewColors.nativeWord,
+            textColor = MainTheme.colors.cardManagementView.nativeWord,
             onValueChange = onNativeWordChange,
         )
 
@@ -269,7 +269,7 @@ fun CardManagementFields(
         WordTextField(
             value = ipaTemplate,
             labelTextId = R.string.label_ipa,
-            textColor = MainTheme.colors.cardManagementViewColors.ipa,
+            textColor = MainTheme.colors.cardManagementView.ipa,
             onValueChange = onIpaChange
         )
     }
@@ -297,7 +297,7 @@ fun IpaSection(
                 Text(
                     modifier = Modifier
                         .clip(shape = cellShape)
-                        .background(color = MainTheme.colors.cardManagementViewColors.checkedLetterCell)
+                        .background(color = MainTheme.colors.cardManagementView.checkedLetterCell)
                         .padding(6.dp),
                     text = ipaHolder.letterGroup
                 )
@@ -312,7 +312,7 @@ fun IpaSection(
                         .defaultMinSize(minWidth = 30.dp)
                         .width(IntrinsicSize.Min)
                         .clip(shape = cellShape)
-                        .background(MainTheme.colors.cardManagementViewColors.ipaCellBackground)
+                        .background(MainTheme.colors.cardManagementView.ipaCellBackground)
                         .padding(6.dp),
                     value = ipaHolder.ipa,
                     cursorBrush = Brush.verticalGradient(
@@ -352,7 +352,7 @@ fun DropDownAutocompleteFiled(
         WordTextFieldForPopupMenu(
             value = typedWord,
             labelTextId = R.string.label_foreign_word,
-            textColor = MainTheme.colors.cardManagementViewColors.foreignWord,
+            textColor = MainTheme.colors.cardManagementView.foreignWord,
             onValueChange = onTypedWordChange,
             trailingIcon = {
                 Icon(
@@ -375,7 +375,7 @@ fun DropDownAutocompleteFiled(
                         .width(LocalDensity.current.run { sizeTopBar.width.toDp() })
                         .shadow(elevation = 4.dp, shape = menuShape)
                         .clip(shape = menuShape)
-                        .background(MainTheme.colors.cardManagementViewColors.autocompleteMenuBackground)
+                        .background(MainTheme.colors.cardManagementView.autocompleteMenuBackground)
                         .padding(start = 16.dp, top = 6.dp, end = 16.dp, bottom = 6.dp)
                 ) {
                     autocompleteState.autocomplete.onEach { word ->
@@ -423,7 +423,7 @@ private fun WordTextField(
     @StringRes labelTextId: Int,
     textColor: Color,
     onValueChange: (String) -> Unit,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
 ) {
     TextField(
         modifier = modifier,
@@ -431,7 +431,7 @@ private fun WordTextField(
         onValueChange = onValueChange,
         label = { Text(text = stringResource(id = labelTextId)) },
         colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = MainTheme.colors.cardManagementViewColors.textFieldBackground,
+            backgroundColor = MainTheme.colors.cardManagementView.textFieldBackground,
             textColor = textColor
         ),
         trailingIcon = trailingIcon
@@ -445,7 +445,7 @@ private fun WordTextFieldForPopupMenu(
     @StringRes labelTextId: Int,
     textColor: Color,
     onValueChange: (String) -> Unit,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
 ) {
     var textFieldValue by rememberAsMutableStateOf(
         value = TextFieldValue(text = value, selection = TextRange(value.length))
@@ -466,7 +466,7 @@ private fun WordTextFieldForPopupMenu(
         },
         label = { Text(text = stringResource(id = labelTextId)) },
         colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = MainTheme.colors.cardManagementViewColors.textFieldBackground,
+            backgroundColor = MainTheme.colors.cardManagementView.textFieldBackground,
             textColor = textColor
         ),
         trailingIcon = trailingIcon
@@ -494,19 +494,18 @@ fun DialogBox(
 fun FullBackgroundDialog(
     onBackgroundClick: () -> Unit,
     mainContent: @Composable BoxScope.() -> Unit,
+    modifier: Modifier = Modifier,
+    fillMaxSize: Boolean = true,
     bottomContent: @Composable (RowScope.() -> Unit)? = null,
     topContent: @Composable (RowScope.() -> Unit)? = null,
     corners: Shape = RoundedCornerShape(10.dp),
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = modifier
+            .apply { if (fillMaxSize) fillMaxSize() else wrapContentSize() }
             .noRippleClickable(onClick = onBackgroundClick)
     ) {
-        Box(
-            modifier = Modifier
-                .align(Alignment.Center)
-        ) {
+        Box(modifier = Modifier.align(Alignment.Center)) {
             Card(
                 modifier = Modifier
                     .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
@@ -569,7 +568,7 @@ fun Modifier.bottomPadding(apply: Boolean): Modifier {
 @Composable
 fun DeletingButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.commonColors.negativeDialogButton,
+        background = MainTheme.colors.common.negativeDialogButton,
         iconId = R.drawable.ic_delete_24,
         onClick = onClick
     )
@@ -578,7 +577,7 @@ fun DeletingButton(onClick: () -> Unit) {
 @Composable
 fun ClosingButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.commonColors.neutralDialogButton,
+        background = MainTheme.colors.common.neutralDialogButton,
         iconId = R.drawable.ic_close_24,
         onClick = onClick
     )
@@ -587,7 +586,7 @@ fun ClosingButton(onClick: () -> Unit) {
 @Composable
 fun ConfirmationButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.commonColors.positiveDialogButton,
+        background = MainTheme.colors.common.positiveDialogButton,
         iconId = R.drawable.ic_confirmation_24,
         onClick = onClick
     )
@@ -630,5 +629,12 @@ fun CustomCheckBox(
                 contentDescription = contentDescription,
             )
         }
+    }
+}
+
+@Composable
+fun AdaptiveBox(content: @Composable LazyItemScope.() -> Unit) {
+    LazyColumn {
+        item(content = content)
     }
 }

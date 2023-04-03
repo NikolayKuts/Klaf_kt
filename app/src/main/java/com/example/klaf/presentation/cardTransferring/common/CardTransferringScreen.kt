@@ -110,7 +110,7 @@ private fun QuantityPointers(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
-                .background(MainTheme.colors.cardTransferringScreenColors.quantityPointerBackground)
+                .background(MainTheme.colors.cardTransferringScreen.quantityPointerBackground)
                 .padding(start = 4.dp, end = 4.dp),
             text = stringResource(R.string.pointer_interim_deck_cards),
             style = MainTheme.typographies.cardTransferringScreenTextStyles.pointerTitle,
@@ -204,13 +204,13 @@ private fun LazyItemScope.CardItem(
     ) {
         Text(
             text = position.toString(),
-            color = MainTheme.colors.cardTransferringScreenColors.cardOrdinal,
+            color = MainTheme.colors.cardTransferringScreen.cardOrdinal,
             fontStyle = FontStyle.Italic
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = holder.card.foreignWord,
-            color = MainTheme.colors.cardTransferringScreenColors.foreignWord
+            color = MainTheme.colors.cardTransferringScreen.foreignWord
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
@@ -222,8 +222,8 @@ private fun LazyItemScope.CardItem(
             modifier = Modifier.padding(6.dp),
             checked = holder.isSelected,
             onCheckedChange = onSelectedChanged,
-            uncheckedBorderColor = MainTheme.colors.cardTransferringScreenColors.unCheckedBorder,
-            checkedBoxColor = MainTheme.colors.cardTransferringScreenColors.selectedCheckBox
+            uncheckedBorderColor = MainTheme.colors.cardTransferringScreen.unCheckedBorder,
+            checkedBoxColor = MainTheme.colors.cardTransferringScreen.selectedCheckBox
         )
     }
 }
@@ -235,7 +235,7 @@ private fun DividingLine() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = padding, bottom = padding),
-        color = MainTheme.colors.cardTransferringScreenColors.itemDivider,
+        color = MainTheme.colors.cardTransferringScreen.itemDivider,
     )
 }
 
@@ -268,7 +268,7 @@ private fun CardTransferringButton(
     AnimatableOffsetButton(
         isStartPosition = isStartPosition,
         offset = -180F,
-        background = MainTheme.colors.cardTransferringScreenColors.transferringButton,
+        background = MainTheme.colors.cardTransferringScreen.transferringButton,
         iconId = R.drawable.ic_move_24,
         stiffness = Spring.StiffnessVeryLow,
         onClick = onClick
@@ -283,7 +283,7 @@ private fun CardAddingButton(
     AnimatableOffsetButton(
         isStartPosition = isStartPosition,
         offset = -120F,
-        background = MainTheme.colors.cardTransferringScreenColors.cardAddingButton,
+        background = MainTheme.colors.cardTransferringScreen.cardAddingButton,
         iconId = R.drawable.ic_add_24,
         stiffness = Spring.StiffnessLow,
         onClick = onClick,
@@ -298,7 +298,7 @@ private fun CardDeletingButton(
     AnimatableOffsetButton(
         isStartPosition = isStartPosition,
         offset = -60F,
-        background = MainTheme.colors.cardTransferringScreenColors.deletingButton,
+        background = MainTheme.colors.cardTransferringScreen.deletingButton,
         iconId = R.drawable.ic_delete_24,
         stiffness = Spring.StiffnessMediumLow,
         onClick = onClick,
@@ -360,9 +360,9 @@ private fun MoreButton(
 ) {
     val color by animateColorAsState(
         targetValue = if (!clicked) {
-            MainTheme.colors.cardTransferringScreenColors.clickedMoreButton
+            MainTheme.colors.cardTransferringScreen.clickedMoreButton
         } else {
-            MainTheme.colors.cardTransferringScreenColors.unClickedMoreButton
+            MainTheme.colors.cardTransferringScreen.unClickedMoreButton
         }
     )
     val scale by animateFloatAsState(

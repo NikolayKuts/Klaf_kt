@@ -85,6 +85,6 @@ private fun DividingLine() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 3.dp, bottom = 3.dp),
-        color = MainTheme.colors.deckNavigationDialogSeparator,
+        color = MainTheme.colors.common.separator,
     )
 }
