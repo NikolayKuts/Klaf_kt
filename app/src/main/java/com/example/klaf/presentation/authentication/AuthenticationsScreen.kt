@@ -34,7 +34,7 @@ import com.example.domain.common.ifTrue
 import com.example.klaf.R
 import com.example.klaf.presentation.authentication.AuthenticationAction.SIGN_IN
 import com.example.klaf.presentation.authentication.AuthenticationAction.SIGN_UP
-import com.example.klaf.presentation.common.AdaptiveBox
+import com.example.klaf.presentation.common.AdaptiveScalableBox
 import com.example.klaf.presentation.common.ConfirmationButton
 import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
 import com.example.klaf.presentation.theme.MainTheme
@@ -59,7 +59,7 @@ fun AuthenticationScreen(
         onAuthenticationFinished()
     }
 
-    AdaptiveBox { adaptiveModifier ->
+    AdaptiveScalableBox { adaptiveModifier ->
         ConstraintLayout(
             constraintSet = getConstraints(),
             modifier = adaptiveModifier

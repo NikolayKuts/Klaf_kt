@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
+import com.example.klaf.presentation.common.AdaptiveBox
 import com.example.klaf.presentation.common.FullBackgroundDialog
 import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.theme.MainTheme
@@ -26,50 +27,53 @@ fun DeckNavigationDialogView(
     onRepetitionInfoClick: () -> Unit,
     onCloseDialogClick: () -> Unit,
 ) {
-    FullBackgroundDialog(
-        onBackgroundClick = onCloseDialogClick,
-        mainContent = {
-            Column {
-                DialogTitle(deckName = deckName)
-                DialogItem(
-                    textId = R.string.deck_navigation_dialog_item_delete_deck,
-                    onClick = onDeleteDeckClick
-                )
-                SeparationLine()
-                DialogItem(
-                    textId = R.string.deck_navigation_dialog_item_rename_deck,
-                    onClick = onRenameDeckClick
-                )
-                SeparationLine()
-                DialogItem(
-                    textId = R.string.deck_navigation_dialog_item_browse_cards,
-                    onClick = onBrowseDeckClick
-                )
-                SeparationLine()
-                DialogItem(
-                    textId = R.string.deck_navigation_dialog_item_add_cards,
-                    onClick = onAddCardsClick
-                )
-                SeparationLine()
-                DialogItem(
-                    textId = R.string.deck_navigation_dialog_item_transfer_cards,
-                    onClick = onTransferCardsClick
-                )
-                SeparationLine()
-                DialogItem(
-                    textId = R.string.deck_navigation_dialog_item_info,
-                    onClick = onRepetitionInfoClick
+    AdaptiveBox {
+        FullBackgroundDialog(
+            fillMaxSize = false,
+            onBackgroundClick = onCloseDialogClick,
+            mainContent = {
+                Column {
+                    DialogTitle(deckName = deckName)
+                    DialogItem(
+                        textId = R.string.deck_navigation_dialog_item_delete_deck,
+                        onClick = onDeleteDeckClick
+                    )
+                    SeparationLine()
+                    DialogItem(
+                        textId = R.string.deck_navigation_dialog_item_rename_deck,
+                        onClick = onRenameDeckClick
+                    )
+                    SeparationLine()
+                    DialogItem(
+                        textId = R.string.deck_navigation_dialog_item_browse_cards,
+                        onClick = onBrowseDeckClick
+                    )
+                    SeparationLine()
+                    DialogItem(
+                        textId = R.string.deck_navigation_dialog_item_add_cards,
+                        onClick = onAddCardsClick
+                    )
+                    SeparationLine()
+                    DialogItem(
+                        textId = R.string.deck_navigation_dialog_item_transfer_cards,
+                        onClick = onTransferCardsClick
+                    )
+                    SeparationLine()
+                    DialogItem(
+                        textId = R.string.deck_navigation_dialog_item_info,
+                        onClick = onRepetitionInfoClick
+                    )
+                }
+            },
+            bottomContent = {
+                RoundButton(
+                    background = MainTheme.colors.commonColors.neutralDialogButton,
+                    iconId = R.drawable.ic_close_24,
+                    onClick = onCloseDialogClick
                 )
             }
-        },
-        bottomContent = {
-            RoundButton(
-                background = MainTheme.colors.commonColors.neutralDialogButton,
-                iconId = R.drawable.ic_close_24,
-                onClick = onCloseDialogClick
-            )
-        }
-    )
+        )
+    }
 }
 
 @Composable

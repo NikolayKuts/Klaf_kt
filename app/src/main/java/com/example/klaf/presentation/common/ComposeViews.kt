@@ -494,13 +494,14 @@ fun DialogBox(
 fun FullBackgroundDialog(
     onBackgroundClick: () -> Unit,
     mainContent: @Composable BoxScope.() -> Unit,
+    modifier: Modifier = Modifier,
     fillMaxSize: Boolean = true,
     bottomContent: @Composable (RowScope.() -> Unit)? = null,
     topContent: @Composable (RowScope.() -> Unit)? = null,
     corners: Shape = RoundedCornerShape(10.dp),
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .apply { if (fillMaxSize) fillMaxSize() else wrapContentSize() }
             .noRippleClickable(onClick = onBackgroundClick)
     ) {
@@ -628,5 +629,12 @@ fun CustomCheckBox(
                 contentDescription = contentDescription,
             )
         }
+    }
+}
+
+@Composable
+fun AdaptiveBox(content: @Composable LazyItemScope.() -> Unit) {
+    LazyColumn {
+        item(content = content)
     }
 }
