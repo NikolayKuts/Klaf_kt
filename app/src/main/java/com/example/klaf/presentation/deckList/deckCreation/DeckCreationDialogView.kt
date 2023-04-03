@@ -69,7 +69,7 @@ private fun DeckNameTextField(deckNameState: MutableState<String>) {
 @Composable
 private fun ConformationButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.commonColors.positiveDialogButton,
+        background = MainTheme.colors.common.positiveDialogButton,
         iconId = R.drawable.ic_confirmation_24,
         onClick = onClick
     )
@@ -78,7 +78,7 @@ private fun ConformationButton(onClick: () -> Unit) {
 @Composable
 private fun DialogClosingButton(onClick: () -> Unit) {
     RoundButton(
-        background = MainTheme.colors.commonColors.neutralDialogButton,
+        background = MainTheme.colors.common.neutralDialogButton,
         iconId = R.drawable.ic_close_24,
         onClick = onClick
     )

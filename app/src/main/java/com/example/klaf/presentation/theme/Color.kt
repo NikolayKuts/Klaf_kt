@@ -7,7 +7,21 @@ import androidx.compose.ui.graphics.Color
 
 data class MainColors(
     val materialColors: Colors,
-    val statusBarBackground: Color,
+    val deckListScreen: DeckListScreenColors,
+    val deckNavigationDialogSeparator: Color,
+    val cardManagementView: CardManagementViewColors,
+    val deckRepetitionScreen: DeckRepetitionScreenColors,
+    val viewingCardForeignWord: Color,
+    val viewingCardIpa: Color,
+    val viewingCardOrdinal: Color,
+    val dataSynchronizationView: DataSynchronizationViewColors,
+    val deckRepetitionInfoScreen: DeckRepetitionInfoScreenColors,
+    val cardTransferringScreen: CardTransferringScreenColors,
+    val authenticationScreen: AuthenticationScreenColors,
+    val common: CommonColors,
+)
+
+data class DeckListScreenColors(
     val lightDeckItemBackground: Color,
     val darkDeckItemBackground: Color,
     val evenDeckItemName: Color,
@@ -17,18 +31,35 @@ data class MainColors(
     val deckItemRepetitionQuantity: Color,
     val deckItemCardQuantity: Color,
     val deckItemPointer: Color,
-    val deckNavigationDialogSeparator: Color,
-    val cardManagementViewColors: CardManagementViewColors,
-    val deckRepetitionScreenColors: DeckRepetitionScreenColors,
-    val viewingCardForeignWord: Color,
-    val viewingCardIpa: Color,
-    val viewingCardOrdinal: Color,
-    val dataSynchronizationViewColors: DataSynchronizationViewColors,
-    val deckRepetitionInfoScreenColors: DeckRepetitionInfoScreenColors,
-    val cardTransferringScreenColors: CardTransferringScreenColors,
-    val authenticationScreenColors: AuthenticationScreenColors,
-    val commonColors: CommonColors,
-)
+) {
+
+    object Theme : Themable<DeckListScreenColors> {
+
+        override val light = DeckListScreenColors(
+            lightDeckItemBackground = Color(0xFFFFFFFF),
+            darkDeckItemBackground = Color(0xFFEBEBEB),
+            evenDeckItemName = Color(0xFF7C995B),
+            oddDeckItemName = Color(0xFF5C5C5C),
+            scheduledDate = Color(0xFF3E92D5),
+            overdueScheduledDate = Color(0xFFE66259),
+            deckItemRepetitionQuantity = Color(0xFFFF9800),
+            deckItemCardQuantity = Color(0xFFB27DBB),
+            deckItemPointer = Color(0xFF7C7C7C),
+        )
+
+        override val dark = DeckListScreenColors(
+            lightDeckItemBackground = Color(0xFF464646),
+            darkDeckItemBackground = Color(0xFF353535),
+            evenDeckItemName = Color(0xFF76A243),
+            oddDeckItemName = Color(0xFFB6B6B6),
+            scheduledDate = Color(0xFFD69E4A),
+            overdueScheduledDate = Color(0xFFDA8282),
+            deckItemRepetitionQuantity = Color(0xFF56C2CF),
+            deckItemCardQuantity = Color(0xFFD5C85B),
+            deckItemPointer = Color(0xFF969696),
+        )
+    }
+}
 
 data class CardManagementViewColors(
     val checkedLetterCell: Color,
@@ -161,27 +192,18 @@ val LightCadTransferringScreenColors = CardTransferringScreenColors(
 
 val LightMainPalettes = MainColors(
     materialColors = MaterialColors.Theme.light,
-    statusBarBackground = Color(0xFF8AA768),
-    lightDeckItemBackground = Color(0xFFFFFFFF),
-    darkDeckItemBackground = Color(0xFFEBEBEB),
-    evenDeckItemName = Color(0xFF7C995B),
-    oddDeckItemName = Color(0xFF5C5C5C),
-    scheduledDate = Color(0xFF3E92D5),
-    overdueScheduledDate = Color(0xFFE66259),
-    deckItemRepetitionQuantity = Color(0xFFFF9800),
-    deckItemCardQuantity = Color(0xFFB27DBB),
-    deckItemPointer = Color(0xFF7C7C7C),
+    deckListScreen = DeckListScreenColors.Theme.light,
     deckNavigationDialogSeparator = Color(0xFF818181),
-    cardManagementViewColors = CardManagementViewColors.Theme.light,
-    deckRepetitionScreenColors = LightDeckRepetitionScreenColors,
+    cardManagementView = CardManagementViewColors.Theme.light,
+    deckRepetitionScreen = LightDeckRepetitionScreenColors,
     viewingCardForeignWord = Color(0xFFA078AA),
     viewingCardIpa = Color(0xFF5E949C),
     viewingCardOrdinal = Color(0xFFBEBEBE),
-    dataSynchronizationViewColors = LightDataSynchronizationViewColors,
-    deckRepetitionInfoScreenColors = LightDeckRepetitionInfoScreenColors,
-    cardTransferringScreenColors = LightCadTransferringScreenColors,
-    authenticationScreenColors = AuthenticationScreenColors.Theme.light,
-    commonColors = CommonColors.Theme.light,
+    dataSynchronizationView = LightDataSynchronizationViewColors,
+    deckRepetitionInfoScreen = LightDeckRepetitionInfoScreenColors,
+    cardTransferringScreen = LightCadTransferringScreenColors,
+    authenticationScreen = AuthenticationScreenColors.Theme.light,
+    common = CommonColors.Theme.light,
 )
 
 
@@ -235,31 +257,22 @@ private val DarkCardTransferringScreenColors =
 
 val DarkMainPalettes = MainColors(
     materialColors = MaterialColors.Theme.dark,
-    statusBarBackground = Color(0xFF464646),
-    lightDeckItemBackground = Color(0xFF464646),
-    darkDeckItemBackground = Color(0xFF353535),
-    evenDeckItemName = Color(0xFF76A243),
-    oddDeckItemName = Color(0xFFB6B6B6),
-    scheduledDate = Color(0xFFD69E4A),
-    overdueScheduledDate = Color(0xFFDA8282),
-    deckItemRepetitionQuantity = Color(0xFF56C2CF),
-    deckItemCardQuantity = Color(0xFFD5C85B),
-    deckItemPointer = Color(0xFF969696),
+    deckListScreen = DeckListScreenColors.Theme.dark,
     deckNavigationDialogSeparator = Color(0xFF4D4D4D),
-    cardManagementViewColors = CardManagementViewColors.Theme.dark,
-    deckRepetitionScreenColors = DarkDeckRepetitionScreenColors,
+    cardManagementView = CardManagementViewColors.Theme.dark,
+    deckRepetitionScreen = DarkDeckRepetitionScreenColors,
     viewingCardForeignWord = Color(0xFFA5CA79),
     viewingCardIpa = Color(0xFF86BBC9),
     viewingCardOrdinal = Color(0xFF6B6B6B),
-    dataSynchronizationViewColors = DarkDataSynchronizationViewColors,
-    deckRepetitionInfoScreenColors = DarkDeckRepetitionInfoScreenColors,
-    cardTransferringScreenColors = DarkCardTransferringScreenColors,
-    authenticationScreenColors = AuthenticationScreenColors.Theme.dark,
-    commonColors = CommonColors.Theme.dark,
+    dataSynchronizationView = DarkDataSynchronizationViewColors,
+    deckRepetitionInfoScreen = DarkDeckRepetitionInfoScreenColors,
+    cardTransferringScreen = DarkCardTransferringScreenColors,
+    authenticationScreen = AuthenticationScreenColors.Theme.dark,
+    common = CommonColors.Theme.dark,
 )
 
 data class MaterialColors(
-    val some: Color
+    val some: Color,
 ) {
 
     object Theme : Themable<Colors> {
@@ -278,6 +291,7 @@ data class MaterialColors(
 }
 
 data class CommonColors(
+    val statusBarBackground: Color,
     val focusedLabelColor: Color,
     val appLabelColorFilter: Color,
     val animationAppLabelColorFilter: Color,
@@ -289,6 +303,7 @@ data class CommonColors(
     object Theme : Themable<CommonColors> {
 
         override val light: CommonColors = CommonColors(
+            statusBarBackground = Color(0xFF8AA768),
             focusedLabelColor = MaterialColors.Theme.light.onPrimary,
             appLabelColorFilter = Color(0xFF374D5E),
             animationAppLabelColorFilter = Color(0xFF4C5C3A),
@@ -298,12 +313,13 @@ data class CommonColors(
         )
 
         override val dark: CommonColors = CommonColors(
+            statusBarBackground = Color(0xFF464646),
             focusedLabelColor = MaterialColors.Theme.dark.onPrimary,
             appLabelColorFilter = Color(0xFF686868),
             animationAppLabelColorFilter = Color(0xFF4D6C85),
             positiveDialogButton = Color(0xFF809B62),
             negativeDialogButton = Color(0xFFD17670),
-            neutralDialogButton =  Color(0xFF6F797C),
+            neutralDialogButton = Color(0xFF6F797C),
         )
     }
 }

@@ -244,8 +244,8 @@ private fun AuthenticationTextField(
         singleLine = true,
         isError = isError,
         colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = MainTheme.colors.authenticationScreenColors.textFieldBackground,
-            focusedLabelColor = MainTheme.colors.commonColors.focusedLabelColor,
+            backgroundColor = MainTheme.colors.authenticationScreen.textFieldBackground,
+            focusedLabelColor = MainTheme.colors.common.focusedLabelColor,
         ),
         keyboardOptions = keyboardOptions,
         visualTransformation = visualTransformation,
@@ -255,13 +255,13 @@ private fun AuthenticationTextField(
 @Composable
 private fun getImageColor(isLoading: Boolean): Color = if (isLoading) {
     rememberInfiniteTransition().animateColor(
-        initialValue = MainTheme.colors.commonColors.appLabelColorFilter,
-        targetValue = MainTheme.colors.commonColors.animationAppLabelColorFilter,
+        initialValue = MainTheme.colors.common.appLabelColorFilter,
+        targetValue = MainTheme.colors.common.animationAppLabelColorFilter,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 1000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         )
     ).value
 } else {
-    MainTheme.colors.commonColors.appLabelColorFilter
+    MainTheme.colors.common.appLabelColorFilter
 }

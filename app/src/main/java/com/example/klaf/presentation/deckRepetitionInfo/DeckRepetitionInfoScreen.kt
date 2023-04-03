@@ -169,7 +169,7 @@ private fun DualInfoItemWithValueBackground(
                     .padding(bottom = 4.dp)
                     .clip(shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
                     .background(
-                        color = MainTheme.colors.deckRepetitionInfoScreenColors.pointerBackground
+                        color = MainTheme.colors.deckRepetitionInfoScreen.pointerBackground
                     )
                     .padding(start = 4.dp),
                 text = title,
@@ -267,7 +267,7 @@ private fun InfoItemDivider() {
     Spacer(modifier = Modifier.height(8.dp))
     Divider(
         modifier = Modifier.height(1.dp),
-        color = MainTheme.colors.deckRepetitionInfoScreenColors.itemDivider,
+        color = MainTheme.colors.deckRepetitionInfoScreen.itemDivider,
     )
     Spacer(modifier = Modifier.height(16.dp))
 }
@@ -279,8 +279,8 @@ fun Modifier.valuePadding(): Modifier {
 @Composable
 private fun getValueBackgroundColorBySuccessMark(mark: DeckRepetitionSuccessMark): Color {
     return when (mark) {
-        SUCCESS -> MainTheme.colors.deckRepetitionInfoScreenColors.successMark
-        FAILURE -> MainTheme.colors.deckRepetitionInfoScreenColors.failureMark
+        SUCCESS -> MainTheme.colors.deckRepetitionInfoScreen.successMark
+        FAILURE -> MainTheme.colors.deckRepetitionInfoScreen.failureMark
         UNASSIGNED -> Color.Transparent
     }
 }

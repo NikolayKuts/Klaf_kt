@@ -28,13 +28,13 @@ fun SigningTypeChoosingView(
     FullBackgroundDialog(
         onBackgroundClick = onCloseButtonClick,
         topContent = {
-            val filterColor = MainTheme.colors.commonColors.appLabelColorFilter
+            val filterColor = MainTheme.colors.common.appLabelColorFilter
 
             Image(
                 modifier = Modifier
                     .size(70.dp)
                     .clip(shape = RoundedCornerShape(50.dp))
-                    .background(MainTheme.colors.dataSynchronizationViewColors.labelBackground)
+                    .background(MainTheme.colors.dataSynchronizationView.labelBackground)
                     .padding(10.dp),
                 painter = painterResource(id = R.drawable.color_10),
                 contentDescription = null,
@@ -52,7 +52,7 @@ fun SigningTypeChoosingView(
                     modifier = Modifier
                         .fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor =MainTheme.colors.commonColors.positiveDialogButton
+                        backgroundColor =MainTheme.colors.common.positiveDialogButton
                     ),
                     onClick = onSignInButtonClick
                 ) {
@@ -61,7 +61,7 @@ fun SigningTypeChoosingView(
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = MainTheme.colors.commonColors.positiveDialogButton
+                        backgroundColor = MainTheme.colors.common.positiveDialogButton
                     ),
                     onClick = onSignUpButtonClick
                 ) {

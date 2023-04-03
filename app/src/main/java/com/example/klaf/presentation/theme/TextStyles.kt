@@ -41,72 +41,72 @@ val Button = TextStyle(
 )
 
 val DarkEvenDeckItemNameTextStyle = MainTextStyle.copy(
-    color = DarkMainPalettes.evenDeckItemName,
+    color = DarkMainPalettes.deckListScreen.evenDeckItemName,
     fontSize = CommonDimension.deckItemDeckName,
     fontStyle = FontStyle.Italic,
 )
 
 val DarkOddDeckItemNameTextStyle = MainTextStyle.copy(
-    color = DarkMainPalettes.oddDeckItemName,
+    color = DarkMainPalettes.deckListScreen.oddDeckItemName,
     fontSize = CommonDimension.deckItemDeckName,
     fontStyle = FontStyle.Italic,
 )
 
 val LightEvenDeckItemNameTextStyle = MainTextStyle.copy(
-    color = LightMainPalettes.evenDeckItemName,
+    color = LightMainPalettes.deckListScreen.evenDeckItemName,
     fontSize = CommonDimension.deckItemDeckName,
     fontStyle = FontStyle.Italic,
 )
 
 val LightOddDeckItemNameTextStyle = MainTextStyle.copy(
-    color = LightMainPalettes.oddDeckItemName,
+    color = LightMainPalettes.deckListScreen.oddDeckItemName,
     fontSize = CommonDimension.deckItemDeckName,
     fontStyle = FontStyle.Italic,
 )
 
 val DarkDeckItemScheduledDateTextStyle = MainTextStyle.copy(
-    color = DarkMainPalettes.scheduledDate,
+    color = DarkMainPalettes.deckListScreen.scheduledDate,
     fontStyle = FontStyle.Italic,
 )
 
 val LightDeckItemScheduledDateTextStyle = MainTextStyle.copy(
-    color = LightMainPalettes.scheduledDate,
+    color = LightMainPalettes.deckListScreen.scheduledDate,
     fontStyle = FontStyle.Italic,
 )
 
 val DarkDeckItemOverdueScheduledDateTextStyle = MainTextStyle.copy(
-    color = DarkMainPalettes.overdueScheduledDate,
+    color = DarkMainPalettes.deckListScreen.overdueScheduledDate,
     fontStyle = FontStyle.Italic,
 )
 
 val LightDeckItemOverdueScheduledDateTextStyle = MainTextStyle.copy(
-    color = LightMainPalettes.overdueScheduledDate,
+    color = LightMainPalettes.deckListScreen.overdueScheduledDate,
     fontStyle = FontStyle.Italic,
 )
 
 val DarkDeckItemRepetitionQuantitySpanStyle = MainSpanStyle.copy(
-    color = DarkMainPalettes.deckItemRepetitionQuantity
+    color = DarkMainPalettes.deckListScreen.deckItemRepetitionQuantity
 )
 
 val LightDeckItemRepetitionQuantitySpanStyle = MainSpanStyle.copy(
-    color = LightMainPalettes.deckItemRepetitionQuantity
+    color = LightMainPalettes.deckListScreen.deckItemRepetitionQuantity
 )
 
 val DarkDeckItemCardQuantityTextStyle = MainSpanStyle.copy(
-    color = DarkMainPalettes.deckItemCardQuantity,
+    color = DarkMainPalettes.deckListScreen.deckItemCardQuantity,
 )
 
 val LightDeckItemCardQuantityTextStyle = MainSpanStyle.copy(
-    color = LightMainPalettes.deckItemCardQuantity,
+    color = LightMainPalettes.deckListScreen.deckItemCardQuantity,
 )
 
 val DarkDeckItemPointerTextStyle = MainSpanStyle.copy(
-    color = DarkMainPalettes.deckItemPointer,
+    color = DarkMainPalettes.deckListScreen.deckItemPointer,
     fontSize = CommonDimension.deckItemPointer
 )
 
 val LightDeckItemPointerTextStyle = MainSpanStyle.copy(
-    color = LightMainPalettes.deckItemPointer,
+    color = LightMainPalettes.deckListScreen.deckItemPointer,
     fontSize = CommonDimension.deckItemPointer
 )
 
@@ -130,25 +130,25 @@ val CardPointerValueTextStyle = MainSpanStyle.copy(
 )
 
 val LightFrondSideOrderPointer = MainTextStyle.copy(
-    color = LightMainPalettes.deckRepetitionScreenColors.frontSideOrderPointer,
+    color = LightMainPalettes.deckRepetitionScreen.frontSideOrderPointer,
     fontWeight = FontWeight.Bold,
     fontStyle = FontStyle.Italic
 )
 
 val LightBackSideOrderPointer = MainTextStyle.copy(
-    color = LightMainPalettes.deckRepetitionScreenColors.backSideOrderPointer,
+    color = LightMainPalettes.deckRepetitionScreen.backSideOrderPointer,
     fontWeight = FontWeight.Bold,
     fontStyle = FontStyle.Italic
 )
 
 val DarkFrondSideOrderPointer = MainTextStyle.copy(
-    color = DarkMainPalettes.deckRepetitionScreenColors.frontSideOrderPointer,
+    color = DarkMainPalettes.deckRepetitionScreen.frontSideOrderPointer,
     fontWeight = FontWeight.Bold,
     fontStyle = FontStyle.Italic
 )
 
 val DarkBackSideOrderPointer = MainTextStyle.copy(
-    color = DarkMainPalettes.deckRepetitionScreenColors.backSideOrderPointer,
+    color = DarkMainPalettes.deckRepetitionScreen.backSideOrderPointer,
     fontWeight = FontWeight.Bold,
     fontStyle = FontStyle.Italic
 )
@@ -162,28 +162,28 @@ val LightFrontSideCardWordTextStyle = MainTextStyle.copy(
     fontSize = CommonDimension.cardWordTextSize,
     fontStyle = FontStyle.Italic,
     fontWeight = FontWeight.Bold,
-    color = LightMainPalettes.deckRepetitionScreenColors.frontSideCardWord,
+    color = LightMainPalettes.deckRepetitionScreen.frontSideCardWord,
 )
 
 val DarkFrontSideCardWordTextStyle = MainTextStyle.copy(
     fontSize = CommonDimension.cardWordTextSize,
     fontStyle = FontStyle.Italic,
     fontWeight = FontWeight.Bold,
-    color = DarkMainPalettes.deckRepetitionScreenColors.frontSideCardWord,
+    color = DarkMainPalettes.deckRepetitionScreen.frontSideCardWord,
 )
 
 val LightBackSideCardWordTextStyle = MainTextStyle.copy(
     fontSize = CommonDimension.cardWordTextSize,
     fontStyle = FontStyle.Italic,
     fontWeight = FontWeight.Bold,
-    color = LightMainPalettes.deckRepetitionScreenColors.backSideCardWord,
+    color = LightMainPalettes.deckRepetitionScreen.backSideCardWord,
 )
 
 val DarkBackSideCardWordTextStyle = MainTextStyle.copy(
     fontSize = CommonDimension.cardWordTextSize,
     fontStyle = FontStyle.Italic,
     fontWeight = FontWeight.Bold,
-    color = DarkMainPalettes.deckRepetitionScreenColors.backSideCardWord,
+    color = DarkMainPalettes.deckRepetitionScreen.backSideCardWord,
 )
 
 
@@ -192,7 +192,8 @@ val IpaPromptsTextStyle = MainTextStyle.copy(
     fontStyle = FontStyle.Italic
 )
 
-private val ViewingCardTextStyle = MainTextStyle.copy(fontSize = CommonDimension.viewingCardContentTextSize)
+private val ViewingCardTextStyle =
+    MainTextStyle.copy(fontSize = CommonDimension.viewingCardContentTextSize)
 
 val CommonViewingCardDeckNameTextStyle = MainTextStyle.copy(
     fontSize = CommonDimension.viewingCardDeckNameTextSize,
@@ -256,12 +257,12 @@ val CannonCardTransferringScreenTextStyles = CardTransferringScreenTextStyles(
 )
 
 val LightForeignWordAutocompleteSpanStyle = MainSpanStyle.copy(
-    color = LightMainPalettes.cardManagementViewColors.foreignWord,
+    color = LightMainPalettes.cardManagementView.foreignWord,
     fontWeight = FontWeight.ExtraBold
 )
 
 val DarkForeignWordAutocompleteSpanStyle = MainSpanStyle.copy(
-    color = DarkMainPalettes.cardManagementViewColors.foreignWord,
+    color = DarkMainPalettes.cardManagementView.foreignWord,
     fontWeight = FontWeight.ExtraBold
 )
 

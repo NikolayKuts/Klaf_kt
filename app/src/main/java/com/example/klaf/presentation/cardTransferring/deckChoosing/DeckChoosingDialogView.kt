@@ -86,7 +86,7 @@ private fun ChosenDeck(
             .clickable(onClick = onClick)
             .border(
                 width = 2.dp,
-                color = MainTheme.colors.cardTransferringScreenColors.chosenDeckBoxBorder,
+                color = MainTheme.colors.cardTransferringScreen.chosenDeckBoxBorder,
                 shape = RoundedCornerShape(size = 4.dp)
             )
             .padding(8.dp),
