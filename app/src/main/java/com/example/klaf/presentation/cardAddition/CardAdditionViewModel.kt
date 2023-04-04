@@ -51,8 +51,7 @@ class CardAdditionViewModel @AssistedInject constructor(
         )
     )
 
-    override val autocompleteState: MutableStateFlow<AutocompleteState> =
-        MutableStateFlow(value = AutocompleteState())
+    override val autocompleteState = MutableStateFlow(value = AutocompleteState())
 
     private val letterInfosState = MutableStateFlow(value = cardAdditionState.value.letterInfos)
     private val nativeWordState = MutableStateFlow(value = cardAdditionState.value.nativeWord)
