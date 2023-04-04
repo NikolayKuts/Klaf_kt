@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -59,60 +60,76 @@ fun CardManagementView(
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
-    Column(
+    val local = LocalDensity.current
+    var parentHeightPx by rememberAsMutableStateOf(value = 0F)
+
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .noRippleClickable { onDismissRequest() }
-            .padding(32.dp)
+            .padding(start = 32.dp, end = 32.dp)
+            .onSizeChanged { parentHeightPx = it.height.toFloat() }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.3F),
-        ) {
-            DeckInfo(name = deckName, cardQuantity = cardQuantity)
+        item { Spacer(modifier = Modifier.height(16.dp)) }
+        item { DeckInfo(name = deckName, cardQuantity = cardQuantity) }
+        item { Spacer(modifier = Modifier.fillParentMaxHeight(0.05F)) }
+        item {
             ForeignWordLettersSelector(
                 letterInfos = letterInfos,
                 onLetterClick = onLetterClick,
             )
         }
+        item { Spacer(modifier = Modifier.fillParentMaxHeight(0.05F)) }
+        item {
+            val freeHeightPx = local.run { parentHeightPx * 0.7F }
+            val minContentHeightPx = local.run { 300.dp.toPx() }
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            CardManagementFields(
-                modifier = Modifier.align(alignment = Alignment.TopCenter),
-                nativeWord = nativeWord,
-                foreignWord = foreignWord,
-                ipaHolders = ipaHolders,
-                autocompleteState = autocompleteState,
-                onNativeWordChange = onNativeWordChange,
-                onForeignWordChange = onForeignWordChange,
-                onIpaChange = onIpaChange,
-                onPronounceIconClick = onPronounceIconClick,
-                onAutocompleteItemClick = onAutocompleteItemClick
-            )
+            val heightPx = if (freeHeightPx > 0F && freeHeightPx < minContentHeightPx) {
+                minContentHeightPx
+            } else {
+                freeHeightPx
+            }
 
-            RoundButton(
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp, bottom = 16.dp),
-                background = MainTheme.colors.common.positiveDialogButton,
-                iconId = R.drawable.ic_confirmation_24,
-                onClick = onConfirmClick
-            )
+                    .fillParentMaxWidth()
+                    .height(local.run { heightPx.toDp() })
+            ) {
+                CardManagementFields(
+                    modifier = Modifier.align(alignment = Alignment.TopCenter),
+                    nativeWord = nativeWord,
+                    foreignWord = foreignWord,
+                    ipaHolders = ipaHolders,
+                    autocompleteState = autocompleteState,
+                    onNativeWordChange = onNativeWordChange,
+                    onForeignWordChange = onForeignWordChange,
+                    onIpaChange = onIpaChange,
+                    onPronounceIconClick = onPronounceIconClick,
+                    onAutocompleteItemClick = onAutocompleteItemClick
+                )
+
+                RoundButton(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 16.dp, bottom = 16.dp),
+                    background = MainTheme.colors.common.positiveDialogButton,
+                    iconId = R.drawable.ic_confirmation_24,
+                    onClick = onConfirmClick
+                )
+            }
         }
     }
 }
 
-
 @Composable
-fun ColumnScope.ForeignWordLettersSelector(
+fun ForeignWordLettersSelector(
     letterInfos: List<LetterInfo>,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
 ) {
     LazyRow(
         state = rememberLazyListState(),
         modifier = Modifier
-            .weight(0.5F)
+            .defaultMinSize(minHeight = 50.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
@@ -152,12 +169,8 @@ fun LazyItemScope.LetterItem(
 }
 
 @Composable
-fun ColumnScope.DeckInfo(name: String, cardQuantity: Int) {
-    Column(
-        modifier = Modifier
-            .weight(0.5F)
-            .fillMaxWidth(),
-    ) {
+fun DeckInfo(name: String, cardQuantity: Int) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Pointer(
             pointerTextId = R.string.pointer_deck,
             valueText = name
@@ -228,49 +241,6 @@ fun CardManagementFields(
         IpaSection(
             ipaHolders = ipaHolders,
             onIpaChange = onIpaChange
-        )
-    }
-}
-
-
-@Composable
-fun CardManagementFields(
-    nativeWord: String,
-    foreignWord: String,
-    ipaTemplate: String,
-    autocompleteState: AutocompleteState,
-    onNativeWordChange: (String) -> Unit,
-    onForeignWordChange: (String) -> Unit,
-    onIpaChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    onPronounceIconClick: () -> Unit,
-    onAutocompleteItemClick: (chosenWord: String) -> Unit,
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        WordTextField(
-            value = nativeWord,
-            labelTextId = R.string.label_native_word,
-            textColor = MainTheme.colors.cardManagementView.nativeWord,
-            onValueChange = onNativeWordChange,
-        )
-
-        DropDownAutocompleteFiled(
-            expanded = autocompleteState.isActive && autocompleteState.autocomplete.isNotEmpty(),
-            typedWord = foreignWord,
-            onTypedWordChange = onForeignWordChange,
-            onPronounceIconClick = onPronounceIconClick,
-            autocompleteState = autocompleteState,
-            onAutocompleteItemClick = onAutocompleteItemClick
-        )
-
-        WordTextField(
-            value = ipaTemplate,
-            labelTextId = R.string.label_ipa,
-            textColor = MainTheme.colors.cardManagementView.ipa,
-            onValueChange = onIpaChange
         )
     }
 }
@@ -633,8 +603,16 @@ fun CustomCheckBox(
 }
 
 @Composable
-fun AdaptiveBox(content: @Composable LazyItemScope.() -> Unit) {
-    LazyColumn {
+fun AdaptiveBox(
+    modifier: Modifier = Modifier,
+    content: @Composable LazyItemScope.() -> Unit,
+) {
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color(0xFF6E9EB4)),
+        verticalArrangement = Arrangement.Center,
+    ) {
         item(content = content)
     }
 }
