@@ -35,6 +35,12 @@ class CardAdditionViewModel @AssistedInject constructor(
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
 ) : BaseCardAdditionViewModel() {
 
+    companion object {
+
+        const val MAX_IPA_LENGTH = 10
+        const val MAX_WORD_LENGTH = 30
+    }
+
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
@@ -150,21 +156,24 @@ class CardAdditionViewModel @AssistedInject constructor(
     }
 
     private fun updateNativeWord(word: String) {
-        nativeWordState.value = word
+        if (word.length < MAX_WORD_LENGTH) {
+            nativeWordState.value = word
+        }
     }
 
     private fun updateDataOnForeignWordChanged(word: String) {
-        val clearedWord = word.trim()
-        letterInfosState.value = clearedWord.generateLetterInfos()
-        ipaHoldersState.value = emptyList()
+        if (word.length < MAX_WORD_LENGTH) {
+            letterInfosState.value = word.generateLetterInfos()
+            ipaHoldersState.value = emptyList()
 
-        autocompleteFetchingJob?.cancel()
-        autocompleteFetchingJob = viewModelScope.launch(Dispatchers.IO) {
-            autocompleteState.value = AutocompleteState(
-                prefix = clearedWord,
-                autocomplete = fetchWordAutocomplete(prefix = clearedWord),
-                isActive = true,
-            )
+            autocompleteFetchingJob?.cancel()
+            autocompleteFetchingJob = viewModelScope.launch(Dispatchers.IO) {
+                autocompleteState.value = AutocompleteState(
+                    prefix = word,
+                    autocomplete = fetchWordAutocomplete(prefix = word),
+                    isActive = true,
+                )
+            }
         }
     }
 
@@ -175,9 +184,11 @@ class CardAdditionViewModel @AssistedInject constructor(
     }
 
     private fun updateIpa(letterGroupIndex: Int, ipa: String) {
-        ipaHoldersState.update { ipaHolders ->
-            ipaHolders.updatedAt(index = letterGroupIndex) { oldValue ->
-                oldValue.copy(ipa = ipa.trim())
+        if (ipa.length < MAX_IPA_LENGTH) {
+            ipaHoldersState.update { ipaHolders ->
+                ipaHolders.updatedAt(index = letterGroupIndex) { oldValue ->
+                    oldValue.copy(ipa = ipa.trim())
+                }
             }
         }
     }
