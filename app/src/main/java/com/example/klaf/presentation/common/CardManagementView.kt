@@ -21,9 +21,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.layout.*
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -42,7 +41,8 @@ import com.example.klaf.R
 import com.example.klaf.presentation.cardAddition.AutocompleteState
 import com.example.klaf.presentation.theme.MainTheme
 
-private const val CARD_MANAGMENT_CONTAINER_WIDTH = 500
+private const val CARD_MANAGEMENT_CONTAINER_WIDTH = 500
+private const val ROOT_LAYOUT_BOTTOM_PADDING = 16
 
 @Composable
 fun CardManagementView(
@@ -87,13 +87,16 @@ fun CardManagementView(
         }
         item { Spacer(modifier = Modifier.fillParentMaxHeight(0.05F)) }
         item {
-            val freeHeightPx = density.run { parentHeightPx * 0.7F }
-            val minContentHeightPx = density.run { 300.dp.toPx() }
+            val freeCardManagementContentHeightPx = density.run { parentHeightPx * 0.7F }
+            val minCardManagementContentHeightPx = density.run { 300.dp.toPx() }
 
-            val heightPx = if (freeHeightPx > 0F && freeHeightPx < minContentHeightPx) {
-                minContentHeightPx
+            val heightPx = if (
+                freeCardManagementContentHeightPx > 0F
+                && freeCardManagementContentHeightPx < minCardManagementContentHeightPx
+            ) {
+                minCardManagementContentHeightPx
             } else {
-                freeHeightPx
+                freeCardManagementContentHeightPx
             }
 
             Box(
@@ -112,13 +115,13 @@ fun CardManagementView(
                     onForeignWordChange = onForeignWordChange,
                     onIpaChange = onIpaChange,
                     onPronounceIconClick = onPronounceIconClick,
-                    onAutocompleteItemClick = onAutocompleteItemClick
+                    onAutocompleteItemClick = onAutocompleteItemClick,
                 )
 
                 RoundButton(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(end = 16.dp, bottom = 16.dp),
+                        .padding(end = 16.dp, bottom = ROOT_LAYOUT_BOTTOM_PADDING.dp),
                     background = MainTheme.colors.common.positiveDialogButton,
                     iconId = R.drawable.ic_confirmation_24,
                     onClick = onConfirmClick
@@ -213,7 +216,7 @@ fun CardManagementFields(
 ) {
     Column(
         modifier = modifier
-            .width(CARD_MANAGMENT_CONTAINER_WIDTH.dp)
+            .width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp)
             .startEndPadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -230,7 +233,7 @@ fun CardManagementFields(
             onTypedWordChange = onForeignWordChange,
             onPronounceIconClick = onPronounceIconClick,
             autocompleteState = autocompleteState,
-            onAutocompleteItemClick = onAutocompleteItemClick
+            onAutocompleteItemClick = onAutocompleteItemClick,
         )
 
         IpaSection(
@@ -250,7 +253,7 @@ private fun WordTextField(
     trailingIcon: @Composable (() -> Unit)? = null,
 ) {
     TextField(
-        modifier = modifier.width(CARD_MANAGMENT_CONTAINER_WIDTH.dp),
+        modifier = modifier.width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp),
         value = value,
         onValueChange = onValueChange,
         label = { Text(text = stringResource(id = labelTextId)) },
@@ -271,14 +274,41 @@ fun DropDownAutocompleteFiled(
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
-    var sizeTopBar by remember { mutableStateOf(IntSize.Zero) }
+    val density = LocalDensity.current
+    val screenHeightDp = LocalConfiguration.current.screenHeightDp
     var textFieldPosition by remember { mutableStateOf(Offset.Zero) }
+    var textFieldSize by remember { mutableStateOf(IntSize.Zero) }
+    var itemsHeightDp by rememberAsMutableStateOf(value = 10.dp)
+    var popupContentContainerHeight by rememberAsMutableStateOf(value = 0.dp)
+    val popupMenuPadding = 6.dp
+
+    LaunchedEffect(
+        autocompleteState,
+        textFieldPosition,
+        textFieldSize,
+        itemsHeightDp
+    ) {
+        val popupMenuPosition = density.run {
+            textFieldPosition.y.toDp() + textFieldSize.height.toDp()
+        }
+        val freeContentHeight =
+            screenHeightDp.dp - ROOT_LAYOUT_BOTTOM_PADDING.dp - popupMenuPosition - 16.dp
+        val neededHeight = itemsHeightDp * autocompleteState.autocomplete.size
+
+        popupContentContainerHeight = if (neededHeight < freeContentHeight) {
+            neededHeight
+        } else {
+            freeContentHeight
+        } + popupMenuPadding * 2
+
+    }
 
     Box(
-        modifier = Modifier.onGloballyPositioned { coordinates ->
-            sizeTopBar = coordinates.size
-            textFieldPosition = coordinates.positionInWindow()
-        }
+        modifier = Modifier
+            .onGloballyPositioned { coordinates ->
+                textFieldPosition = coordinates.positionInRoot()
+                textFieldSize = coordinates.size
+            }
     ) {
         WordTextFieldForPopupMenu(
             value = typedWord,
@@ -298,23 +328,32 @@ fun DropDownAutocompleteFiled(
         )
 
         expanded.ifTrue {
-            Popup(offset = IntOffset(x = 0, y = sizeTopBar.height)) {
+            Popup(offset = IntOffset(x = 0, y = textFieldSize.height)) {
                 val menuShape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
 
-                Column(
+                LazyColumn(
                     modifier = Modifier
-                        .width(LocalDensity.current.run { sizeTopBar.width.toDp() })
+                        .height(popupContentContainerHeight)
+                        .width(density.run { textFieldSize.width.toDp() })
                         .shadow(elevation = 4.dp, shape = menuShape)
                         .clip(shape = menuShape)
                         .background(MainTheme.colors.cardManagementView.autocompleteMenuBackground)
-                        .padding(start = 16.dp, top = 6.dp, end = 16.dp, bottom = 6.dp)
+                        .padding(start = 16.dp,
+                            top = popupMenuPadding,
+                            end = 16.dp,
+                            bottom = popupMenuPadding)
                 ) {
                     autocompleteState.autocomplete.onEach { word ->
-                        AutocompleteWordItem(
-                            word = word.value,
-                            prefix = autocompleteState.prefix,
-                            onAutocompleteItemClick = onAutocompleteItemClick
-                        )
+                        item {
+                            AutocompleteWordItem(
+                                modifier = Modifier.onSizeChanged { intSize ->
+                                    itemsHeightDp = density.run { intSize.height.toDp() }
+                                },
+                                word = word.value,
+                                prefix = autocompleteState.prefix,
+                                onAutocompleteItemClick = onAutocompleteItemClick
+                            )
+                        }
                     }
                 }
             }
@@ -340,7 +379,7 @@ private fun WordTextFieldForPopupMenu(
     }
 
     TextField(
-        modifier = modifier.width(CARD_MANAGMENT_CONTAINER_WIDTH.dp),
+        modifier = modifier.width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp),
         value = textFieldValue,
         onValueChange = {
             if (it.text != value) {
@@ -362,9 +401,10 @@ private fun AutocompleteWordItem(
     word: String,
     prefix: String,
     onAutocompleteItemClick: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Text(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable { onAutocompleteItemClick(word) },
         text = buildAnnotatedString {
