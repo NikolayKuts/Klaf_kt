@@ -1,6 +1,7 @@
 package com.example.klaf.presentation.cardAddition
 
 import androidx.lifecycle.ViewModel
+import com.example.domain.common.LoadingState
 import com.example.domain.entities.Deck
 import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.presentation.common.EventMessageSource
@@ -13,6 +14,7 @@ abstract class BaseCardAdditionViewModel : ViewModel(), EventMessageSource {
     abstract val cardAdditionState: StateFlow<CardAdditionState>
     abstract val audioPlayer: CardAudioPlayer
     abstract val autocompleteState: StateFlow<AutocompleteState>
+    abstract val pronunciationLoadingState: StateFlow<LoadingState<Unit>>
 
     abstract  fun sendEvent(event: CardAdditionEvent)
 }

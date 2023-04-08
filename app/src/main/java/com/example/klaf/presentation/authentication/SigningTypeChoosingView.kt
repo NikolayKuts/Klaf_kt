@@ -36,7 +36,7 @@ fun SigningTypeChoosingView(
                     .clip(shape = RoundedCornerShape(50.dp))
                     .background(MainTheme.colors.dataSynchronizationView.labelBackground)
                     .padding(10.dp),
-                painter = painterResource(id = R.drawable.color_10),
+                painter = painterResource(id = R.drawable.ic_app_labale),
                 contentDescription = null,
                 colorFilter = ColorFilter.lighting(filterColor, filterColor)
             )

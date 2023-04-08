@@ -150,7 +150,7 @@ private fun getConstraints(): ConstraintSet = ConstraintSet {
 }
 
 @Composable
-fun AuthenticationView(
+private fun AuthenticationView(
     typingState: AuthenticationTypingState,
     actionLabelText: String,
     isLoading: Boolean,
@@ -166,7 +166,7 @@ fun AuthenticationView(
         modifier = Modifier
             .layoutId(LABEL_ID)
             .size(70.dp),
-        painter = painterResource(id = R.drawable.color_10),
+        painter = painterResource(id = R.drawable.ic_app_labale),
         contentDescription = null,
         colorFilter = ColorFilter.lighting(filterColor, filterColor),
         alignment = BiasAlignment(horizontalBias = 0F, verticalBias = 0.2F)
