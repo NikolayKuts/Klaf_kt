@@ -26,7 +26,7 @@ fun MainTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable (
         LocaleCustomDimensions provides dimensions,
     ) {
         MaterialTheme(
-            colors = colors.materialColors,
+            colors = colors.material,
             typography = typographies.materialTypographies,
             shapes = shapes,
             content = content

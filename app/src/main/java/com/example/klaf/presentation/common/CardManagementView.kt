@@ -9,10 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -330,6 +327,7 @@ fun DropDownAutocompleteFiled(
         expanded.ifTrue {
             Popup(offset = IntOffset(x = 0, y = textFieldSize.height)) {
                 val menuShape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
+                val lazySate = rememberLazyListState()
 
                 LazyColumn(
                     modifier = Modifier
@@ -338,10 +336,17 @@ fun DropDownAutocompleteFiled(
                         .shadow(elevation = 4.dp, shape = menuShape)
                         .clip(shape = menuShape)
                         .background(MainTheme.colors.cardManagementView.autocompleteMenuBackground)
-                        .padding(start = 16.dp,
+                        .padding(
+                            start = 16.dp,
                             top = popupMenuPadding,
                             end = 16.dp,
-                            bottom = popupMenuPadding)
+                            bottom = popupMenuPadding,
+                        )
+                        .verticalScrollbar(
+                            state = lazySate,
+                            color = MainTheme.colors.material.primary,
+                        ),
+                    state = lazySate
                 ) {
                     autocompleteState.autocomplete.onEach { word ->
                         item {
@@ -478,8 +483,8 @@ fun IpaSection(
                     cursorBrush = Brush.verticalGradient(
                         0.00f to Color.Transparent,
                         0.15f to Color.Transparent,
-                        0.15f to MainTheme.colors.materialColors.onPrimary,
-                        0.90f to MainTheme.colors.materialColors.onPrimary,
+                        0.15f to MainTheme.colors.material.onPrimary,
+                        0.90f to MainTheme.colors.material.onPrimary,
                         0.90f to Color.Transparent,
                         1.00f to Color.Transparent,
                     ),
