@@ -243,7 +243,7 @@ fun Modifier.verticalScrollbar(
     enterDuration: Int = 150,
     exitDuration: Int = 500,
     minAlpha: Float = 0f,
-    maxAlpha: Float = 1f,
+    maxAlpha: Float = 0.5f,
     alwaysVisible: Boolean = false
 ): Modifier = composed {
     val targetAlpha = if (alwaysVisible || state.isScrollInProgress) maxAlpha else minAlpha
