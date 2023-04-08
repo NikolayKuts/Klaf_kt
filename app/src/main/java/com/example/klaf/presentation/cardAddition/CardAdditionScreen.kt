@@ -15,6 +15,7 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
     val nativeWord = cardState.nativeWord
     val ipaHolders = cardState.ipaHolders
     val autocompleteState by viewModel.autocompleteState.collectAsState()
+    val loadingState by viewModel.pronunciationLoadingState.collectAsState()
 
     deck.value?.let { receivedDeck ->
         CardManagementView(
@@ -25,6 +26,7 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
             foreignWord = foreignWord,
             ipaHolders = ipaHolders,
             autocompleteState = autocompleteState,
+            loadingState = loadingState,
             onDismissRequest = { viewModel.sendEvent(event = CloseAutocompleteMenu) },
             onLetterClick = { index, letterInfo ->
                 viewModel.sendEvent(

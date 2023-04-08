@@ -6,9 +6,12 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
+import com.example.domain.common.LoadingState
 import com.example.domain.common.ifNull
 import com.example.domain.common.ifTrue
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
@@ -20,9 +23,13 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
         CoroutineScope(context = Dispatchers.IO + SupervisorJob())
     private var preparingJob: Job? = null
 
+    private val _loadingState = MutableStateFlow<LoadingState<Unit>>(value = LoadingState.Non)
+    val loadingState = _loadingState.asStateFlow()
+
     companion object {
 
         private const val AUDIO_URI_TEMPLATE = "https://wooordhunt.ru/data/sound/sow/us/%s.mp3"
+        private const val LOADING_TIME_INTERVAL = 6000L
     }
 
     override fun onCreate(owner: LifecycleOwner) {
@@ -60,18 +67,29 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
 
     fun preparePronunciation(word: String) {
         preparingJob?.cancel()
-        preparingJob = coroutineScope?.launchWithState {
-            mediaPlayer?.apply {
-                preparingJob?.ensureActive()
-                wordForPreparing = word
-                isPrepared = false
 
-                reset()
-                setDataSource(word.buildAudioUri())
-                prepare()
+        if (word.isNotEmpty()) {
+            preparingJob = coroutineScope?.launchWithState {
+                mediaPlayer?.apply {
+                    launch {
+                        delay(LOADING_TIME_INTERVAL)
+                        _loadingState.value = LoadingState.Non
+                    }
+
+                    _loadingState.value = LoadingState.Loading
+                    preparingJob?.ensureActive()
+                    wordForPreparing = word
+                    isPrepared = false
+
+                    reset()
+                    setDataSource(word.buildAudioUri())
+                    prepare()
+                }
+            }?.onException { _, _ ->
+                mediaPlayer?.reset()
             }
-        }?.onException { _, _ ->
-            mediaPlayer?.reset()
+        } else {
+            _loadingState.value = LoadingState.Non
         }
     }
 
@@ -86,7 +104,11 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
                 .setUsage(AudioAttributes.USAGE_MEDIA)
                 .build()
         )
-        setOnPreparedListener { isPrepared = true }
+        setOnPreparedListener {
+            isPrepared = true
+            preparingJob?.cancel()
+            _loadingState.value = LoadingState.Success(Unit)
+        }
     }
 
     private fun String.buildAudioUri(): String {

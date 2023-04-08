@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
@@ -32,6 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Popup
+import com.example.domain.common.LoadingState
 import com.example.domain.common.ifTrue
 import com.example.domain.ipa.IpaHolder
 import com.example.domain.ipa.LetterInfo
@@ -51,6 +51,7 @@ fun CardManagementView(
     foreignWord: String,
     ipaHolders: List<IpaHolder>,
     autocompleteState: AutocompleteState,
+    loadingState: LoadingState<Unit>,
     onDismissRequest: () -> Unit,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
     onNativeWordChange: (String) -> Unit,
@@ -85,7 +86,7 @@ fun CardManagementView(
         }
         item { Spacer(modifier = Modifier.fillParentMaxHeight(0.05F)) }
         item {
-            val freeCardManagementContentHeightPx = density.run { parentHeightPx * 0.7F }
+            val freeCardManagementContentHeightPx = density.run { parentHeightPx * 0.68F }
             val minCardManagementContentHeightPx = density.run { 300.dp.toPx() }
 
             val heightPx = if (
@@ -109,6 +110,7 @@ fun CardManagementView(
                     foreignWord = foreignWord,
                     ipaHolders = ipaHolders,
                     autocompleteState = autocompleteState,
+                    loadingState = loadingState,
                     onNativeWordChange = onNativeWordChange,
                     onForeignWordChange = onForeignWordChange,
                     onIpaChange = onIpaChange,
@@ -205,17 +207,16 @@ fun CardManagementFields(
     foreignWord: String,
     ipaHolders: List<IpaHolder>,
     autocompleteState: AutocompleteState,
+    loadingState: LoadingState<Unit>,
+    modifier: Modifier = Modifier,
     onNativeWordChange: (String) -> Unit,
     onForeignWordChange: (String) -> Unit,
     onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
-    modifier: Modifier = Modifier,
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
     Column(
-        modifier = modifier
-            .width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp)
-            .startEndPadding(),
+        modifier = modifier.width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         WordTextField(
@@ -228,9 +229,10 @@ fun CardManagementFields(
         DropDownAutocompleteFiled(
             expanded = autocompleteState.isActive && autocompleteState.autocomplete.isNotEmpty(),
             typedWord = foreignWord,
+            autocompleteState = autocompleteState,
+            loadingState = loadingState,
             onTypedWordChange = onForeignWordChange,
             onPronounceIconClick = onPronounceIconClick,
-            autocompleteState = autocompleteState,
             onAutocompleteItemClick = onAutocompleteItemClick,
         )
 
@@ -267,8 +269,9 @@ private fun WordTextField(
 fun DropDownAutocompleteFiled(
     expanded: Boolean,
     typedWord: String,
-    onTypedWordChange: (String) -> Unit,
     autocompleteState: AutocompleteState,
+    loadingState: LoadingState<Unit>,
+    onTypedWordChange: (String) -> Unit,
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
@@ -314,13 +317,23 @@ fun DropDownAutocompleteFiled(
             textColor = MainTheme.colors.cardManagementView.foreignWord,
             onValueChange = onTypedWordChange,
             trailingIcon = {
+                val (iconColor: Color, clickable: Boolean) = when (loadingState) {
+                    is LoadingState.Success -> MainTheme.colors.common.positiveDialogButton to true
+                    else -> Color.Unspecified to false
+                }
+
+                if (loadingState == LoadingState.Loading) {
+                    CircularProgressIndicator(modifier = Modifier.size(35.dp))
+                }
+
                 Icon(
                     modifier = Modifier
                         .clip(shape = RoundedCornerShape(50.dp))
-                        .clickable { onPronounceIconClick() }
+                        .clickable(enabled = clickable) { onPronounceIconClick() }
                         .padding(5.dp),
                     painter = painterResource(id = R.drawable.ic_baseline_volume_up_24),
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = iconColor,
                 )
             }
         )

@@ -3,7 +3,9 @@ package com.example.klaf.presentation.cardAddition
 import androidx.lifecycle.viewModelScope
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
+import com.example.domain.common.LoadingState
 import com.example.domain.common.generateLetterInfos
+import com.example.domain.common.ifTrue
 import com.example.domain.common.updatedAt
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
@@ -18,6 +20,7 @@ import com.example.klaf.R
 import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.presentation.cardAddition.CardAdditionEvent.*
 import com.example.klaf.presentation.common.EventMessage
+import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.tryEmit
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -59,28 +62,18 @@ class CardAdditionViewModel @AssistedInject constructor(
 
     override val autocompleteState = MutableStateFlow(value = AutocompleteState())
 
-    private val letterInfosState = MutableStateFlow(value = cardAdditionState.value.letterInfos)
+    override val pronunciationLoadingState = audioPlayer.loadingState
+
     private val nativeWordState = MutableStateFlow(value = cardAdditionState.value.nativeWord)
+    private val foreignWordState = MutableStateFlow(value = cardAdditionState.value.foreignWord)
     private val ipaHoldersState = MutableStateFlow(value = cardAdditionState.value.ipaHolders)
+    private val letterInfosState = MutableStateFlow(value = cardAdditionState.value.letterInfos)
 
     private var autocompleteFetchingJob: Job? = null
 
     init {
-        combine(
-            letterInfosState,
-            nativeWordState,
-            ipaHoldersState
-        ) { letterInfos, nativeWord, ipaHolders ->
-            CardAdditionState.Adding(
-                letterInfos = letterInfos,
-                nativeWord = nativeWord,
-                foreignWord = letterInfos.toWord(),
-                ipaHolders = ipaHolders
-            )
-        }.onEach { addingState ->
-            cardAdditionState.value = addingState
-            audioPlayer.preparePronunciation(word = addingState.foreignWord)
-        }.launchIn(viewModelScope)
+        observeCardManagementChanges()
+        observeForeignWordChanges()
     }
 
     override fun sendEvent(event: CardAdditionEvent) {
@@ -110,6 +103,30 @@ class CardAdditionViewModel @AssistedInject constructor(
                 autocompleteState.update { it.copy(isActive = false) }
             }
         }
+    }
+
+    private fun observeCardManagementChanges() {
+        combine(
+            letterInfosState,
+            nativeWordState,
+            ipaHoldersState,
+            foreignWordState,
+        ) { letterInfos, nativeWord, ipaHolders, foreignWord ->
+            CardAdditionState.Adding(
+                letterInfos = letterInfos,
+                nativeWord = nativeWord,
+                foreignWord = foreignWord,
+                ipaHolders = ipaHolders
+            )
+        }.onEach { addingState ->
+            cardAdditionState.value = addingState
+        }.launchIn(viewModelScope)
+    }
+
+    private fun observeForeignWordChanges() {
+        foreignWordState.onEach { foreignWord ->
+            audioPlayer.preparePronunciation(word = foreignWord)
+        }.launchIn(viewModelScope)
     }
 
     private fun addNewCard(
@@ -163,6 +180,7 @@ class CardAdditionViewModel @AssistedInject constructor(
 
     private fun updateDataOnForeignWordChanged(word: String) {
         if (word.length < MAX_WORD_LENGTH) {
+            foreignWordState.value = word
             letterInfosState.value = word.generateLetterInfos()
             ipaHoldersState.value = emptyList()
 
@@ -179,6 +197,7 @@ class CardAdditionViewModel @AssistedInject constructor(
 
     private fun updateDataOnAutocompleteSelected(word: String) {
         letterInfosState.value = word.generateLetterInfos()
+        foreignWordState.value = word
         ipaHoldersState.value = emptyList()
         autocompleteState.value = AutocompleteState()
     }
