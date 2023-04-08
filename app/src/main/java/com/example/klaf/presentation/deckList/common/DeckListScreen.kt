@@ -119,7 +119,7 @@ private fun BoxScope.DecksContentView(
     }
 
     RoundButton(
-        background = MainTheme.colors.materialColors.primary,
+        background = MainTheme.colors.material.primary,
         iconId = R.drawable.ic_add_24,
         onClick = onMainButtonClick,
         modifier = Modifier

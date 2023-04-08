@@ -6,7 +6,7 @@ import androidx.compose.material.lightColors
 import androidx.compose.ui.graphics.Color
 
 val LightMainPalettes = MainColors(
-    materialColors = MaterialColors.Theme.light,
+    material = MaterialColors.Theme.light,
     common = CommonColors.Theme.light,
     deckListScreen = DeckListScreenColors.Theme.light,
     cardManagementView = CardManagementViewColors.Theme.light,
@@ -19,7 +19,7 @@ val LightMainPalettes = MainColors(
 )
 
 val DarkMainPalettes = MainColors(
-    materialColors = MaterialColors.Theme.dark,
+    material = MaterialColors.Theme.dark,
     common = CommonColors.Theme.dark,
     deckListScreen = DeckListScreenColors.Theme.dark,
     cardManagementView = CardManagementViewColors.Theme.dark,
@@ -32,7 +32,7 @@ val DarkMainPalettes = MainColors(
 )
 
 data class MainColors(
-    val materialColors: Colors,
+    val material: Colors,
     val common: CommonColors,
     val deckListScreen: DeckListScreenColors,
     val cardManagementView: CardManagementViewColors,
