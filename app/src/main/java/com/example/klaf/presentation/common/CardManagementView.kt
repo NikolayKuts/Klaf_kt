@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
@@ -438,13 +439,18 @@ fun IpaSection(
     val density = LocalDensity.current
     val chosenLettersWidthPx = parentWidthPx * 0.6F
     val ipaValueWidthPx = parentWidthPx * 0.5F
+    val scrollState = rememberLazyListState()
 
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 16.dp)
-            .onSizeChanged { parentWidthPx = it.width.toFloat() },
-        state = rememberLazyListState(),
+            .onSizeChanged { parentWidthPx = it.width.toFloat() }
+            .verticalScrollbar(
+                state = scrollState,
+                color = MainTheme.colors.material.primary,
+            ),
+        state = scrollState,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         itemsIndexed(items = ipaHolders) { letterGroupIndex, ipaHolder ->
