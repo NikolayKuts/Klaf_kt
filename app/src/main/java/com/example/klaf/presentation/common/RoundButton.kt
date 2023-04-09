@@ -28,8 +28,7 @@ fun RoundButton(
 ) {
     Card(
         shape = RoundedCornerShape(DIALOG_BUTTON_SIZE.dp),
-        modifier = modifier
-            .size(DIALOG_BUTTON_SIZE.dp),
+        modifier = modifier.size(DIALOG_BUTTON_SIZE.dp),
         elevation = elevation,
     ) {
         Icon(

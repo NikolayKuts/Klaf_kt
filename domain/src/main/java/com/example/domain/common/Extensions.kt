@@ -50,7 +50,6 @@ fun CharSequence?.generateLetterInfos(): List<LetterInfo> {
     this ?: return emptyList()
 
     return this.toString()
-        .trim()
         .split("")
         .drop(1)
         .dropLast(1)

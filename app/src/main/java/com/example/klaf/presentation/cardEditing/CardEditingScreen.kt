@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.domain.common.LoadingState
 import com.example.domain.common.generateLetterInfos
 import com.example.domain.common.updatedAt
 import com.example.domain.ipa.LetterInfo
@@ -34,6 +35,7 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                 foreignWord = foreignWordState,
                 ipaHolders = ipaHoldersState,
                 autocompleteState = autocompleteState,
+                loadingState = LoadingState.Non,
                 onDismissRequest = { viewModel.closeAutocompleteMenu() },
                 onLetterClick = { index, letterInfo ->
                     val updatedIsChecked = when (letterInfo.letter) {

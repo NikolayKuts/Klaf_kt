@@ -91,7 +91,7 @@ fun <T> log(
     pointerMessage: String = "",
     tag: String = "app_log",
     pointer: String =
-        if (pointerMessage.isEmpty()) "***********" else "****** $pointerMessage ******",
+        if (pointerMessage.isEmpty()) "------------" else "-------- $pointerMessage ------->",
 ) {
     Log.i(tag, "$pointer $message")
 }

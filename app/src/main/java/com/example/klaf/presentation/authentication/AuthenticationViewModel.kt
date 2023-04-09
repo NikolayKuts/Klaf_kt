@@ -76,6 +76,7 @@ class AuthenticationViewModel @Inject constructor(
                     screenLoadingState.value = loadingState
 
                     when (loadingState) {
+                        LoadingState.Non -> {}
                         LoadingState.Loading -> {}
                         is LoadingState.Error -> handleSigningInError(loadingState)
                         is LoadingState.Success -> {
@@ -106,6 +107,7 @@ class AuthenticationViewModel @Inject constructor(
                     screenLoadingState.value = loadingState
 
                     when (loadingState) {
+                        LoadingState.Non -> {}
                         LoadingState.Loading -> {}
                         is LoadingState.Error -> handleSigningUpError(loadingState = loadingState)
                         is LoadingState.Success -> {
