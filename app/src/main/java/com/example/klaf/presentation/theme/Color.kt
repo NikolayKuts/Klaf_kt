@@ -147,6 +147,8 @@ data class CardManagementViewColors(
     val ipa: Color,
     val ipaCellBackground: Color,
     val autocompleteMenuBackground: Color,
+    val activePronunciationIcon: Color,
+    val inactivePronunciationIcon: Color,
 ) {
 
     object Theme : Themable<CardManagementViewColors> {
@@ -160,6 +162,8 @@ data class CardManagementViewColors(
             ipa = Color(0xFF6EA5AC),
             ipaCellBackground = Color(0xFFFAE1CB),
             autocompleteMenuBackground = Color(0xFFFFFFFF),
+            activePronunciationIcon = Color(0xFF8AAF60),
+            inactivePronunciationIcon = Color(0xF1A7A7A7),
         )
 
         override val dark = CardManagementViewColors(
@@ -171,6 +175,8 @@ data class CardManagementViewColors(
             ipa = Color(0xFFB8ABD1),
             ipaCellBackground = Color(0xFF2B3A46),
             autocompleteMenuBackground = Color(0xFF222222),
+            activePronunciationIcon = Color(0xFF809B62),
+            inactivePronunciationIcon = Color(0xF1474747),
         )
     }
 }

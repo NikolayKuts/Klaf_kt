@@ -40,7 +40,6 @@ import com.example.klaf.presentation.cardAddition.AutocompleteState
 import com.example.klaf.presentation.theme.MainTheme
 
 private const val CARD_MANAGEMENT_CONTAINER_WIDTH = 500
-private const val ROOT_LAYOUT_BOTTOM_PADDING = 16
 
 @Composable
 fun CardManagementView(
@@ -70,58 +69,56 @@ fun CardManagementView(
             .noRippleClickable { onDismissRequest() }
             .onSizeChanged { parentHeightPx = it.height.toFloat() }
     ) {
-        item { Spacer(modifier = Modifier.height(16.dp)) }
         item {
-            DeckInfo(
-                name = deckName,
-                cardQuantity = cardQuantity
-            )
-        }
-        item { Spacer(modifier = Modifier.fillParentMaxHeight(0.1F)) }
-        item {
-            ForeignWordLettersSelector(
-                letterInfos = letterInfos,
-                onLetterClick = onLetterClick,
-            )
-        }
-        item { Spacer(modifier = Modifier.fillParentMaxHeight(0.05F)) }
-        item {
-            val freeCardManagementContentHeightPx = density.run { parentHeightPx * 0.68F }
-            val minCardManagementContentHeightPx = density.run { 300.dp.toPx() }
+            val minCardManagementContentHeightPx = density.run { 450.dp.toPx() }
 
-            val heightPx = if (
-                freeCardManagementContentHeightPx > 0F
-                && freeCardManagementContentHeightPx < minCardManagementContentHeightPx
+            val (contentHeightPx: Float, confirmationButtonPadding: Dp) = if (
+                parentHeightPx > 0F
+                && parentHeightPx < minCardManagementContentHeightPx
             ) {
-                minCardManagementContentHeightPx
+                minCardManagementContentHeightPx to 0.dp
             } else {
-                freeCardManagementContentHeightPx
+                parentHeightPx to 16.dp
             }
 
             Box(
                 modifier = Modifier
-                    .fillParentMaxWidth()
-                    .height(density.run { heightPx.toDp() })
-                    .startEndPadding()
+                    .height(density.run { contentHeightPx.toDp() })
+                    .padding(32.dp)
             ) {
-                CardManagementFields(
-                    modifier = Modifier.align(alignment = Alignment.TopCenter),
-                    nativeWord = nativeWord,
-                    foreignWord = foreignWord,
-                    ipaHolders = ipaHolders,
-                    autocompleteState = autocompleteState,
-                    loadingState = loadingState,
-                    onNativeWordChange = onNativeWordChange,
-                    onForeignWordChange = onForeignWordChange,
-                    onIpaChange = onIpaChange,
-                    onPronounceIconClick = onPronounceIconClick,
-                    onAutocompleteItemClick = onAutocompleteItemClick,
-                )
+                Column(modifier = Modifier.align(Alignment.TopCenter)) {
+                    DeckInfo(name = deckName, cardQuantity = cardQuantity)
+
+                    Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.07f))
+
+                    ForeignWordLettersSelector(
+                        letterInfos = letterInfos,
+                        onLetterClick = onLetterClick,
+                    )
+
+                    Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.12f))
+
+                    CardManagementFields(
+                        nativeWord = nativeWord,
+                        foreignWord = foreignWord,
+                        ipaHolders = ipaHolders,
+                        autocompleteState = autocompleteState,
+                        loadingState = loadingState,
+                        onNativeWordChange = onNativeWordChange,
+                        onForeignWordChange = onForeignWordChange,
+                        onIpaChange = onIpaChange,
+                        onPronounceIconClick = onPronounceIconClick,
+                        onAutocompleteItemClick = onAutocompleteItemClick,
+                    )
+                }
 
                 RoundButton(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(end = 16.dp, bottom = ROOT_LAYOUT_BOTTOM_PADDING.dp),
+                        .padding(
+                            end = confirmationButtonPadding,
+                            bottom = confirmationButtonPadding,
+                        ),
                     background = MainTheme.colors.common.positiveDialogButton,
                     iconId = R.drawable.ic_confirmation_24,
                     onClick = onConfirmClick
@@ -140,8 +137,7 @@ fun ForeignWordLettersSelector(
         state = rememberLazyListState(),
         modifier = Modifier
             .defaultMinSize(minHeight = 50.dp)
-            .fillMaxWidth()
-            .startEndPadding(),
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
     ) {
@@ -183,12 +179,9 @@ fun LazyItemScope.LetterItem(
 fun DeckInfo(
     name: String,
     cardQuantity: Int,
+    modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .startEndPadding(),
-    ) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Pointer(
             pointerTextId = R.string.pointer_deck,
             valueText = name
@@ -292,8 +285,7 @@ fun DropDownAutocompleteFiled(
         val popupMenuPosition = density.run {
             textFieldPosition.y.toDp() + textFieldSize.height.toDp()
         }
-        val freeContentHeight =
-            screenHeightDp.dp - ROOT_LAYOUT_BOTTOM_PADDING.dp - popupMenuPosition - 16.dp
+        val freeContentHeight = screenHeightDp.dp - popupMenuPosition - 32.dp
         val neededHeight = itemsHeightDp * autocompleteState.autocomplete.size
 
         popupContentContainerHeight = if (neededHeight < freeContentHeight) {
@@ -318,8 +310,10 @@ fun DropDownAutocompleteFiled(
             onValueChange = onTypedWordChange,
             trailingIcon = {
                 val (iconColor: Color, clickable: Boolean) = when (loadingState) {
-                    is LoadingState.Success -> MainTheme.colors.common.positiveDialogButton to true
-                    else -> Color.Unspecified to false
+                    is LoadingState.Success -> {
+                        MainTheme.colors.cardManagementView.activePronunciationIcon to true
+                    }
+                    else -> MainTheme.colors.cardManagementView.inactivePronunciationIcon to false
                 }
 
                 if (loadingState == LoadingState.Loading) {
@@ -457,7 +451,7 @@ fun IpaSection(
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 16.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 6.dp)
             .onSizeChanged { parentWidthPx = it.width.toFloat() }
             .verticalScrollbar(
                 state = scrollState,
@@ -515,5 +509,3 @@ fun IpaSection(
         }
     }
 }
-
-fun Modifier.startEndPadding(): Modifier = padding(start = 32.dp, end = 32.dp)
