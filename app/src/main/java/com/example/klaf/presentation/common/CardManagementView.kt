@@ -2,9 +2,7 @@ package com.example.klaf.presentation.common
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +38,7 @@ import com.example.klaf.presentation.cardAddition.AutocompleteState
 import com.example.klaf.presentation.theme.MainTheme
 
 private const val CARD_MANAGEMENT_CONTAINER_WIDTH = 500
+private const val MAX_TEXT_FIELD_LINES = 5
 
 @Composable
 fun CardManagementView(
@@ -50,7 +49,7 @@ fun CardManagementView(
     foreignWord: String,
     ipaHolders: List<IpaHolder>,
     autocompleteState: AutocompleteState,
-    loadingState: LoadingState<Unit>,
+    pronunciationLoadingState: LoadingState<Unit>,
     onDismissRequest: () -> Unit,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
     onNativeWordChange: (String) -> Unit,
@@ -83,10 +82,17 @@ fun CardManagementView(
 
             Box(
                 modifier = Modifier
+//                    .fillParentMaxHeight()
+//                    .heightIn(min = 300.dp)
                     .height(density.run { contentHeightPx.toDp() })
+//                    .heightIn(min = density.run { contentHeightPx.toDp() })
+                    .background(Color(0x468BC34A))
                     .padding(32.dp)
             ) {
-                Column(modifier = Modifier.align(Alignment.TopCenter)) {
+                Column(modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .background(Color(0x4D2196F3))
+                ) {
                     DeckInfo(name = deckName, cardQuantity = cardQuantity)
 
                     Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.07f))
@@ -103,26 +109,39 @@ fun CardManagementView(
                         foreignWord = foreignWord,
                         ipaHolders = ipaHolders,
                         autocompleteState = autocompleteState,
-                        loadingState = loadingState,
+                        loadingState = pronunciationLoadingState,
                         onNativeWordChange = onNativeWordChange,
                         onForeignWordChange = onForeignWordChange,
                         onIpaChange = onIpaChange,
                         onPronounceIconClick = onPronounceIconClick,
                         onAutocompleteItemClick = onAutocompleteItemClick,
                     )
-                }
+                    Box(
+                        modifier = Modifier
+//                            .fillMaxHeight(fraction = 1f)
+                            .fillMaxWidth()
+                            .background(Color(0x48CDDC39))
+//                            .align(Alignment.BottomEnd)
+//                            .padding(
+//                                end = confirmationButtonPadding,
+//                                bottom = confirmationButtonPadding,
+//                            ),
+                    ) {
+                        RoundButton(
+                            modifier = Modifier
+//                            .fillMaxHeight(fraction = 0.5f)
+                                .align(Alignment.BottomEnd)
+                                .padding(
+                                    end = confirmationButtonPadding,
+                                    bottom = confirmationButtonPadding,
+                                ),
+                            background = MainTheme.colors.common.positiveDialogButton,
+                            iconId = R.drawable.ic_confirmation_24,
+                            onClick = onConfirmClick
+                        )
+                    }
 
-                RoundButton(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(
-                            end = confirmationButtonPadding,
-                            bottom = confirmationButtonPadding,
-                        ),
-                    background = MainTheme.colors.common.positiveDialogButton,
-                    iconId = R.drawable.ic_confirmation_24,
-                    onClick = onConfirmClick
-                )
+                }
             }
         }
     }
@@ -209,7 +228,9 @@ fun CardManagementFields(
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
     Column(
-        modifier = modifier.width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp),
+        modifier = modifier
+            .width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp)
+            .background(Color(0x51F06B6B)),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         WordTextField(
@@ -245,8 +266,17 @@ private fun WordTextField(
     onValueChange: (String) -> Unit,
     trailingIcon: @Composable (() -> Unit)? = null,
 ) {
+    val scrollState = rememberScrollState()
+    val maxVisibleHeight = 80.dp
+
     TextField(
-        modifier = modifier.width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp),
+        modifier = modifier
+            .width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp)
+            .heightIn(max = maxVisibleHeight)
+            .wrapContentHeight()
+            .verticalScroll(state = scrollState, )
+            .scrollBar(state = scrollState, visibleHeight = maxVisibleHeight)
+        ,
         value = value,
         onValueChange = onValueChange,
         label = { Text(text = stringResource(id = labelTextId)) },
@@ -254,7 +284,7 @@ private fun WordTextField(
             backgroundColor = MainTheme.colors.cardManagementView.textFieldBackground,
             textColor = textColor
         ),
-        trailingIcon = trailingIcon
+        trailingIcon = trailingIcon,
     )
 }
 
@@ -293,7 +323,6 @@ fun DropDownAutocompleteFiled(
         } else {
             freeContentHeight
         } + popupMenuPadding * 2
-
     }
 
     Box(
@@ -405,7 +434,8 @@ private fun WordTextFieldForPopupMenu(
             backgroundColor = MainTheme.colors.cardManagementView.textFieldBackground,
             textColor = textColor
         ),
-        trailingIcon = trailingIcon
+        trailingIcon = trailingIcon,
+        maxLines = MAX_TEXT_FIELD_LINES
     )
 }
 

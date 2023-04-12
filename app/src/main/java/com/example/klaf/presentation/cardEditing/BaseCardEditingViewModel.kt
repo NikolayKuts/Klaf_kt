@@ -1,6 +1,7 @@
 package com.example.klaf.presentation.cardEditing
 
 import androidx.lifecycle.ViewModel
+import com.example.domain.common.LoadingState
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
 import com.example.domain.ipa.IpaHolder
@@ -16,6 +17,7 @@ abstract class BaseCardEditingViewModel : ViewModel(), EventMessageSource {
     abstract val card: SharedFlow<Card?>
     abstract val cardEditingState: StateFlow<CardEditingState>
     abstract val autocompleteState: StateFlow<AutocompleteState>
+    abstract val pronunciationLoadingState: StateFlow<LoadingState<Unit>>
 
     abstract fun updateCard(
         oldCard: Card,

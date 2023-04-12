@@ -2,10 +2,7 @@ package com.example.klaf.presentation.common
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -270,6 +267,52 @@ fun Modifier.verticalScrollbar(
                 topLeft = Offset(this.size.width - width.toPx(), scrollbarOffsetY),
                 size = Size(width = width.toPx(), height = scrollbarHeight),
                 alpha = alpha
+            )
+        }
+    }
+}
+
+fun Modifier.scrollBar(
+    state: ScrollState,
+    visibleHeight: Dp,
+    width: Dp = 5.dp,
+    color: Color = Color.Gray,
+    enterDuration: Int = 150,
+    exitDuration: Int = 1000,
+    minAlpha: Float = 0f,
+    maxAlpha: Float = 0.5f,
+    alwaysVisible: Boolean = false
+): Modifier = composed {
+    val targetAlpha = if (alwaysVisible || state.isScrollInProgress) maxAlpha else minAlpha
+    val duration = if (state.isScrollInProgress) enterDuration else exitDuration
+
+    val alpha by animateFloatAsState(
+        targetValue = targetAlpha,
+        animationSpec = tween(durationMillis = duration)
+    )
+
+    drawWithContent {
+        drawContent()
+
+        val needDrawScrollbar = state.isScrollInProgress || alpha > 0f
+
+        if (needDrawScrollbar) {
+
+            val fieldHeight = visibleHeight.toPx()
+            val scrollPosition = state.value
+            val maxScrollValue = state.maxValue
+            val barHeight =
+                fieldHeight - (maxScrollValue / (fieldHeight + maxScrollValue)) * fieldHeight
+            val scrollPositionPercent =
+                (scrollPosition * 100) / if (maxScrollValue == 0) 1 else maxScrollValue
+            val maxOffsetValue = fieldHeight - barHeight
+            val scrollbarOffsetY = ((maxOffsetValue * scrollPositionPercent) / 100) + scrollPosition
+
+            drawRect(
+                color = color,
+                topLeft = Offset(x = this.size.width - width.toPx(), y = scrollbarOffsetY),
+                size = Size(width = width.toPx(), height = barHeight),
+                alpha = alpha,
             )
         }
     }
