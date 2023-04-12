@@ -3,6 +3,7 @@ package com.example.klaf.presentation.cardEditing
 import androidx.lifecycle.viewModelScope
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
+import com.example.domain.common.LoadingState
 import com.example.domain.common.ifNotNull
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
@@ -65,6 +66,7 @@ class CardEditingViewModel @AssistedInject constructor(
 
     override val autocompleteState = MutableStateFlow(value = AutocompleteState())
 
+    override val pronunciationLoadingState = audioPlayer.loadingState
     private var autocompleteFetchingJob: Job? = null
 
     override fun updateCard(
