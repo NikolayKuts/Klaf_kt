@@ -224,9 +224,7 @@ fun AdaptiveBox(
     content: @Composable LazyItemScope.() -> Unit,
 ) {
     LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xFF6E9EB4)),
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
     ) {
         item(content = content)
