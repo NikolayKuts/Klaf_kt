@@ -272,7 +272,7 @@ fun Modifier.verticalScrollbar(
     }
 }
 
-fun Modifier.scrollBar(
+fun Modifier.verticalScrollBar(
     state: ScrollState,
     visibleHeight: Dp,
     width: Dp = 5.dp,
