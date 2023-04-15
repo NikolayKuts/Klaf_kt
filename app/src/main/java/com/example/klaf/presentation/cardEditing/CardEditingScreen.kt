@@ -19,6 +19,7 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
     val deck by viewModel.deck.collectAsState(initial = null)
     val card by viewModel.card.collectAsState(initial = null)
     val autocompleteState by viewModel.autocompleteState.collectAsState()
+    val pronunciationLoadingState by viewModel.pronunciationLoadingState.collectAsState()
 
     deck?.let { receivedDeck ->
         card?.let { receivedCard ->
@@ -35,7 +36,7 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                 foreignWord = foreignWordState,
                 ipaHolders = ipaHoldersState,
                 autocompleteState = autocompleteState,
-                loadingState = LoadingState.Non,
+                pronunciationLoadingState = pronunciationLoadingState,
                 onDismissRequest = { viewModel.closeAutocompleteMenu() },
                 onLetterClick = { index, letterInfo ->
                     val updatedIsChecked = when (letterInfo.letter) {

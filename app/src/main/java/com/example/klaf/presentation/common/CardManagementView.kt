@@ -2,9 +2,7 @@ package com.example.klaf.presentation.common
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -50,7 +48,7 @@ fun CardManagementView(
     foreignWord: String,
     ipaHolders: List<IpaHolder>,
     autocompleteState: AutocompleteState,
-    loadingState: LoadingState<Unit>,
+    pronunciationLoadingState: LoadingState<Unit>,
     onDismissRequest: () -> Unit,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
     onNativeWordChange: (String) -> Unit,
@@ -67,7 +65,7 @@ fun CardManagementView(
         modifier = Modifier
             .fillMaxSize()
             .noRippleClickable { onDismissRequest() }
-            .onSizeChanged { parentHeightPx = it.height.toFloat() }
+            .onSizeChanged { parentHeightPx = it.height.toFloat() },
     ) {
         item {
             val minCardManagementContentHeightPx = density.run { 450.dp.toPx() }
@@ -81,48 +79,54 @@ fun CardManagementView(
                 parentHeightPx to 16.dp
             }
 
-            Box(
+            Column(
                 modifier = Modifier
                     .height(density.run { contentHeightPx.toDp() })
-                    .padding(32.dp)
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Column(modifier = Modifier.align(Alignment.TopCenter)) {
-                    DeckInfo(name = deckName, cardQuantity = cardQuantity)
+                DeckInfo(name = deckName, cardQuantity = cardQuantity)
 
-                    Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.07f))
+                Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.07f))
 
-                    ForeignWordLettersSelector(
-                        letterInfos = letterInfos,
-                        onLetterClick = onLetterClick,
-                    )
+                ForeignWordLettersSelector(
+                    letterInfos = letterInfos,
+                    onLetterClick = onLetterClick,
+                )
 
-                    Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.12f))
+                Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.12f))
 
-                    CardManagementFields(
-                        nativeWord = nativeWord,
-                        foreignWord = foreignWord,
-                        ipaHolders = ipaHolders,
-                        autocompleteState = autocompleteState,
-                        loadingState = loadingState,
-                        onNativeWordChange = onNativeWordChange,
-                        onForeignWordChange = onForeignWordChange,
-                        onIpaChange = onIpaChange,
-                        onPronounceIconClick = onPronounceIconClick,
-                        onAutocompleteItemClick = onAutocompleteItemClick,
+                CardManagementFields(
+                    nativeWord = nativeWord,
+                    foreignWord = foreignWord,
+                    ipaHolders = ipaHolders,
+                    autocompleteState = autocompleteState,
+                    loadingState = pronunciationLoadingState,
+                    onNativeWordChange = onNativeWordChange,
+                    onForeignWordChange = onForeignWordChange,
+                    onIpaChange = onIpaChange,
+                    onPronounceIconClick = onPronounceIconClick,
+                    onAutocompleteItemClick = onAutocompleteItemClick,
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .requiredHeightIn(min = DIALOG_BUTTON_SIZE.dp)
+                        .fillMaxHeight(fraction = 1f)
+                ) {
+                    RoundButton(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(
+                                end = confirmationButtonPadding,
+                                bottom = confirmationButtonPadding,
+                            ),
+                        background = MainTheme.colors.common.positiveDialogButton,
+                        iconId = R.drawable.ic_confirmation_24,
+                        onClick = onConfirmClick
                     )
                 }
 
-                RoundButton(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(
-                            end = confirmationButtonPadding,
-                            bottom = confirmationButtonPadding,
-                        ),
-                    background = MainTheme.colors.common.positiveDialogButton,
-                    iconId = R.drawable.ic_confirmation_24,
-                    onClick = onConfirmClick
-                )
             }
         }
     }
@@ -245,8 +249,15 @@ private fun WordTextField(
     onValueChange: (String) -> Unit,
     trailingIcon: @Composable (() -> Unit)? = null,
 ) {
+    val scrollState = rememberScrollState()
+    val maxVisibleHeight = 80.dp
+
     TextField(
-        modifier = modifier.width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp),
+        modifier = modifier
+            .width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp)
+            .heightIn(max = maxVisibleHeight)
+            .verticalScroll(state = scrollState)
+            .verticalScrollBar(state = scrollState, visibleHeight = maxVisibleHeight),
         value = value,
         onValueChange = onValueChange,
         label = { Text(text = stringResource(id = labelTextId)) },
@@ -254,7 +265,7 @@ private fun WordTextField(
             backgroundColor = MainTheme.colors.cardManagementView.textFieldBackground,
             textColor = textColor
         ),
-        trailingIcon = trailingIcon
+        trailingIcon = trailingIcon,
     )
 }
 
@@ -293,7 +304,6 @@ fun DropDownAutocompleteFiled(
         } else {
             freeContentHeight
         } + popupMenuPadding * 2
-
     }
 
     Box(
@@ -405,7 +415,8 @@ private fun WordTextFieldForPopupMenu(
             backgroundColor = MainTheme.colors.cardManagementView.textFieldBackground,
             textColor = textColor
         ),
-        trailingIcon = trailingIcon
+        trailingIcon = trailingIcon,
+        singleLine = true,
     )
 }
 
