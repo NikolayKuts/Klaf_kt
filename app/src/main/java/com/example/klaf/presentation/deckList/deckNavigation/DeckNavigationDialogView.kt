@@ -14,6 +14,7 @@ import com.example.klaf.R
 import com.example.klaf.presentation.common.AdaptiveBox
 import com.example.klaf.presentation.common.FullBackgroundDialog
 import com.example.klaf.presentation.common.RoundButton
+import com.example.klaf.presentation.common.noRippleClickable
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -27,9 +28,12 @@ fun DeckNavigationDialogView(
     onRepetitionInfoClick: () -> Unit,
     onCloseDialogClick: () -> Unit,
 ) {
-    AdaptiveBox {
+    AdaptiveBox(
+        modifier = Modifier
+            .fillMaxSize()
+            .noRippleClickable { onCloseDialogClick() },
+    ) {
         FullBackgroundDialog(
-            fillMaxSize = false,
             onBackgroundClick = onCloseDialogClick,
             mainContent = {
                 Column {
