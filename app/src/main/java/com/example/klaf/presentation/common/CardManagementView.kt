@@ -38,7 +38,6 @@ import com.example.klaf.presentation.cardAddition.AutocompleteState
 import com.example.klaf.presentation.theme.MainTheme
 
 private const val CARD_MANAGEMENT_CONTAINER_WIDTH = 500
-private const val MAX_TEXT_FIELD_LINES = 5
 
 @Composable
 fun CardManagementView(
@@ -66,7 +65,7 @@ fun CardManagementView(
         modifier = Modifier
             .fillMaxSize()
             .noRippleClickable { onDismissRequest() }
-            .onSizeChanged { parentHeightPx = it.height.toFloat() }
+            .onSizeChanged { parentHeightPx = it.height.toFloat() },
     ) {
         item {
             val minCardManagementContentHeightPx = density.run { 450.dp.toPx() }
@@ -80,68 +79,54 @@ fun CardManagementView(
                 parentHeightPx to 16.dp
             }
 
-            Box(
+            Column(
                 modifier = Modifier
-//                    .fillParentMaxHeight()
-//                    .heightIn(min = 300.dp)
                     .height(density.run { contentHeightPx.toDp() })
-//                    .heightIn(min = density.run { contentHeightPx.toDp() })
-                    .background(Color(0x468BC34A))
-                    .padding(32.dp)
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Column(modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .background(Color(0x4D2196F3))
+                DeckInfo(name = deckName, cardQuantity = cardQuantity)
+
+                Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.07f))
+
+                ForeignWordLettersSelector(
+                    letterInfos = letterInfos,
+                    onLetterClick = onLetterClick,
+                )
+
+                Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.12f))
+
+                CardManagementFields(
+                    nativeWord = nativeWord,
+                    foreignWord = foreignWord,
+                    ipaHolders = ipaHolders,
+                    autocompleteState = autocompleteState,
+                    loadingState = pronunciationLoadingState,
+                    onNativeWordChange = onNativeWordChange,
+                    onForeignWordChange = onForeignWordChange,
+                    onIpaChange = onIpaChange,
+                    onPronounceIconClick = onPronounceIconClick,
+                    onAutocompleteItemClick = onAutocompleteItemClick,
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .requiredHeightIn(min = DIALOG_BUTTON_SIZE.dp)
+                        .fillMaxHeight(fraction = 1f)
                 ) {
-                    DeckInfo(name = deckName, cardQuantity = cardQuantity)
-
-                    Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.07f))
-
-                    ForeignWordLettersSelector(
-                        letterInfos = letterInfos,
-                        onLetterClick = onLetterClick,
-                    )
-
-                    Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.12f))
-
-                    CardManagementFields(
-                        nativeWord = nativeWord,
-                        foreignWord = foreignWord,
-                        ipaHolders = ipaHolders,
-                        autocompleteState = autocompleteState,
-                        loadingState = pronunciationLoadingState,
-                        onNativeWordChange = onNativeWordChange,
-                        onForeignWordChange = onForeignWordChange,
-                        onIpaChange = onIpaChange,
-                        onPronounceIconClick = onPronounceIconClick,
-                        onAutocompleteItemClick = onAutocompleteItemClick,
-                    )
-                    Box(
+                    RoundButton(
                         modifier = Modifier
-//                            .fillMaxHeight(fraction = 1f)
-                            .fillMaxWidth()
-                            .background(Color(0x48CDDC39))
-//                            .align(Alignment.BottomEnd)
-//                            .padding(
-//                                end = confirmationButtonPadding,
-//                                bottom = confirmationButtonPadding,
-//                            ),
-                    ) {
-                        RoundButton(
-                            modifier = Modifier
-//                            .fillMaxHeight(fraction = 0.5f)
-                                .align(Alignment.BottomEnd)
-                                .padding(
-                                    end = confirmationButtonPadding,
-                                    bottom = confirmationButtonPadding,
-                                ),
-                            background = MainTheme.colors.common.positiveDialogButton,
-                            iconId = R.drawable.ic_confirmation_24,
-                            onClick = onConfirmClick
-                        )
-                    }
-
+                            .align(Alignment.BottomEnd)
+                            .padding(
+                                end = confirmationButtonPadding,
+                                bottom = confirmationButtonPadding,
+                            ),
+                        background = MainTheme.colors.common.positiveDialogButton,
+                        iconId = R.drawable.ic_confirmation_24,
+                        onClick = onConfirmClick
+                    )
                 }
+
             }
         }
     }
@@ -228,9 +213,7 @@ fun CardManagementFields(
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
     Column(
-        modifier = modifier
-            .width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp)
-            .background(Color(0x51F06B6B)),
+        modifier = modifier.width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         WordTextField(
@@ -273,10 +256,8 @@ private fun WordTextField(
         modifier = modifier
             .width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp)
             .heightIn(max = maxVisibleHeight)
-            .wrapContentHeight()
-            .verticalScroll(state = scrollState, )
-            .scrollBar(state = scrollState, visibleHeight = maxVisibleHeight)
-        ,
+            .verticalScroll(state = scrollState)
+            .verticalScrollBar(state = scrollState, visibleHeight = maxVisibleHeight),
         value = value,
         onValueChange = onValueChange,
         label = { Text(text = stringResource(id = labelTextId)) },
@@ -435,7 +416,7 @@ private fun WordTextFieldForPopupMenu(
             textColor = textColor
         ),
         trailingIcon = trailingIcon,
-        maxLines = MAX_TEXT_FIELD_LINES
+        singleLine = true,
     )
 }
 
