@@ -14,12 +14,10 @@ val Deck.lastIterationSuccessMark: DeckRepetitionSuccessMark
     get() = if (this.isLastIterationSucceeded) SUCCESS else FAILURE
 
 val DeckRepetitionInfo.currentDurationAsTimeOrUnassigned: String
-    get() {
-        return if (this.isCurrentDurationUnassigned) {
-            UNASSIGNED_STRING_VALUE
-        } else {
-            this.currentDuration.timeAsString
-        }
+    get() = if (this.isCurrentDurationUnassigned) {
+        UNASSIGNED_STRING_VALUE
+    } else {
+        this.currentDuration.timeAsString
     }
 
 val DeckRepetitionInfo.isCurrentDurationUnassigned: Boolean
