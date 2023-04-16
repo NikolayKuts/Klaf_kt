@@ -53,28 +53,14 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
             .onSizeChanged { parentHeightPx = it.height.toFloat() },
     ) {
         item {
-            val minContentHeightPx = density.run { 400.dp.toPx() }
-
             val (
                 contentHeightPx: Float,
-                buttonsPadding: Dp,
+                buttonGroupPadding: Dp,
                 bottomContentPadding: Dp,
-            ) = if (
-                parentHeightPx > 0F
-                && parentHeightPx < minContentHeightPx
-            ) {
-                Triple(
-                    first = minContentHeightPx,
-                    second = 0.dp,
-                    third = 60.dp
-                )
-            } else {
-                Triple(
-                    first = parentHeightPx,
-                    second = 16.dp,
-                    third = 90.dp
-                )
-            }
+            ) = getScreenParams(
+                parentHeightPx = parentHeightPx,
+                minContentHeightPx = density.run { 400.dp.toPx() }
+            )
 
             Box(
                 modifier = Modifier
@@ -111,7 +97,7 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(buttonsPadding),
+                        .padding(buttonGroupPadding),
                 ) {
                     ManagementButtons(
                         clickState = moreButtonClickedState,
@@ -128,6 +114,28 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
                 }
             }
         }
+    }
+}
+
+private fun getScreenParams(
+    parentHeightPx: Float,
+    minContentHeightPx: Float
+): Triple<Float, Dp, Dp> {
+    return if (
+        parentHeightPx > 0F
+        && parentHeightPx < minContentHeightPx
+    ) {
+        Triple(
+            first = minContentHeightPx,
+            second = 0.dp,
+            third = 60.dp
+        )
+    } else {
+        Triple(
+            first = parentHeightPx,
+            second = 16.dp,
+            third = 90.dp
+        )
     }
 }
 
