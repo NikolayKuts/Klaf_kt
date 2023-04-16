@@ -23,6 +23,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Dp
@@ -30,9 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.example.domain.common.ifTrue
 import com.example.klaf.R
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
-import com.example.klaf.presentation.common.CustomCheckBox
-import com.example.klaf.presentation.common.RoundButton
-import com.example.klaf.presentation.common.rememberAsMutableStateOf
+import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
 import kotlinx.coroutines.delay
 
@@ -44,48 +44,98 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
     val cardHolders by viewModel.cardHolders.collectAsState()
     var moreButtonClickedState by rememberAsMutableStateOf(value = true)
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(28.dp)
-        ) {
-            Header(deckName = deck.name)
+    val density = LocalDensity.current
+    var parentHeightPx by rememberAsMutableStateOf(value = 0F)
 
-            QuantityPointers(
-                totalValue = deck.cardQuantity.toString(),
-                selectedValue = cardHolders.filter { it.isSelected }.size.toString()
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .onSizeChanged { parentHeightPx = it.height.toFloat() },
+    ) {
+        item {
+            val (
+                contentHeightPx: Float,
+                buttonGroupPadding: Dp,
+                bottomContentPadding: Dp,
+            ) = getScreenParams(
+                parentHeightPx = parentHeightPx,
+                minContentHeightPx = density.run { 400.dp.toPx() }
             )
 
-            Spacer(modifier = Modifier.height(28.dp))
-            DividingLine()
+            Box(
+                modifier = Modifier
+                    .height(density.run { contentHeightPx.toDp() })
+                    .fillMaxWidth()
+                    .padding(28.dp)
+            ) {
+                Column {
+                    Header(deckName = deck.name)
 
-            DeckList(
-                moreButtonClickedState = moreButtonClickedState,
-                cardHolders = cardHolders,
-                onScroll = { moreButtonClickedState = false },
-                onSelectedChanged = { index ->
-                    viewModel.changeSelectionState(position = index)
-                    moreButtonClickedState = false
-                },
-                onLongItemClick = { index ->
-                    viewModel.navigate(event = ToCardEditingFragment(cardSelectionIndex = index))
+                    QuantityPointers(
+                        totalValue = deck.cardQuantity.toString(),
+                        selectedValue = cardHolders.filter { it.isSelected }.size.toString()
+                    )
+
+                    Spacer(modifier = Modifier.height(28.dp))
+                    DividingLine()
+
+                    DeckList(
+                        moreButtonClickedState = moreButtonClickedState,
+                        cardHolders = cardHolders,
+                        bottomContentPadding = bottomContentPadding,
+                        onScroll = { moreButtonClickedState = false },
+                        onSelectedChanged = { index ->
+                            viewModel.changeSelectionState(position = index)
+                            moreButtonClickedState = false
+                        },
+                        onLongItemClick = { index ->
+                            viewModel.navigate(event = ToCardEditingFragment(cardSelectionIndex = index))
+                        }
+                    )
                 }
-            )
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(buttonGroupPadding),
+                ) {
+                    ManagementButtons(
+                        clickState = moreButtonClickedState,
+                        onMoveCardsClick = { viewModel.navigate(event = ToCardMovingDialog) },
+                        onAddCardsClick = { viewModel.navigate(event = ToCardAddingFragment) },
+                        onDeleteCardsClick = { viewModel.navigate(event = ToCardDeletionDialog) },
+                        onMoreButtonClick = { moreButtonClickedState = !moreButtonClickedState }
+                    )
+                }
+
+                LaunchedEffect(key1 = null) {
+                    delay(CLOSING_ANIMATION_DELAY)
+                    moreButtonClickedState = false
+                }
+            }
         }
-
-        ManagementButtons(
-            clickState = moreButtonClickedState,
-            onMoveCardsClick = { viewModel.navigate(event = ToCardMovingDialog) },
-            onAddCardsClick = { viewModel.navigate(event = ToCardAddingFragment) },
-            onDeleteCardsClick = { viewModel.navigate(event = ToCardDeletionDialog) },
-            onMoreButtonClick = { moreButtonClickedState = !moreButtonClickedState }
-        )
     }
+}
 
-    LaunchedEffect(key1 = null) {
-        delay(CLOSING_ANIMATION_DELAY)
-        moreButtonClickedState = false
+private fun getScreenParams(
+    parentHeightPx: Float,
+    minContentHeightPx: Float
+): Triple<Float, Dp, Dp> {
+    return if (
+        parentHeightPx > 0F
+        && parentHeightPx < minContentHeightPx
+    ) {
+        Triple(
+            first = minContentHeightPx,
+            second = 0.dp,
+            third = 60.dp
+        )
+    } else {
+        Triple(
+            first = parentHeightPx,
+            second = 16.dp,
+            third = 90.dp
+        )
     }
 }
 
@@ -152,15 +202,16 @@ private fun QuantityPointer(
 private fun DeckList(
     moreButtonClickedState: Boolean,
     cardHolders: List<SelectableCardHolder>,
+    bottomContentPadding: Dp,
     onScroll: () -> Unit,
     onSelectedChanged: (index: Int) -> Unit,
-    onLongItemClick: (index: Int) -> Unit
+    onLongItemClick: (index: Int) -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
 
     LazyColumn(
         state = lazyListState,
-        contentPadding = PaddingValues(bottom = 100.dp),
+        contentPadding = PaddingValues(bottom = bottomContentPadding),
         modifier = Modifier.scrollable(
             orientation = Orientation.Vertical,
             state = rememberScrollableState { delta ->
@@ -190,7 +241,7 @@ private fun LazyItemScope.CardItem(
     holder: SelectableCardHolder,
     position: Int,
     onSelectedChanged: (Boolean) -> Unit,
-    onLongClick: () -> Unit
+    onLongClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -248,9 +299,7 @@ private fun BoxScope.ManagementButtons(
     onMoreButtonClick: () -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .align(Alignment.BottomEnd)
-            .padding(end = 48.dp, bottom = 48.dp),
+        modifier = Modifier.align(Alignment.BottomEnd),
         contentAlignment = Alignment.BottomCenter
     ) {
         CardTransferringButton(isStartPosition = clickState, onClick = onMoveCardsClick)

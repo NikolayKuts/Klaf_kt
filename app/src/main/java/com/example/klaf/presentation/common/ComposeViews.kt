@@ -81,14 +81,13 @@ fun FullBackgroundDialog(
     onBackgroundClick: () -> Unit,
     mainContent: @Composable BoxScope.() -> Unit,
     modifier: Modifier = Modifier,
-    fillMaxSize: Boolean = true,
     bottomContent: @Composable (RowScope.() -> Unit)? = null,
     topContent: @Composable (RowScope.() -> Unit)? = null,
     corners: Shape = RoundedCornerShape(10.dp),
 ) {
     Box(
         modifier = modifier
-            .apply { if (fillMaxSize) fillMaxSize() else wrapContentSize() }
+            .fillMaxSize()
             .noRippleClickable(onClick = onBackgroundClick)
     ) {
         Box(modifier = Modifier.align(Alignment.Center)) {
@@ -224,9 +223,7 @@ fun AdaptiveBox(
     content: @Composable LazyItemScope.() -> Unit,
 ) {
     LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xFF6E9EB4)),
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
     ) {
         item(content = content)

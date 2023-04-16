@@ -4,9 +4,10 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.example.klaf.R
-import com.example.klaf.presentation.common.DeletingButton
 import com.example.klaf.presentation.common.ClosingButton
-import com.example.klaf.presentation.common.DialogView
+import com.example.klaf.presentation.common.DeletingButton
+import com.example.klaf.presentation.common.FullBackgroundDialog
+import com.example.klaf.presentation.common.RoundedIcon
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -15,17 +16,24 @@ fun CardDeletingDialogView(
     onConfirmDeleting: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    DialogView(
+    FullBackgroundDialog(
+        onBackgroundClick = onCancel,
+        topContent = {
+            RoundedIcon(
+                background = MainTheme.colors.common.negativeDialogButton,
+                iconId = R.drawable.ic_attention_mark_24
+            )
+        },
         mainContent = {
             Text(
                 style = MainTheme.typographies.dialogTextStyle,
                 text = getDialogTitleByCardCount(quantity = cardQuantity)
             )
         },
-        buttonContent = {
+        bottomContent = {
             DeletingButton(onClick = onConfirmDeleting)
             ClosingButton(onClick = onCancel)
-        }
+        },
     )
 }
 
