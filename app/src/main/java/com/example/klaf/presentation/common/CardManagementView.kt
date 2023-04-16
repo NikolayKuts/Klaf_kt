@@ -68,16 +68,13 @@ fun CardManagementView(
             .onSizeChanged { parentHeightPx = it.height.toFloat() },
     ) {
         item {
-            val minCardManagementContentHeightPx = density.run { 450.dp.toPx() }
-
-            val (contentHeightPx: Float, confirmationButtonPadding: Dp) = if (
-                parentHeightPx > 0F
-                && parentHeightPx < minCardManagementContentHeightPx
-            ) {
-                minCardManagementContentHeightPx to 0.dp
-            } else {
-                parentHeightPx to 16.dp
-            }
+            val (
+                contentHeightPx: Float,
+                confirmationButtonPadding: Dp
+            ) = getScreenParams(
+                parentHeightPx = parentHeightPx,
+                minContentHeightPx = density.run { 450.dp.toPx() }
+            )
 
             Column(
                 modifier = Modifier
@@ -129,6 +126,20 @@ fun CardManagementView(
 
             }
         }
+    }
+}
+
+private fun getScreenParams(
+    parentHeightPx: Float,
+    minContentHeightPx: Float,
+): Pair<Float, Dp> {
+    return if (
+        parentHeightPx > 0F
+        && parentHeightPx < minContentHeightPx
+    ) {
+        minContentHeightPx to 0.dp
+    } else {
+        parentHeightPx to 16.dp
     }
 }
 
