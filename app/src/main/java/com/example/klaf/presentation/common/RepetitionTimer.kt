@@ -51,8 +51,10 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
 
     override fun onDestroy(owner: LifecycleOwner) {
         super.onDestroy(owner)
-        scope.cancel()
-        timerCountingState.value = STOPPED
+        if (timerCountingState.value == RUN) {
+            job?.cancel()
+            timerCountingState.value = PAUSED
+        }
     }
 
     fun runCounting() {
@@ -88,5 +90,10 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
             job?.cancel()
             timerCountingState.value = FORCIBLY_PAUSED
         }
+    }
+
+    fun disableAndClear() {
+        scope.cancel()
+        timerCountingState.value = STOPPED
     }
 }

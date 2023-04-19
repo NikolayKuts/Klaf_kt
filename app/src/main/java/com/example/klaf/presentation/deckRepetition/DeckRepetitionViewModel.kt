@@ -211,6 +211,11 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        timer.disableAndClear()
+    }
+
     private fun manageCardSide() {
         cardState.replayCache.firstOrNull()?.let { cardState ->
             if (cardState.side == BACK) {
