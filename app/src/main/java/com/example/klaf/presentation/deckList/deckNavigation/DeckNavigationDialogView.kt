@@ -29,9 +29,7 @@ fun DeckNavigationDialogView(
     onCloseDialogClick: () -> Unit,
 ) {
     AdaptiveBox(
-        modifier = Modifier
-            .fillMaxSize()
-            .noRippleClickable { onCloseDialogClick() },
+        modifier = Modifier.noRippleClickable { onCloseDialogClick() },
     ) {
         FullBackgroundDialog(
             onBackgroundClick = onCloseDialogClick,

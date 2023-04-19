@@ -6,7 +6,6 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,7 +21,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -73,62 +71,52 @@ fun DeckRepetitionScreen(
     val receivedDeck = deck ?: return
 
     val density = LocalDensity.current
-    var parentHeightPx by rememberAsMutableStateOf(value = 0F)
     val minContentHeightPx = density.run { 400.dp.toPx() }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .onSizeChanged { parentHeightPx = it.height.toFloat() },
-    ) {
-        item {
-            val contentHeight = if (
-                parentHeightPx > 0F
-                && parentHeightPx < minContentHeightPx
-            ) {
-                minContentHeightPx
-            } else {
-                parentHeightPx
-            }
-            ConstraintLayout(
-                constraintSet = getConstraints(),
-                modifier = Modifier
-                    .fillParentMaxWidth()
-                    .height(density.run { contentHeight.toDp() })
-                    .padding(16.dp)
-            ) {
-                Text(text = "", modifier = Modifier)
-                DeckInfo(deckName = receivedDeck.name)
-                OrderPointers(
-                    order = repetitionState.repetitionOrder,
-                    onSwitchIconClick = { viewModel.changeRepetitionOrder() }
-                )
-                Timer(viewModel = viewModel)
-                DeckCard(
-                    deckRepetitionState = repetitionState,
-                    onWordClick = { viewModel.pronounceWord() }
-                )
-                RepetitionButtons(
-                    deckRepetitionState = repetitionState,
-                    screenState = screenState,
-                    onStartButtonClick = { viewModel.startRepeating() },
-                    onEasyButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = EASY) },
-                    onGoodButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = GOOD) },
-                    onHardButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = HARD) },
-                    onCardButtonClick = { viewModel.turnCard() },
-                )
-                AdditionalButtons(
-                    additionalButtonsEnabled = mainButtonState == ButtonState.PRESSED,
-                    onDeleteClick = {
-                        repetitionState.card?.id?.let { cardId -> onDeleteCardClick(cardId) }
-                    },
-                    onAddClick = onAddCardClick,
-                    onEditClick = {
-                        repetitionState.card?.id?.let { cardId -> onEditCardClick(cardId) }
-                    },
-                    onMainButtonClick = { viewModel.changeStateOnMainButtonClick() }
-                )
-            }
+    AdaptiveBox { parentHeightPx ->
+        val contentHeight = when {
+            parentHeightPx < minContentHeightPx -> minContentHeightPx
+            else -> parentHeightPx
+        }
+
+        ConstraintLayout(
+            constraintSet = getConstraints(),
+            modifier = Modifier
+                .fillParentMaxWidth()
+                .height(density.run { contentHeight.toDp() })
+                .padding(16.dp)
+        ) {
+            Text(text = "", modifier = Modifier)
+            DeckInfo(deckName = receivedDeck.name)
+            OrderPointers(
+                order = repetitionState.repetitionOrder,
+                onSwitchIconClick = { viewModel.changeRepetitionOrder() }
+            )
+            Timer(viewModel = viewModel)
+            DeckCard(
+                deckRepetitionState = repetitionState,
+                onWordClick = { viewModel.pronounceWord() }
+            )
+            RepetitionButtons(
+                deckRepetitionState = repetitionState,
+                screenState = screenState,
+                onStartButtonClick = { viewModel.startRepeating() },
+                onEasyButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = EASY) },
+                onGoodButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = GOOD) },
+                onHardButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = HARD) },
+                onCardButtonClick = { viewModel.turnCard() },
+            )
+            AdditionalButtons(
+                additionalButtonsEnabled = mainButtonState == ButtonState.PRESSED,
+                onDeleteClick = {
+                    repetitionState.card?.id?.let { cardId -> onDeleteCardClick(cardId) }
+                },
+                onAddClick = onAddCardClick,
+                onEditClick = {
+                    repetitionState.card?.id?.let { cardId -> onEditCardClick(cardId) }
+                },
+                onMainButtonClick = { viewModel.changeStateOnMainButtonClick() }
+            )
         }
     }
 }
