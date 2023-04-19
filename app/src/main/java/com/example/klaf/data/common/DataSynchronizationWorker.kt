@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.map
 
 @HiltWorker
 class DataSynchronizationWorker @AssistedInject constructor(
-    @Assisted appContext: Context,
+    @Assisted val appContext: Context,
     @Assisted private val params: WorkerParameters,
     private val synchronizeLocalAndRemoteData: SynchronizeLocalAndRemoteDataUseCase,
     private val dataSynchronizationNotifier: DataSynchronizationNotifier,

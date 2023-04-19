@@ -49,7 +49,6 @@ fun CardManagementView(
     ipaHolders: List<IpaHolder>,
     autocompleteState: AutocompleteState,
     pronunciationLoadingState: LoadingState<Unit>,
-    onDismissRequest: () -> Unit,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
     onNativeWordChange: (String) -> Unit,
     onForeignWordChange: (String) -> Unit,
@@ -59,72 +58,64 @@ fun CardManagementView(
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
     val density = LocalDensity.current
-    var parentHeightPx by rememberAsMutableStateOf(value = 0F)
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .noRippleClickable { onDismissRequest() }
-            .onSizeChanged { parentHeightPx = it.height.toFloat() },
-    ) {
-        item {
-            val (
-                contentHeightPx: Float,
-                confirmationButtonPadding: Dp
-            ) = getScreenParams(
-                parentHeightPx = parentHeightPx,
-                minContentHeightPx = density.run { 450.dp.toPx() }
+    AdaptiveBox{ parentHeightPx ->
+        val (
+            contentHeightPx: Float,
+            confirmationButtonPadding: Dp,
+        ) = getScreenParams(
+            parentHeightPx = parentHeightPx,
+            minContentHeightPx = density.run { 450.dp.toPx() }
+        )
+
+        Column(
+            modifier = Modifier
+                .height(density.run { contentHeightPx.toDp() })
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            DeckInfo(name = deckName, cardQuantity = cardQuantity)
+
+            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.07f))
+
+            ForeignWordLettersSelector(
+                letterInfos = letterInfos,
+                onLetterClick = onLetterClick,
             )
 
-            Column(
+            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.12f))
+
+            CardManagementFields(
+                nativeWord = nativeWord,
+                foreignWord = foreignWord,
+                ipaHolders = ipaHolders,
+                autocompleteState = autocompleteState,
+                loadingState = pronunciationLoadingState,
+                onNativeWordChange = onNativeWordChange,
+                onForeignWordChange = onForeignWordChange,
+                onIpaChange = onIpaChange,
+                onPronounceIconClick = onPronounceIconClick,
+                onAutocompleteItemClick = onAutocompleteItemClick,
+            )
+            Box(
                 modifier = Modifier
-                    .height(density.run { contentHeightPx.toDp() })
-                    .padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                    .fillMaxWidth()
+                    .requiredHeightIn(min = DIALOG_BUTTON_SIZE.dp)
+                    .fillMaxHeight(fraction = 1f)
             ) {
-                DeckInfo(name = deckName, cardQuantity = cardQuantity)
-
-                Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.07f))
-
-                ForeignWordLettersSelector(
-                    letterInfos = letterInfos,
-                    onLetterClick = onLetterClick,
-                )
-
-                Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.12f))
-
-                CardManagementFields(
-                    nativeWord = nativeWord,
-                    foreignWord = foreignWord,
-                    ipaHolders = ipaHolders,
-                    autocompleteState = autocompleteState,
-                    loadingState = pronunciationLoadingState,
-                    onNativeWordChange = onNativeWordChange,
-                    onForeignWordChange = onForeignWordChange,
-                    onIpaChange = onIpaChange,
-                    onPronounceIconClick = onPronounceIconClick,
-                    onAutocompleteItemClick = onAutocompleteItemClick,
-                )
-                Box(
+                RoundButton(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .requiredHeightIn(min = DIALOG_BUTTON_SIZE.dp)
-                        .fillMaxHeight(fraction = 1f)
-                ) {
-                    RoundButton(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(
-                                end = confirmationButtonPadding,
-                                bottom = confirmationButtonPadding,
-                            ),
-                        background = MainTheme.colors.common.positiveDialogButton,
-                        iconId = R.drawable.ic_confirmation_24,
-                        onClick = onConfirmClick
-                    )
-                }
-
+                        .align(Alignment.BottomEnd)
+                        .padding(
+                            end = confirmationButtonPadding,
+                            bottom = confirmationButtonPadding,
+                        ),
+                    background = MainTheme.colors.common.positiveDialogButton,
+                    iconId = R.drawable.ic_confirmation_24,
+                    onClick = onConfirmClick
+                )
             }
+
         }
     }
 }
