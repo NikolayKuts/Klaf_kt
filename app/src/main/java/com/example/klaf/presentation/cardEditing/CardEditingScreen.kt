@@ -37,7 +37,6 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                 ipaHolders = ipaHoldersState,
                 autocompleteState = autocompleteState,
                 pronunciationLoadingState = pronunciationLoadingState,
-                onDismissRequest = { viewModel.closeAutocompleteMenu() },
                 onLetterClick = { index, letterInfo ->
                     val updatedIsChecked = when (letterInfo.letter) {
                         LetterInfo.EMPTY_LETTER -> false

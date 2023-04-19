@@ -577,4 +577,3 @@ fun CardButton(cardSide: CardSide, onClick: () -> Unit) {
         )
     }
 }
-
