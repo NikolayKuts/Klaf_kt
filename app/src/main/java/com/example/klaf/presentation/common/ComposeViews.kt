@@ -15,9 +15,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -27,6 +25,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
@@ -88,6 +89,7 @@ fun FullBackgroundDialog(
     Box(
         modifier = modifier
             .fillMaxSize()
+            .padding(bottom = 16.dp)
             .noRippleClickable(onClick = onBackgroundClick)
     ) {
         Box(modifier = Modifier.align(Alignment.Center)) {
@@ -217,16 +219,38 @@ fun CustomCheckBox(
     }
 }
 
+//@Composable
+//fun AdaptiveBox(
+//    modifier: Modifier = Modifier,
+//    content: @Composable LazyItemScope.() -> Unit,
+//) {
+//    LazyColumn(
+//        modifier = modifier.fillMaxSize(),
+//        verticalArrangement = Arrangement.Center,
+//    ) {
+//        item(content = content)
+//    }
+//}
+
 @Composable
 fun AdaptiveBox(
     modifier: Modifier = Modifier,
-    content: @Composable LazyItemScope.() -> Unit,
+    verticalArrangement: Arrangement.Vertical = Arrangement.Center,
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    content: @Composable LazyItemScope.(parentHeightPx: Float) -> Unit,
 ) {
+    val density = LocalDensity.current
+    val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
+    var parentHeightPx by rememberAsMutableStateOf(value = density.run { screenHeightDp.toPx() })
+
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
+        modifier = modifier.onSizeChanged { parentHeightPx = it.height.toFloat() },
+        verticalArrangement = verticalArrangement,
+        horizontalAlignment = horizontalAlignment,
     ) {
-        item(content = content)
+        item {
+            content(parentHeightPx)
+        }
     }
 }
 
@@ -238,7 +262,7 @@ fun Modifier.verticalScrollbar(
     exitDuration: Int = 500,
     minAlpha: Float = 0f,
     maxAlpha: Float = 0.5f,
-    alwaysVisible: Boolean = false
+    alwaysVisible: Boolean = false,
 ): Modifier = composed {
     val targetAlpha = if (alwaysVisible || state.isScrollInProgress) maxAlpha else minAlpha
     val duration = if (state.isScrollInProgress) enterDuration else exitDuration
@@ -278,7 +302,7 @@ fun Modifier.verticalScrollBar(
     exitDuration: Int = 1000,
     minAlpha: Float = 0f,
     maxAlpha: Float = 0.5f,
-    alwaysVisible: Boolean = false
+    alwaysVisible: Boolean = false,
 ): Modifier = composed {
     val targetAlpha = if (alwaysVisible || state.isScrollInProgress) maxAlpha else minAlpha
     val duration = if (state.isScrollInProgress) enterDuration else exitDuration

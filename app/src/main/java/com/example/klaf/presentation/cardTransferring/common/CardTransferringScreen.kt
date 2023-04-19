@@ -23,7 +23,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -43,75 +42,67 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
     val deck = viewModel.sourceDeck.collectAsState(initial = null).value ?: return
     val cardHolders by viewModel.cardHolders.collectAsState()
     var moreButtonClickedState by rememberAsMutableStateOf(value = true)
-
     val density = LocalDensity.current
-    var parentHeightPx by rememberAsMutableStateOf(value = 0F)
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .onSizeChanged { parentHeightPx = it.height.toFloat() },
-    ) {
-        item {
-            val (
-                contentHeightPx: Float,
-                buttonGroupPadding: Dp,
-                bottomContentPadding: Dp,
-            ) = getScreenParams(
-                parentHeightPx = parentHeightPx,
-                minContentHeightPx = density.run { 400.dp.toPx() }
-            )
+    AdaptiveBox { parentHeightPx ->
+        val (
+            contentHeightPx: Float,
+            buttonGroupPadding: Dp,
+            bottomContentPadding: Dp,
+        ) = getScreenParams(
+            parentHeightPx = parentHeightPx,
+            minContentHeightPx = density.run { 400.dp.toPx() }
+        )
+
+        Box(
+            modifier = Modifier
+                .height(density.run { contentHeightPx.toDp() })
+                .fillMaxWidth()
+                .padding(28.dp)
+        ) {
+            Column {
+                Header(deckName = deck.name)
+
+                QuantityPointers(
+                    totalValue = deck.cardQuantity.toString(),
+                    selectedValue = cardHolders.filter { it.isSelected }.size.toString()
+                )
+
+                Spacer(modifier = Modifier.height(28.dp))
+                DividingLine()
+
+                DeckList(
+                    moreButtonClickedState = moreButtonClickedState,
+                    cardHolders = cardHolders,
+                    bottomContentPadding = bottomContentPadding,
+                    onScroll = { moreButtonClickedState = false },
+                    onSelectedChanged = { index ->
+                        viewModel.changeSelectionState(position = index)
+                        moreButtonClickedState = false
+                    },
+                    onLongItemClick = { index ->
+                        viewModel.navigate(event = ToCardEditingFragment(cardSelectionIndex = index))
+                    }
+                )
+            }
 
             Box(
                 modifier = Modifier
-                    .height(density.run { contentHeightPx.toDp() })
-                    .fillMaxWidth()
-                    .padding(28.dp)
+                    .align(Alignment.BottomEnd)
+                    .padding(buttonGroupPadding),
             ) {
-                Column {
-                    Header(deckName = deck.name)
+                ManagementButtons(
+                    clickState = moreButtonClickedState,
+                    onMoveCardsClick = { viewModel.navigate(event = ToCardMovingDialog) },
+                    onAddCardsClick = { viewModel.navigate(event = ToCardAddingFragment) },
+                    onDeleteCardsClick = { viewModel.navigate(event = ToCardDeletionDialog) },
+                    onMoreButtonClick = { moreButtonClickedState = !moreButtonClickedState }
+                )
+            }
 
-                    QuantityPointers(
-                        totalValue = deck.cardQuantity.toString(),
-                        selectedValue = cardHolders.filter { it.isSelected }.size.toString()
-                    )
-
-                    Spacer(modifier = Modifier.height(28.dp))
-                    DividingLine()
-
-                    DeckList(
-                        moreButtonClickedState = moreButtonClickedState,
-                        cardHolders = cardHolders,
-                        bottomContentPadding = bottomContentPadding,
-                        onScroll = { moreButtonClickedState = false },
-                        onSelectedChanged = { index ->
-                            viewModel.changeSelectionState(position = index)
-                            moreButtonClickedState = false
-                        },
-                        onLongItemClick = { index ->
-                            viewModel.navigate(event = ToCardEditingFragment(cardSelectionIndex = index))
-                        }
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(buttonGroupPadding),
-                ) {
-                    ManagementButtons(
-                        clickState = moreButtonClickedState,
-                        onMoveCardsClick = { viewModel.navigate(event = ToCardMovingDialog) },
-                        onAddCardsClick = { viewModel.navigate(event = ToCardAddingFragment) },
-                        onDeleteCardsClick = { viewModel.navigate(event = ToCardDeletionDialog) },
-                        onMoreButtonClick = { moreButtonClickedState = !moreButtonClickedState }
-                    )
-                }
-
-                LaunchedEffect(key1 = null) {
-                    delay(CLOSING_ANIMATION_DELAY)
-                    moreButtonClickedState = false
-                }
+            LaunchedEffect(key1 = null) {
+                delay(CLOSING_ANIMATION_DELAY)
+                moreButtonClickedState = false
             }
         }
     }
@@ -119,7 +110,7 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
 
 private fun getScreenParams(
     parentHeightPx: Float,
-    minContentHeightPx: Float
+    minContentHeightPx: Float,
 ): Triple<Float, Dp, Dp> {
     return if (
         parentHeightPx > 0F

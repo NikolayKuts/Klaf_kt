@@ -211,6 +211,11 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        timer.disableAndClear()
+    }
+
     private fun manageCardSide() {
         cardState.replayCache.firstOrNull()?.let { cardState ->
             if (cardState.side == BACK) {
@@ -333,15 +338,13 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         val updatedDeck = getUpdatedDesk(deckForUpdating = repeatedDeck)
 
         viewModelScope.launchWithState {
-            val currentIterationDuration: Long
-            val currentIterationSuccessMark: DeckRepetitionSuccessMark
-
-            if (updatedDeck.repetitionQuantity.isEven()) {
-                currentIterationDuration = updatedDeck.lastRepetitionIterationDuration
-                currentIterationSuccessMark = updatedDeck.lastIterationSuccessMark
+            val (
+                currentIterationDuration: Long,
+                currentIterationSuccessMark: DeckRepetitionSuccessMark,
+            ) = if (updatedDeck.repetitionQuantity.isEven()) {
+                updatedDeck.lastRepetitionIterationDuration to updatedDeck.lastIterationSuccessMark
             } else {
-                currentIterationDuration = UNASSIGNED_LONG_VALUE
-                currentIterationSuccessMark = DeckRepetitionSuccessMark.UNASSIGNED
+                UNASSIGNED_LONG_VALUE to DeckRepetitionSuccessMark.UNASSIGNED
             }
 
             updateDeck(updatedDeck = updatedDeck)
