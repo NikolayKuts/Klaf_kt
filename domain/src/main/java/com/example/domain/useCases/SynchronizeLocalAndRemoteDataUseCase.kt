@@ -125,8 +125,8 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
         targetStorageSaveVersion: Long?,
     ) {
         val synchronizationJobs = mutableListOf<Job>()
-        val notContainedDecks = olderSaveVersionDecks.filter { deck ->
-            !newerVersionDecks.contains(deck)
+        val notContainedDecks = olderSaveVersionDecks.filterNot { deck ->
+            deck.id in newerVersionDecks.map { it.id }
         }
 
         dataChannelFlow.launchAndAddJob(to = synchronizationJobs) {
@@ -215,11 +215,11 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
         val notContainedDeckIds = notContainedDecks.map { it.id }
 
         olderVersionCards.filter { card ->
-            !newerVersionCards.contains(card) || notContainedDeckIds.contains(card.deckId)
-        }.onEach { card ->
+            card.id !in newerVersionCards.map { it.id } || card.deckId in notContainedDeckIds
+        }.onEach { cardForDeleting ->
             launchAndAddJob(to = synchronizationJobs) {
-                olderSaveVersionCardRepository.deleteCard(cardId = card.id)
-                send(card.nativeWord)
+                olderSaveVersionCardRepository.deleteCard(cardId = cardForDeleting.id)
+                send(cardForDeleting.nativeWord)
             }
         }
     }

@@ -10,8 +10,9 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavDeepLinkBuilder
 import com.example.klaf.R
 import com.example.klaf.data.common.notifications.NotificationChannelInitializer.Companion.DECK_REPETITION_CHANNEL_ID
-import com.example.domain.common.DECK_ID_KEY
 import com.example.klaf.presentation.common.MainActivity
+import com.example.klaf.presentation.deckRepetition.DECK_ID_NAVIGATION_ARGUMENT_KEY
+import com.example.klaf.presentation.deckRepetition.DECK_NAME_NAVIGATION_ARGUMENT_KEY
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
@@ -65,7 +66,7 @@ class DeckRepetitionNotifier @Inject constructor(
             .setGroupIfSdkLessThan24(groupKey = DECK_REPETITION_GROUP_KEY)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setContentIntent(createPaddingIntent(deckId = deckId))
+            .setContentIntent(createPaddingIntent(deckId = deckId, deckName = deckName))
             .build()
     }
 
@@ -127,12 +128,17 @@ class DeckRepetitionNotifier @Inject constructor(
         }
     }
 
-    private fun createPaddingIntent(deckId: Int): PendingIntent {
+    private fun createPaddingIntent(deckId: Int, deckName: String): PendingIntent {
         return NavDeepLinkBuilder(context)
             .setComponentName(MainActivity::class.java)
             .setGraph(R.navigation.nav_graph)
             .setDestination(R.id.deckRepetitionFragment)
-            .setArguments(bundleOf(DECK_ID_KEY to deckId))
+            .setArguments(
+                bundleOf(
+                    DECK_ID_NAVIGATION_ARGUMENT_KEY to deckId,
+                    DECK_NAME_NAVIGATION_ARGUMENT_KEY to deckName,
+                )
+            )
             .createPendingIntent()
     }
 
