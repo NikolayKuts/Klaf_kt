@@ -536,7 +536,7 @@ private fun MoreButton(
 fun CardButton(cardSide: CardSide, onClick: () -> Unit) {
     val rotationValue: Float
     val backgroundColor: Color
-    val animationDuration = 500
+    val animationDuration = 100
 
     when (cardSide) {
         CardSide.FRONT -> {
