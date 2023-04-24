@@ -219,19 +219,6 @@ fun CustomCheckBox(
     }
 }
 
-//@Composable
-//fun AdaptiveBox(
-//    modifier: Modifier = Modifier,
-//    content: @Composable LazyItemScope.() -> Unit,
-//) {
-//    LazyColumn(
-//        modifier = modifier.fillMaxSize(),
-//        verticalArrangement = Arrangement.Center,
-//    ) {
-//        item(content = content)
-//    }
-//}
-
 @Composable
 fun AdaptiveBox(
     modifier: Modifier = Modifier,
