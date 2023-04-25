@@ -3,15 +3,13 @@ package com.example.klaf.presentation.common
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
-import androidx.compose.foundation.interaction.Interaction
-import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
-import androidx.compose.material.TextFieldDefaults.indicatorLine
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,7 +38,6 @@ import com.example.domain.ipa.LetterInfo
 import com.example.klaf.R
 import com.example.klaf.presentation.cardAddition.AutocompleteState
 import com.example.klaf.presentation.theme.MainTheme
-import kotlinx.coroutines.flow.Flow
 
 private const val CARD_MANAGEMENT_CONTAINER_WIDTH = 500
 
@@ -54,6 +51,7 @@ fun CardManagementView(
     ipaHolders: List<IpaHolder>,
     autocompleteState: AutocompleteState,
     pronunciationLoadingState: LoadingState<Unit>,
+    onCloseAutocompletePopupMenuClick: () -> Unit,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
     onNativeWordChange: (String) -> Unit,
     onForeignWordChange: (String) -> Unit,
@@ -64,7 +62,9 @@ fun CardManagementView(
 ) {
     val density = LocalDensity.current
 
-    AdaptiveBox{ parentHeightPx ->
+    AdaptiveBox(
+        modifier = Modifier.noRippleClickable { onCloseAutocompletePopupMenuClick() }
+    ) { parentHeightPx ->
         val (
             contentHeightPx: Float,
             confirmationButtonPadding: Dp,
@@ -85,7 +85,10 @@ fun CardManagementView(
 
             ForeignWordLettersSelector(
                 letterInfos = letterInfos,
-                onLetterClick = onLetterClick,
+                onLetterClick = { index: Int, letterInfo: LetterInfo ->
+                    onLetterClick(index, letterInfo)
+                    onCloseAutocompletePopupMenuClick()
+                }
             )
 
             Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.12f))
@@ -96,6 +99,7 @@ fun CardManagementView(
                 ipaHolders = ipaHolders,
                 autocompleteState = autocompleteState,
                 loadingState = pronunciationLoadingState,
+                onNativeWordFieldClick = onCloseAutocompletePopupMenuClick,
                 onNativeWordChange = onNativeWordChange,
                 onForeignWordChange = onForeignWordChange,
                 onIpaChange = onIpaChange,
@@ -120,8 +124,8 @@ fun CardManagementView(
                     onClick = onConfirmClick
                 )
             }
-
         }
+
     }
 }
 
@@ -213,6 +217,7 @@ fun CardManagementFields(
     autocompleteState: AutocompleteState,
     loadingState: LoadingState<Unit>,
     modifier: Modifier = Modifier,
+    onNativeWordFieldClick: () -> Unit,
     onNativeWordChange: (String) -> Unit,
     onForeignWordChange: (String) -> Unit,
     onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
@@ -227,6 +232,7 @@ fun CardManagementFields(
             value = nativeWord,
             labelTextId = R.string.label_native_word,
             textColor = MainTheme.colors.cardManagementView.nativeWord,
+            onClick = onNativeWordFieldClick,
             onValueChange = onNativeWordChange,
         )
 
@@ -249,18 +255,27 @@ fun CardManagementFields(
 
 @Composable
 private fun WordTextField(
-    modifier: Modifier = Modifier,
     value: String,
     @StringRes labelTextId: Int,
     textColor: Color,
+    onClick: () -> Unit,
     onValueChange: (String) -> Unit,
     trailingIcon: @Composable (() -> Unit)? = null,
 ) {
     val scrollState = rememberScrollState()
     val maxVisibleHeight = 80.dp
+    val interactionSource = remember { MutableInteractionSource() }
+
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            if (interaction is PressInteraction.Release) {
+                onClick()
+            }
+        }
+    }
 
     TextField(
-        modifier = modifier
+        modifier = Modifier
             .width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp)
             .heightIn(max = maxVisibleHeight)
             .verticalScroll(state = scrollState)
@@ -273,6 +288,7 @@ private fun WordTextField(
             textColor = textColor
         ),
         trailingIcon = trailingIcon,
+        interactionSource = interactionSource
     )
 }
 
