@@ -27,6 +27,7 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
             ipaHolders = ipaHolders,
             autocompleteState = autocompleteState,
             pronunciationLoadingState = loadingState,
+            onCloseAutocompletePopupMenuClick = { viewModel.sendEvent(event = CloseAutocompleteMenu) },
             onLetterClick = { index, letterInfo ->
                 viewModel.sendEvent(
                     event = ChangeLetterSelectionWithIpaTemplate(
