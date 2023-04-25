@@ -70,7 +70,7 @@ fun CardManagementView(
             confirmationButtonPadding: Dp,
         ) = getScreenParams(
             parentHeightPx = parentHeightPx,
-            minContentHeightPx = density.run { 450.dp.toPx() }
+            minContentHeightPx = density.run { 500.dp.toPx() }
         )
 
         Column(
@@ -105,27 +105,21 @@ fun CardManagementView(
                 onIpaChange = onIpaChange,
                 onPronounceIconClick = onPronounceIconClick,
                 onAutocompleteItemClick = onAutocompleteItemClick,
+                confirmationButtonSection = {
+                    RoundButton(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(
+                                end = confirmationButtonPadding,
+                                bottom = confirmationButtonPadding,
+                            ),
+                        background = MainTheme.colors.common.positiveDialogButton,
+                        iconId = R.drawable.ic_confirmation_24,
+                        onClick = onConfirmClick
+                    )
+                },
             )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .requiredHeightIn(min = DIALOG_BUTTON_SIZE.dp)
-                    .fillMaxHeight(fraction = 1f)
-            ) {
-                RoundButton(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(
-                            end = confirmationButtonPadding,
-                            bottom = confirmationButtonPadding,
-                        ),
-                    background = MainTheme.colors.common.positiveDialogButton,
-                    iconId = R.drawable.ic_confirmation_24,
-                    onClick = onConfirmClick
-                )
-            }
         }
-
     }
 }
 
@@ -217,6 +211,7 @@ fun CardManagementFields(
     autocompleteState: AutocompleteState,
     loadingState: LoadingState<Unit>,
     modifier: Modifier = Modifier,
+    confirmationButtonSection: @Composable BoxScope.() -> Unit,
     onNativeWordFieldClick: () -> Unit,
     onNativeWordChange: (String) -> Unit,
     onForeignWordChange: (String) -> Unit,
@@ -248,7 +243,8 @@ fun CardManagementFields(
 
         IpaSection(
             ipaHolders = ipaHolders,
-            onIpaChange = onIpaChange
+            onIpaChange = onIpaChange,
+            confirmationButtonSection = confirmationButtonSection
         )
     }
 }
@@ -473,6 +469,7 @@ private fun AutocompleteWordItem(
 fun IpaSection(
     ipaHolders: List<IpaHolder>,
     onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
+    confirmationButtonSection: @Composable BoxScope.() -> Unit,
 ) {
     var parentWidthPx by rememberAsMutableStateOf(value = 0F)
     val cellShape = RoundedCornerShape(size = 6.dp)
@@ -482,64 +479,69 @@ fun IpaSection(
     val ipaValueWidthPx = parentWidthPx * 0.5F
     val scrollState = rememberLazyListState()
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 6.dp)
-            .onSizeChanged { parentWidthPx = it.width.toFloat() }
-            .verticalScrollbar(
-                state = scrollState,
-                color = MainTheme.colors.material.primary,
-            ),
-        state = scrollState,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        itemsIndexed(items = ipaHolders) { letterGroupIndex, ipaHolder ->
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 3.dp, bottom = 3.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
+    Box {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(fraction = 1f)
+                .padding(start = 16.dp, end = 16.dp, top = 6.dp)
+                .onSizeChanged { parentWidthPx = it.width.toFloat() }
+                .verticalScrollbar(
+                    state = scrollState,
+                    color = MainTheme.colors.material.primary,
+                ),
+            state = scrollState,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(bottom = DIALOG_BUTTON_SIZE.dp * 2 / 3)
+        ) {
+            itemsIndexed(items = ipaHolders) { letterGroupIndex, ipaHolder ->
+                Row(
                     modifier = Modifier
-                        .widthIn(max = density.run { chosenLettersWidthPx.toDp() })
-                        .clip(shape = cellShape)
-                        .background(color = MainTheme.colors.cardManagementView.checkedLetterCell)
-                        .padding(6.dp),
-                    text = ipaHolder.letterGroup,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
-                )
+                        .fillMaxWidth()
+                        .padding(top = 3.dp, bottom = 3.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .widthIn(max = density.run { chosenLettersWidthPx.toDp() })
+                            .clip(shape = cellShape)
+                            .background(color = MainTheme.colors.cardManagementView.checkedLetterCell)
+                            .padding(6.dp),
+                        text = ipaHolder.letterGroup,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1
+                    )
 
-                Text(
-                    modifier = Modifier.padding(start = 6.dp, end = 6.dp),
-                    text = equalSing,
-                )
+                    Text(
+                        modifier = Modifier.padding(start = 6.dp, end = 6.dp),
+                        text = equalSing,
+                    )
 
-                BasicTextField(
-                    modifier = Modifier
-                        .widthIn(max = density.run { ipaValueWidthPx.toDp() })
-                        .defaultMinSize(minWidth = 30.dp)
-                        .width(IntrinsicSize.Min)
-                        .clip(shape = cellShape)
-                        .background(MainTheme.colors.cardManagementView.ipaCellBackground)
-                        .padding(6.dp),
-                    value = ipaHolder.ipa,
-                    cursorBrush = Brush.verticalGradient(
-                        0.00f to Color.Transparent,
-                        0.15f to Color.Transparent,
-                        0.15f to MainTheme.colors.material.onPrimary,
-                        0.90f to MainTheme.colors.material.onPrimary,
-                        0.90f to Color.Transparent,
-                        1.00f to Color.Transparent,
-                    ),
-                    onValueChange = { newText -> onIpaChange(letterGroupIndex, newText) },
-                    textStyle = MainTheme.typographies.cardManagementViewTextStyles.ipaValue,
-                    singleLine = true,
-                )
+                    BasicTextField(
+                        modifier = Modifier
+                            .widthIn(max = density.run { ipaValueWidthPx.toDp() })
+                            .defaultMinSize(minWidth = 30.dp)
+                            .width(IntrinsicSize.Min)
+                            .clip(shape = cellShape)
+                            .background(MainTheme.colors.cardManagementView.ipaCellBackground)
+                            .padding(6.dp),
+                        value = ipaHolder.ipa,
+                        cursorBrush = Brush.verticalGradient(
+                            0.00f to Color.Transparent,
+                            0.15f to Color.Transparent,
+                            0.15f to MainTheme.colors.material.onPrimary,
+                            0.90f to MainTheme.colors.material.onPrimary,
+                            0.90f to Color.Transparent,
+                            1.00f to Color.Transparent,
+                        ),
+                        onValueChange = { newText -> onIpaChange(letterGroupIndex, newText) },
+                        textStyle = MainTheme.typographies.cardManagementViewTextStyles.ipaValue,
+                        singleLine = true,
+                    )
+                }
             }
         }
+
+        confirmationButtonSection()
     }
 }
