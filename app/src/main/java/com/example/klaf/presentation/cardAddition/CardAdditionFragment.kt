@@ -48,6 +48,11 @@ class CardAdditionFragment : Fragment(R.layout.fragment_card_addition) {
         subscribeAudioPlayerObserver()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        lifecycle.removeObserver(viewModel.audioPlayer)
+    }
+
     private fun setEventMessageObserver(view: View) {
         viewModel.eventMessage.collectWhenStarted(lifecycleOwner = this) { eventMessage ->
             view.showSnackBar(messageId = eventMessage.resId)
