@@ -29,7 +29,7 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
     companion object {
 
         private const val AUDIO_URI_TEMPLATE = "https://wooordhunt.ru/data/sound/sow/us/%s.mp3"
-        private const val LOADING_TIME_INTERVAL = 6000L
+        private const val LOADING_TIMEOUT_INTERVAL = 6000L
     }
 
     override fun onCreate(owner: LifecycleOwner) {
@@ -52,8 +52,7 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
 
     override fun onStop(owner: LifecycleOwner) {
         super.onStop(owner)
-        preparingJob?.cancel()
-        preparingJob = null
+        resetPreparingJob()
         isPrepared = false
         mediaPlayer?.release()
         mediaPlayer = null
@@ -66,30 +65,31 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
     }
 
     fun preparePronunciation(word: String) {
-        preparingJob?.cancel()
+        resetPreparingJob()
 
         if (word.isNotEmpty()) {
             preparingJob = coroutineScope?.launchWithState {
                 mediaPlayer?.apply {
-                    launch {
-                        delay(LOADING_TIME_INTERVAL)
-                        _loadingState.value = LoadingState.Non
-                    }
-
                     _loadingState.value = LoadingState.Loading
-                    preparingJob?.ensureActive()
                     wordForPreparing = word
                     isPrepared = false
 
                     reset()
                     setDataSource(word.buildAudioUri())
-                    prepare()
+                    prepareAsync()
+                    delay(LOADING_TIMEOUT_INTERVAL)
+                    val shouldLoadingStateBeNon =
+                        !isPrepared && (_loadingState.value !is LoadingState.Success<Unit>)
+
+                    shouldLoadingStateBeNon.ifTrue { _loadingState.value = LoadingState.Non }
                 }
             }?.onException { _, _ ->
                 mediaPlayer?.reset()
+                _loadingState.value = LoadingState.Non
             }
         } else {
             _loadingState.value = LoadingState.Non
+            wordForPreparing = null
         }
     }
 
@@ -104,14 +104,25 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
                 .setUsage(AudioAttributes.USAGE_MEDIA)
                 .build()
         )
+
         setOnPreparedListener {
             isPrepared = true
-            preparingJob?.cancel()
+            resetPreparingJob()
             _loadingState.value = LoadingState.Success(Unit)
+        }
+
+        setOnErrorListener { notNullableMediaPlayer, _, _ ->
+            notNullableMediaPlayer.reset()
+            true
         }
     }
 
     private fun String.buildAudioUri(): String {
         return AUDIO_URI_TEMPLATE.format(this.trim().lowercase())
+    }
+
+    private fun resetPreparingJob() {
+        preparingJob?.cancel()
+        preparingJob = null
     }
 }
