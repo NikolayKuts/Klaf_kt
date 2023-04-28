@@ -46,7 +46,7 @@ fun DeckRepetitionInfoView(
         is Emptiable.Content -> {
             val info = infoContent.data
 
-            AdaptiveBox(
+            ScrollableBox(
                 modifier = Modifier.noRippleClickable { onCloseClick() },
             ) {
                 FullBackgroundDialog(

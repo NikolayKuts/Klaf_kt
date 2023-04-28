@@ -60,28 +60,25 @@ fun CardManagementView(
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
-    val density = LocalDensity.current
-
-    AdaptiveBox(
-        modifier = Modifier.noRippleClickable { onCloseAutocompletePopupMenuClick() }
-    ) { parentHeightPx ->
-        val (
-            contentHeightPx: Float,
-            confirmationButtonPadding: Dp,
-        ) = getScreenParams(
+    ScrollableBox(modifier = Modifier.fillMaxSize()) { parentHeightPx ->
+        val density = LocalDensity.current
+        val minContentHeightDp = 500.dp
+        val confirmationButtonPadding = getConfirmationButtonPadding(
             parentHeightPx = parentHeightPx,
-            minContentHeightPx = density.run { 500.dp.toPx() }
+            minContentHeightPx = density.run { minContentHeightDp.toPx() },
         )
 
         Column(
             modifier = Modifier
-                .height(density.run { contentHeightPx.toDp() })
+                .fillMaxWidth()
+                .heightIn(min = minContentHeightDp)
+                .height(density.run { parentHeightPx.toDp() })
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             DeckInfo(name = deckName, cardQuantity = cardQuantity)
 
-            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.07f))
+            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.1f))
 
             ForeignWordLettersSelector(
                 letterInfos = letterInfos,
@@ -91,7 +88,7 @@ fun CardManagementView(
                 }
             )
 
-            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.12f))
+            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.1f))
 
             CardManagementFields(
                 nativeWord = nativeWord,
@@ -123,22 +120,16 @@ fun CardManagementView(
     }
 }
 
-private fun getScreenParams(
+private fun getConfirmationButtonPadding(
     parentHeightPx: Float,
     minContentHeightPx: Float,
-): Pair<Float, Dp> {
-    return if (
-        parentHeightPx > 0F
-        && parentHeightPx < minContentHeightPx
-    ) {
-        minContentHeightPx to 0.dp
-    } else {
-        parentHeightPx to 16.dp
-    }
-}
+): Dp = if (
+    parentHeightPx > 0F
+    && parentHeightPx < minContentHeightPx
+) 0.dp else 16.dp
 
 @Composable
-fun ForeignWordLettersSelector(
+private fun ForeignWordLettersSelector(
     letterInfos: List<LetterInfo>,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
 ) {
@@ -161,7 +152,7 @@ fun ForeignWordLettersSelector(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun LazyItemScope.LetterItem(
+private fun LazyItemScope.LetterItem(
     letterInfo: LetterInfo,
     onClick: () -> Unit,
 ) {
@@ -185,7 +176,7 @@ fun LazyItemScope.LetterItem(
 }
 
 @Composable
-fun DeckInfo(
+private fun DeckInfo(
     name: String,
     cardQuantity: Int,
     modifier: Modifier = Modifier,
@@ -204,7 +195,7 @@ fun DeckInfo(
 }
 
 @Composable
-fun CardManagementFields(
+private fun CardManagementFields(
     nativeWord: String,
     foreignWord: String,
     ipaHolders: List<IpaHolder>,
@@ -289,7 +280,7 @@ private fun WordTextField(
 }
 
 @Composable
-fun DropDownAutocompleteFiled(
+private fun DropDownAutocompleteFiled(
     expanded: Boolean,
     typedWord: String,
     autocompleteState: AutocompleteState,
@@ -466,7 +457,7 @@ private fun AutocompleteWordItem(
 }
 
 @Composable
-fun IpaSection(
+private fun IpaSection(
     ipaHolders: List<IpaHolder>,
     onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
     confirmationButtonSection: @Composable BoxScope.() -> Unit,

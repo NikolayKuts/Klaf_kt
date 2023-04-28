@@ -15,7 +15,10 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -220,9 +223,11 @@ fun CustomCheckBox(
 }
 
 @Composable
-fun AdaptiveBox(
+fun ScrollableBox(
     modifier: Modifier = Modifier,
-    verticalArrangement: Arrangement.Vertical = Arrangement.Center,
+    reverseLayout: Boolean = false,
+    verticalArrangement: Arrangement.Vertical =
+        if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     content: @Composable LazyItemScope.(parentHeightPx: Float) -> Unit,
 ) {
@@ -232,6 +237,7 @@ fun AdaptiveBox(
 
     LazyColumn(
         modifier = modifier.onSizeChanged { parentHeightPx = it.height.toFloat() },
+        reverseLayout = reverseLayout,
         verticalArrangement = verticalArrangement,
         horizontalAlignment = horizontalAlignment,
     ) {

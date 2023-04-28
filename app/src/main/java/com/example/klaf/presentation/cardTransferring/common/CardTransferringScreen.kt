@@ -44,7 +44,7 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
     var moreButtonClickedState by rememberAsMutableStateOf(value = true)
     val density = LocalDensity.current
 
-    AdaptiveBox { parentHeightPx ->
+    ScrollableBox { parentHeightPx ->
         val (
             contentHeightPx: Float,
             buttonGroupPadding: Dp,
