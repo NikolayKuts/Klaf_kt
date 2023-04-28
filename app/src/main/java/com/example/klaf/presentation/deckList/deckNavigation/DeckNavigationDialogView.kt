@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
-import com.example.klaf.presentation.common.AdaptiveBox
+import com.example.klaf.presentation.common.ScrollableBox
 import com.example.klaf.presentation.common.FullBackgroundDialog
 import com.example.klaf.presentation.common.RoundButton
 import com.example.klaf.presentation.common.noRippleClickable
@@ -28,7 +28,7 @@ fun DeckNavigationDialogView(
     onRepetitionInfoClick: () -> Unit,
     onCloseDialogClick: () -> Unit,
 ) {
-    AdaptiveBox(
+    ScrollableBox(
         modifier = Modifier.noRippleClickable { onCloseDialogClick() },
     ) {
         FullBackgroundDialog(
