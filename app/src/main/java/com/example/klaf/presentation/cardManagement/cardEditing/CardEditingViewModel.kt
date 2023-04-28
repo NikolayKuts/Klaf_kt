@@ -1,9 +1,8 @@
-package com.example.klaf.presentation.cardEditing
+package com.example.klaf.presentation.cardManagement.cardEditing
 
 import androidx.lifecycle.viewModelScope
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
-import com.example.domain.common.LoadingState
 import com.example.domain.common.ifNotNull
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
@@ -15,7 +14,7 @@ import com.example.domain.useCases.FetchWordAutocompleteUseCase
 import com.example.domain.useCases.UpdateCardUseCase
 import com.example.klaf.R
 import com.example.klaf.data.networking.CardAudioPlayer
-import com.example.klaf.presentation.cardAddition.AutocompleteState
+import com.example.klaf.presentation.cardManagement.cardAddition.AutocompleteState
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.tryEmit
 import dagger.assisted.Assisted
@@ -81,7 +80,7 @@ class CardEditingViewModel @AssistedInject constructor(
             deckId = deckId,
             nativeWord = nativeWord,
             foreignWord = foreignWord,
-            ipa = ipaHolders
+            ipa = ipaHolders.map { ipaHolder -> ipaHolder.copy(ipa = ipaHolder.ipa.trim()) }
         )
 
         when {
