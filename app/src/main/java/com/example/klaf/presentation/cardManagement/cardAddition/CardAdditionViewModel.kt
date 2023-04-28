@@ -1,26 +1,24 @@
-package com.example.klaf.presentation.cardAddition
+package com.example.klaf.presentation.cardManagement.cardAddition
 
 import androidx.lifecycle.viewModelScope
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
-import com.example.domain.common.LoadingState
 import com.example.domain.common.generateLetterInfos
-import com.example.domain.common.ifTrue
 import com.example.domain.common.updatedAt
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
 import com.example.domain.ipa.IpaHolder
 import com.example.domain.ipa.LetterInfo
 import com.example.domain.ipa.toRowIpaItemHolders
-import com.example.domain.ipa.toWord
 import com.example.domain.useCases.AddNewCardIntoDeckUseCase
 import com.example.domain.useCases.FetchDeckByIdUseCase
 import com.example.domain.useCases.FetchWordAutocompleteUseCase
 import com.example.klaf.R
 import com.example.klaf.data.networking.CardAudioPlayer
-import com.example.klaf.presentation.cardAddition.CardAdditionEvent.*
+import com.example.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.*
+import com.example.klaf.presentation.cardManagement.common.MAX_IPA_LENGTH
+import com.example.klaf.presentation.cardManagement.common.MAX_WORD_LENGTH
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.tryEmit
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -37,12 +35,6 @@ class CardAdditionViewModel @AssistedInject constructor(
     override val audioPlayer: CardAudioPlayer,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
 ) : BaseCardAdditionViewModel() {
-
-    companion object {
-
-        const val MAX_IPA_LENGTH = 10
-        const val MAX_WORD_LENGTH = 30
-    }
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
@@ -91,11 +83,11 @@ class CardAdditionViewModel @AssistedInject constructor(
             }
             is UpdateNativeWord -> updateNativeWord(word = event.word)
             is AddNewCard -> {
-                addNewCard(
+                saveNewCard(
                     deckId = event.deckId,
                     nativeWord = event.nativeWord,
                     foreignWord = event.foreignWord,
-                    ipaHolders = event.ipaHolders
+                    ipaHolders = event.ipaHolders,
                 )
             }
             PronounceForeignWord -> audioPlayer.play()
@@ -129,7 +121,7 @@ class CardAdditionViewModel @AssistedInject constructor(
         }.launchIn(viewModelScope)
     }
 
-    private fun addNewCard(
+    private fun saveNewCard(
         deckId: Int,
         nativeWord: String,
         foreignWord: String,
@@ -142,7 +134,7 @@ class CardAdditionViewModel @AssistedInject constructor(
                 deckId = deckId,
                 nativeWord = nativeWord,
                 foreignWord = foreignWord,
-                ipa = ipaHolders
+                ipa = ipaHolders.map { ipaHolder -> ipaHolder.copy(ipa = ipaHolder.ipa.trim()) }
             )
 
             viewModelScope.launchWithState {
@@ -206,7 +198,7 @@ class CardAdditionViewModel @AssistedInject constructor(
         if (ipa.length < MAX_IPA_LENGTH) {
             ipaHoldersState.update { ipaHolders ->
                 ipaHolders.updatedAt(index = letterGroupIndex) { oldValue ->
-                    oldValue.copy(ipa = ipa.trim())
+                    oldValue.copy(ipa = ipa)
                 }
             }
         }

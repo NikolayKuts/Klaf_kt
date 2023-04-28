@@ -1,9 +1,9 @@
-package com.example.klaf.presentation.cardEditing
+package com.example.klaf.presentation.cardManagement.cardEditing
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.klaf.presentation.cardEditing.CardEditingViewModel.Companion.CARD_ARGUMENT_NAME
-import com.example.klaf.presentation.cardEditing.CardEditingViewModel.Companion.DECK_ARGUMENT_NAME
+import com.example.klaf.presentation.cardManagement.cardEditing.CardEditingViewModel.Companion.CARD_ARGUMENT_NAME
+import com.example.klaf.presentation.cardManagement.cardEditing.CardEditingViewModel.Companion.DECK_ARGUMENT_NAME
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 

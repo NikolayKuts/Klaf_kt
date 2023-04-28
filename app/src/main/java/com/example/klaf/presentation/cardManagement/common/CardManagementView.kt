@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.common
+package com.example.klaf.presentation.cardManagement.common
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.tween
@@ -33,10 +33,12 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Popup
 import com.example.domain.common.LoadingState
 import com.example.domain.common.ifTrue
+import com.example.domain.common.skipOnNewLineCharacter
 import com.example.domain.ipa.IpaHolder
 import com.example.domain.ipa.LetterInfo
 import com.example.klaf.R
-import com.example.klaf.presentation.cardAddition.AutocompleteState
+import com.example.klaf.presentation.cardManagement.cardAddition.AutocompleteState
+import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
 
 private const val CARD_MANAGEMENT_CONTAINER_WIDTH = 500
@@ -470,13 +472,12 @@ private fun IpaSection(
     val ipaValueWidthPx = parentWidthPx * 0.5F
     val scrollState = rememberLazyListState()
 
-    Box {
+    Box(modifier = Modifier.fillMaxHeight(fraction = 1f)) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(fraction = 1f)
-                .padding(start = 16.dp, end = 16.dp, top = 6.dp)
                 .onSizeChanged { parentWidthPx = it.width.toFloat() }
+                .padding(start = 16.dp, end = 16.dp, top = 6.dp)
                 .verticalScrollbar(
                     state = scrollState,
                     color = MainTheme.colors.material.primary,
@@ -510,8 +511,7 @@ private fun IpaSection(
 
                     BasicTextField(
                         modifier = Modifier
-                            .widthIn(max = density.run { ipaValueWidthPx.toDp() })
-                            .defaultMinSize(minWidth = 30.dp)
+                            .widthIn(min = 30.dp, max = density.run { ipaValueWidthPx.toDp() })
                             .width(IntrinsicSize.Min)
                             .clip(shape = cellShape)
                             .background(MainTheme.colors.cardManagementView.ipaCellBackground)
@@ -525,9 +525,10 @@ private fun IpaSection(
                             0.90f to Color.Transparent,
                             1.00f to Color.Transparent,
                         ),
-                        onValueChange = { newText -> onIpaChange(letterGroupIndex, newText) },
+                        onValueChange = { newText ->
+                            onIpaChange(letterGroupIndex, newText.skipOnNewLineCharacter())
+                        },
                         textStyle = MainTheme.typographies.cardManagementViewTextStyles.ipaValue,
-                        singleLine = true,
                     )
                 }
             }

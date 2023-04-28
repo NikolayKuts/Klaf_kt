@@ -119,3 +119,9 @@ inline infix fun <T, R> T?.ifNull(
 } else {
     ConditionableWithReversedReceiver.ElseCondition(receiver = this)
 }
+
+fun String.skipOnNewLineCharacter(): String = if ("\n" in this) {
+    replace(oldValue = "\n", newValue = "")
+} else {
+    this
+}

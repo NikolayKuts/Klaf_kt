@@ -1,10 +1,10 @@
-package com.example.klaf.presentation.cardAddition
+package com.example.klaf.presentation.cardManagement.cardAddition
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.example.klaf.presentation.cardAddition.CardAdditionEvent.*
-import com.example.klaf.presentation.common.CardManagementView
+import com.example.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.*
+import com.example.klaf.presentation.cardManagement.common.CardManagementView
 
 @Composable
 fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
