@@ -66,7 +66,6 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
 
     fun preparePronunciation(word: String) {
         resetPreparingJob()
-
         if (word.isNotEmpty()) {
             preparingJob = coroutineScope?.launchWithState {
                 mediaPlayer?.apply {
