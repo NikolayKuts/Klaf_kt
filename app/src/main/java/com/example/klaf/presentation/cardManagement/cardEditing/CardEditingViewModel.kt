@@ -27,10 +27,10 @@ import kotlinx.coroutines.launch
 class CardEditingViewModel @AssistedInject constructor(
     @Assisted(DECK_ARGUMENT_NAME) private val deckId: Int,
     @Assisted(CARD_ARGUMENT_NAME) cardId: Int,
+    override val audioPlayer: CardAudioPlayer,
     fetchDeckById: FetchDeckByIdUseCase,
     fetchCard: FetchCardUseCase,
     private val updateCard: UpdateCardUseCase,
-    private val audioPlayer: CardAudioPlayer,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
 ) : BaseCardEditingViewModel() {
 
