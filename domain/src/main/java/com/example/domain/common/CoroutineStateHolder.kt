@@ -1,5 +1,6 @@
 package com.example.domain.common
 
+import com.example.domain.repositories.CrashlyticsRepository
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
@@ -37,7 +38,7 @@ class CoroutineStateHolder private constructor() {
         }
 
         infix fun CoroutineStateHolder.onException(
-            block: (CoroutineContext, Throwable) -> Unit
+            block: (CoroutineContext, Throwable) -> Unit,
         ): Job {
             this.onException = block
 
@@ -47,6 +48,14 @@ class CoroutineStateHolder private constructor() {
             }
 
             return job
+        }
+
+        fun CoroutineStateHolder.onExceptionWithCrashlyticsReport(
+            crashlytics: CrashlyticsRepository,
+            block: (CoroutineContext, Throwable) -> Unit,
+        ): Job = onException { context, throwable ->
+            crashlytics.report(exception = throwable)
+            block(context, throwable)
         }
     }
 

@@ -4,8 +4,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
+import com.example.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.example.domain.common.catchWithCrashlyticsReport
 import com.example.domain.common.getCurrentDateAsLong
 import com.example.domain.entities.Deck
+import com.example.domain.repositories.CrashlyticsRepository
 import com.example.domain.useCases.*
 import com.example.klaf.R
 import com.example.klaf.data.common.AppReopeningWorker.Companion.scheduleAppReopening
@@ -22,7 +25,6 @@ import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
 import com.google.firebase.auth.FirebaseAuth
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -35,6 +37,7 @@ class DeckListViewModel @AssistedInject constructor(
     notificationChannelInitializer: NotificationChannelInitializer,
     private val workManager: WorkManager,
     private val auth: FirebaseAuth,
+    private val crashlytics: CrashlyticsRepository,
 ) : BaseDeckListViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
@@ -47,7 +50,7 @@ class DeckListViewModel @AssistedInject constructor(
         MutableStateFlow<DataSynchronizationState>(DataSynchronizationState.InitialState)
 
     override val deckSource: StateFlow<List<Deck>?> = (fetchDeckSource() as Flow<List<Deck>?>)
-        .catch { this.emit(value = null) }
+        .catchWithCrashlyticsReport(crashlytics = crashlytics) { this.emit(value = null) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -62,7 +65,8 @@ class DeckListViewModel @AssistedInject constructor(
 
     init {
         notificationChannelInitializer.initialize()
-        viewModelScope.launch { createInterimDeck() }
+        viewModelScope.launchWithState { createInterimDeck() }
+            .onException { _, throwable -> crashlytics.report(exception = throwable) }
         observeDataSynchronizationStateWorker()
         workManager.scheduleDeckRepetitionChecking()
     }
@@ -90,7 +94,7 @@ class DeckListViewModel @AssistedInject constructor(
                         )
                         eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
                         deckCreationState.value = DeckCreationState.CREATED
-                    } onException { _, _ ->
+                    }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
                         eventMessage.tryEmit(messageId = R.string.problem_with_creating_deck)
                     }
                 }
@@ -124,7 +128,7 @@ class DeckListViewModel @AssistedInject constructor(
                         renameDeck(oldDeck = deck, name = updatedName)
                         eventMessage.tryEmit(messageId = R.string.deck_has_been_renamed)
                         renamingState.value = DeckRenamingState.RENAMED
-                    } onException { _, _ ->
+                    }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
                         eventMessage.tryEmit(messageId = R.string.problem_with_renaming_deck)
                     }
                 }
@@ -140,7 +144,7 @@ class DeckListViewModel @AssistedInject constructor(
         viewModelScope.launchWithState {
             removeDeck(deckId = deckId)
             eventMessage.tryEmit(messageId = R.string.the_deck_has_been_removed)
-        } onException { _, _ ->
+        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
             eventMessage.tryEmit(messageId = R.string.problem_with_removing_deck)
         }
     }
@@ -190,6 +194,7 @@ class DeckListViewModel @AssistedInject constructor(
 
     private fun observeDataSynchronizationStateWorker() {
         workManager.getDataSynchronizationProgressState()
+            .catch { crashlytics.report(exception = it) }
             .filterNot { it is DataSynchronizationState.UncertainState }
             .onEach { dataSynchronizationState.value = it }
             .launchIn(scope = viewModelScope)

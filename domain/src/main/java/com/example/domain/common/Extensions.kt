@@ -1,15 +1,15 @@
 package com.example.domain.common
 
 import com.example.domain.ipa.LetterInfo
+import com.example.domain.repositories.CrashlyticsRepository
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 fun <T> MutableList<T>.update(newData: List<T>) {
     clear()
@@ -124,4 +124,19 @@ fun String.skipOnNewLineCharacter(): String = if ("\n" in this) {
     replace(oldValue = "\n", newValue = "")
 } else {
     this
+}
+
+fun <T> Flow<T>.catchWithCrashlyticsReport(
+    crashlytics: CrashlyticsRepository,
+    action: suspend FlowCollector<T>.(Throwable) -> Unit,
+): Flow<T> = this.catch {
+    crashlytics.report(exception = it)
+    action(it)
+}
+
+fun <T> Flow<T>.launchIn(
+    scope: CoroutineScope,
+    context: CoroutineContext = EmptyCoroutineContext,
+): Job = scope.launch(context = context) {
+    collect() // tail-call
 }

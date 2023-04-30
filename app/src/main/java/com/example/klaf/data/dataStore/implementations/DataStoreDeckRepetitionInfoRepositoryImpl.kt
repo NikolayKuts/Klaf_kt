@@ -33,7 +33,7 @@ class DataStoreDeckRepetitionInfoRepositoryImpl @Inject constructor(
         dataStore.updateData { infos ->
             val updatedContent = infos.content.toMutableSet()
                 .apply {
-                    removeIf { filterdInfo -> filterdInfo.deckId == deckId }
+                    removeIf { filteredInfo -> filteredInfo.deckId == deckId }
                 }
 
             infos.copy(content = updatedContent)

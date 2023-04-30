@@ -6,25 +6,31 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
+import com.example.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.example.domain.common.LoadingState
 import com.example.domain.common.ifNull
 import com.example.domain.common.ifTrue
+import com.example.domain.repositories.CrashlyticsRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
-class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
-
-    private var mediaPlayer: MediaPlayer? = getNewPlayerInstance()
-    private var isPrepared = false
-    private var wordForPreparing: String? = null
-    private var coroutineScope: CoroutineScope? =
-        CoroutineScope(context = Dispatchers.IO + SupervisorJob())
-    private var preparingJob: Job? = null
+class CardAudioPlayer @Inject constructor(
+    private val crashlytics: CrashlyticsRepository,
+    private var mediaPlayer: MediaPlayer? = null,
+    private var isPrepared: Boolean = false,
+    private var wordForPreparing: String? = null,
+    private var coroutineScope: CoroutineScope? = CoroutineScope(context = Dispatchers.IO + SupervisorJob()),
+    private var preparingJob: Job? = null,
+) : DefaultLifecycleObserver {
 
     private val _loadingState = MutableStateFlow<LoadingState<Unit>>(value = LoadingState.Non)
     val loadingState = _loadingState.asStateFlow()
+
+    init {
+        mediaPlayer = getNewPlayerInstance()
+    }
 
     companion object {
 
@@ -82,7 +88,7 @@ class CardAudioPlayer @Inject constructor() : DefaultLifecycleObserver {
 
                     shouldLoadingStateBeNon.ifTrue { _loadingState.value = LoadingState.Non }
                 }
-            }?.onException { _, _ ->
+            }?.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
                 mediaPlayer?.reset()
                 _loadingState.value = LoadingState.Non
             }
