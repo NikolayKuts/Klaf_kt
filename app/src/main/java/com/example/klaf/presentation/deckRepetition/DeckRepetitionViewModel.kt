@@ -9,11 +9,13 @@ import com.example.domain.common.CardSide.BACK
 import com.example.domain.common.CardSide.FRONT
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
+import com.example.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
 import com.example.domain.entities.DeckRepetitionInfo
 import com.example.domain.enums.DifficultyRecallingLevel
 import com.example.domain.enums.DifficultyRecallingLevel.*
+import com.example.domain.repositories.CrashlyticsRepository
 import com.example.domain.useCases.*
 import com.example.klaf.R
 import com.example.klaf.data.common.DeckRepetitionReminder.Companion.scheduleDeckRepetition
@@ -30,6 +32,7 @@ import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.deckRepetition.RepetitionScreenState.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import java.util.*
 
@@ -44,6 +47,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     private val workManager: WorkManager,
     private val saveDeckRepetitionInfo: SaveDeckRepetitionInfoUseCase,
     private val deckRepetitionNotifier: DeckRepetitionNotifier,
+    private val crashlytics: CrashlyticsRepository,
 ) : BaseDeckRepetitionViewModel() {
 
     companion object {
@@ -55,8 +59,9 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     override val eventMessage = MutableSharedFlow<EventMessage>(replay = 1)
 
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
-        .catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck) }
-        .shareIn(
+        .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck)
+        }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
             replay = 1
@@ -66,8 +71,9 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     override val screenState = MutableStateFlow<RepetitionScreenState>(StartState)
 
     private val cardsSource: SharedFlow<List<Card>> = fetchCards(deckId)
-        .catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards) }
-        .shareIn(
+        .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
+        }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Lazily,
             replay = 1
@@ -193,7 +199,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         viewModelScope.launchWithState {
             deleteCardsFromDeck(deckId = deckId, cardIds = intArrayOf(cardId))
             eventMessage.tryEmit(messageId = R.string.card_has_been_deleted)
-        } onException { _, _ ->
+        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
             eventMessage.tryEmit(messageId = R.string.problem_with_removing_card)
         }
     }
@@ -225,30 +231,27 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     private fun observeCardSource() {
-        viewModelScope.launchWithState {
-            cardsSource.collect { receivedCards ->
-                if (
-                    (screenState.value !is StartState)
-                    && (receivedCards.size != repetitionCards.value.size)
-                ) {
-                    screenState.value = StartState
-                    timer.stopCounting()
-                }
-
-                repetitionCards.value = getCardsByProgress(receivedCards = receivedCards)
-            }
-        } onException { _, _ ->
+        cardsSource.catchWithCrashlyticsReport(crashlytics = crashlytics) {
             eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
-        }
+        }.onEach { receivedCards ->
+            if (
+                (screenState.value !is StartState)
+                && (receivedCards.size != repetitionCards.value.size)
+            ) {
+                screenState.value = StartState
+                timer.stopCounting()
+            }
+
+            repetitionCards.value = getCardsByProgress(receivedCards = receivedCards)
+        }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
     }
 
     private fun observeCurrentCard() {
-        currentCard.onEach { card: Card? ->
-            card?.let { notNullCard ->
-                audioPlayer.preparePronunciation(word = notNullCard.foreignWord)
-            }
-        }.catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card) }
-            .launchIn(viewModelScope)
+        currentCard.filterNotNull()
+            .onEach { card -> audioPlayer.preparePronunciation(word = card.foreignWord) }
+            .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+                eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card)
+            }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
     }
 
     private fun clearRepetitionProgress() {
@@ -367,7 +370,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             )
             screenState.value = FinishState
             screenState.value = StartState
-        } onException { _, _ ->
+        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
             eventMessage.tryEmit(messageId = R.string.problem_with_updating_deck)
         }
     }

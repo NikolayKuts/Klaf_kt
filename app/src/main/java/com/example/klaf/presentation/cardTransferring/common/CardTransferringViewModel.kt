@@ -2,17 +2,21 @@ package com.example.klaf.presentation.cardTransferring.common
 
 import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
-import com.example.klaf.R
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
-import com.example.domain.common.CoroutineStateHolder.Companion.onException
+import com.example.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.example.domain.common.catchWithCrashlyticsReport
 import com.example.domain.entities.Deck
+import com.example.domain.repositories.CrashlyticsRepository
 import com.example.domain.useCases.*
+import com.example.klaf.R
 import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingState
 import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingState.*
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
+import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardTransferringFragment
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.emit
+import com.example.klaf.presentation.common.tryEmit
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -26,13 +30,15 @@ class CardTransferringViewModel @AssistedInject constructor(
     private val deleteCardsFromDeckUseCase: DeleteCardsFromDeckUseCase,
     fetchDeckSource: FetchDeckSourceUseCase,
     private val moveCardsToDeck: TransferCardsToDeckUseCase,
+    private val crashlytics: CrashlyticsRepository,
 ) : BaseCardTransferringViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>()
 
     override val sourceDeck = fetchDeckById(deckId = sourceDeckId)
-        .catch { emitEventMessage(messageId = R.string.problem_with_fetching_deck) }
-        .shareIn(
+        .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+            emitEventMessage(messageId = R.string.problem_with_fetching_deck)
+        }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
             replay = 1
@@ -46,8 +52,9 @@ class CardTransferringViewModel @AssistedInject constructor(
         MutableStateFlow(value = NON)
 
     override val decks: StateFlow<List<Deck>> = fetchDeckSource()
-        .catch { emitEventMessage(messageId = R.string.problem_fetching_decks) }
-        .filterNotCurrentAndInterimDecks()
+        .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+            emitEventMessage(messageId = R.string.problem_fetching_decks)
+        }.filterNotCurrentAndInterimDecks()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -107,7 +114,7 @@ class CardTransferringViewModel @AssistedInject constructor(
                     )
                     cardDeletingState.value = FINISHED
                     emitEventMessage(messageId = R.string.message_deletion_completed_successfully)
-                } onException { _, _ ->
+                }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
                     emitEventMessage(messageId = R.string.problem_with_removing_cards)
                 }
             }
@@ -124,7 +131,7 @@ class CardTransferringViewModel @AssistedInject constructor(
                 emitDestination(destination = CardTransferringFragment)
                 emitEventMessage(messageId = (R.string.message_transfer_completed_successfully))
             }
-        } onException { _, _ ->
+        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
             emitEventMessage(messageId = R.string.problem_with_moving_cards)
         }
     }
@@ -134,11 +141,12 @@ class CardTransferringViewModel @AssistedInject constructor(
     }
 
     private fun observeCardSource() {
-        viewModelScope.launch {
-            fetchCards(deckId = sourceDeckId).collect { cards ->
+        fetchCards(deckId = sourceDeckId)
+            .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+                eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
+            }.onEach { cards ->
                 cardHolders.value = cards.map { card -> SelectableCardHolder(card = card) }
-            }
-        }
+            }.launchIn(viewModelScope)
     }
 
     private fun Flow<List<Deck>>.filterNotCurrentAndInterimDecks(): Flow<List<Deck>> {

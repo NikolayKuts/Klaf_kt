@@ -8,7 +8,6 @@ import com.example.klaf.data.room.repositoryImplementations.CardRepositoryRoomIm
 import com.example.klaf.data.room.repositoryImplementations.DeckRepositoryRoomImp
 import com.example.klaf.data.room.repositoryImplementations.StorageSaveVersionRepositoryRoomImp
 import com.example.klaf.data.room.repositoryImplementations.StorageTransactionRepositoryRoomImp
-import com.google.firebase.auth.AuthResult
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -70,4 +69,9 @@ interface DomainModule {
     fun bindAuthenticationRepository(
         repository: AuthenticationRepositoryFirebaseImp
     ): AuthenticationRepository
+
+    @Binds
+    fun bindCrashlyticsRepository(
+        repository: CrashlyticsRepositoryFirebaseImp
+    ): CrashlyticsRepository
 }

@@ -3,11 +3,14 @@ package com.example.klaf.presentation.cardManagement.cardEditing
 import androidx.lifecycle.viewModelScope
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
+import com.example.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.example.domain.common.catchWithCrashlyticsReport
 import com.example.domain.common.ifNotNull
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
 import com.example.domain.ipa.IpaHolder
 import com.example.domain.ipa.LetterInfo
+import com.example.domain.repositories.CrashlyticsRepository
 import com.example.domain.useCases.FetchCardUseCase
 import com.example.domain.useCases.FetchDeckByIdUseCase
 import com.example.domain.useCases.FetchWordAutocompleteUseCase
@@ -22,7 +25,6 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 class CardEditingViewModel @AssistedInject constructor(
     @Assisted(DECK_ARGUMENT_NAME) private val deckId: Int,
@@ -32,6 +34,7 @@ class CardEditingViewModel @AssistedInject constructor(
     fetchCard: FetchCardUseCase,
     private val updateCard: UpdateCardUseCase,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
+    private val crashlytics: CrashlyticsRepository,
 ) : BaseCardEditingViewModel() {
 
     companion object {
@@ -43,19 +46,20 @@ class CardEditingViewModel @AssistedInject constructor(
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
-        .catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck) }
-        .shareIn(
+        .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck)
+        }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
             replay = 1
         )
 
     override val card: SharedFlow<Card?> = fetchCard(cardId = cardId)
-        .catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card) }
-        .onEach { card: Card? ->
+        .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card)
+        }.onEach { card: Card? ->
             card?.ifNotNull { audioPlayer.preparePronunciation(word = it.foreignWord) }
-        }
-        .shareIn(
+        }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
             replay = 1
@@ -95,7 +99,7 @@ class CardEditingViewModel @AssistedInject constructor(
                     updateCard(newCard = updatedCard)
                     eventMessage.tryEmit(R.string.card_has_been_changed)
                     cardEditingState.value = CardEditingState.CHANGED
-                } onException { _, _ ->
+                }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
                     eventMessage.tryEmit(messageId = R.string.problem_with_updating_card)
                 }
             }
@@ -115,13 +119,13 @@ class CardEditingViewModel @AssistedInject constructor(
 
         preparePronunciation(word = word)
         autocompleteFetchingJob?.cancel()
-        autocompleteFetchingJob = viewModelScope.launch(Dispatchers.IO) {
+        autocompleteFetchingJob = viewModelScope.launchWithState(context = Dispatchers.IO) {
             autocompleteState.value = AutocompleteState(
                 prefix = clearedWord,
                 autocomplete = fetchWordAutocomplete(prefix = clearedWord),
                 isActive = true,
             )
-        }
+        } onException { _, throwable -> crashlytics.report(exception = throwable) }
     }
 
     override fun setSelectedAutocomplete(selectedWord: String) {

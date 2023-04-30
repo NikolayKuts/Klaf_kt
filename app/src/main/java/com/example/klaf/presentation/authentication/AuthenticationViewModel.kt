@@ -16,8 +16,10 @@ import com.example.klaf.presentation.authentication.PasswordValidator.PasswordVa
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.tryEmit
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -65,26 +67,24 @@ class AuthenticationViewModel @Inject constructor(
     override fun signIn() {
         val email = typingState.value.emailHolder.text.trim()
         val password = typingState.value.passwordHolder.text.trim()
-        val validationResult = manageValidation(email = email, password = password)
+        val isInputValid = manageValidation(email = email, password = password)
 
-        validationResult.ifTrue {
-            viewModelScope.launch {
-                authenticationInteractor.signInWithEmailAndPassword(
-                    email = email,
-                    password = password
-                ).collect { loadingState ->
-                    screenLoadingState.value = loadingState
+        isInputValid.ifTrue {
+            authenticationInteractor.signInWithEmailAndPassword(
+                email = email,
+                password = password
+            ).onEach { loadingState ->
+                screenLoadingState.value = loadingState
 
-                    when (loadingState) {
-                        LoadingState.Non -> {}
-                        LoadingState.Loading -> {}
-                        is LoadingState.Error -> handleSigningInError(loadingState)
-                        is LoadingState.Success -> {
-                            eventMessage.tryEmit(messageId = R.string.authentication_sign_in_success)
-                        }
+                when (loadingState) {
+                    LoadingState.Non -> {}
+                    LoadingState.Loading -> {}
+                    is LoadingState.Error -> handleSigningInError(loadingState)
+                    is LoadingState.Success -> {
+                        eventMessage.tryEmit(messageId = R.string.authentication_sign_in_success)
                     }
                 }
-            }
+            }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
         }
     }
 
@@ -92,30 +92,28 @@ class AuthenticationViewModel @Inject constructor(
         val email = typingState.value.emailHolder.text.trim()
         val password = typingState.value.passwordHolder.text.trim()
         val passwordConfirmation = typingState.value.passwordConfirmationHolder?.text?.trim() ?: ""
-        val validationResult = manageValidation(
+        val isInputValid = manageValidation(
             email = email,
             password = password,
             passwordConfirmation = passwordConfirmation
         )
 
-        validationResult.ifTrue {
-            viewModelScope.launch {
-                authenticationInteractor.signUpWithEmailAndPassword(
-                    email = email,
-                    password = password
-                ).collect { loadingState ->
-                    screenLoadingState.value = loadingState
+        isInputValid.ifTrue {
+            authenticationInteractor.signUpWithEmailAndPassword(
+                email = email,
+                password = password
+            ).onEach { loadingState ->
+                screenLoadingState.value = loadingState
 
-                    when (loadingState) {
-                        LoadingState.Non -> {}
-                        LoadingState.Loading -> {}
-                        is LoadingState.Error -> handleSigningUpError(loadingState = loadingState)
-                        is LoadingState.Success -> {
-                            eventMessage.tryEmit(messageId = R.string.authentication_sign_up_success)
-                        }
+                when (loadingState) {
+                    LoadingState.Non -> {}
+                    LoadingState.Loading -> {}
+                    is LoadingState.Error -> handleSigningUpError(loadingState = loadingState)
+                    is LoadingState.Success -> {
+                        eventMessage.tryEmit(messageId = R.string.authentication_sign_up_success)
                     }
                 }
-            }
+            }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
         }
     }
 
@@ -189,7 +187,7 @@ class AuthenticationViewModel @Inject constructor(
             setErrorStateForPasswordHolder()
         }
 
-        emailValidationMessageId ifNotNull  {
+        emailValidationMessageId ifNotNull {
             eventMessage.tryEmit(messageId = it)
             isValid = false
             setErrorStateForEmailHolder()
