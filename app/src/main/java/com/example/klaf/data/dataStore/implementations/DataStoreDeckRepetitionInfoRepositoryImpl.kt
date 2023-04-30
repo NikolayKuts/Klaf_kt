@@ -20,10 +20,10 @@ class DataStoreDeckRepetitionInfoRepositoryImpl @Inject constructor(
 
     override suspend fun saveDeckRepetitionInfo(info: DeckRepetitionInfo) {
         dataStore.updateData { infos ->
-            val updatedContent = infos.content.toMutableSet().apply {
-                removeIf { filteredInfo -> filteredInfo.deckId == info.deckId }
-                add(element = info)
-            }
+            val updatedContent = infos.content
+                .filterNot { savedInfo -> savedInfo.deckId == info.deckId }
+                .toMutableSet()
+                .apply { add(element = info) }
 
             infos.copy(content = updatedContent)
         }
@@ -31,10 +31,8 @@ class DataStoreDeckRepetitionInfoRepositoryImpl @Inject constructor(
 
     override suspend fun removeDeckRepetitionInfo(deckId: Int) {
         dataStore.updateData { infos ->
-            val updatedContent = infos.content.toMutableSet()
-                .apply {
-                    removeIf { filteredInfo -> filteredInfo.deckId == deckId }
-                }
+            val updatedContent = infos.content.filterNot { savedInfo -> savedInfo.deckId == deckId }
+                .toSet()
 
             infos.copy(content = updatedContent)
         }
