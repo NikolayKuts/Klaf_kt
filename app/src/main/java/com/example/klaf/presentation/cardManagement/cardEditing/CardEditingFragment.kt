@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.cardEditing
+package com.example.klaf.presentation.cardManagement.cardEditing
 
 import android.os.Bundle
 import android.view.View
@@ -44,9 +44,15 @@ class CardEditingFragment : Fragment(R.layout.fragment_card_editing) {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        lifecycle.removeObserver(viewModel.audioPlayer)
+    }
+
     private fun setObserves(view: View) {
         setEventMessageObserver(view = view)
         setCardEditingStateObserver()
+        subscribeAudioPlayerObserver()
     }
 
     private fun setEventMessageObserver(view: View) {
@@ -66,5 +72,9 @@ class CardEditingFragment : Fragment(R.layout.fragment_card_editing) {
                 CardEditingState.CHANGED -> findNavController().popBackStack()
             }
         }
+    }
+
+    private fun subscribeAudioPlayerObserver() {
+        lifecycle.addObserver(viewModel.audioPlayer)
     }
 }
