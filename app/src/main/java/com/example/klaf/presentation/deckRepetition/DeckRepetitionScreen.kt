@@ -73,7 +73,7 @@ fun DeckRepetitionScreen(
     val density = LocalDensity.current
     val minContentHeightPx = density.run { 400.dp.toPx() }
 
-    AdaptiveBox { parentHeightPx ->
+    ScrollableBox { parentHeightPx ->
         val contentHeight = when {
             parentHeightPx < minContentHeightPx -> minContentHeightPx
             else -> parentHeightPx

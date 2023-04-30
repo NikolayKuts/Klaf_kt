@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.cardAddition
+package com.example.klaf.presentation.cardManagement.cardAddition
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

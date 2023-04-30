@@ -24,7 +24,7 @@ object Versions {
     const val HiltDaggerCompiler = "2.44.2"
     const val HiltAndroidCompiler = "1.0.0"
     const val HiltWork = "1.0.0"
-    const val FirebaseBom = "30.2.0"
+    const val FirebaseBom = "31.5.0"
     const val FirebaseCoroutinePlayServices = "1.6.1"
     const val ComposeBom = "2023.01.00"
     const val ComposeCompiler = "1.3.2"

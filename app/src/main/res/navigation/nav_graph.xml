@@ -28,7 +28,7 @@
     </fragment>
     <fragment
         android:id="@+id/cardEditingFragment"
-        android:name="com.example.klaf.presentation.cardEditing.CardEditingFragment"
+        android:name="com.example.klaf.presentation.cardManagement.cardEditing.CardEditingFragment"
         android:label="fragment_card_editing"
         tools:layout="@layout/fragment_card_editing">
         <argument
@@ -74,7 +74,7 @@
     </dialog>
     <fragment
         android:id="@+id/cardAdditionFragment"
-        android:name="com.example.klaf.presentation.cardAddition.CardAdditionFragment"
+        android:name="com.example.klaf.presentation.cardManagement.cardAddition.CardAdditionFragment"
         android:label="fragment_card_addition"
         tools:layout="@layout/fragment_card_addition">
         <argument

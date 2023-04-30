@@ -1,8 +1,10 @@
-package com.example.klaf.presentation.common
+package com.example.klaf.presentation.cardManagement.common
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,10 +33,12 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Popup
 import com.example.domain.common.LoadingState
 import com.example.domain.common.ifTrue
+import com.example.domain.common.skipOnNewLineCharacter
 import com.example.domain.ipa.IpaHolder
 import com.example.domain.ipa.LetterInfo
 import com.example.klaf.R
-import com.example.klaf.presentation.cardAddition.AutocompleteState
+import com.example.klaf.presentation.cardManagement.cardAddition.AutocompleteState
+import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
 
 private const val CARD_MANAGEMENT_CONTAINER_WIDTH = 500
@@ -49,6 +53,7 @@ fun CardManagementView(
     ipaHolders: List<IpaHolder>,
     autocompleteState: AutocompleteState,
     pronunciationLoadingState: LoadingState<Unit>,
+    onCloseAutocompletePopupMenuClick: () -> Unit,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
     onNativeWordChange: (String) -> Unit,
     onForeignWordChange: (String) -> Unit,
@@ -57,33 +62,35 @@ fun CardManagementView(
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
-    val density = LocalDensity.current
-
-    AdaptiveBox{ parentHeightPx ->
-        val (
-            contentHeightPx: Float,
-            confirmationButtonPadding: Dp,
-        ) = getScreenParams(
+    ScrollableBox(modifier = Modifier.fillMaxSize()) { parentHeightPx ->
+        val density = LocalDensity.current
+        val minContentHeightDp = 500.dp
+        val confirmationButtonPadding = getConfirmationButtonPadding(
             parentHeightPx = parentHeightPx,
-            minContentHeightPx = density.run { 450.dp.toPx() }
+            minContentHeightPx = density.run { minContentHeightDp.toPx() },
         )
 
         Column(
             modifier = Modifier
-                .height(density.run { contentHeightPx.toDp() })
+                .fillMaxWidth()
+                .heightIn(min = minContentHeightDp)
+                .height(density.run { parentHeightPx.toDp() })
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             DeckInfo(name = deckName, cardQuantity = cardQuantity)
 
-            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.07f))
+            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.1f))
 
             ForeignWordLettersSelector(
                 letterInfos = letterInfos,
-                onLetterClick = onLetterClick,
+                onLetterClick = { index: Int, letterInfo: LetterInfo ->
+                    onLetterClick(index, letterInfo)
+                    onCloseAutocompletePopupMenuClick()
+                }
             )
 
-            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.12f))
+            Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.1f))
 
             CardManagementFields(
                 nativeWord = nativeWord,
@@ -91,51 +98,40 @@ fun CardManagementView(
                 ipaHolders = ipaHolders,
                 autocompleteState = autocompleteState,
                 loadingState = pronunciationLoadingState,
+                onNativeWordFieldClick = onCloseAutocompletePopupMenuClick,
                 onNativeWordChange = onNativeWordChange,
                 onForeignWordChange = onForeignWordChange,
                 onIpaChange = onIpaChange,
                 onPronounceIconClick = onPronounceIconClick,
                 onAutocompleteItemClick = onAutocompleteItemClick,
+                confirmationButtonSection = {
+                    RoundButton(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(
+                                end = confirmationButtonPadding,
+                                bottom = confirmationButtonPadding,
+                            ),
+                        background = MainTheme.colors.common.positiveDialogButton,
+                        iconId = R.drawable.ic_confirmation_24,
+                        onClick = onConfirmClick
+                    )
+                },
             )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .requiredHeightIn(min = DIALOG_BUTTON_SIZE.dp)
-                    .fillMaxHeight(fraction = 1f)
-            ) {
-                RoundButton(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(
-                            end = confirmationButtonPadding,
-                            bottom = confirmationButtonPadding,
-                        ),
-                    background = MainTheme.colors.common.positiveDialogButton,
-                    iconId = R.drawable.ic_confirmation_24,
-                    onClick = onConfirmClick
-                )
-            }
-
         }
     }
 }
 
-private fun getScreenParams(
+private fun getConfirmationButtonPadding(
     parentHeightPx: Float,
     minContentHeightPx: Float,
-): Pair<Float, Dp> {
-    return if (
-        parentHeightPx > 0F
-        && parentHeightPx < minContentHeightPx
-    ) {
-        minContentHeightPx to 0.dp
-    } else {
-        parentHeightPx to 16.dp
-    }
-}
+): Dp = if (
+    parentHeightPx > 0F
+    && parentHeightPx < minContentHeightPx
+) 0.dp else 16.dp
 
 @Composable
-fun ForeignWordLettersSelector(
+private fun ForeignWordLettersSelector(
     letterInfos: List<LetterInfo>,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
 ) {
@@ -158,7 +154,7 @@ fun ForeignWordLettersSelector(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun LazyItemScope.LetterItem(
+private fun LazyItemScope.LetterItem(
     letterInfo: LetterInfo,
     onClick: () -> Unit,
 ) {
@@ -182,7 +178,7 @@ fun LazyItemScope.LetterItem(
 }
 
 @Composable
-fun DeckInfo(
+private fun DeckInfo(
     name: String,
     cardQuantity: Int,
     modifier: Modifier = Modifier,
@@ -201,13 +197,15 @@ fun DeckInfo(
 }
 
 @Composable
-fun CardManagementFields(
+private fun CardManagementFields(
     nativeWord: String,
     foreignWord: String,
     ipaHolders: List<IpaHolder>,
     autocompleteState: AutocompleteState,
     loadingState: LoadingState<Unit>,
     modifier: Modifier = Modifier,
+    confirmationButtonSection: @Composable BoxScope.() -> Unit,
+    onNativeWordFieldClick: () -> Unit,
     onNativeWordChange: (String) -> Unit,
     onForeignWordChange: (String) -> Unit,
     onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
@@ -222,6 +220,7 @@ fun CardManagementFields(
             value = nativeWord,
             labelTextId = R.string.label_native_word,
             textColor = MainTheme.colors.cardManagementView.nativeWord,
+            onClick = onNativeWordFieldClick,
             onValueChange = onNativeWordChange,
         )
 
@@ -237,25 +236,35 @@ fun CardManagementFields(
 
         IpaSection(
             ipaHolders = ipaHolders,
-            onIpaChange = onIpaChange
+            onIpaChange = onIpaChange,
+            confirmationButtonSection = confirmationButtonSection
         )
     }
 }
 
 @Composable
 private fun WordTextField(
-    modifier: Modifier = Modifier,
     value: String,
     @StringRes labelTextId: Int,
     textColor: Color,
+    onClick: () -> Unit,
     onValueChange: (String) -> Unit,
     trailingIcon: @Composable (() -> Unit)? = null,
 ) {
     val scrollState = rememberScrollState()
     val maxVisibleHeight = 80.dp
+    val interactionSource = remember { MutableInteractionSource() }
+
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            if (interaction is PressInteraction.Release) {
+                onClick()
+            }
+        }
+    }
 
     TextField(
-        modifier = modifier
+        modifier = Modifier
             .width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp)
             .heightIn(max = maxVisibleHeight)
             .verticalScroll(state = scrollState)
@@ -268,11 +277,12 @@ private fun WordTextField(
             textColor = textColor
         ),
         trailingIcon = trailingIcon,
+        interactionSource = interactionSource
     )
 }
 
 @Composable
-fun DropDownAutocompleteFiled(
+private fun DropDownAutocompleteFiled(
     expanded: Boolean,
     typedWord: String,
     autocompleteState: AutocompleteState,
@@ -449,9 +459,10 @@ private fun AutocompleteWordItem(
 }
 
 @Composable
-fun IpaSection(
+private fun IpaSection(
     ipaHolders: List<IpaHolder>,
     onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
+    confirmationButtonSection: @Composable BoxScope.() -> Unit,
 ) {
     var parentWidthPx by rememberAsMutableStateOf(value = 0F)
     val cellShape = RoundedCornerShape(size = 6.dp)
@@ -461,64 +472,68 @@ fun IpaSection(
     val ipaValueWidthPx = parentWidthPx * 0.5F
     val scrollState = rememberLazyListState()
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 6.dp)
-            .onSizeChanged { parentWidthPx = it.width.toFloat() }
-            .verticalScrollbar(
-                state = scrollState,
-                color = MainTheme.colors.material.primary,
-            ),
-        state = scrollState,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        itemsIndexed(items = ipaHolders) { letterGroupIndex, ipaHolder ->
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 3.dp, bottom = 3.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
+    Box(modifier = Modifier.fillMaxHeight(fraction = 1f)) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .onSizeChanged { parentWidthPx = it.width.toFloat() }
+                .padding(start = 16.dp, end = 16.dp, top = 6.dp)
+                .verticalScrollbar(
+                    state = scrollState,
+                    color = MainTheme.colors.material.primary,
+                ),
+            state = scrollState,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(bottom = DIALOG_BUTTON_SIZE.dp * 2 / 3)
+        ) {
+            itemsIndexed(items = ipaHolders) { letterGroupIndex, ipaHolder ->
+                Row(
                     modifier = Modifier
-                        .widthIn(max = density.run { chosenLettersWidthPx.toDp() })
-                        .clip(shape = cellShape)
-                        .background(color = MainTheme.colors.cardManagementView.checkedLetterCell)
-                        .padding(6.dp),
-                    text = ipaHolder.letterGroup,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
-                )
+                        .fillMaxWidth()
+                        .padding(top = 3.dp, bottom = 3.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .widthIn(max = density.run { chosenLettersWidthPx.toDp() })
+                            .clip(shape = cellShape)
+                            .background(color = MainTheme.colors.cardManagementView.checkedLetterCell)
+                            .padding(6.dp),
+                        text = ipaHolder.letterGroup,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1
+                    )
 
-                Text(
-                    modifier = Modifier.padding(start = 6.dp, end = 6.dp),
-                    text = equalSing,
-                )
+                    Text(
+                        modifier = Modifier.padding(start = 6.dp, end = 6.dp),
+                        text = equalSing,
+                    )
 
-                BasicTextField(
-                    modifier = Modifier
-                        .widthIn(max = density.run { ipaValueWidthPx.toDp() })
-                        .defaultMinSize(minWidth = 30.dp)
-                        .width(IntrinsicSize.Min)
-                        .clip(shape = cellShape)
-                        .background(MainTheme.colors.cardManagementView.ipaCellBackground)
-                        .padding(6.dp),
-                    value = ipaHolder.ipa,
-                    cursorBrush = Brush.verticalGradient(
-                        0.00f to Color.Transparent,
-                        0.15f to Color.Transparent,
-                        0.15f to MainTheme.colors.material.onPrimary,
-                        0.90f to MainTheme.colors.material.onPrimary,
-                        0.90f to Color.Transparent,
-                        1.00f to Color.Transparent,
-                    ),
-                    onValueChange = { newText -> onIpaChange(letterGroupIndex, newText) },
-                    textStyle = MainTheme.typographies.cardManagementViewTextStyles.ipaValue,
-                    singleLine = true,
-                )
+                    BasicTextField(
+                        modifier = Modifier
+                            .widthIn(min = 30.dp, max = density.run { ipaValueWidthPx.toDp() })
+                            .width(IntrinsicSize.Min)
+                            .clip(shape = cellShape)
+                            .background(MainTheme.colors.cardManagementView.ipaCellBackground)
+                            .padding(6.dp),
+                        value = ipaHolder.ipa,
+                        cursorBrush = Brush.verticalGradient(
+                            0.00f to Color.Transparent,
+                            0.15f to Color.Transparent,
+                            0.15f to MainTheme.colors.material.onPrimary,
+                            0.90f to MainTheme.colors.material.onPrimary,
+                            0.90f to Color.Transparent,
+                            1.00f to Color.Transparent,
+                        ),
+                        onValueChange = { newText ->
+                            onIpaChange(letterGroupIndex, newText.skipOnNewLineCharacter())
+                        },
+                        textStyle = MainTheme.typographies.cardManagementViewTextStyles.ipaValue,
+                    )
+                }
             }
         }
+
+        confirmationButtonSection()
     }
 }

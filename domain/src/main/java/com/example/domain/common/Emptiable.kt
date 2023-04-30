@@ -1,6 +1,6 @@
 package com.example.domain.common
 
-sealed interface Emptiable <T> {
+sealed interface Emptiable <out T> {
 
     class Empty <V> : Emptiable<V>
 

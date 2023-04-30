@@ -7,10 +7,15 @@ import androidx.datastore.dataStoreFile
 import androidx.work.WorkManager
 import com.example.klaf.data.dataStore.DECK_REPETITION_INFO_FILE_NAME
 import com.example.domain.entities.DeckRepetitionInfos
+import com.example.domain.repositories.CrashlyticsRepository
 import com.example.klaf.data.dataStore.DeckRepetitionInfosSerializer
+import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.data.room.databases.KlafRoomDatabase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -59,4 +64,13 @@ class DataModule {
     @Singleton
     @Provides
     fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    @Singleton
+    @Provides
+    fun provideCrashlytics(): FirebaseCrashlytics = Firebase.crashlytics
+
+    @Provides
+    fun provideCardAudioPlayer(
+        crashlyticsRepository: CrashlyticsRepository
+    ): CardAudioPlayer = CardAudioPlayer(crashlytics = crashlyticsRepository)
 }

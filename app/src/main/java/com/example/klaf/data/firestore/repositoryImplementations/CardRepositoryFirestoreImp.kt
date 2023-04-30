@@ -38,7 +38,6 @@ class CardRepositoryFirestoreImp @Inject constructor(
     }
 
     override suspend fun insertCard(card: Card) {
-//        delay((1000..3000).random().toLong())
         getCardSubCollection()
             .document(card.id.toString())
             .set(card.toFirestoreEntity())
