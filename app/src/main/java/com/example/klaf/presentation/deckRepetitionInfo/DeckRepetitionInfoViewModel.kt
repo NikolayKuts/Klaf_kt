@@ -19,7 +19,7 @@ class DeckRepetitionInfoViewModel @AssistedInject constructor(
     crashlytics: CrashlyticsRepository,
 ) : BaseDeckRepetitionInfoViewModel() {
 
-    override val eventMessage = MutableSharedFlow<EventMessage>()
+    override val eventMessage = MutableSharedFlow<EventMessage>(replay = 1)
     override val repetitionInfo: StateFlow<Emptiable<DeckRepetitionInfo?>> =
         fetchDeckRepetitionInfo(deckId = deckId)
             .catchWithCrashlyticsReport(crashlytics = crashlytics) {
