@@ -6,6 +6,7 @@ import androidx.work.*
 import com.example.domain.common.getCurrentDateAsLong
 import com.example.domain.common.ifTrue
 import com.example.domain.entities.Deck
+import com.example.domain.repositories.CrashlyticsRepository
 import com.example.domain.useCases.FetchAllDecksUseCase
 import com.example.klaf.data.common.notifications.DeckRepetitionNotifier
 import dagger.assisted.Assisted
@@ -18,12 +19,13 @@ class DeckRepetitionReminderChecker @AssistedInject constructor(
     @Assisted params: WorkerParameters,
     private val deckRepetitionNotifier: DeckRepetitionNotifier,
     private val fetchAllDecks: FetchAllDecksUseCase,
+    private val crashlytics: CrashlyticsRepository,
 ) : CoroutineWorker(appContext = context, params = params) {
 
     companion object {
 
         private const val UNIQUE_WORK_NAME = "deck_repetition_checking"
-        private const val CHECKING_INTERVAL = 1L
+        private const val CHECKING_INTERVAL = 12L
 
         fun WorkManager.scheduleDeckRepetitionChecking() {
             this.enqueueUniquePeriodicWork(
@@ -31,17 +33,23 @@ class DeckRepetitionReminderChecker @AssistedInject constructor(
                 ExistingPeriodicWorkPolicy.KEEP,
                 PeriodicWorkRequestBuilder<DeckRepetitionReminderChecker>(
                     CHECKING_INTERVAL,
-                    TimeUnit.DAYS
-                ).build()
+                    TimeUnit.HOURS
+                ).setInitialDelay(CHECKING_INTERVAL, TimeUnit.HOURS)
+                    .build()
             )
         }
     }
 
-    override suspend fun doWork(): Result {
-        fetchAllDecks().any { deck -> deck.shouldBeRepeated() }
-            .ifTrue { deckRepetitionNotifier.showCommonNotification() }
-
-        return Result.success()
+    override suspend fun doWork(): Result = try {
+        fetchAllDecks().onEach { deck ->
+            deck.shouldBeRepeated().ifTrue {
+                deckRepetitionNotifier.showNotification(deckName = deck.name, deckId = deck.id)
+            }
+        }
+        Result.success()
+    } catch (exception: Exception) {
+        crashlytics.report(exception = exception)
+        Result.failure()
     }
 
     private fun Deck.shouldBeRepeated(): Boolean {

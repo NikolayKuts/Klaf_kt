@@ -4,6 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/compose_view_card_addition"
-    tools:context=".presentation.cardAddition.CardAdditionFragment">
+    tools:context=".presentation.cardManagement.cardAddition.CardAdditionFragment">
 
 </androidx.compose.ui.platform.ComposeView>

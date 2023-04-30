@@ -1,33 +1,33 @@
-package com.example.klaf.presentation.cardAddition
+package com.example.klaf.presentation.cardManagement.cardAddition
 
 import androidx.lifecycle.viewModelScope
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
-import com.example.domain.common.LoadingState
+import com.example.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.example.domain.common.catchWithCrashlyticsReport
 import com.example.domain.common.generateLetterInfos
-import com.example.domain.common.ifTrue
 import com.example.domain.common.updatedAt
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
 import com.example.domain.ipa.IpaHolder
 import com.example.domain.ipa.LetterInfo
 import com.example.domain.ipa.toRowIpaItemHolders
-import com.example.domain.ipa.toWord
+import com.example.domain.repositories.CrashlyticsRepository
 import com.example.domain.useCases.AddNewCardIntoDeckUseCase
 import com.example.domain.useCases.FetchDeckByIdUseCase
 import com.example.domain.useCases.FetchWordAutocompleteUseCase
 import com.example.klaf.R
 import com.example.klaf.data.networking.CardAudioPlayer
-import com.example.klaf.presentation.cardAddition.CardAdditionEvent.*
+import com.example.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.*
+import com.example.klaf.presentation.cardManagement.common.MAX_IPA_LENGTH
+import com.example.klaf.presentation.cardManagement.common.MAX_WORD_LENGTH
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.common.tryEmit
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 class CardAdditionViewModel @AssistedInject constructor(
     @Assisted deckId: Int,
@@ -36,19 +36,15 @@ class CardAdditionViewModel @AssistedInject constructor(
     private val addNewCardIntoDeck: AddNewCardIntoDeckUseCase,
     override val audioPlayer: CardAudioPlayer,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
+    private val crashlytics: CrashlyticsRepository,
 ) : BaseCardAdditionViewModel() {
-
-    companion object {
-
-        const val MAX_IPA_LENGTH = 10
-        const val MAX_WORD_LENGTH = 30
-    }
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
-        .catch { eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck) }
-        .shareIn(
+        .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck)
+        }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
             replay = 1
@@ -91,11 +87,11 @@ class CardAdditionViewModel @AssistedInject constructor(
             }
             is UpdateNativeWord -> updateNativeWord(word = event.word)
             is AddNewCard -> {
-                addNewCard(
+                saveNewCard(
                     deckId = event.deckId,
                     nativeWord = event.nativeWord,
                     foreignWord = event.foreignWord,
-                    ipaHolders = event.ipaHolders
+                    ipaHolders = event.ipaHolders,
                 )
             }
             PronounceForeignWord -> audioPlayer.play()
@@ -129,7 +125,7 @@ class CardAdditionViewModel @AssistedInject constructor(
         }.launchIn(viewModelScope)
     }
 
-    private fun addNewCard(
+    private fun saveNewCard(
         deckId: Int,
         nativeWord: String,
         foreignWord: String,
@@ -142,7 +138,7 @@ class CardAdditionViewModel @AssistedInject constructor(
                 deckId = deckId,
                 nativeWord = nativeWord,
                 foreignWord = foreignWord,
-                ipa = ipaHolders
+                ipa = ipaHolders.map { ipaHolder -> ipaHolder.copy(ipa = ipaHolder.ipa.trim()) }
             )
 
             viewModelScope.launchWithState {
@@ -150,7 +146,7 @@ class CardAdditionViewModel @AssistedInject constructor(
                 resetAddingState()
                 cardAdditionState.value = CardAdditionState.Finished
                 eventMessage.tryEmit(messageId = R.string.card_has_been_added)
-            } onException { _, _ ->
+            }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
                 eventMessage.tryEmit(messageId = R.string.exception_adding_card)
             }
         }
@@ -185,13 +181,13 @@ class CardAdditionViewModel @AssistedInject constructor(
             ipaHoldersState.value = emptyList()
 
             autocompleteFetchingJob?.cancel()
-            autocompleteFetchingJob = viewModelScope.launch(Dispatchers.IO) {
+            autocompleteFetchingJob = viewModelScope.launchWithState(context = Dispatchers.IO) {
                 autocompleteState.value = AutocompleteState(
                     prefix = word,
                     autocomplete = fetchWordAutocomplete(prefix = word),
                     isActive = true,
                 )
-            }
+            } onException { _, throwable -> crashlytics.report(exception = throwable) }
         }
     }
 
@@ -206,7 +202,7 @@ class CardAdditionViewModel @AssistedInject constructor(
         if (ipa.length < MAX_IPA_LENGTH) {
             ipaHoldersState.update { ipaHolders ->
                 ipaHolders.updatedAt(index = letterGroupIndex) { oldValue ->
-                    oldValue.copy(ipa = ipa.trim())
+                    oldValue.copy(ipa = ipa)
                 }
             }
         }

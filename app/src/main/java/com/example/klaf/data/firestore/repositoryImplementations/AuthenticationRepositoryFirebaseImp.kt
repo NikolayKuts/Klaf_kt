@@ -42,12 +42,13 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
 
     override fun signInWithEmailAndPassword(
         email: String,
-        password: String
+        password: String,
     ): Flow<LoadingState<Unit>> = flow {
         emit(LoadingState.Loading)
         auth.signInWithEmailAndPassword(
             "$ROOT_COLLECTION_NAME_PREFIX$email",
-            password).await()
+            password
+        ).await()
         emit(LoadingState.Success(data = Unit))
     }.catch { error ->
         val errorType = when (error) {

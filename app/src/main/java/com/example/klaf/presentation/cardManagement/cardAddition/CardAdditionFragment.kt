@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.cardAddition
+package com.example.klaf.presentation.cardManagement.cardAddition
 
 import android.content.Intent
 import android.os.Build
@@ -46,6 +46,11 @@ class CardAdditionFragment : Fragment(R.layout.fragment_card_addition) {
         }
 
         subscribeAudioPlayerObserver()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        lifecycle.removeObserver(viewModel.audioPlayer)
     }
 
     private fun setEventMessageObserver(view: View) {

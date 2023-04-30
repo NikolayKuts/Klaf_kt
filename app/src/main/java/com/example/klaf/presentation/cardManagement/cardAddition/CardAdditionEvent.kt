@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.cardAddition
+package com.example.klaf.presentation.cardManagement.cardAddition
 
 import com.example.domain.ipa.IpaHolder
 import com.example.domain.ipa.LetterInfo
