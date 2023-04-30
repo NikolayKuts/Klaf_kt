@@ -7,9 +7,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
-import com.example.klaf.presentation.common.TransparentDialogFragment
-import com.example.klaf.presentation.common.collectWhenStarted
-import com.example.klaf.presentation.common.showToast
+import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -34,6 +32,8 @@ class DeckRepetitionInfoDialogFragment : TransparentDialogFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setEventMessageObserver()
+
         view.findViewById<ComposeView>(R.id.compose_view_repetition_info).setContent {
             MainTheme {
                 DeckRepetitionInfoView(
@@ -43,8 +43,6 @@ class DeckRepetitionInfoDialogFragment : TransparentDialogFragment(
                 )
             }
         }
-
-        setEventMessageObserver()
     }
 
     private fun setEventMessageObserver() {
@@ -52,6 +50,7 @@ class DeckRepetitionInfoDialogFragment : TransparentDialogFragment(
             lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
             requireContext().showToast(messageId = eventMessage.resId)
+            closeDialog()
         }
     }
 
