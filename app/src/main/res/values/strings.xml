@@ -131,4 +131,6 @@
     <string name="authentication_warning_Invalid_password_confirmation">Invalid password confirmation</string>
     <string name="authentication_sign_in_success">You have signed in successfully</string>
     <string name="authentication_sign_up_success">You have signed up successfully</string>
+    <string name="data_sync_failed">Data synchronization failed</string>
+    <string name="data_sync_resync_question">Would you like to try again?</string>
 </resources>

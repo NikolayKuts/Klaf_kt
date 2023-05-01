@@ -2,6 +2,7 @@ package com.example.klaf.presentation.deckList.dataSynchronization
 
 import android.os.Bundle
 import android.view.View
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
@@ -23,11 +24,14 @@ class DataSynchronizationDialogFragment : TransparentDialogFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
         view.findViewById<ComposeView>(R.id.compose_view_data_synchronization).setContent {
             MainTheme {
                 DataSynchronizationDialogView(
-                    viewModel = viewModel,
+                    synchronizationState = viewModel.dataSynchronizationState.collectAsState().value,
+                    onConfirmClick = viewModel::synchronizeData,
                     onCloseClick = ::closeDialog,
+                    onDispose = viewModel::resetSynchronizationState
                 )
             }
         }
