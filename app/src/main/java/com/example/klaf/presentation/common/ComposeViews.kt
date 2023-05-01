@@ -85,8 +85,9 @@ fun FullBackgroundDialog(
     onBackgroundClick: () -> Unit,
     mainContent: @Composable BoxScope.() -> Unit,
     modifier: Modifier = Modifier,
-    bottomContent: @Composable (RowScope.() -> Unit)? = null,
+    mainContentModifier: Modifier = Modifier,
     topContent: @Composable (RowScope.() -> Unit)? = null,
+    bottomContent: @Composable (RowScope.() -> Unit)? = null,
     corners: Shape = RoundedCornerShape(10.dp),
 ) {
     Box(
@@ -98,7 +99,7 @@ fun FullBackgroundDialog(
         Box(modifier = Modifier.align(Alignment.Center)) {
             Card(
                 modifier = Modifier
-                    .defaultMinSize(minHeight = 150.dp, minWidth = 300.dp)
+                    .defaultMinSize(minHeight = 150.dp, minWidth = 600.dp)
                     .padding(
                         top = (DIALOG_BUTTON_SIZE / 2).dp,
                         bottom = (DIALOG_BUTTON_SIZE / 2).dp,
@@ -106,7 +107,7 @@ fun FullBackgroundDialog(
                     .clip(shape = corners),
             ) {
                 Box(
-                    modifier = Modifier
+                    modifier = mainContentModifier
                         .noRippleClickable { }
                         .padding(MainTheme.dimensions.dialogContentPadding)
                         .bottomPadding(apply = bottomContent != null)

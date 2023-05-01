@@ -1,6 +1,5 @@
 package com.example.klaf.presentation.deckList.dataSynchronization
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -11,52 +10,56 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
+import com.example.klaf.data.common.DataSynchronizationState
 import com.example.klaf.data.common.DataSynchronizationState.*
-import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
-import com.example.klaf.presentation.common.FullBackgroundDialog
-import com.example.klaf.presentation.common.RoundButton
-import com.example.klaf.presentation.common.noRippleClickable
-import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
+import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
 fun DataSynchronizationDialogView(
-    viewModel: BaseDeckListViewModel,
+    synchronizationState: DataSynchronizationState,
+    onConfirmClick: () -> Unit,
     onCloseClick: () -> Unit,
+    onDispose: () -> Unit,
 ) {
-    val synchronizationState by viewModel.dataSynchronizationState.collectAsState()
-
-    when (val state = synchronizationState) {
-        UncertainState -> {}
-        InitialState -> {
-            InitialStateView(
-                onCloseClick = onCloseClick,
-                onConfirmClick = { viewModel.synchronizeData() }
-            )
+    ScrollableBox(
+        modifier = Modifier.noRippleClickable { onCloseClick() },
+    ) {
+        when (synchronizationState) {
+            Uncertain -> {}
+            Initial -> {
+                InitialStateView(
+                    onCloseClick = onCloseClick,
+                    onConfirmClick = onConfirmClick
+                )
+            }
+            is Synchronizing -> {
+                SynchronizationStateView(synchronizationData = synchronizationState.synchronizationData)
+            }
+            SuccessfullyFinished -> {
+                FinishStateView(onCloseClick = onCloseClick)
+            }
+            Failed -> {
+                FailureStateView(
+                    onResynchronizeClick = onConfirmClick,
+                    onCloseClick = onCloseClick)
+            }
         }
-        is SynchronizingState -> {
-            SynchronizationStateView(synchronizationData = state.synchronizationData)
-        }
-        FinishedState -> {
-            FinishStateView(onCloseClick = onCloseClick)
+        DisposableEffect(key1 = null) {
+            onDispose { onDispose() }
         }
     }
-
-    DisposableEffect(
-        key1 = null,
-        effect = {
-            onDispose { viewModel.resetSynchronizationState() }
-        }
-    )
 }
 
 @Composable
@@ -120,7 +123,7 @@ private fun SynchronizationStateView(synchronizationData: String) {
 private fun FinishStateView(onCloseClick: () -> Unit) {
     FullBackgroundDialog(
         onBackgroundClick = onCloseClick,
-        topContent = { SynchronizationLabel() },
+        topContent = { SynchronizationLabel(color = MainTheme.colors.common.positiveDialogButton) },
         mainContent = {
             Text(
                 style = MainTheme.typographies.dialogTextStyle,
@@ -134,6 +137,52 @@ private fun FinishStateView(onCloseClick: () -> Unit) {
                 onClick = onCloseClick
             )
         }
+    )
+}
+
+@Composable
+private fun FailureStateView(
+    onResynchronizeClick: () -> Unit,
+    onCloseClick: () -> Unit,
+) {
+    FullBackgroundDialog(
+        mainContentModifier = Modifier,
+        onBackgroundClick = onCloseClick,
+        topContent = {
+            RoundedIcon(
+                background = MainTheme.colors.common.negativeDialogButton,
+                iconId = R.drawable.ic_attention_mark_24,
+            )
+        },
+        mainContent = {
+            Column {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(shape = RoundedCornerShape(6.dp))
+                        .background(animatedWarningColor())
+                        .padding(6.dp),
+                    textAlign = TextAlign.Center,
+                    text = stringResource(R.string.data_sync_failed),
+                    style = MainTheme.typographies.dialogTextStyle
+                )
+                Text(
+                    modifier = Modifier.padding(6.dp),
+                    text = stringResource(R.string.data_sync_resync_question),
+                    style = MainTheme.typographies.dialogTextStyle
+                )
+            }
+
+        },
+        bottomContent = {
+            RoundButton(
+                background = MainTheme.colors.common.positiveDialogButton,
+                iconId = R.drawable.ic_sync_24,
+                onClick = onResynchronizeClick,
+            )
+
+            ClosingButton(onClick = onCloseClick)
+        },
     )
 }
 
@@ -153,8 +202,8 @@ private fun AnimatedSynchronizationLabel() {
         )
     )
     val color by infiniteTransition.animateColor(
-        initialValue = MainTheme.colors.dataSynchronizationView.labelBackground,
-        targetValue = MainTheme.colors.dataSynchronizationView.labelBackgroundSecond,
+        initialValue = MainTheme.colors.dataSynchronizationView.initialLabelBackground,
+        targetValue = MainTheme.colors.dataSynchronizationView.targetLabelBackground,
         animationSpec = infiniteRepeatable(
             animation = tween(
                 durationMillis = animationDuration,
@@ -165,21 +214,15 @@ private fun AnimatedSynchronizationLabel() {
     )
 
     SynchronizationLabel(
-        modifier = Modifier
-            .rotate(degrees = rotation)
-            .background(color = color)
-            .size(20.dp)
-            .padding(8.dp),
+        modifier = Modifier.rotate(degrees = rotation),
+        color = color
     )
 }
 
-@SuppressLint("ModifierParameter")
 @Composable
 private fun SynchronizationLabel(
-    modifier: Modifier = Modifier
-        .size(20.dp)
-        .background(MainTheme.colors.dataSynchronizationView.labelBackground)
-        .padding(8.dp),
+    modifier: Modifier = Modifier,
+    color: Color = MainTheme.colors.dataSynchronizationView.initialLabelBackground,
 ) {
     Card(
         modifier = Modifier
@@ -189,9 +232,24 @@ private fun SynchronizationLabel(
         elevation = 0.dp,
     ) {
         Icon(
-            modifier = modifier,
+            modifier = modifier
+                .size(20.dp)
+                .background(color)
+                .padding(8.dp)
+                .then(modifier),
             painter = painterResource(id = R.drawable.ic_sync_24),
             contentDescription = null,
         )
     }
 }
+
+@Composable
+private fun animatedWarningColor(): Color = rememberInfiniteTransition()
+    .animateColor(
+        initialValue = MainTheme.colors.dataSynchronizationView.initialWarning,
+        targetValue = MainTheme.colors.dataSynchronizationView.targetWarning,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 800),
+            repeatMode = RepeatMode.Reverse
+        )
+    ).value

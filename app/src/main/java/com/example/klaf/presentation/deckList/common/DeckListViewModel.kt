@@ -7,6 +7,7 @@ import com.example.domain.common.CoroutineStateHolder.Companion.onException
 import com.example.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.example.domain.common.catchWithCrashlyticsReport
 import com.example.domain.common.getCurrentDateAsLong
+import com.example.domain.common.launchIn
 import com.example.domain.entities.Deck
 import com.example.domain.repositories.CrashlyticsRepository
 import com.example.domain.useCases.*
@@ -47,8 +48,7 @@ class DeckListViewModel @AssistedInject constructor(
     override val deckCreationState = MutableStateFlow(value = DeckCreationState.NOT_CREATED)
 
     override val dataSynchronizationState =
-        MutableStateFlow<DataSynchronizationState>(DataSynchronizationState.InitialState)
-
+        MutableStateFlow<DataSynchronizationState>(DataSynchronizationState.Initial)
     override val deckSource: StateFlow<List<Deck>?> = (fetchDeckSource() as Flow<List<Deck>?>)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { this.emit(value = null) }
         .stateIn(
@@ -58,7 +58,9 @@ class DeckListViewModel @AssistedInject constructor(
         )
 
     override fun resetSynchronizationState() {
-        dataSynchronizationState.value = DataSynchronizationState.InitialState
+        if (dataSynchronizationState.value == DataSynchronizationState.SuccessfullyFinished) {
+            dataSynchronizationState.value = DataSynchronizationState.Initial
+        }
     }
 
     override val navigationDestination = MutableSharedFlow<DeckListNavigationDestination>()
@@ -163,7 +165,7 @@ class DeckListViewModel @AssistedInject constructor(
         if (auth.currentUser == null) {
             viewModelScope.launch { navigationDestination.emit(value = SigningTypeChoosingDialog) }
         } else {
-            workManager.performDataSynchronization()
+           workManager.performDataSynchronization()
         }
     }
 
@@ -195,7 +197,7 @@ class DeckListViewModel @AssistedInject constructor(
     private fun observeDataSynchronizationStateWorker() {
         workManager.getDataSynchronizationProgressState()
             .catch { crashlytics.report(exception = it) }
-            .filterNot { it is DataSynchronizationState.UncertainState }
+            .filterNot { it is DataSynchronizationState.Uncertain }
             .onEach { dataSynchronizationState.value = it }
             .launchIn(scope = viewModelScope)
     }

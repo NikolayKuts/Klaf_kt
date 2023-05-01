@@ -18,9 +18,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
-import com.example.klaf.presentation.common.AdaptiveBox
 import com.example.klaf.presentation.common.ClosingButton
 import com.example.klaf.presentation.common.FullBackgroundDialog
+import com.example.klaf.presentation.common.ScrollableBox
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -29,7 +29,7 @@ fun SigningTypeChoosingView(
     onSignUpButtonClick: () -> Unit,
     onCloseButtonClick: () -> Unit,
 ) {
-    AdaptiveBox {
+    ScrollableBox() {
         FullBackgroundDialog(
             onBackgroundClick = onCloseButtonClick,
             topContent = {
@@ -39,7 +39,7 @@ fun SigningTypeChoosingView(
                     modifier = Modifier
                         .size(70.dp)
                         .clip(shape = RoundedCornerShape(50.dp))
-                        .background(MainTheme.colors.dataSynchronizationView.labelBackground)
+                        .background(MainTheme.colors.dataSynchronizationView.initialLabelBackground)
                         .padding(10.dp),
                     painter = painterResource(id = R.drawable.ic_app_labale),
                     contentDescription = null,

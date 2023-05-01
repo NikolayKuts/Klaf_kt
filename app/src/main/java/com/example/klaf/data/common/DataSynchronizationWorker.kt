@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.lifecycle.asFlow
 import androidx.work.*
-import com.example.domain.common.ifTrue
 import com.example.domain.repositories.CrashlyticsRepository
 import com.example.domain.useCases.SynchronizeLocalAndRemoteDataUseCase
 import com.example.klaf.data.common.DataSynchronizationState.*
@@ -14,6 +13,7 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import java.util.*
 
 @HiltWorker
 class DataSynchronizationWorker @AssistedInject constructor(
@@ -29,6 +29,7 @@ class DataSynchronizationWorker @AssistedInject constructor(
         private const val UNIQUE_WORK_NAME = "data_synchronization"
         private const val WORK_REQUEST_TAG = "request_tag"
         private const val PROGRESS_STATE_KEY = "sync_progress_key"
+        private const val EMPTY_SYNCHRONIZING_DATA = "..."
 
         private const val NOTIFICATION_ID = 43523
 
@@ -36,43 +37,37 @@ class DataSynchronizationWorker @AssistedInject constructor(
             val progressState = getWorkInfosByTagLiveData(WORK_REQUEST_TAG)
                 .asFlow()
                 .distinctUntilChanged()
-
             var wasRunning = false
 
             return progressState.map { workInfos ->
                 val workInfo = workInfos.firstOrNull()
-                val synchronizationData = workInfo?.progress?.getString(PROGRESS_STATE_KEY)
-                val isWorkFinished = workInfos.firstOrNull()?.state?.isFinished ?: false
+                val workInfoState = workInfo?.state
+                val synchronizationData =
+                    workInfo?.progress?.getString(PROGRESS_STATE_KEY) ?: EMPTY_SYNCHRONIZING_DATA
 
-                (workInfo?.state == WorkInfo.State.RUNNING).ifTrue { wasRunning = true }
-
-                when {
-                    isWorkFinished && wasRunning -> {
-                        wasRunning = false
-                        FinishedState
+                val synchronizationState = when {
+                    workInfoState == WorkInfo.State.RUNNING -> {
+                        Synchronizing(synchronizationData = synchronizationData)
                     }
-                    synchronizationData != null -> {
-                        wasRunning = true
-                        SynchronizingState(synchronizationData = synchronizationData)
+                    workInfoState == WorkInfo.State.SUCCEEDED && wasRunning -> {
+                        SuccessfullyFinished
                     }
-                    !isWorkFinished && wasRunning -> {
-                        SynchronizingState(synchronizationData = "")
-                    }
-                    else -> {
-                        wasRunning = false
-                        UncertainState
-                    }
+                    workInfoState.isFailed && wasRunning -> Failed
+                    else -> Uncertain
                 }
+
+                wasRunning = workInfoState == WorkInfo.State.RUNNING
+                synchronizationState
             }
         }
 
-        fun WorkManager.performDataSynchronization() {
-            this.enqueueUniqueWork(
+        fun WorkManager.performDataSynchronization(): UUID = makeRequest().also { request ->
+            enqueueUniqueWork(
                 UNIQUE_WORK_NAME,
                 ExistingWorkPolicy.KEEP,
-                makeRequest()
+                request,
             )
-        }
+        }.id
 
         private fun makeRequest(): OneTimeWorkRequest {
             return OneTimeWorkRequestBuilder<DataSynchronizationWorker>()
@@ -80,6 +75,12 @@ class DataSynchronizationWorker @AssistedInject constructor(
                 .addTag(WORK_REQUEST_TAG)
                 .build()
         }
+
+        private val WorkInfo.State?.isFailed: Boolean
+            get() = when (this) {
+                WorkInfo.State.FAILED, WorkInfo.State.BLOCKED, WorkInfo.State.CANCELLED -> true
+                else -> false
+            }
     }
 
     override suspend fun doWork(): Result = try {
