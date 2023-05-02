@@ -253,7 +253,7 @@ data class DataSynchronizationViewColors(
             initialLabelBackground = Color(0xFFFFFFFF),
             targetLabelBackground = Color(0xFFC4ECB0),
             progressIndicator = Color(0xFF92CFC3),
-            initialWarning = Color(0x4FD67A7A),
+            initialWarning = Color(0x4FD85B5B),
             targetWarning = Color(0x19D57A7A),
         )
 

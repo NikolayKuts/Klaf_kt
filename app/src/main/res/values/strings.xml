@@ -83,8 +83,8 @@
     <string name="data_synchronization_dialog_title">Would you like to synchronize the data with the remote storage?</string>
     <string name="work_logic_notification_channel_description">This channel is necessary for the correct work of the application and for data synchronization. For predictable behavior of the application, the channel must be enabled.</string>
     <string name="data_synchronization_notifier_content_text">Local and remote data synchronization</string>
-    <string name="data_synchronization_dialog_sync_state_text">Local and remote data synchronization</string>
-    <string name="data_synchronization_dialog_finish_state_text">The local and the remote data are synchronized</string>
+    <string name="data_synchronization_dialog_sync_process">Synchronizing</string>
+    <string name="data_synchronization_dialog_data_synchronized">The local and the remote data are synchronized</string>
     <string name="problem_with_fetching_deck_repetition_info">There is a problem with fetching deck repetition info</string>
     <string name="pointer_current">current</string>
     <string name="pointer_previous">previous</string>
@@ -131,6 +131,7 @@
     <string name="authentication_warning_Invalid_password_confirmation">Invalid password confirmation</string>
     <string name="authentication_sign_in_success">You have signed in successfully</string>
     <string name="authentication_sign_up_success">You have signed up successfully</string>
-    <string name="data_sync_failed">Data synchronization failed</string>
-    <string name="data_sync_resync_question">Would you like to try again?</string>
+    <string name="data_synchronization_dialog_failure_message">Data synchronization failed</string>
+    <string name="data_synchronization_dialog_resync_question">Would you like to try again?</string>
+    <string name="data_synchronization_dialog_waiting_message">Please wait for the end of synchronization</string>
 </resources>

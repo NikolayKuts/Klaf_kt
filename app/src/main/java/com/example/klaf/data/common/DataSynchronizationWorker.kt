@@ -29,7 +29,7 @@ class DataSynchronizationWorker @AssistedInject constructor(
         private const val UNIQUE_WORK_NAME = "data_synchronization"
         private const val WORK_REQUEST_TAG = "request_tag"
         private const val PROGRESS_STATE_KEY = "sync_progress_key"
-        private const val EMPTY_SYNCHRONIZING_DATA = "..."
+        private const val EMPTY_SYNCHRONIZING_DATA = ""
 
         private const val NOTIFICATION_ID = 43523
 
