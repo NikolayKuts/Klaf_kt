@@ -1,5 +1,6 @@
 package com.example.klaf.presentation.deckList.dataSynchronization
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -10,14 +11,16 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
@@ -99,14 +102,12 @@ private fun SynchronizationStateView(synchronizationData: String) {
         topContent = { AnimatedSynchronizationLabel() },
         mainContent = {
             Column {
-                Text(
-                    style = MainTheme.typographies.dialogTextStyle,
-                    text = stringResource(R.string.data_synchronization_dialog_sync_state_text)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
+                WarningMessage(textId = R.string.data_synchronization_dialog_waiting_message)
+                ContentSpacer()
+                SynchronizingText()
 
                 if (synchronizationData.isNotEmpty()) {
+                    ContentSpacer()
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         text = synchronizationData,
@@ -127,7 +128,7 @@ private fun FinishStateView(onCloseClick: () -> Unit) {
         mainContent = {
             Text(
                 style = MainTheme.typographies.dialogTextStyle,
-                text = stringResource(R.string.data_synchronization_dialog_finish_state_text)
+                text = stringResource(R.string.data_synchronization_dialog_data_synchronized)
             )
         },
         bottomContent = {
@@ -156,19 +157,11 @@ private fun FailureStateView(
         },
         mainContent = {
             Column {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(shape = RoundedCornerShape(6.dp))
-                        .background(animatedWarningColor())
-                        .padding(6.dp),
-                    textAlign = TextAlign.Center,
-                    text = stringResource(R.string.data_sync_failed),
-                    style = MainTheme.typographies.dialogTextStyle
-                )
+                WarningMessage(textId = R.string.data_synchronization_dialog_failure_message)
+                ContentSpacer()
                 Text(
                     modifier = Modifier.padding(6.dp),
-                    text = stringResource(R.string.data_sync_resync_question),
+                    text = stringResource(R.string.data_synchronization_dialog_resync_question),
                     style = MainTheme.typographies.dialogTextStyle
                 )
             }
@@ -241,6 +234,88 @@ private fun SynchronizationLabel(
             contentDescription = null,
         )
     }
+}
+
+@Composable
+private fun SynchronizingText() {
+    val animationDuration = 700
+    val stepDuration = animationDuration / 3
+
+    val alpha1 by animateAlphaWithDelay(
+        delay = 50,
+        commonDuration = animationDuration,
+        stepDuration = stepDuration
+    )
+    val alpha2 by animateAlphaWithDelay(
+        delay = stepDuration,
+        commonDuration = animationDuration,
+        stepDuration = stepDuration
+    )
+    val alpha3 by animateAlphaWithDelay(
+        delay = stepDuration * 2,
+        commonDuration = animationDuration,
+        stepDuration = stepDuration
+    )
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Text(
+            style = MainTheme.typographies.dialogTextStyle,
+            text = stringResource(R.string.data_synchronization_dialog_sync_process)
+        )
+        TextDot(alpha1)
+        TextDot(alpha2)
+        TextDot(alpha3)
+    }
+}
+
+@Composable
+private fun TextDot(alpha: Float) {
+    Text(
+        modifier = Modifier.alpha(alpha),
+        text = "."
+    )
+}
+
+@Composable
+private fun animateAlphaWithDelay(
+    delay: Int,
+    commonDuration: Int,
+    stepDuration: Int,
+    minAlpha: Float = 0.0f,
+    maxAlpha: Float = 1F,
+): State<Float> = rememberInfiniteTransition().animateFloat(
+    initialValue = minAlpha,
+    targetValue = minAlpha,
+    animationSpec = infiniteRepeatable(
+        animation = keyframes {
+            durationMillis = commonDuration
+            minAlpha at 0
+            minAlpha at delay
+            maxAlpha at delay + (stepDuration / 2)
+            maxAlpha at commonDuration
+        }
+    )
+)
+
+@Composable
+private fun ContentSpacer() {
+    Spacer(modifier = Modifier.height(16.dp))
+}
+
+@Composable
+private fun WarningMessage(@StringRes textId: Int) {
+    Text(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape = RoundedCornerShape(6.dp))
+            .background(animatedWarningColor())
+            .padding(16.dp),
+        text = stringResource(textId),
+        style = MainTheme.typographies.dialogTextStyle
+    )
 }
 
 @Composable
