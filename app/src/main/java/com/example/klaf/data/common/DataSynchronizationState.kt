@@ -1,9 +1,10 @@
 package com.example.klaf.data.common
 
-sealed class DataSynchronizationState {
+sealed interface DataSynchronizationState {
 
-    object UncertainState: DataSynchronizationState()
-    object InitialState : DataSynchronizationState()
-    data class SynchronizingState(val synchronizationData: String) : DataSynchronizationState()
-    object FinishedState : DataSynchronizationState()
+    object Uncertain: DataSynchronizationState
+    object Initial : DataSynchronizationState
+    data class Synchronizing(val synchronizationData: String) : DataSynchronizationState
+    object SuccessfullyFinished : DataSynchronizationState
+    object Failed : DataSynchronizationState
 }

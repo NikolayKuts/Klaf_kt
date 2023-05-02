@@ -91,7 +91,7 @@ data class CommonColors(
             appLabelColorFilter = Color(0xFF686868),
             animationAppLabelColorFilter = Color(0xFF4D6C85),
             positiveDialogButton = Color(0xFF809B62),
-            negativeDialogButton = Color(0xFFD17670),
+            negativeDialogButton = Color(0xFFB1645F),
             neutralDialogButton = Color(0xFF6F797C),
             separator = Color(0xFF4D4D4D),
         )
@@ -240,23 +240,29 @@ data class DeckRepetitionScreenColors(
 }
 
 data class DataSynchronizationViewColors(
-    val labelBackground: Color,
-    val labelBackgroundSecond: Color,
+    val initialLabelBackground: Color,
+    val targetLabelBackground: Color,
     val progressIndicator: Color,
+    val initialWarning: Color,
+    val targetWarning: Color,
 ) {
 
     object Theme : Themable<DataSynchronizationViewColors> {
 
         override val light = DataSynchronizationViewColors(
-            labelBackground = Color(0xFFFFFFFF),
-            labelBackgroundSecond = Color(0xFFC4ECB0),
+            initialLabelBackground = Color(0xFFFFFFFF),
+            targetLabelBackground = Color(0xFFC4ECB0),
             progressIndicator = Color(0xFF92CFC3),
+            initialWarning = Color(0x4FD85B5B),
+            targetWarning = Color(0x19D57A7A),
         )
 
         override val dark = DataSynchronizationViewColors(
-            labelBackground = Color(0xFF1F1F1F),
-            labelBackgroundSecond = Color(0xFF576F58),
+            initialLabelBackground = Color(0xFF1F1F1F),
+            targetLabelBackground = Color(0xFF576F58),
             progressIndicator = Color(0xF0AC6761),
+            initialWarning = Color(0x4FD67A7A),
+            targetWarning = Color(0x19D57A7A),
         )
     }
 }
