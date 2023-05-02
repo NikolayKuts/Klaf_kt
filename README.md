@@ -17,6 +17,8 @@ The application allows you to create cards with the automatic creation of a tran
 * [_**Clean Architecture**_](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) + _**Multi-Module**_
 * Access to local storage via [_**Room database**_](https://developer.android.com/jetpack/androidx/releases/room?gclid=Cj0KCQiA4aacBhCUARIsAI55maHsI2AXFdILFEuxiZANnj4osoCdiKzs8wbbReVJ94HUD4Mo_CS3k-UaAlj1EALw_wcB&gclsrc=aw.ds), [_**DataStore**_](https://developer.android.com/topic/libraries/architecture/datastore?gclid=Cj0KCQiA4aacBhCUARIsAI55maF8MzhHpnejUNKEjuWnHm3UNt1YOdiCIfE2Xe_yn37gLw7Ap5rV5r0aAjLfEALw_wcB&gclsrc=aw.ds)
 * Access to remote storage via [_**Firebase**_](https://firebase.google.com/)
+* User authentication via [_**Firebase Authentication**_](https://firebase.google.com/docs/auth?hl=en&authuser=0)
+* Crashlytics - [_**Firebase Crashlytics SDK**_](https://firebase.google.com/docs/crashlytics)
 * For asynchronous operations used [_**Coroutines**_](https://kotlinlang.org/docs/coroutines-overview.html) and [_**Coroutine flows**_](https://developer.android.com/kotlin/flow)
 * For Ui navigation used [_**Navigation component**_](https://developer.android.com/guide/navigation?gclid=Cj0KCQiA4aacBhCUARIsAI55maG6BEZpROClIXY-7nAHZaGsZe5It8jIBKkVyNfObruJf3uzhwVOVTwaAhXsEALw_wcB&gclsrc=aw.ds)
 * For dependency injection used [_**Hilt**_](https://dagger.dev/hilt/)
@@ -28,7 +30,7 @@ The application allows you to create cards with the automatic creation of a tran
 * Gradle - [_**Kotlin DSL**_](https://gradle.org/kotlin/), [_**Groovy**_](https://groovy-lang.org/)
 
 ## Features
-* Navigation to the app from [Smart Text Seletion Menu](https://developer.android.com/about/versions/marshmallow/android-6.0-changes.html?hl=ru#behavior-text-selection)
+* Navigation to the app from [Smart Text Selection Menu](https://developer.android.com/about/versions/marshmallow/android-6.0-changes.html?hl=ru#behavior-text-selection)
 * Ability to listen to the pronunciation of English words
 * Autocomplete suggestions when typing foreign words in English
 * Deck repeat alert by notifications
@@ -39,13 +41,13 @@ The application allows you to create cards with the automatic creation of a tran
 * _**Theme**_: dark and light
 
 ## Compatibility
-From API level 21 to 32
+From API level 21 to 33
 
 ### Old version
 https://github.com/NikolayKuts/Klaf
 
 ## Animation samples
-![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_list_screen_animation.gif)
+![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/data_synchronization_dark_theme.gif)
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/autocomplete.gif)
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_list_item_animation_dark_them.gif)
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/card_transferring_fragment_buttons_animation_dark_theme.gif)
