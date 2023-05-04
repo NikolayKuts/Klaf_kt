@@ -124,7 +124,12 @@ private fun SynchronizationStateView(synchronizationData: String) {
 private fun FinishStateView(onCloseClick: () -> Unit) {
     FullBackgroundDialog(
         onBackgroundClick = onCloseClick,
-        topContent = { SynchronizationLabel(color = MainTheme.colors.common.positiveDialogButton) },
+        topContent = {
+            RoundedIcon(
+                background = MainTheme.colors.common.positiveDialogButton,
+                iconId = R.drawable.ic_confirmation_24,
+            )
+        },
         mainContent = {
             Text(
                 style = MainTheme.typographies.dialogTextStyle,
