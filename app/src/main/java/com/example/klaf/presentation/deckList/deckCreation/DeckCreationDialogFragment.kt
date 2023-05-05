@@ -12,7 +12,7 @@ import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
 import com.example.klaf.presentation.theme.MainTheme
 
-class DeckCreationDialogFragment : TransparentDialogFragment(R.layout.dialog_deck_creation) {
+class DeckCreationDialogFragment : TransparentDialogFragment(R.layout.common_compose_layout) {
 
     private val viewModel by navGraphViewModels<BaseDeckListViewModel>(R.id.deckListFragment)
 
@@ -24,7 +24,7 @@ class DeckCreationDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
         setEvenMessageObserver(view = view)
         setDeckCreationStateObserver()
 
-        view.findViewById<ComposeView>(R.id.dialog_deck_creation_view).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 DeckCreationDialog(
                     onConfirmCreationClick = ::confirmDeckCreation,

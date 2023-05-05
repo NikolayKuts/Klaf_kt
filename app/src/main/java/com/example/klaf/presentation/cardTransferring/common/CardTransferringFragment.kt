@@ -19,7 +19,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CardTransferringFragment : Fragment(R.layout.fragment_interim_deck) {
+class CardTransferringFragment : Fragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<CardTransferringFragmentArgs>()
     private val navController by lazy { findNavController() }
@@ -37,7 +37,7 @@ class CardTransferringFragment : Fragment(R.layout.fragment_interim_deck) {
         observeNavigationChanges()
         observeEventMessage(view = view)
 
-        view.findViewById<ComposeView>(R.id.compose_view_dialog).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 Surface {
                     CardTransferringScreen(viewModel = viewModel)

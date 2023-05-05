@@ -11,7 +11,7 @@ import com.example.klaf.presentation.cardTransferring.common.BaseCardTransferrin
 import com.example.klaf.presentation.theme.MainTheme
 
 class DeckChoosingDialogFragment :
-    TransparentDialogFragment(contentLayoutId = R.layout.dialog_interim_deck) {
+    TransparentDialogFragment(contentLayoutId = R.layout.common_compose_layout) {
 
     private val viewModel by navGraphViewModels<BaseCardTransferringViewModel>(
         navGraphId = R.id.cardTransferringFragment
@@ -20,7 +20,7 @@ class DeckChoosingDialogFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<ComposeView>(R.id.compose_view_dialog).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 DeckChoosingDialogView(viewModel = viewModel, onCloseClick = ::closeDialog)
             }

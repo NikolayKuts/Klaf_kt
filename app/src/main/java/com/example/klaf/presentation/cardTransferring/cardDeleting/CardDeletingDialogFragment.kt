@@ -13,7 +13,7 @@ import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.theme.MainTheme
 
 class CardDeletingDialogFragment :
-    TransparentDialogFragment(contentLayoutId = R.layout.dialog_interim_deck) {
+    TransparentDialogFragment(contentLayoutId = R.layout.common_compose_layout) {
 
     private val viewModel by navGraphViewModels<BaseCardTransferringViewModel>(
         navGraphId = R.id.cardTransferringFragment
@@ -25,7 +25,7 @@ class CardDeletingDialogFragment :
 
         observeCardDeletingState()
 
-        view.findViewById<ComposeView>(R.id.compose_view_dialog).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 CardDeletingDialogView(
                     cardQuantity = args.cardQuantity,

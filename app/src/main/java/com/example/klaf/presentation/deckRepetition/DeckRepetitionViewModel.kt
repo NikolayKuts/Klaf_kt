@@ -8,7 +8,6 @@ import com.example.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN
 import com.example.domain.common.CardSide.BACK
 import com.example.domain.common.CardSide.FRONT
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
-import com.example.domain.common.CoroutineStateHolder.Companion.onException
 import com.example.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
@@ -56,7 +55,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         private const val THREE_QUADS: Double = 3.0 / 4.0
     }
 
-    override val eventMessage = MutableSharedFlow<EventMessage>(replay = 1)
+    override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {

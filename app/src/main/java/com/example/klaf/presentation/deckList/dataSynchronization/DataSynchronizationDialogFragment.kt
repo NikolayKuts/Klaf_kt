@@ -16,7 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class DataSynchronizationDialogFragment : TransparentDialogFragment(
-    R.layout.dialog_data_synchronization
+    R.layout.common_compose_layout
 ) {
 
     private val viewModel by navGraphViewModels<BaseDeckListViewModel>(R.id.deckListFragment)
@@ -25,7 +25,7 @@ class DataSynchronizationDialogFragment : TransparentDialogFragment(
         super.onViewCreated(view, savedInstanceState)
 
 
-        view.findViewById<ComposeView>(R.id.compose_view_data_synchronization).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 DataSynchronizationDialogView(
                     synchronizationState = viewModel.dataSynchronizationState.collectAsState().value,
