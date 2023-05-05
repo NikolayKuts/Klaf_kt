@@ -9,7 +9,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
-import com.example.klaf.presentation.common.LifecycleObservingLogger
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showToast
 import com.example.klaf.presentation.theme.MainTheme
@@ -17,7 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
+class DeckRepetitionFragment : Fragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<DeckRepetitionFragmentArgs>()
     private val navController by lazy { findNavController() }
@@ -31,7 +30,7 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view.findViewById<ComposeView>(R.id.compose_view_deck_repetition).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 Surface {
                     DeckRepetitionScreen(

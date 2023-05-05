@@ -9,7 +9,7 @@ import com.example.klaf.R
 import com.example.klaf.presentation.common.TransparentDialogFragment
 import com.example.klaf.presentation.theme.MainTheme
 
-class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.dialog_deck_navigation) {
+class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<DeckNavigationDialogFragmentArgs>()
 
@@ -18,7 +18,7 @@ class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.dialog_d
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<ComposeView>(R.id.dialog_deck_navigation).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme() {
                 DeckNavigationDialogView(
                     deckName = args.deckName,

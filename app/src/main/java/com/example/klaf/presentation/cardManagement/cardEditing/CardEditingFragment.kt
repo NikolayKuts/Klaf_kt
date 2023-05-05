@@ -16,7 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CardEditingFragment : Fragment(R.layout.fragment_card_editing) {
+class CardEditingFragment : Fragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<CardEditingFragmentArgs>()
 
@@ -35,7 +35,7 @@ class CardEditingFragment : Fragment(R.layout.fragment_card_editing) {
 
         setObserves(view = view)
 
-        view.findViewById<ComposeView>(R.id.compose_view_card_editing).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 Surface {
                     CardEditingScreen(viewModel = viewModel)

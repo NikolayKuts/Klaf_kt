@@ -11,7 +11,7 @@ import com.example.klaf.presentation.common.TransparentDialogFragment
 import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
 import com.example.klaf.presentation.theme.MainTheme
 
-class DeckDeletingDialogFragment : TransparentDialogFragment(R.layout.dialog_deck_deleting) {
+class DeckDeletingDialogFragment : TransparentDialogFragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<DeckDeletingDialogFragmentArgs>()
     private val navController by lazy { findNavController() }
@@ -21,7 +21,7 @@ class DeckDeletingDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<ComposeView>(R.id.dialog_deck_removing).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 DeckDeletionDialogView(
                     deckName = args.deckName,

@@ -9,12 +9,13 @@ import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.presentation.common.TransparentDialogFragment
 import com.example.klaf.presentation.common.collectWhenStarted
+import com.example.klaf.presentation.common.showToast
 import com.example.klaf.presentation.deckRepetition.BaseDeckRepetitionViewModel
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class CardDeletingDialogFragment : TransparentDialogFragment(R.layout.dialog_card_deleting) {
+class CardDeletingDialogFragment : TransparentDialogFragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<CardDeletingDialogFragmentArgs>()
 
@@ -23,7 +24,7 @@ class CardDeletingDialogFragment : TransparentDialogFragment(R.layout.dialog_car
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<ComposeView>(R.id.compose_view_dialog).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 CardDeletingDialogView(
                     onConfirmDeleting = ::confirmCardRemoving,
@@ -39,7 +40,7 @@ class CardDeletingDialogFragment : TransparentDialogFragment(R.layout.dialog_car
         viewModel.eventMessage.collectWhenStarted(
             lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
-//            requireContext().showToast(messageId = eventMessage.resId)    ////////////////////////////////////
+            requireContext().showToast(messageId = eventMessage.resId)
         }
     }
 

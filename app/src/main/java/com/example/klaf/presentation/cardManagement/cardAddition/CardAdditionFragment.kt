@@ -19,7 +19,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CardAdditionFragment : Fragment(R.layout.fragment_card_addition) {
+class CardAdditionFragment : Fragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<CardAdditionFragmentArgs>()
 
@@ -37,7 +37,7 @@ class CardAdditionFragment : Fragment(R.layout.fragment_card_addition) {
         super.onViewCreated(view, savedInstanceState)
         setEventMessageObserver(view = view)
 
-        view.findViewById<ComposeView>(R.id.compose_view_card_addition).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 Surface {
                     CardAdditionScreen(viewModel = viewModel)

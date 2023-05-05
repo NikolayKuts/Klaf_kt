@@ -14,7 +14,7 @@ import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
 import com.example.klaf.presentation.theme.MainTheme
 
-class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_deck_renaming) {
+class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<DeckRenamingDialogFragmentArgs>()
     private val navController by lazy { findNavController() }
@@ -26,7 +26,7 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.dialog_dec
 
         observeEvenMessages(view = view)
 
-        view.findViewById<ComposeView>(R.id.dialog_deck_renaming).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             observeDeckRenamingState()
             viewModel.getDeckById(deckId = args.deckId).let { receivedDeck: Deck? ->
                 if (receivedDeck == null) {

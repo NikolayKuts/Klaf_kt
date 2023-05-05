@@ -2,6 +2,7 @@ package com.example.klaf.presentation.common
 
 import android.content.Context
 import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
@@ -41,7 +42,9 @@ val Long.timeAsString: String
     }
 
 fun Context.showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
-    Toast.makeText(this, message, duration).show()
+    val toast = Toast.makeText(this, message, duration)
+        toast.setGravity(Gravity.TOP , 0, 0)
+        toast.show()
 }
 
 fun Context.showToast(@StringRes messageId: Int, duration: Int = Toast.LENGTH_SHORT) {

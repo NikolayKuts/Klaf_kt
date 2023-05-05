@@ -17,7 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
+class DeckListFragment : Fragment(R.layout.common_compose_layout) {
 
     private val navController by lazy { findNavController() }
 
@@ -33,7 +33,7 @@ class DeckListFragment : Fragment(R.layout.fragment_deck_list) {
         observeEvenMessage(view = view)
         observeNavigationChanges()
 
-        view.findViewById<ComposeView>(R.id.compose_view_deck_list).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 Surface {
                     DeckListScreen(

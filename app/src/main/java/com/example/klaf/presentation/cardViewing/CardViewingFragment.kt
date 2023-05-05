@@ -15,7 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CardViewingFragment : Fragment(R.layout.fragment_card_viewing) {
+class CardViewingFragment : Fragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<CardViewingFragmentArgs>()
 
@@ -30,7 +30,7 @@ class CardViewingFragment : Fragment(R.layout.fragment_card_viewing) {
 
         observeEventMessage(view = view)
 
-        view.findViewById<ComposeView>(R.id.compose_view_card_viewing).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 Surface { CardViewingScreen(viewModel = viewModel) }
             }
