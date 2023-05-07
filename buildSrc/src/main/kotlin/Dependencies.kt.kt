@@ -15,6 +15,7 @@ object Core {
     const val Material = "com.google.android.material:material:${Versions.Material}"
     const val CoroutinesCoreJvm = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:${Versions.CoroutinesCoreJvm}"
     const val JavaxInject = "javax.inject:javax.inject:${Versions.JavaxInject}"
+    const val Preferences = "androidx.preference:preference-ktx:${Versions.Preferences}"
 }
 
 object Navigation {

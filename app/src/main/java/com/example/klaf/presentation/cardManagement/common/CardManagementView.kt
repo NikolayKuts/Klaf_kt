@@ -62,7 +62,7 @@ fun CardManagementView(
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
-    ScrollableBox(modifier = Modifier.fillMaxSize()) { parentHeightPx ->
+    ScrollableBox { parentHeightPx ->
         val density = LocalDensity.current
         val minContentHeightDp = 500.dp
         val confirmationButtonPadding = getConfirmationButtonPadding(
