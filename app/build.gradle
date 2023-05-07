@@ -68,7 +68,7 @@ dependencies {
     implementation(Core.LegacySupport)
     implementation(Core.Fragment)
     implementation(Core.Material)
-    implementation 'androidx.preference:preference-ktx:1.2.0'
+    implementation(Core.Preferences)
 
     /** tests **/
     testImplementation(Tests.JunitCore)

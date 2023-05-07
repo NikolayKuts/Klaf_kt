@@ -26,6 +26,7 @@ import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
 import com.google.firebase.auth.FirebaseAuth
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -71,6 +72,13 @@ class DeckListViewModel @AssistedInject constructor(
             .onException { _, throwable -> crashlytics.report(exception = throwable) }
         observeDataSynchronizationStateWorker()
         workManager.scheduleDeckRepetitionChecking()
+
+        viewModelScope.launch {
+            repeat(times = 6) {
+                delay(3000)
+                eventMessage.emit(EventMessage(resId = R.string.problem_fetching_decks))
+            }
+        }
     }
 
     override fun createNewDeck(deckName: String) {
@@ -117,7 +125,7 @@ class DeckListViewModel @AssistedInject constructor(
         } else {
             when {
                 updatedName.isEmpty() -> {
-                    eventMessage.tryEmit(messageId = R.string.type_new_deck_name)
+                    eventMessage.tryEmit(messageId = R.string.type_deck_name)
                 }
                 updatedName == deck.name -> {
                     eventMessage.tryEmit(messageId = R.string.deck_name_is_not_changed)

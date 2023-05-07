@@ -11,6 +11,7 @@ object Versions {
     const val Material = "1.7.0"
     const val CoroutinesCoreJvm = "1.6.4"
     const val JavaxInject = "1"
+    const val Preferences = "1.2.0"
     const val EspressoCore = "3.4.0"
     const val MockkCore = "1.12.4"
     const val CoroutineTest = "1.6.4"

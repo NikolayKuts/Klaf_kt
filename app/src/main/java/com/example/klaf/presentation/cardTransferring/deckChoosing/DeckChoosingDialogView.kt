@@ -16,8 +16,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.klaf.R
 import com.example.domain.entities.Deck
+import com.example.klaf.R
 import com.example.klaf.presentation.cardTransferring.common.BaseCardTransferringViewModel
 import com.example.klaf.presentation.common.ClosingButton
 import com.example.klaf.presentation.common.ConfirmationButton
@@ -37,13 +37,12 @@ fun DeckChoosingDialogView(
         onBackgroundClick = onCloseClick,
         topContent = {},
         mainContent = {
-            Column {
+            Column(modifier = Modifier.width(IntrinsicSize.Max)) {
                 var expandedState by rememberAsMutableStateOf(value = false)
 
                 Text(
                     text = stringResource(R.string.title_card_moving_dialog),
                     modifier = Modifier
-                        .fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 

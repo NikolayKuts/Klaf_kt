@@ -5,10 +5,13 @@ import android.view.View
 import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.example.domain.entities.Deck
 import com.example.klaf.R
+import com.example.klaf.presentation.common.BaseMainViewModel
+import com.example.klaf.presentation.common.MainViewModel
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.*
@@ -26,6 +29,8 @@ class DeckListFragment : Fragment(R.layout.common_compose_layout) {
     private val viewModel: BaseDeckListViewModel by navGraphViewModels(R.id.deckListFragment) {
         DeckListViewModelFactory(assistedFactory = assistedFactory)
     }
+
+    private val sharedViewModel: BaseMainViewModel by activityViewModels<MainViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -50,7 +55,9 @@ class DeckListFragment : Fragment(R.layout.common_compose_layout) {
         viewModel.eventMessage.collectWhenStarted(
             lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
-            view.showSnackBar(messageId = eventMessage.resId)
+//            view.showSnackBar(messageId = eventMessage.resId)
+
+//            sharedViewModel.notify(message = eventMessage)
         }
     }
 

@@ -101,7 +101,7 @@ private fun SynchronizationStateView(synchronizationData: String) {
         onBackgroundClick = { },
         topContent = { AnimatedSynchronizationLabel() },
         mainContent = {
-            Column {
+            Column(modifier = Modifier.width(IntrinsicSize.Max)) {
                 WarningMessage(textId = R.string.data_synchronization_dialog_waiting_message)
                 ContentSpacer()
                 SynchronizingText()

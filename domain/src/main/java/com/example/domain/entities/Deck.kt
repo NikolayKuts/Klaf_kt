@@ -22,6 +22,7 @@ data class Deck(
 
         const val INTERIM_DECK_NAME = "interim deck"
         const val INTERIM_DECK_ID = -1
+        const val MAX_NAME_LENGTH = 30
     }
 
     val lastRepetitionIterationDate: Long? get() = repetitionIterationDates.lastOrNull()

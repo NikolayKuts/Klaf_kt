@@ -1,23 +1,13 @@
 package com.example.klaf.presentation.deckList.deckRenaming
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.dp
 import com.example.klaf.R
-import com.example.klaf.presentation.common.FullBackgroundDialog
-import com.example.klaf.presentation.common.RoundButton
-import com.example.klaf.presentation.common.rememberAsMutableStateOf
+import com.example.klaf.presentation.deckList.common.DeckNamingView
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -26,37 +16,11 @@ fun DeckRenamingDialog(
     onConfirmRenamingClick: (newName: String) -> Unit,
     onCloseDialogClick: () -> Unit,
 ) {
-    var fieldDeckName by rememberAsMutableStateOf(value = deckName)
-    val maxNameLength = 30
-
-    FullBackgroundDialog(onBackgroundClick = onCloseDialogClick,
-        mainContent = {
-            Column {
-                DialogTitle(deckName = deckName)
-                Spacer(modifier = Modifier.height(16.dp))
-                RenamingTextField(
-                    deckName = fieldDeckName,
-                    onValueChange = { updatedName ->
-                        if (updatedName.length <= maxNameLength) {
-                            fieldDeckName = updatedName
-                        }
-                    }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-        },
-        bottomContent = {
-            RoundButton(
-                background = MainTheme.colors.common.positiveDialogButton,
-                iconId = R.drawable.ic_confirmation_24,
-                onClick = { onConfirmRenamingClick(fieldDeckName) }
-            )
-            RoundButton(
-                background = MainTheme.colors.common.neutralDialogButton,
-                iconId = R.drawable.ic_close_24,
-                onClick = onCloseDialogClick
-            )
-        }
+    DeckNamingView(
+        title = { DialogTitle(deckName = deckName) },
+        onConfirmCreationClick = onConfirmRenamingClick,
+        onCloseDialogClick = onCloseDialogClick,
+        initialName = deckName
     )
 }
 
@@ -72,15 +36,5 @@ private fun DialogTitle(deckName: String) {
                 append(" \"${deckName}\"")
             }
         }
-    )
-}
-
-@Composable
-private fun RenamingTextField(deckName: String, onValueChange: (String) -> Unit) {
-    OutlinedTextField(
-        value = deckName,
-        onValueChange = onValueChange,
-        label = { Text(text = stringResource(R.string.deck_name_label)) },
-        placeholder = { Text(text = stringResource(id = R.string.type_new_deck_name)) }
     )
 }

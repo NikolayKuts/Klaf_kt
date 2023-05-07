@@ -2,6 +2,7 @@ package com.example.klaf.presentation.cardTransferring.cardDeleting
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.klaf.R
 import com.example.klaf.presentation.common.ClosingButton
@@ -26,6 +27,7 @@ fun CardDeletingDialogView(
         },
         mainContent = {
             Text(
+                modifier = Modifier,
                 style = MainTheme.typographies.dialogTextStyle,
                 text = getDialogTitleByCardCount(quantity = cardQuantity)
             )

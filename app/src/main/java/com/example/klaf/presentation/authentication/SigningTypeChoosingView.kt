@@ -29,7 +29,7 @@ fun SigningTypeChoosingView(
     onSignUpButtonClick: () -> Unit,
     onCloseButtonClick: () -> Unit,
 ) {
-    ScrollableBox() {
+    ScrollableBox {
         FullBackgroundDialog(
             onBackgroundClick = onCloseButtonClick,
             topContent = {
