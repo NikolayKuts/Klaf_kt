@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -26,19 +25,14 @@ fun DeckNamingView(
     onCloseDialogClick: () -> Unit,
     modifier: Modifier = Modifier,
     initialName: String? = null,
-    eventMassage: EventMessage? = null,
+    eventMessage: EventMessage? = null,
 ) {
     val deckNameState = rememberSaveable { mutableStateOf(value = initialName ?: "") }
 
     ScrollableBox(
         modifier = modifier.noRippleClickable { onCloseDialogClick() },
         topContent = {
-            eventMassage.ifNotNull {
-                EventMessageView(
-                    modifier = Modifier.align(Alignment.TopCenter),
-                    message = it,
-                )
-            }
+            eventMessage.ifNotNull { EventMessageView(message = it) }
         },
     ) {
         FullBackgroundDialog(

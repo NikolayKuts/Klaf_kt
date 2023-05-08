@@ -18,7 +18,7 @@ fun DeckCreationDialog(
         title = { DialogTitle() },
         onConfirmCreationClick = onConfirmCreationClick,
         onCloseDialogClick = onCloseDialogClick,
-        eventMassage = eventMassage
+        eventMessage = eventMassage
     )
 }
 

@@ -4,13 +4,12 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.example.domain.common.LoadingState
 import com.example.domain.common.catchWithCrashlyticsReport
 import com.example.domain.entities.Deck
 import com.example.domain.repositories.CrashlyticsRepository
 import com.example.domain.useCases.*
 import com.example.klaf.R
-import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingState
-import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingState.*
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardTransferringFragment
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
@@ -48,8 +47,7 @@ class CardTransferringViewModel @AssistedInject constructor(
 
     override val navigationDestination = MutableSharedFlow<CardTransferringNavigationDestination>()
 
-    override val cardDeletingState: MutableStateFlow<CardDeletingState> =
-        MutableStateFlow(value = NON)
+    override val cardsDeletingState = MutableStateFlow<LoadingState<Unit>>(value = LoadingState.Non)
 
     override val decks: StateFlow<List<Deck>> = fetchDeckSource()
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {
@@ -102,19 +100,20 @@ class CardTransferringViewModel @AssistedInject constructor(
     }
 
     override fun deleteCards() {
-        cardDeletingState.value = IN_PROGRESS
-
         selectedCards.value
             .map { card -> card.id }
             .also { cardIds ->
                 viewModelScope.launchWithState {
+                    cardsDeletingState.value = LoadingState.Loading
                     deleteCardsFromDeckUseCase(
                         cardIds = cardIds.toIntArray(),
                         deckId = sourceDeckId
                     )
-                    cardDeletingState.value = FINISHED
+                    cardsDeletingState.value = LoadingState.Success(data = Unit)
+                    cardsDeletingState.value = LoadingState.Non
                     emitEventMessage(messageId = R.string.message_deletion_completed_successfully)
                 }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+                    cardsDeletingState.value = LoadingState.Non
                     emitEventMessage(messageId = R.string.problem_with_removing_cards)
                 }
             }
@@ -134,10 +133,6 @@ class CardTransferringViewModel @AssistedInject constructor(
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
             emitEventMessage(messageId = R.string.problem_with_moving_cards)
         }
-    }
-
-    override fun resetCardDeletingState() {
-        cardDeletingState.value = NON
     }
 
     private fun observeCardSource() {

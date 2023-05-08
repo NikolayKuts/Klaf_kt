@@ -2,13 +2,13 @@ package com.example.klaf.presentation.deckList.deckCreation
 
 import android.os.Bundle
 import android.view.View
-import androidx.compose.material.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
+import com.example.domain.common.LoadingState
 import com.example.klaf.R
 import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
@@ -16,18 +16,15 @@ import com.example.klaf.presentation.theme.MainTheme
 
 class DeckCreationDialogFragment : TransparentDialogFragment(R.layout.common_compose_layout) {
 
-    private val viewModel by navGraphViewModels<BaseDeckListViewModel>(R.id.deckListFragment)
-
     private val sharedViewModel: BaseMainViewModel by activityViewModels<MainViewModel>()
+    private val viewModel by navGraphViewModels<BaseDeckListViewModel>(R.id.deckListFragment)
 
     private val navController by lazy { findNavController() }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setEvenMessageObserver(view = view)
-        setDeckCreationStateObserver()
-
+        observeDeckCreationState()
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
@@ -42,24 +39,15 @@ class DeckCreationDialogFragment : TransparentDialogFragment(R.layout.common_com
                 }
             }
         }
-
     }
 
-    private fun setEvenMessageObserver(view: View) {
-        viewModel.eventMessage.collectWhenStarted(
-            lifecycleOwner = viewLifecycleOwner
-        ) { eventMessage ->
-            view.showSnackBar(messageId = eventMessage.resId)
-        }
-    }
-
-    private fun setDeckCreationStateObserver() {
+    private fun observeDeckCreationState() {
         viewModel.deckCreationState.collectWhenStarted(
             lifecycleOwner = viewLifecycleOwner
         ) { deckCreationState ->
             when (deckCreationState) {
-                DeckCreationState.NOT_CREATED -> {}
-                DeckCreationState.CREATED -> closeDialog()
+                is LoadingState.Success -> closeDialog()
+                else -> {}
             }
         }
     }
@@ -69,7 +57,6 @@ class DeckCreationDialogFragment : TransparentDialogFragment(R.layout.common_com
     }
 
     private fun closeDialog() {
-        viewModel.resetDeckCreationState()
         navController.popBackStack()
     }
 }

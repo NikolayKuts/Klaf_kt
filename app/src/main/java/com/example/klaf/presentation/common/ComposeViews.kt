@@ -35,11 +35,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.domain.common.ifNotNull
 import com.example.domain.common.ifTrue
 import com.example.klaf.R
 import com.example.klaf.presentation.theme.MainTheme
 
 val MinElementWidth = 400.dp
+val Configuration.isOrientationLandscape: Boolean
+    get() = this.orientation == Configuration.ORIENTATION_LANDSCAPE
 
 @Composable
 fun Pointer(
@@ -122,7 +125,6 @@ fun FullBackgroundDialog(
             topContent?.let {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth(0.5F)
                         .padding(bottom = (DIALOG_BUTTON_SIZE / 4).dp)
                         .align(alignment = Alignment.TopCenter),
                     horizontalArrangement = Arrangement.SpaceAround,
@@ -251,10 +253,12 @@ fun ScrollableBox(
 
     Box(
         modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.TopCenter
     ) {
         LazyColumn(
-            modifier = Modifier.onSizeChanged { parentHeightPx = it.height.toFloat() },
+            modifier = Modifier
+                .align(Alignment.Center)
+                .onSizeChanged { parentHeightPx = it.height.toFloat() },
             reverseLayout = reverseLayout,
             verticalArrangement = verticalArrangement,
             horizontalAlignment = horizontalAlignment,
@@ -351,5 +355,47 @@ fun Modifier.verticalScrollBar(
     }
 }
 
-val Configuration.isOrientationLandscape: Boolean
-    get() = this.orientation == Configuration.ORIENTATION_LANDSCAPE
+@Composable
+fun CardDeletingDialogView(
+    cardQuantity: Int,
+    eventMessage: EventMessage?,
+    onConfirmDeleting: () -> Unit,
+    onCancel: () -> Unit,
+) {
+    ScrollableBox(
+        modifier = Modifier.noRippleClickable { onCancel() },
+        topContent = {
+            eventMessage.ifNotNull { EventMessageView(message = it) }
+        }
+    ) {
+        FullBackgroundDialog(
+            onBackgroundClick = onCancel,
+            topContent = {
+                RoundedIcon(
+                    background = MainTheme.colors.common.negativeDialogButton,
+                    iconId = R.drawable.ic_attention_mark_24
+                )
+            },
+            mainContent = {
+                Text(
+                    modifier = Modifier,
+                    style = MainTheme.typographies.dialogTextStyle,
+                    text = getDialogTitleByCardCount(quantity = cardQuantity)
+                )
+            },
+            bottomContent = {
+                DeletingButton(onClick = onConfirmDeleting)
+                ClosingButton(onClick = onCancel)
+            },
+        )
+    }
+}
+
+@Composable
+private fun getDialogTitleByCardCount(quantity: Int): String {
+    return if (quantity == 1) {
+        stringResource(id = R.string.single_cards_deleting_dialog_title, quantity)
+    } else {
+        stringResource(id = R.string.multiple_cards_deleting_dialog_title, quantity)
+    }
+}

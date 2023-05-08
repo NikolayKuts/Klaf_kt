@@ -5,6 +5,7 @@ import androidx.work.WorkManager
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
 import com.example.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.example.domain.common.LoadingState
 import com.example.domain.common.catchWithCrashlyticsReport
 import com.example.domain.common.getCurrentDateAsLong
 import com.example.domain.common.launchIn
@@ -22,11 +23,9 @@ import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.tryEmit
 import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.*
 import com.example.klaf.presentation.deckList.common.DeckListNavigationEvent.*
-import com.example.klaf.presentation.deckList.deckCreation.DeckCreationState
 import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
 import com.google.firebase.auth.FirebaseAuth
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -46,7 +45,7 @@ class DeckListViewModel @AssistedInject constructor(
 
     override val renamingState = MutableStateFlow(value = DeckRenamingState.NOT_RENAMED)
 
-    override val deckCreationState = MutableStateFlow(value = DeckCreationState.NOT_CREATED)
+    override val deckCreationState = MutableStateFlow<LoadingState<Unit>>(value = LoadingState.Non)
 
     override val dataSynchronizationState =
         MutableStateFlow<DataSynchronizationState>(DataSynchronizationState.Initial)
@@ -72,13 +71,6 @@ class DeckListViewModel @AssistedInject constructor(
             .onException { _, throwable -> crashlytics.report(exception = throwable) }
         observeDataSynchronizationStateWorker()
         workManager.scheduleDeckRepetitionChecking()
-
-        viewModelScope.launch {
-            repeat(times = 6) {
-                delay(3000)
-                eventMessage.emit(EventMessage(resId = R.string.problem_fetching_decks))
-            }
-        }
     }
 
     override fun createNewDeck(deckName: String) {
@@ -99,21 +91,19 @@ class DeckListViewModel @AssistedInject constructor(
                 }
                 else -> {
                     viewModelScope.launchWithState {
+                        deckCreationState.value = LoadingState.Loading
                         createDeck(
                             deck = Deck(name = deckName, creationDate = getCurrentDateAsLong())
                         )
                         eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
-                        deckCreationState.value = DeckCreationState.CREATED
+                        deckCreationState.value = LoadingState.Success(data = Unit)
                     }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+                        deckCreationState.value = LoadingState.Non
                         eventMessage.tryEmit(messageId = R.string.problem_with_creating_deck)
                     }
                 }
             }
         }
-    }
-
-    override fun resetDeckCreationState() {
-        deckCreationState.value = DeckCreationState.NOT_CREATED
     }
 
     override fun renameDeck(deck: Deck, newName: String) {

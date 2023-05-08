@@ -2,6 +2,7 @@ package com.example.klaf.presentation.deckRepetition
 
 import androidx.lifecycle.ViewModel
 import com.example.domain.common.DeckRepetitionState
+import com.example.domain.common.LoadingState
 import com.example.domain.entities.Deck
 import com.example.domain.enums.DifficultyRecallingLevel
 import com.example.klaf.data.networking.CardAudioPlayer
@@ -19,6 +20,7 @@ abstract class BaseDeckRepetitionViewModel : ViewModel(), EventMessageSource {
     abstract val screenState: StateFlow<RepetitionScreenState>
     abstract val cardState: SharedFlow<DeckRepetitionState>
     abstract val mainButtonState: StateFlow<ButtonState>
+    abstract val cardDeletingState: StateFlow<LoadingState<Unit>>
 
     abstract fun pronounceWord()
     abstract fun startRepeating()
