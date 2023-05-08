@@ -5,6 +5,7 @@ import android.view.View
 import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -12,8 +13,9 @@ import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardTransferringFragment
+import com.example.klaf.presentation.common.BaseMainViewModel
+import com.example.klaf.presentation.common.MainViewModel
 import com.example.klaf.presentation.common.collectWhenStarted
-import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -23,6 +25,8 @@ class CardTransferringFragment : Fragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<CardTransferringFragmentArgs>()
     private val navController by lazy { findNavController() }
+
+    private val sharedViewModel: BaseMainViewModel by activityViewModels<MainViewModel>()
 
     @Inject
     lateinit var assistedFactory: CardTransferringViewModelAssistedFactory
@@ -35,7 +39,7 @@ class CardTransferringFragment : Fragment(R.layout.common_compose_layout) {
         super.onViewCreated(view, savedInstanceState)
 
         observeNavigationChanges()
-        observeEventMessage(view = view)
+        observeEventMessage()
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
@@ -78,10 +82,11 @@ class CardTransferringFragment : Fragment(R.layout.common_compose_layout) {
         }
     }
 
-    private fun observeEventMessage(view: View) {
-        viewModel.eventMessage.collectWhenStarted(lifecycleOwner = viewLifecycleOwner) { message ->
-            view.showSnackBar(messageId = message.resId)
-        }
+    private fun observeEventMessage() {
+        viewModel.eventMessage.collectWhenStarted(
+            lifecycleOwner = viewLifecycleOwner,
+            onEach = sharedViewModel::notify,
+        )
     }
 
     private fun navigateToCardMovingDialog() {

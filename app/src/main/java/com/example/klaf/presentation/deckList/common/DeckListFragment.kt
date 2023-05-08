@@ -13,7 +13,6 @@ import com.example.klaf.R
 import com.example.klaf.presentation.common.BaseMainViewModel
 import com.example.klaf.presentation.common.MainViewModel
 import com.example.klaf.presentation.common.collectWhenStarted
-import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.*
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,7 +34,7 @@ class DeckListFragment : Fragment(R.layout.common_compose_layout) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        observeEvenMessage(view = view)
+        observeEvenMessage()
         observeNavigationChanges()
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
@@ -51,14 +50,11 @@ class DeckListFragment : Fragment(R.layout.common_compose_layout) {
         }
     }
 
-    private fun observeEvenMessage(view: View) {
+    private fun observeEvenMessage() {
         viewModel.eventMessage.collectWhenStarted(
-            lifecycleOwner = viewLifecycleOwner
-        ) { eventMessage ->
-//            view.showSnackBar(messageId = eventMessage.resId)
-
-//            sharedViewModel.notify(message = eventMessage)
-        }
+            lifecycleOwner = viewLifecycleOwner,
+            onEach = sharedViewModel::notify
+        )
     }
 
     private fun observeNavigationChanges() {

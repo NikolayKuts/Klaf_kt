@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.klaf.presentation.theme.MainTheme
+import kotlinx.coroutines.delay
 
 @Composable
 fun EventMessageView(
@@ -33,7 +34,7 @@ fun EventMessageView(
         ) + fadeIn(),
         exit = slideOutVertically(
             animationSpec = tween(durationMillis = 500),
-            targetOffsetY = { fullWidth -> fullWidth },
+            targetOffsetY = { fullWidth -> -fullWidth },
         ) + fadeOut(),
     ) {
         Card(
@@ -52,5 +53,7 @@ fun EventMessageView(
 
     LaunchedEffect(key1 = message) {
         visibilityState.targetState = true
+        delay(1500)
+        visibilityState.targetState = false
     }
 }

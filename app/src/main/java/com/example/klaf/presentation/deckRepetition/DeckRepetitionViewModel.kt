@@ -68,6 +68,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
     override val mainButtonState = MutableStateFlow(value = ButtonState.UNPRESSED)
     override val screenState = MutableStateFlow<RepetitionScreenState>(StartState)
+    override val cardDeletingState = MutableStateFlow<LoadingState<Unit>>(LoadingState.Non)
 
     private val cardsSource: SharedFlow<List<Card>> = fetchCards(deckId)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {
@@ -196,9 +197,12 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
     override fun deleteCard(cardId: Int, deckId: Int) {
         viewModelScope.launchWithState {
+            cardDeletingState.value = LoadingState.Loading
             deleteCardsFromDeck(deckId = deckId, cardIds = intArrayOf(cardId))
             eventMessage.tryEmit(messageId = R.string.card_has_been_deleted)
+            cardDeletingState.value = LoadingState.Success(data = Unit)
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+            cardDeletingState.value = LoadingState.Non
             eventMessage.tryEmit(messageId = R.string.problem_with_removing_card)
         }
     }
