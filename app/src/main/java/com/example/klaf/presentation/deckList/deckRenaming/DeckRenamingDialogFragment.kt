@@ -2,43 +2,46 @@ package com.example.klaf.presentation.deckList.deckRenaming
 
 import android.os.Bundle
 import android.view.View
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ComposeView
-import androidx.navigation.fragment.findNavController
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
-import com.example.klaf.R
 import com.example.domain.entities.Deck
+import com.example.klaf.R
+import com.example.klaf.presentation.common.BaseMainViewModel
+import com.example.klaf.presentation.common.MainViewModel
 import com.example.klaf.presentation.common.TransparentDialogFragment
-import com.example.klaf.presentation.common.collectWhenStarted
-import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
+import com.example.klaf.presentation.deckList.common.DeckListNavigationEvent
 import com.example.klaf.presentation.theme.MainTheme
 
 class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<DeckRenamingDialogFragmentArgs>()
-    private val navController by lazy { findNavController() }
 
+    private val sharedViewModel: BaseMainViewModel by activityViewModels<MainViewModel>()
     private val viewModel by navGraphViewModels<BaseDeckListViewModel>(R.id.deckListFragment)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        observeEvenMessages(view = view)
-
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
-            observeDeckRenamingState()
             viewModel.getDeckById(deckId = args.deckId).let { receivedDeck: Deck? ->
                 if (receivedDeck == null) {
-                    navController.popBackStack()
+                    closeDialog()
                 } else {
                     MainTheme {
+                        val eventMessage =
+                            sharedViewModel.eventMessage.collectAsState(initial = null).value
+
                         DeckRenamingDialog(
                             deckName = receivedDeck.name,
+                            eventMessage = eventMessage,
                             onConfirmRenamingClick = { newName ->
-                                confirmDeckRenaming(deck = receivedDeck, newName = newName)
+                                viewModel.renameDeck(deck = receivedDeck, newName = newName)
                             },
-                            onCloseDialogClick = { navController.popBackStack() },
+                            onCloseDialogClick = ::closeDialog,
                         )
                     }
                 }
@@ -46,29 +49,7 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.common_com
         }
     }
 
-    private fun observeEvenMessages(view: View) {
-        viewModel.eventMessage.collectWhenStarted(
-            lifecycleOwner = viewLifecycleOwner
-        ) { eventMessage ->
-            view.showSnackBar(messageId = eventMessage.resId)
-        }
-    }
-
-    private fun observeDeckRenamingState() {
-        viewModel.renamingState.collectWhenStarted(
-            lifecycleOwner = viewLifecycleOwner
-        ) { renamingState ->
-            when (renamingState) {
-                DeckRenamingState.NOT_RENAMED -> {}
-                DeckRenamingState.RENAMED -> {
-                    viewModel.resetDeckRenamingState()
-                    navController.popBackStack()
-                }
-            }
-        }
-    }
-
-    private fun confirmDeckRenaming(deck: Deck, newName: String) {
-        viewModel.renameDeck(deck = deck, newName = newName)
+    private fun closeDialog() {
+        viewModel.handleNavigation(event = DeckListNavigationEvent.ToPrevious)
     }
 }

@@ -34,6 +34,7 @@ class DeckListFragment : Fragment(R.layout.common_compose_layout) {
         super.onCreate(savedInstanceState)
 
         observeNavigationEvent()
+        lifecycle.addObserver(LifecycleObservingLogger("fragment"))
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -74,6 +75,7 @@ class DeckListFragment : Fragment(R.layout.common_compose_layout) {
 
     private fun observeNavigationEvent() {
         viewModel.navigationEvent.collectWhenStarted(lifecycleOwner = this) { event ->
+            log(event, "event")
             when (event) {
                 ToDataSynchronizationDialog -> {
                     navigateToDataSynchronizationDialog()

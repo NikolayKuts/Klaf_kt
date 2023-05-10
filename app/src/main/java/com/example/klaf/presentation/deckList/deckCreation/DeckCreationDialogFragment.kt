@@ -7,9 +7,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.navGraphViewModels
-import com.example.domain.common.LoadingState
 import com.example.klaf.R
-import com.example.klaf.presentation.common.*
+import com.example.klaf.presentation.common.BaseMainViewModel
+import com.example.klaf.presentation.common.MainViewModel
+import com.example.klaf.presentation.common.TransparentDialogFragment
+import com.example.klaf.presentation.common.TransparentSurface
 import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
 import com.example.klaf.presentation.deckList.common.DeckListNavigationEvent
 import com.example.klaf.presentation.theme.MainTheme
@@ -22,8 +24,6 @@ class DeckCreationDialogFragment : TransparentDialogFragment(R.layout.common_com
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        observeDeckCreationState()
-
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 TransparentSurface {
@@ -35,17 +35,6 @@ class DeckCreationDialogFragment : TransparentDialogFragment(R.layout.common_com
                         eventMassage = message
                     )
                 }
-            }
-        }
-    }
-
-    private fun observeDeckCreationState() {
-        viewModel.deckCreationState.collectWhenStarted(
-            lifecycleOwner = viewLifecycleOwner
-        ) { deckCreationState ->
-            when (deckCreationState) {
-                is LoadingState.Success -> closeDialog()
-                else -> {}
             }
         }
     }
