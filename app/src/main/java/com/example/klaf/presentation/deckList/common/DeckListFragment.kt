@@ -11,7 +11,10 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.example.domain.entities.Deck
 import com.example.klaf.R
-import com.example.klaf.presentation.common.*
+import com.example.klaf.presentation.common.BaseMainViewModel
+import com.example.klaf.presentation.common.MainViewModel
+import com.example.klaf.presentation.common.collectWhenStarted
+import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.deckList.common.DeckListNavigationEvent.*
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,7 +37,6 @@ class DeckListFragment : Fragment(R.layout.common_compose_layout) {
         super.onCreate(savedInstanceState)
 
         observeNavigationEvent()
-        lifecycle.addObserver(LifecycleObservingLogger("fragment"))
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
