@@ -11,7 +11,7 @@ import com.example.klaf.presentation.cardTransferring.common.BaseCardTransferrin
 import com.example.klaf.presentation.theme.MainTheme
 
 class DeckChoosingDialogFragment :
-    TransparentDialogFragment(contentLayoutId = R.layout.common_compose_layout) {
+    TransparentDialogFragment(layoutId = R.layout.common_compose_layout) {
 
     private val viewModel by navGraphViewModels<BaseCardTransferringViewModel>(
         navGraphId = R.id.cardTransferringFragment

@@ -16,7 +16,7 @@ import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
 
 class CardDeletingDialogFragment : TransparentDialogFragment(
-    contentLayoutId = R.layout.common_compose_layout,
+    layoutId = R.layout.common_compose_layout,
 ) {
 
     private val sharedViewModel: BaseMainViewModel by activityViewModels<MainViewModel>()

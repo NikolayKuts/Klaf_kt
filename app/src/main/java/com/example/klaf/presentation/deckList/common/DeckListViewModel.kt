@@ -2,12 +2,10 @@ package com.example.klaf.presentation.deckList.common
 
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
+import com.example.domain.common.*
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
 import com.example.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
-import com.example.domain.common.LoadingState
-import com.example.domain.common.catchWithCrashlyticsReport
-import com.example.domain.common.getCurrentDateAsLong
 import com.example.domain.common.launchIn
 import com.example.domain.entities.Deck
 import com.example.domain.repositories.CrashlyticsRepository
@@ -49,6 +47,7 @@ class DeckListViewModel @AssistedInject constructor(
 
     override val dataSynchronizationState =
         MutableStateFlow<DataSynchronizationState>(DataSynchronizationState.Initial)
+
     override val deckSource: StateFlow<List<Deck>?> = (fetchDeckSource() as Flow<List<Deck>?>)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { this.emit(value = null) }
         .stateIn(
@@ -57,13 +56,11 @@ class DeckListViewModel @AssistedInject constructor(
             initialValue = emptyList()
         )
 
-    override fun resetSynchronizationState() {
-        if (dataSynchronizationState.value == DataSynchronizationState.SuccessfullyFinished) {
-            dataSynchronizationState.value = DataSynchronizationState.Initial
-        }
-    }
+    override val navigationDestination = MutableStateFlow<DeckListNavigationDestination>(
+        value = Unspecified
+    )
 
-    override val navigationDestination = MutableSharedFlow<DeckListNavigationDestination>()
+    override val navigationEvent = MutableSharedFlow<DeckListNavigationEvent>()
 
     init {
         notificationChannelInitializer.initialize()
@@ -161,31 +158,39 @@ class DeckListViewModel @AssistedInject constructor(
 
     override fun synchronizeData() {
         if (auth.currentUser == null) {
-            viewModelScope.launch { navigationDestination.emit(value = SigningTypeChoosingDialog) }
+            viewModelScope.launch { navigationEvent.emit(value = ToSigningTypeChoosingDialog) }
         } else {
-           workManager.performDataSynchronization()
+            workManager.performDataSynchronization()
         }
     }
 
-    override fun navigate(event: DeckListNavigationEvent) {
-        val destination = when (event) {
-            ToDeckCreationDialog -> DeckCreationDialog
-            ToDataSynchronizationDialog -> DataSynchronizationDialog
+    override fun handleNavigation(event: DeckListNavigationEvent) {
+        val targetEvent = when (event) {
+            is ToDeckRepetitionScreen -> {
+                getEventByDeckId(
+                    deckId = event.deck.id,
+                    ifDeckIsNotInterim = { ToDeckRepetitionScreen(deck = event.deck) }
+                )
+            }
             is ToDeckNavigationDialog -> {
-                getDestinationByDeckId(
+                getEventByDeckId(
                     deckId = event.deck.id,
-                    ifDeckIsNotInterim = { DeckNavigationDialog(deck = event.deck) }
+                    ifDeckIsNotInterim = { ToDeckNavigationDialog(deck = event.deck) }
                 )
             }
-            is ToFragment -> {
-                getDestinationByDeckId(
-                    deckId = event.deck.id,
-                    ifDeckIsNotInterim = { DeckRepetitionScreen(deck = event.deck) }
-                )
-            }
+            else -> event
         }
 
-        viewModelScope.launch { navigationDestination.emit(value = destination) }
+
+        viewModelScope.launch {
+            navigationDestination.value = if (event == ToDataSynchronizationDialog) {
+                DataSynchronizationDialog
+            } else {
+                Unspecified
+            }
+
+            navigationEvent.emit(value = targetEvent)
+        }
     }
 
     override fun reopenApp() {
@@ -196,18 +201,30 @@ class DeckListViewModel @AssistedInject constructor(
         workManager.getDataSynchronizationProgressState()
             .catch { crashlytics.report(exception = it) }
             .filterNot { it is DataSynchronizationState.Uncertain }
-            .onEach { dataSynchronizationState.value = it }
-            .launchIn(scope = viewModelScope)
+            .onEach {
+                dataSynchronizationState.value = it
+
+                val shouldSendEventMessage = it is DataSynchronizationState.Failed
+                        && navigationDestination.value != DataSynchronizationDialog
+
+                shouldSendEventMessage.ifTrue {
+                    eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
+                }
+            }.launchIn(scope = viewModelScope)
     }
 
-    private fun getDestinationByDeckId(
-        deckId: Int,
-        ifDeckIsNotInterim: () -> DeckListNavigationDestination,
-    ): DeckListNavigationDestination {
-        return if (deckId == Deck.INTERIM_DECK_ID) {
-            CardTransferringScreen(deckId = deckId)
-        } else {
-            ifDeckIsNotInterim()
+    override fun resetSynchronizationState() {
+        if (dataSynchronizationState.value == DataSynchronizationState.SuccessfullyFinished) {
+            dataSynchronizationState.value = DataSynchronizationState.Initial
         }
+    }
+
+    private fun getEventByDeckId(
+        deckId: Int,
+        ifDeckIsNotInterim: () -> DeckListNavigationEvent,
+    ): DeckListNavigationEvent = if (deckId == Deck.INTERIM_DECK_ID) {
+        ToCardTransferringScreen(deckId = deckId)
+    } else {
+        ifDeckIsNotInterim()
     }
 }

@@ -23,6 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.domain.common.ifNotNull
 import com.example.klaf.R
 import com.example.klaf.data.common.DataSynchronizationState
 import com.example.klaf.data.common.DataSynchronizationState.*
@@ -35,9 +36,11 @@ fun DataSynchronizationDialogView(
     onConfirmClick: () -> Unit,
     onCloseClick: () -> Unit,
     onDispose: () -> Unit,
+    eventMassage: EventMessage? = null,
 ) {
     ScrollableBox(
         modifier = Modifier.noRippleClickable { onCloseClick() },
+        topContent = { eventMassage.ifNotNull { EventMessageView(message = it) } }
     ) {
         when (synchronizationState) {
             Uncertain -> {}
