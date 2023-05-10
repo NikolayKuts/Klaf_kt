@@ -5,24 +5,30 @@ import android.view.View
 import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
+import com.example.klaf.presentation.common.BaseMainViewModel
+import com.example.klaf.presentation.common.MainViewModel
 import com.example.klaf.presentation.common.collectWhenStarted
-import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class AuthenticationFragment : Fragment(R.layout.common_compose_layout) {
 
+    private val args by navArgs<AuthenticationFragmentArgs>()
+
+    private val sharedViewModel: BaseMainViewModel by activityViewModels<MainViewModel>()
     private val viewModel: BaseAuthenticationViewModel by viewModels<AuthenticationViewModel>()
 
-    private val args by navArgs<AuthenticationFragmentArgs>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        observeEventMessage()
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
@@ -35,13 +41,11 @@ class AuthenticationFragment : Fragment(R.layout.common_compose_layout) {
                 }
             }
         }
-
-        observeEventMessage(view = view)
     }
 
-    private fun observeEventMessage(view: View) {
+    private fun observeEventMessage() {
         viewModel.eventMessage.collectWhenStarted(lifecycleOwner = viewLifecycleOwner) { message ->
-            view.showSnackBar(messageId = message.resId)
+            sharedViewModel.notify(message = message)
         }
     }
 
