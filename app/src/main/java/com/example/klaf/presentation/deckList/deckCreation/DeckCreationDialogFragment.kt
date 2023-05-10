@@ -26,15 +26,13 @@ class DeckCreationDialogFragment : TransparentDialogFragment(R.layout.common_com
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
-                TransparentSurface {
-                    val message by sharedViewModel.eventMessage.collectAsState(initial = null)
+                val message by sharedViewModel.eventMessage.collectAsState(initial = null)
 
-                    DeckCreationDialog(
-                        onConfirmCreationClick = ::confirmDeckCreation,
-                        onCloseDialogClick = ::closeDialog,
-                        eventMassage = message
-                    )
-                }
+                DeckCreationDialog(
+                    onConfirmCreationClick = ::confirmDeckCreation,
+                    onCloseDialogClick = ::closeDialog,
+                    eventMassage = message
+                )
             }
         }
     }

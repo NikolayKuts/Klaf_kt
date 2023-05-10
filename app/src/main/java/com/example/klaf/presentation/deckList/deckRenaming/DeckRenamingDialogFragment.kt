@@ -3,6 +3,7 @@ package com.example.klaf.presentation.deckList.deckRenaming
 import android.os.Bundle
 import android.view.View
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
@@ -32,8 +33,7 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.common_com
                     closeDialog()
                 } else {
                     MainTheme {
-                        val eventMessage =
-                            sharedViewModel.eventMessage.collectAsState(initial = null).value
+                        val eventMessage by sharedViewModel.eventMessage.collectAsState(initial = null)
 
                         DeckRenamingDialog(
                             deckName = receivedDeck.name,

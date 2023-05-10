@@ -104,7 +104,6 @@ private fun DialogItem(
 private fun SeparationLine() {
     Spacer(
         modifier = Modifier
-//            .fillMaxWidth()
             .width(400.dp)
             .height(1.dp)
             .background(MainTheme.colors.common.separator)
