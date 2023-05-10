@@ -2,10 +2,12 @@ package com.example.klaf.presentation.deckList.common
 
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
-import com.example.domain.common.*
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onException
 import com.example.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.example.domain.common.catchWithCrashlyticsReport
+import com.example.domain.common.getCurrentDateAsLong
+import com.example.domain.common.ifTrue
 import com.example.domain.common.launchIn
 import com.example.domain.entities.Deck
 import com.example.domain.repositories.CrashlyticsRepository
@@ -19,9 +21,9 @@ import com.example.klaf.data.common.DeckRepetitionReminderChecker.Companion.sche
 import com.example.klaf.data.common.notifications.NotificationChannelInitializer
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.tryEmit
-import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.*
+import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.DataSynchronizationDialog
+import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.Unspecified
 import com.example.klaf.presentation.deckList.common.DeckListNavigationEvent.*
-import com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingState
 import com.google.firebase.auth.FirebaseAuth
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
@@ -40,10 +42,6 @@ class DeckListViewModel @AssistedInject constructor(
 ) : BaseDeckListViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
-
-    override val renamingState = MutableStateFlow(value = DeckRenamingState.NOT_RENAMED)
-
-    override val deckCreationState = MutableStateFlow<LoadingState<Unit>>(value = LoadingState.Non)
 
     override val dataSynchronizationState =
         MutableStateFlow<DataSynchronizationState>(DataSynchronizationState.Initial)
@@ -88,14 +86,12 @@ class DeckListViewModel @AssistedInject constructor(
                 }
                 else -> {
                     viewModelScope.launchWithState {
-                        deckCreationState.value = LoadingState.Loading
                         createDeck(
                             deck = Deck(name = deckName, creationDate = getCurrentDateAsLong())
                         )
                         eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
-                        deckCreationState.value = LoadingState.Success(data = Unit)
+                        navigationEvent.emit(value = ToPrevious)
                     }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-                        deckCreationState.value = LoadingState.Non
                         eventMessage.tryEmit(messageId = R.string.problem_with_creating_deck)
                     }
                 }
@@ -124,7 +120,7 @@ class DeckListViewModel @AssistedInject constructor(
                     viewModelScope.launchWithState {
                         renameDeck(oldDeck = deck, name = updatedName)
                         eventMessage.tryEmit(messageId = R.string.deck_has_been_renamed)
-                        renamingState.value = DeckRenamingState.RENAMED
+                        navigationEvent.emit(value = ToPrevious)
                     }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
                         eventMessage.tryEmit(messageId = R.string.problem_with_renaming_deck)
                     }
@@ -133,14 +129,11 @@ class DeckListViewModel @AssistedInject constructor(
         }
     }
 
-    override fun resetDeckRenamingState() {
-        renamingState.value = DeckRenamingState.NOT_RENAMED
-    }
-
     override fun deleteDeck(deckId: Int) {
         viewModelScope.launchWithState {
             removeDeck(deckId = deckId)
             eventMessage.tryEmit(messageId = R.string.the_deck_has_been_removed)
+            navigationEvent.emit(value = ToPrevious)
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
             eventMessage.tryEmit(messageId = R.string.problem_with_removing_deck)
         }
@@ -208,7 +201,7 @@ class DeckListViewModel @AssistedInject constructor(
                         && navigationDestination.value != DataSynchronizationDialog
 
                 shouldSendEventMessage.ifTrue {
-                    eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
+                    eventMessage.tryEmit(messageId = R.string.problem_with_data_synchronization)
                 }
             }.launchIn(scope = viewModelScope)
     }

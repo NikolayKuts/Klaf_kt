@@ -7,6 +7,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import com.example.klaf.R
+import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.deckList.common.DeckNamingView
 import com.example.klaf.presentation.theme.MainTheme
 
@@ -15,12 +16,14 @@ fun DeckRenamingDialog(
     deckName: String,
     onConfirmRenamingClick: (newName: String) -> Unit,
     onCloseDialogClick: () -> Unit,
+    eventMessage: EventMessage?,
 ) {
     DeckNamingView(
         title = { DialogTitle(deckName = deckName) },
         onConfirmCreationClick = onConfirmRenamingClick,
         onCloseDialogClick = onCloseDialogClick,
-        initialName = deckName
+        initialName = deckName,
+        eventMessage = eventMessage,
     )
 }
 
