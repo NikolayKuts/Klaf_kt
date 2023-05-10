@@ -15,7 +15,8 @@ abstract class BaseDeckListViewModel : ViewModel(), EventMessageSource {
     abstract val deckCreationState: StateFlow<LoadingState<Unit>>
     abstract val dataSynchronizationState: StateFlow<DataSynchronizationState>
     abstract val deckSource: StateFlow<List<Deck>?>
-    abstract val navigationDestination: SharedFlow<DeckListNavigationDestination>
+    abstract val navigationDestination: StateFlow<DeckListNavigationDestination>
+    abstract val navigationEvent: SharedFlow<DeckListNavigationEvent>
 
     abstract fun resetSynchronizationState()
     abstract fun createNewDeck(deckName: String)
@@ -24,6 +25,6 @@ abstract class BaseDeckListViewModel : ViewModel(), EventMessageSource {
     abstract fun deleteDeck(deckId: Int)
     abstract fun getDeckById(deckId: Int): Deck?
     abstract fun synchronizeData()
-    abstract fun navigate(event: DeckListNavigationEvent)
+    abstract fun handleNavigation(event: DeckListNavigationEvent)
     abstract fun reopenApp()
 }

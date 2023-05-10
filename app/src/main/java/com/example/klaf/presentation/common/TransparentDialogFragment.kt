@@ -10,8 +10,8 @@ import androidx.annotation.LayoutRes
 import androidx.fragment.app.DialogFragment
 
 open class TransparentDialogFragment(
-    @LayoutRes contentLayoutId: Int,
-) : DialogFragment(contentLayoutId) {
+    @LayoutRes layoutId: Int,
+) : DialogFragment(layoutId) {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return super.onCreateDialog(savedInstanceState).apply {

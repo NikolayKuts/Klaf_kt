@@ -1,4 +1,4 @@
-package com.example.klaf.presentation.authentication
+package com.example.klaf.presentation.deckList.sygningTypeChoosing
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,6 +21,7 @@ import com.example.klaf.R
 import com.example.klaf.presentation.common.ClosingButton
 import com.example.klaf.presentation.common.FullBackgroundDialog
 import com.example.klaf.presentation.common.ScrollableBox
+import com.example.klaf.presentation.common.noRippleClickable
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -29,7 +30,9 @@ fun SigningTypeChoosingView(
     onSignUpButtonClick: () -> Unit,
     onCloseButtonClick: () -> Unit,
 ) {
-    ScrollableBox {
+    ScrollableBox(
+        modifier = Modifier.noRippleClickable { onCloseButtonClick() }
+    ) {
         FullBackgroundDialog(
             onBackgroundClick = onCloseButtonClick,
             topContent = {
