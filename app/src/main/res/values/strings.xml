@@ -4,7 +4,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="native_and_foreign_words_must_be_filled">
-        The "native word" and "foreign words" fields must be filled
+        The "native" and "foreign" word fields must be filled
     </string>
 
     <!--card-->

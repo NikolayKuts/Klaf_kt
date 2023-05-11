@@ -53,6 +53,7 @@ class CardAdditionViewModel @AssistedInject constructor(
     override val cardAdditionState = MutableStateFlow<CardAdditionState>(
         value = CardAdditionState.Adding(
             letterInfos = smartSelectedWord?.generateLetterInfos() ?: emptyList(),
+            foreignWord = smartSelectedWord ?: ""
         )
     )
 
