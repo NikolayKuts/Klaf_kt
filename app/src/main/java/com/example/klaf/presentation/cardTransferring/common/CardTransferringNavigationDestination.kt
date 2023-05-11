@@ -8,6 +8,8 @@ sealed interface CardTransferringNavigationDestination {
 
     object CardDeletionDialog : CardTransferringNavigationDestination
 
+    object CardTransferringScreen : CardTransferringNavigationDestination
+
     data class CardEditingFragment(
         val selectedCardIndexIndex: Int,
     ) : CardTransferringNavigationDestination

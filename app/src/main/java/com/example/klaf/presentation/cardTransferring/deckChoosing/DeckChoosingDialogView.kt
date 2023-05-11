@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -16,61 +15,64 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.domain.common.ifNotNull
 import com.example.domain.entities.Deck
 import com.example.klaf.R
-import com.example.klaf.presentation.cardTransferring.common.BaseCardTransferringViewModel
-import com.example.klaf.presentation.common.ClosingButton
-import com.example.klaf.presentation.common.ConfirmationButton
-import com.example.klaf.presentation.common.FullBackgroundDialog
-import com.example.klaf.presentation.common.rememberAsMutableStateOf
+import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
 fun DeckChoosingDialogView(
-    viewModel: BaseCardTransferringViewModel,
+    decks: List<Deck>,
+    eventMessage: EventMessage?,
+    onConfirmClick: (Deck) -> Unit,
     onCloseClick: () -> Unit,
 ) {
-    val decks by viewModel.decks.collectAsState()
-    var selectedIndex by rememberAsMutableStateOf(value = 0)
+    ScrollableBox(
+        modifier = Modifier.noRippleClickable { onCloseClick() },
+        topContent = {
+            eventMessage.ifNotNull { EventMessageView(message = it) }
+        }
+    ) {
+        var selectedIndex by rememberAsMutableStateOf(value = 0)
 
-    FullBackgroundDialog(
-        onBackgroundClick = onCloseClick,
-        topContent = {},
-        mainContent = {
-            Column(modifier = Modifier.width(IntrinsicSize.Max)) {
-                var expandedState by rememberAsMutableStateOf(value = false)
+        FullBackgroundDialog(
+            onBackgroundClick = onCloseClick,
+            topContent = {},
+            mainContent = {
+                Column(modifier = Modifier.width(IntrinsicSize.Max)) {
+                    var expandedState by rememberAsMutableStateOf(value = false)
 
-                Text(
-                    text = stringResource(R.string.title_card_moving_dialog),
-                    modifier = Modifier
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.title_card_moving_dialog),
+                        modifier = Modifier
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                DeckChoosingDropdownMenu(
-                    expandedState = expandedState,
-                    decks = decks,
-                    onDismissRequest = { expandedState = false },
-                    onItemClick = { index ->
-                        selectedIndex = index
-                        expandedState = false
-                    },
-                )
+                    DeckChoosingDropdownMenu(
+                        expandedState = expandedState,
+                        decks = decks,
+                        onDismissRequest = { expandedState = false },
+                        onItemClick = { index ->
+                            selectedIndex = index
+                            expandedState = false
+                        },
+                    )
 
-                ChosenDeck(
-                    deckName = decks[selectedIndex].name,
-                    expandedState = expandedState,
-                    onClick = { expandedState = !expandedState }
-                )
-            }
-        },
+                    ChosenDeck(
+                        deckName = decks[selectedIndex].name,
+                        expandedState = expandedState,
+                        onClick = { expandedState = !expandedState }
+                    )
+                }
+            },
 
-        bottomContent = {
-            ConfirmationButton(
-                onClick = { viewModel.moveCards(targetDeck = decks[selectedIndex]) }
-            )
-            ClosingButton(onClick = onCloseClick)
-        },
-    )
+            bottomContent = {
+                ConfirmationButton(onClick = { onConfirmClick(decks[selectedIndex]) })
+                ClosingButton(onClick = onCloseClick)
+            },
+        )
+    }
 }
 
 @Composable
