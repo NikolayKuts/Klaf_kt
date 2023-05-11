@@ -8,10 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
 
 open class TransparentDialogFragment(
     @LayoutRes layoutId: Int,
-) : DialogFragment(layoutId) {
+) : DialogFragment(layoutId), SharedViewModelHolder {
+
+    override val sharedViewModel: BaseMainViewModel by activityViewModels<MainViewModel>()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return super.onCreateDialog(savedInstanceState).apply {

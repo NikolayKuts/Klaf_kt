@@ -5,23 +5,25 @@ import android.view.View
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.example.domain.common.LoadingState
 import com.example.klaf.R
-import com.example.klaf.presentation.common.*
+import com.example.klaf.presentation.common.CardDeletingDialogView
+import com.example.klaf.presentation.common.TransparentDialogFragment
+import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.deckRepetition.BaseDeckRepetitionViewModel
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class CardDeletingDialogFragment : TransparentDialogFragment(R.layout.common_compose_layout) {
+class CardDeletingDialogFragment : TransparentDialogFragment(
+    layoutId = R.layout.common_compose_layout
+) {
 
     private val args by navArgs<CardDeletingDialogFragmentArgs>()
 
-    private val sharedViewModel: BaseMainViewModel by activityViewModels<MainViewModel>()
     private val viewModel by navGraphViewModels<BaseDeckRepetitionViewModel>(R.id.deckRepetitionFragment)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
