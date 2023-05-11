@@ -5,11 +5,11 @@ import android.view.View
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.presentation.cardTransferring.common.BaseCardTransferringViewModel
+import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardTransferringScreen
 import com.example.klaf.presentation.common.CardDeletingDialogView
 import com.example.klaf.presentation.common.TransparentDialogFragment
 import com.example.klaf.presentation.theme.MainTheme
@@ -34,8 +34,8 @@ class CardDeletingDialogFragment : TransparentDialogFragment(
                 CardDeletingDialogView(
                     cardQuantity = args.cardQuantity,
                     onConfirmDeleting = ::deleteCards,
-                    onCancel = findNavController()::popBackStack,
-                    eventMessage = eventMessage
+                    onCancel = ::closeDialog,
+                    eventMessage = eventMessage,
                 )
             }
         }
@@ -43,5 +43,9 @@ class CardDeletingDialogFragment : TransparentDialogFragment(
 
     private fun deleteCards() {
         viewModel.deleteCards()
+    }
+
+    private fun closeDialog() {
+        viewModel.navigateTo(destination = CardTransferringScreen)
     }
 }

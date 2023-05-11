@@ -87,6 +87,7 @@ class CardTransferringViewModel @AssistedInject constructor(
             is CardEditingFragment -> {
                 sendCardEditingScreenEvent(selectedCardIndex = destination.selectedCardIndexIndex)
             }
+            CardTransferringScreen -> emitEvent(event = ToPrevious)
         }
     }
 
