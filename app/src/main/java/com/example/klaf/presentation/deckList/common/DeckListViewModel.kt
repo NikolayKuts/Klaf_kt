@@ -174,7 +174,6 @@ class DeckListViewModel @AssistedInject constructor(
             else -> event
         }
 
-
         viewModelScope.launch {
             navigationDestination.value = if (event == ToDataSynchronizationDialog) {
                 DataSynchronizationDialog

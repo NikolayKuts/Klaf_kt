@@ -5,13 +5,10 @@ import android.view.View
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.example.domain.entities.Deck
 import com.example.klaf.R
-import com.example.klaf.presentation.common.BaseMainViewModel
-import com.example.klaf.presentation.common.MainViewModel
 import com.example.klaf.presentation.common.TransparentDialogFragment
 import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
 import com.example.klaf.presentation.deckList.common.DeckListNavigationEvent
@@ -21,7 +18,6 @@ class DeckRenamingDialogFragment : TransparentDialogFragment(R.layout.common_com
 
     private val args by navArgs<DeckRenamingDialogFragmentArgs>()
 
-    private val sharedViewModel: BaseMainViewModel by activityViewModels<MainViewModel>()
     private val viewModel by navGraphViewModels<BaseDeckListViewModel>(R.id.deckListFragment)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

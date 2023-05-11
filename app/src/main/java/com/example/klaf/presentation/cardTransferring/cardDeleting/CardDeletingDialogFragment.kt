@@ -5,21 +5,22 @@ import android.view.View
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.example.domain.common.LoadingState
 import com.example.klaf.R
 import com.example.klaf.presentation.cardTransferring.common.BaseCardTransferringViewModel
-import com.example.klaf.presentation.common.*
+import com.example.klaf.presentation.common.CardDeletingDialogView
+import com.example.klaf.presentation.common.TransparentDialogFragment
+import com.example.klaf.presentation.common.TransparentSurface
+import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.theme.MainTheme
 
 class CardDeletingDialogFragment : TransparentDialogFragment(
     layoutId = R.layout.common_compose_layout,
 ) {
 
-    private val sharedViewModel: BaseMainViewModel by activityViewModels<MainViewModel>()
     private val viewModel by navGraphViewModels<BaseCardTransferringViewModel>(
         navGraphId = R.id.cardTransferringFragment
     )
