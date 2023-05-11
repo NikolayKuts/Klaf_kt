@@ -4,29 +4,23 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
-import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
-import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardTransferringFragment
-import com.example.klaf.presentation.common.BaseMainViewModel
-import com.example.klaf.presentation.common.MainViewModel
+import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
+import com.example.klaf.presentation.common.BaseFragment
 import com.example.klaf.presentation.common.collectWhenStarted
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CardTransferringFragment : Fragment(R.layout.common_compose_layout) {
+class CardTransferringFragment : BaseFragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<CardTransferringFragmentArgs>()
     private val navController by lazy { findNavController() }
-
-    private val sharedViewModel: BaseMainViewModel by activityViewModels<MainViewModel>()
 
     @Inject
     lateinit var assistedFactory: CardTransferringViewModelAssistedFactory
@@ -35,10 +29,15 @@ class CardTransferringFragment : Fragment(R.layout.common_compose_layout) {
         factoryProducer = ::provideViewModelFactory
     )
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        observeNavigationChanges()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        observeNavigationChanges()
         observeEventMessage()
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
@@ -58,26 +57,19 @@ class CardTransferringFragment : Fragment(R.layout.common_compose_layout) {
     }
 
     private fun observeNavigationChanges() {
-        viewModel.navigationDestination.collectWhenStarted(
-            lifecycleOwner = viewLifecycleOwner
-        ) { destination ->
-            when (destination) {
-                CardMovingDialogDestination -> navigateToCardMovingDialog()
-                is CardAddingFragmentDestination -> {
-                    navigateToCardAdditionDialog(interimDeckId = destination.sourceDeckId)
+        viewModel.navigationEvent.collectWhenStarted(lifecycleOwner = this) { event ->
+            when (event) {
+                is ToCardEditingScreen -> {
+                    navigateToCardEditingScreen(cardId = event.cardId, deckId = event.deckId)
                 }
-                is CardDeletingDialogDestination -> {
-                    navigateToCardDeletingDialog(cardQuantity = destination.cardQuantity)
+                ToCardMovingDialog -> navigateToCardMovingDialog()
+                is ToCardAddingScreen -> {
+                    navigateToCardAdditionScreen(sourceDeckId = event.sourceDeckId)
                 }
-                CardTransferringFragment -> {
-                    navController.popBackStack()
+                is ToCardDeletingDialog -> {
+                    navigateToCardDeletingDialog(cardQuantity = event.cardQuantity)
                 }
-                is CardEditingFragment -> {
-                    navigateToCardEditingFragment(
-                        cardId = destination.cardId,
-                        deckId = destination.deckId
-                    )
-                }
+                ToCardTransferringScreen -> navController.popBackStack()
             }
         }
     }
@@ -93,9 +85,9 @@ class CardTransferringFragment : Fragment(R.layout.common_compose_layout) {
         navController.navigate(R.id.action_interimDeckFragment_to_cardMovingDialogFragment)
     }
 
-    private fun navigateToCardAdditionDialog(interimDeckId: Int) {
+    private fun navigateToCardAdditionScreen(sourceDeckId: Int) {
         CardTransferringFragmentDirections.actionInterimDeckFragmentToCardAdditionFragment(
-            deckId = interimDeckId
+            deckId = sourceDeckId
         ).also { navController.navigate(directions = it) }
     }
 
@@ -105,13 +97,10 @@ class CardTransferringFragment : Fragment(R.layout.common_compose_layout) {
         ).also { navController.navigate(directions = it) }
     }
 
-    private fun navigateToCardEditingFragment(cardId: Int, deckId: Int) {
-        navController.navigate(
-            directions =
-            CardTransferringFragmentDirections.actionCardTransferringFragmentToCardEditingFragment(
-                cardId = cardId,
-                deckId = deckId,
-            )
-        )
+    private fun navigateToCardEditingScreen(cardId: Int, deckId: Int) {
+        CardTransferringFragmentDirections.actionCardTransferringFragmentToCardEditingFragment(
+            cardId = cardId,
+            deckId = deckId,
+        ).also { navController.navigate(directions = it) }
     }
 }
