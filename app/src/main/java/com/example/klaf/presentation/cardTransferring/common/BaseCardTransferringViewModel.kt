@@ -11,13 +11,13 @@ abstract class BaseCardTransferringViewModel : ViewModel(), EventMessageSource {
 
     abstract val sourceDeck: SharedFlow<Deck?>
     abstract val cardHolders: StateFlow<List<SelectableCardHolder>>
-    abstract val navigationDestination: SharedFlow<CardTransferringNavigationDestination>
+    abstract val navigationEvent: SharedFlow<CardTransferringNavigationEvent>
     abstract val cardsDeletingState: StateFlow<LoadingState<Unit>>
     abstract val decks: StateFlow<List<Deck>>
 
     abstract fun changeSelectionState(position: Int)
     abstract fun selectAllCards()
-    abstract fun navigate(event: CardTransferringNavigationEvent)
+    abstract fun navigateTo(destination: CardTransferringNavigationDestination)
     abstract fun deleteCards()
     abstract fun moveCards(targetDeck: Deck)
 }

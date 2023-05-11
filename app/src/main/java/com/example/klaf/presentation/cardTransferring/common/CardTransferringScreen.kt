@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.domain.common.ifTrue
 import com.example.klaf.R
+import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
 import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
@@ -81,7 +82,7 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
                         moreButtonClickedState = false
                     },
                     onLongItemClick = { index ->
-                        viewModel.navigate(event = ToCardEditingFragment(cardSelectionIndex = index))
+                        viewModel.navigateTo(destination = CardEditingFragment(selectedCardIndexIndex = index))
                     }
                 )
             }
@@ -93,9 +94,9 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
             ) {
                 ManagementButtons(
                     clickState = moreButtonClickedState,
-                    onMoveCardsClick = { viewModel.navigate(event = ToCardMovingDialog) },
-                    onAddCardsClick = { viewModel.navigate(event = ToCardAddingFragment) },
-                    onDeleteCardsClick = { viewModel.navigate(event = ToCardDeletionDialog) },
+                    onMoveCardsClick = { viewModel.navigateTo(destination = CardMovingDialog) },
+                    onAddCardsClick = { viewModel.navigateTo(destination = CardAddingFragment) },
+                    onDeleteCardsClick = { viewModel.navigateTo(destination = CardDeletionDialog) },
                     onMoreButtonClick = { moreButtonClickedState = !moreButtonClickedState }
                 )
             }
