@@ -26,15 +26,17 @@ class TransferCardsToDeckUseCase @Inject constructor(
         withContext(Dispatchers.IO) {
             localStorageTransactionRepository.performWithTransaction {
                 coroutineScope {
-                    val updatingJobs = mutableSetOf<Job>()
-
-                    cards.map { card -> card.copy(deckId = targetDeck.id) }
-                        .onEach { updatedCard ->
-                            launch { cardRepository.insertCard(card = updatedCard) }
-                                .also { job -> updatingJobs.add(element = job) }
-                        }
-
-                    joinAll(jobs = updatingJobs.toTypedArray())
+                    cards.map { card ->
+                        card.id to Card(
+                            deckId = targetDeck.id,
+                            nativeWord = card.nativeWord,
+                            foreignWord = card.foreignWord,
+                            ipa = card.ipa,
+                        )
+                    }.onEach { (oldId, updatedCard) ->
+                        launch { cardRepository.deleteCard(cardId = oldId) }
+                        launch { cardRepository.insertCard(card = updatedCard) }
+                    }
                 }
 
                 updateCardQuantity(deck = sourceDeck)

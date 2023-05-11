@@ -1,7 +1,10 @@
 package com.example.klaf.presentation.authentication
 
 import androidx.lifecycle.viewModelScope
-import com.example.domain.common.*
+import com.example.domain.common.LoadingState
+import com.example.domain.common.ifNotNull
+import com.example.domain.common.ifTrue
+import com.example.domain.common.launchIn
 import com.example.domain.interactors.AuthenticationInteractor
 import com.example.klaf.R
 import com.example.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError
@@ -21,13 +24,14 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthenticationViewModel @Inject constructor(
     private val authenticationInteractor: AuthenticationInteractor,
 ) : BaseAuthenticationViewModel() {
+
+    override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override val typingState = MutableStateFlow(
         value = AuthenticationTypingState(
@@ -37,8 +41,6 @@ class AuthenticationViewModel @Inject constructor(
     )
 
     override val screenLoadingState = MutableStateFlow<LoadingState<Unit>?>(value = null)
-
-    override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override fun updateEmail(value: String) {
         typingState.update { state ->

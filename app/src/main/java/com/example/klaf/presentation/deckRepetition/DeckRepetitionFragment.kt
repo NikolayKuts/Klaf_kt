@@ -5,22 +5,25 @@ import android.view.View
 import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
-import com.example.klaf.presentation.common.LifecycleObservingLogger
+import com.example.klaf.presentation.common.BaseMainViewModel
+import com.example.klaf.presentation.common.MainViewModel
 import com.example.klaf.presentation.common.collectWhenStarted
-import com.example.klaf.presentation.common.showToast
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
+class DeckRepetitionFragment : Fragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<DeckRepetitionFragmentArgs>()
     private val navController by lazy { findNavController() }
+
+    private val sharedViewModel: BaseMainViewModel by activityViewModels<MainViewModel>()
 
     @Inject
     lateinit var assistedFactory: RepetitionViewModelAssistedFactory
@@ -31,7 +34,8 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view.findViewById<ComposeView>(R.id.compose_view_deck_repetition).setContent {
+
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 Surface {
                     DeckRepetitionScreen(
@@ -43,7 +47,6 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
                 }
             }
         }
-
 
         subscribeObservers()
     }
@@ -67,10 +70,9 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
 
     private fun setEventMessageObserver() {
         viewModel.eventMessage.collectWhenStarted(
-            lifecycleOwner = viewLifecycleOwner
-        ) { eventMessage ->
-            requireContext().showToast(messageId = eventMessage.resId)
-        }
+            lifecycleOwner = viewLifecycleOwner,
+            onEach = sharedViewModel::notify,
+        )
     }
 
     private fun setScreenStateObserver() {
@@ -104,8 +106,8 @@ class DeckRepetitionFragment : Fragment(R.layout.fragment_deck_repetion) {
     private fun navigateToDeckRepetitionInfoDialogFragment() {
         DeckRepetitionFragmentDirections
             .actionDeckRepetitionFragmentToDeckRepetitionInfoDialogFragment(
-            deckId = args.deckId,
-            deckName = args.deckName
-        ).also { navController.navigate(it) }
+                deckId = args.deckId,
+                deckName = args.deckName
+            ).also { navController.navigate(it) }
     }
 }

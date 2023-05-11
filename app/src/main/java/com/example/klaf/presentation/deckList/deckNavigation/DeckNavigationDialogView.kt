@@ -11,10 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.klaf.R
-import com.example.klaf.presentation.common.ScrollableBox
-import com.example.klaf.presentation.common.FullBackgroundDialog
-import com.example.klaf.presentation.common.RoundButton
-import com.example.klaf.presentation.common.noRippleClickable
+import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -97,7 +94,7 @@ private fun DialogItem(
     Text(
         text = stringResource(id = textId),
         modifier = Modifier
-            .fillMaxWidth()
+            .width(MinElementWidth)
             .clickable { onClick() }
             .padding(top = 8.dp, bottom = 8.dp)
     )
@@ -107,7 +104,7 @@ private fun DialogItem(
 private fun SeparationLine() {
     Spacer(
         modifier = Modifier
-            .fillMaxWidth()
+            .width(400.dp)
             .height(1.dp)
             .background(MainTheme.colors.common.separator)
     )

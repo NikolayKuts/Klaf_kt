@@ -150,7 +150,7 @@ class DeckListViewModelTest {
         val newEmptyName = "    "
         val testJob = launchEventMassageIdEqualsTest(
             eventMessageSource = viewModel,
-            expectedMassageId = R.string.type_new_deck_name
+            expectedMassageId = R.string.type_deck_name
         )
 
         delay(100)

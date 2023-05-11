@@ -236,7 +236,7 @@
         android:label="CardMovingDialogFragment" />
     <dialog
         android:id="@+id/signingTypeChoosingDialogFragment"
-        android:name="com.example.klaf.presentation.authentication.SigningTypeChoosingDialogFragment"
+        android:name="com.example.klaf.presentation.deckList.sygningTypeChoosing.SigningTypeChoosingDialogFragment"
         android:label="SigningTypeChoosingDialogFragment" >
         <action
             android:id="@+id/action_signingTypeChoosingDialogFragment_to_authenticationFragment"

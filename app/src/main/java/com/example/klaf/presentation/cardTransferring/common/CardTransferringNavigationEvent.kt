@@ -1,12 +1,21 @@
 package com.example.klaf.presentation.cardTransferring.common
 
-sealed class CardTransferringNavigationEvent {
+sealed interface CardTransferringNavigationEvent {
 
-    object ToCardMovingDialog : CardTransferringNavigationEvent()
+    object ToPrevious : CardTransferringNavigationEvent
 
-    object ToCardAddingFragment : CardTransferringNavigationEvent()
+    object ToCardMovingDialog : CardTransferringNavigationEvent
 
-    object ToCardDeletionDialog: CardTransferringNavigationEvent()
+    data class ToCardAddingScreen(
+        val sourceDeckId: Int,
+    ) : CardTransferringNavigationEvent
 
-    data class  ToCardEditingFragment(val cardSelectionIndex: Int): CardTransferringNavigationEvent()
+    data class ToCardEditingScreen(
+        val cardId: Int,
+        val deckId: Int,
+    ) : CardTransferringNavigationEvent
+
+    data class ToCardDeletingDialog(
+        val cardQuantity: Int,
+    ) : CardTransferringNavigationEvent
 }

@@ -39,31 +39,26 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @Composable
 fun DeckListScreen(
-    viewModel: BaseDeckListViewModel,
+    decks: List<Deck>?,
+    onRefresh: () -> Unit,
+    onItemClick: (deck: Deck) -> Unit,
+    onLongItemClick: (deck: Deck) -> Unit,
     onMainButtonClick: () -> Unit,
     onRestartApp: () -> Unit,
 ) {
     SwipeRefresh(
         modifier = Modifier.fillMaxSize(),
         state = rememberSwipeRefreshState(isRefreshing = false),
-        onRefresh = { viewModel.navigate(event = DeckListNavigationEvent.ToDataSynchronizationDialog) }
+        onRefresh = onRefresh
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            val decks by viewModel.deckSource.collectAsState()
-
             if (decks == null) {
                 FetchingDecksWarningView(onRestartApp = onRestartApp)
             } else {
                 DecksContentView(
-                    decks = decks ?: emptyList(),
-                    onItemClick = {
-                        viewModel.navigate(event = DeckListNavigationEvent.ToFragment(deck = it))
-                    },
-                    onLongItemClick = {
-                        viewModel.navigate(
-                            event = DeckListNavigationEvent.ToDeckNavigationDialog(deck = it)
-                        )
-                    },
+                    decks = decks,
+                    onItemClick = onItemClick,
+                    onLongItemClick = onLongItemClick,
                     onMainButtonClick = onMainButtonClick
                 )
             }

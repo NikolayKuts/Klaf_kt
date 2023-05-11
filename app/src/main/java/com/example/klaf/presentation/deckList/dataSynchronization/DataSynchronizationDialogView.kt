@@ -23,6 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.domain.common.ifNotNull
 import com.example.klaf.R
 import com.example.klaf.data.common.DataSynchronizationState
 import com.example.klaf.data.common.DataSynchronizationState.*
@@ -35,9 +36,11 @@ fun DataSynchronizationDialogView(
     onConfirmClick: () -> Unit,
     onCloseClick: () -> Unit,
     onDispose: () -> Unit,
+    eventMassage: EventMessage? = null,
 ) {
     ScrollableBox(
         modifier = Modifier.noRippleClickable { onCloseClick() },
+        topContent = { eventMassage.ifNotNull { EventMessageView(message = it) } }
     ) {
         when (synchronizationState) {
             Uncertain -> {}
@@ -101,7 +104,7 @@ private fun SynchronizationStateView(synchronizationData: String) {
         onBackgroundClick = { },
         topContent = { AnimatedSynchronizationLabel() },
         mainContent = {
-            Column {
+            Column(modifier = Modifier.width(IntrinsicSize.Max)) {
                 WarningMessage(textId = R.string.data_synchronization_dialog_waiting_message)
                 ContentSpacer()
                 SynchronizingText()
@@ -124,7 +127,12 @@ private fun SynchronizationStateView(synchronizationData: String) {
 private fun FinishStateView(onCloseClick: () -> Unit) {
     FullBackgroundDialog(
         onBackgroundClick = onCloseClick,
-        topContent = { SynchronizationLabel(color = MainTheme.colors.common.positiveDialogButton) },
+        topContent = {
+            RoundedIcon(
+                background = MainTheme.colors.common.positiveDialogButton,
+                iconId = R.drawable.ic_confirmation_24,
+            )
+        },
         mainContent = {
             Text(
                 style = MainTheme.typographies.dialogTextStyle,

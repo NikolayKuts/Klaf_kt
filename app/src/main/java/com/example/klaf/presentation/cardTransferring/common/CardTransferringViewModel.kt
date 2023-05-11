@@ -1,6 +1,5 @@
 package com.example.klaf.presentation.cardTransferring.common
 
-import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
@@ -9,17 +8,12 @@ import com.example.domain.entities.Deck
 import com.example.domain.repositories.CrashlyticsRepository
 import com.example.domain.useCases.*
 import com.example.klaf.R
-import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingState
-import com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingState.*
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
-import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardTransferringFragment
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.emit
 import com.example.klaf.presentation.common.tryEmit
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -33,11 +27,11 @@ class CardTransferringViewModel @AssistedInject constructor(
     private val crashlytics: CrashlyticsRepository,
 ) : BaseCardTransferringViewModel() {
 
-    override val eventMessage = MutableSharedFlow<EventMessage>()
+    override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override val sourceDeck = fetchDeckById(deckId = sourceDeckId)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {
-            emitEventMessage(messageId = R.string.problem_with_fetching_deck)
+            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck)
         }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -46,14 +40,11 @@ class CardTransferringViewModel @AssistedInject constructor(
 
     override val cardHolders = MutableStateFlow<List<SelectableCardHolder>>(value = emptyList())
 
-    override val navigationDestination = MutableSharedFlow<CardTransferringNavigationDestination>()
-
-    override val cardDeletingState: MutableStateFlow<CardDeletingState> =
-        MutableStateFlow(value = NON)
+    override val navigationEvent = MutableSharedFlow<CardTransferringNavigationEvent>()
 
     override val decks: StateFlow<List<Deck>> = fetchDeckSource()
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {
-            emitEventMessage(messageId = R.string.problem_fetching_decks)
+            eventMessage.tryEmit(messageId = R.string.problem_fetching_decks)
         }.filterNotCurrentAndInterimDecks()
         .stateIn(
             scope = viewModelScope,
@@ -88,22 +79,19 @@ class CardTransferringViewModel @AssistedInject constructor(
         }
     }
 
-    override fun navigate(event: CardTransferringNavigationEvent) {
-        when (event) {
-            ToCardAddingFragment -> navigateToCardAddingFragmentDestination()
-            ToCardDeletionDialog -> navigateToCardDeletingDialogDestination()
-            ToCardMovingDialog -> navigateToCardMovingDialogDestination()
-            is ToCardEditingFragment -> {
-                navigateToCardEditingFragmentDestination(
-                    cardSelectionIndex = event.cardSelectionIndex
-                )
+    override fun navigateTo(destination: CardTransferringNavigationDestination) {
+        when (destination) {
+            CardAddingFragment -> sendCardAddingScreenEvent()
+            CardDeletionDialog -> sendCardDeletingDialogEvent()
+            CardMovingDialog -> sendCardMovingDialogEvent()
+            is CardEditingFragment -> {
+                sendCardEditingScreenEvent(selectedCardIndex = destination.selectedCardIndexIndex)
             }
+            CardTransferringScreen -> emitEvent(event = ToPrevious)
         }
     }
 
     override fun deleteCards() {
-        cardDeletingState.value = IN_PROGRESS
-
         selectedCards.value
             .map { card -> card.id }
             .also { cardIds ->
@@ -112,10 +100,10 @@ class CardTransferringViewModel @AssistedInject constructor(
                         cardIds = cardIds.toIntArray(),
                         deckId = sourceDeckId
                     )
-                    cardDeletingState.value = FINISHED
-                    emitEventMessage(messageId = R.string.message_deletion_completed_successfully)
+                    eventMessage.tryEmit(messageId = R.string.message_deletion_completed_successfully)
+                    navigationEvent.emit(value = ToPrevious)
                 }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-                    emitEventMessage(messageId = R.string.problem_with_removing_cards)
+                    eventMessage.tryEmit(messageId = R.string.problem_with_removing_cards)
                 }
             }
     }
@@ -128,16 +116,13 @@ class CardTransferringViewModel @AssistedInject constructor(
                     targetDeck = targetDeck,
                     cards = selectedCards.value.toTypedArray()
                 )
-                emitDestination(destination = CardTransferringFragment)
-                emitEventMessage(messageId = (R.string.message_transfer_completed_successfully))
+
+                navigationEvent.emit(value = ToPrevious)
+                eventMessage.tryEmit(messageId = (R.string.message_transfer_completed_successfully))
             }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-            emitEventMessage(messageId = R.string.problem_with_moving_cards)
+            eventMessage.tryEmit(messageId = R.string.problem_with_moving_cards)
         }
-    }
-
-    override fun resetCardDeletingState() {
-        cardDeletingState.value = NON
     }
 
     private fun observeCardSource() {
@@ -157,50 +142,37 @@ class CardTransferringViewModel @AssistedInject constructor(
         }
     }
 
-    private fun navigateToCardAddingFragmentDestination() {
-        emitDestination(
-            destination = CardAddingFragmentDestination(sourceDeckId = sourceDeckId)
-        )
+    private fun sendCardAddingScreenEvent() {
+        emitEvent(event = ToCardAddingScreen(sourceDeckId = sourceDeckId))
     }
 
-    private fun navigateToCardDeletingDialogDestination() {
+    private fun sendCardDeletingDialogEvent() {
         val cardForDeleting = selectedCards.value
 
         if (cardForDeleting.isEmpty()) {
-            emitEventMessage(messageId = R.string.message_no_cards_selected)
+            eventMessage.tryEmit(messageId = R.string.message_no_cards_selected)
         } else {
-            emitDestination(
-                destination = CardDeletingDialogDestination(cardQuantity = cardForDeleting.size)
-            )
+            emitEvent(event = ToCardDeletingDialog(cardQuantity = cardForDeleting.size))
         }
     }
 
-    private fun navigateToCardMovingDialogDestination() {
+    private fun sendCardMovingDialogEvent() {
         if (selectedCards.value.isEmpty()) {
-            emitEventMessage(messageId = R.string.message_no_cards_selected)
+            eventMessage.tryEmit(messageId = R.string.message_no_cards_selected)
         } else {
-            emitDestination(destination = CardMovingDialogDestination)
+            emitEvent(event = ToCardMovingDialog)
         }
     }
 
-    private fun navigateToCardEditingFragmentDestination(cardSelectionIndex: Int) {
-        val selectedCard = cardHolders.value[cardSelectionIndex].card
+    private fun sendCardEditingScreenEvent(selectedCardIndex: Int) {
+        val selectedCard = cardHolders.value[selectedCardIndex].card
 
-        emitDestination(
-            destination = CardEditingFragment(
-                cardId = selectedCard.id,
-                deckId = selectedCard.deckId,
-            )
+        emitEvent(
+            event = ToCardEditingScreen(cardId = selectedCard.id, deckId = selectedCard.deckId)
         )
     }
 
-    private fun emitDestination(destination: CardTransferringNavigationDestination) {
-        viewModelScope.launch { navigationDestination.emit(value = destination) }
-    }
-
-    private fun emitEventMessage(@StringRes messageId: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            eventMessage.emit(messageId = messageId)
-        }
+    private fun emitEvent(event: CardTransferringNavigationEvent) {
+        viewModelScope.launch { navigationEvent.emit(value = event) }
     }
 }

@@ -5,21 +5,25 @@ import android.view.View
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
 import com.example.klaf.presentation.common.TransparentDialogFragment
+import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
+import com.example.klaf.presentation.deckList.common.DeckListNavigationEvent
 import com.example.klaf.presentation.theme.MainTheme
 
-class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.dialog_deck_navigation) {
+class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<DeckNavigationDialogFragmentArgs>()
-
     private val navController by lazy { findNavController() }
+
+    val viewModel by navGraphViewModels<BaseDeckListViewModel>(R.id.deckListFragment)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<ComposeView>(R.id.dialog_deck_navigation).setContent {
-            MainTheme() {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
+            MainTheme {
                 DeckNavigationDialogView(
                     deckName = args.deckName,
                     onDeleteDeckClick = ::navigateToDeckRemovingDialogFragment,
@@ -28,7 +32,7 @@ class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.dialog_d
                     onAddCardsClick = ::navigateToCardAdditionFragment,
                     onTransferCardsClick = ::navigateToCardTransferringFragment,
                     onRepetitionInfoClick = ::navigateToDeckRepetitionInfoDialogFragment,
-                    onCloseDialogClick = { findNavController().popBackStack() }
+                    onCloseDialogClick = ::closeDialog
                 )
             }
         }
@@ -72,5 +76,9 @@ class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.dialog_d
                 deckId = args.deckId,
                 deckName = args.deckName,
             ).also { navController.navigate(directions = it) }
+    }
+
+    private fun closeDialog() {
+        viewModel.handleNavigation(event = DeckListNavigationEvent.ToPrevious)
     }
 }

@@ -1,5 +1,6 @@
 package com.example.klaf.presentation.common
 
+import android.content.res.Configuration
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -9,10 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
@@ -37,9 +35,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.domain.common.ifNotNull
 import com.example.domain.common.ifTrue
 import com.example.klaf.R
 import com.example.klaf.presentation.theme.MainTheme
+
+val MinElementWidth = 400.dp
+val Configuration.isOrientationLandscape: Boolean
+    get() = this.orientation == Configuration.ORIENTATION_LANDSCAPE
 
 @Composable
 fun Pointer(
@@ -64,23 +67,6 @@ fun Pointer(
 }
 
 @Composable
-fun DialogBox(
-    onClick: () -> Unit,
-    content: @Composable BoxScope.() -> Unit,
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .clickable(
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() },
-                onClick = onClick,
-            ),
-        content = content
-    )
-}
-
-@Composable
 fun FullBackgroundDialog(
     onBackgroundClick: () -> Unit,
     mainContent: @Composable BoxScope.() -> Unit,
@@ -90,21 +76,40 @@ fun FullBackgroundDialog(
     bottomContent: @Composable (RowScope.() -> Unit)? = null,
     corners: Shape = RoundedCornerShape(10.dp),
 ) {
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val sidePadding = if (screenWidth <= 320.dp) 0.dp else 16.dp
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(bottom = 16.dp)
-            .noRippleClickable(onClick = onBackgroundClick)
+            .padding(start = sidePadding, end = sidePadding, bottom = 16.dp)
+            .noRippleClickable(onClick = onBackgroundClick),
+        contentAlignment = Alignment.Center,
     ) {
-        Box(modifier = Modifier.align(Alignment.Center)) {
+        Box(
+            modifier = Modifier.align(Alignment.Center),
+            contentAlignment = Alignment.Center,
+        ) {
+            val isScreenTurned = screenWidth > 520.dp
+            val isScreenSmall = screenWidth <= 320.dp
+            val fraction = if (configuration.isOrientationLandscape && isScreenTurned) {
+                0.6F
+            } else {
+                if (isScreenSmall) 1F else 0.8F
+            }
+
+            val maxCardWidth = screenWidth * fraction
+
             Card(
                 modifier = Modifier
-                    .defaultMinSize(minHeight = 150.dp, minWidth = 600.dp)
+                    .heightIn(min = 150.dp)
+                    .widthIn(min = Dp.Unspecified, max = maxCardWidth)
+                    .clip(shape = corners)
                     .padding(
                         top = (DIALOG_BUTTON_SIZE / 2).dp,
                         bottom = (DIALOG_BUTTON_SIZE / 2).dp,
-                    )
-                    .clip(shape = corners),
+                    ),
             ) {
                 Box(
                     modifier = mainContentModifier
@@ -112,14 +117,14 @@ fun FullBackgroundDialog(
                         .padding(MainTheme.dimensions.dialogContentPadding)
                         .bottomPadding(apply = bottomContent != null)
                         .topPadding(apply = topContent != null),
-                    content = mainContent
+                    content = mainContent,
+                    contentAlignment = Alignment.Center
                 )
             }
 
             topContent?.let {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth(0.5F)
                         .padding(bottom = (DIALOG_BUTTON_SIZE / 4).dp)
                         .align(alignment = Alignment.TopCenter),
                     horizontalArrangement = Arrangement.SpaceAround,
@@ -130,7 +135,7 @@ fun FullBackgroundDialog(
             bottomContent?.let {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth(0.5F)
+                        .widthIn(min = 180.dp)
                         .align(alignment = Alignment.BottomCenter),
                     horizontalArrangement = Arrangement.SpaceAround,
                     content = it
@@ -138,6 +143,15 @@ fun FullBackgroundDialog(
             }
         }
     }
+}
+
+@Composable
+fun TransparentSurface(content: @Composable () -> Unit) {
+    Surface(
+        color = Color.Transparent,
+        contentColor = contentColorFor(MaterialTheme.colors.surface),
+        content = content,
+    )
 }
 
 fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier = composed {
@@ -148,11 +162,11 @@ fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier = composed {
     )
 }
 
-fun Modifier.topPadding(apply: Boolean): Modifier {
+private fun Modifier.topPadding(apply: Boolean): Modifier {
     return if (apply) this.padding(top = (DIALOG_BUTTON_SIZE / 4).dp) else this
 }
 
-fun Modifier.bottomPadding(apply: Boolean): Modifier {
+private fun Modifier.bottomPadding(apply: Boolean): Modifier {
     return if (apply) this.padding(bottom = (DIALOG_BUTTON_SIZE / 4).dp) else this
 }
 
@@ -230,21 +244,29 @@ fun ScrollableBox(
     verticalArrangement: Arrangement.Vertical =
         if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    topContent: @Composable BoxScope.() -> Unit = {},
     content: @Composable LazyItemScope.(parentHeightPx: Float) -> Unit,
 ) {
     val density = LocalDensity.current
     val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
     var parentHeightPx by rememberAsMutableStateOf(value = density.run { screenHeightDp.toPx() })
 
-    LazyColumn(
-        modifier = modifier.onSizeChanged { parentHeightPx = it.height.toFloat() },
-        reverseLayout = reverseLayout,
-        verticalArrangement = verticalArrangement,
-        horizontalAlignment = horizontalAlignment,
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopCenter
     ) {
-        item {
-            content(parentHeightPx)
+        LazyColumn(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .onSizeChanged { parentHeightPx = it.height.toFloat() },
+            reverseLayout = reverseLayout,
+            verticalArrangement = verticalArrangement,
+            horizontalAlignment = horizontalAlignment,
+        ) {
+            item { content(parentHeightPx) }
         }
+
+        topContent()
     }
 }
 
@@ -330,5 +352,50 @@ fun Modifier.verticalScrollBar(
                 alpha = alpha,
             )
         }
+    }
+}
+
+@Composable
+fun CardDeletingDialogView(
+    cardQuantity: Int,
+    eventMessage: EventMessage?,
+    onConfirmDeleting: () -> Unit,
+    onCancel: () -> Unit,
+) {
+    ScrollableBox(
+        modifier = Modifier.noRippleClickable { onCancel() },
+        topContent = {
+            eventMessage.ifNotNull { EventMessageView(message = it) }
+        }
+    ) {
+        FullBackgroundDialog(
+            onBackgroundClick = onCancel,
+            topContent = {
+                RoundedIcon(
+                    background = MainTheme.colors.common.negativeDialogButton,
+                    iconId = R.drawable.ic_attention_mark_24
+                )
+            },
+            mainContent = {
+                Text(
+                    modifier = Modifier,
+                    style = MainTheme.typographies.dialogTextStyle,
+                    text = getDialogTitleByCardCount(quantity = cardQuantity)
+                )
+            },
+            bottomContent = {
+                DeletingButton(onClick = onConfirmDeleting)
+                ClosingButton(onClick = onCancel)
+            },
+        )
+    }
+}
+
+@Composable
+private fun getDialogTitleByCardCount(quantity: Int): String {
+    return if (quantity == 1) {
+        stringResource(id = R.string.single_cards_deleting_dialog_title, quantity)
+    } else {
+        stringResource(id = R.string.multiple_cards_deleting_dialog_title, quantity)
     }
 }

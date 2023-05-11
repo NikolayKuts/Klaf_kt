@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class DeckRepetitionInfoDialogFragment : TransparentDialogFragment(
-    R.layout.dialog_deck_repetition_info
+    layoutId = R.layout.common_compose_layout
 ) {
 
     private val args by navArgs<DeckRepetitionInfoDialogFragmentArgs>()
@@ -28,13 +28,12 @@ class DeckRepetitionInfoDialogFragment : TransparentDialogFragment(
         )
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         setEventMessageObserver()
 
-        view.findViewById<ComposeView>(R.id.compose_view_repetition_info).setContent {
+        view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 DeckRepetitionInfoView(
                     viewModel = viewModel,
@@ -49,7 +48,7 @@ class DeckRepetitionInfoDialogFragment : TransparentDialogFragment(
         viewModel.eventMessage.collectWhenStarted(
             lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
-            requireContext().showToast(messageId = eventMessage.resId)
+            sharedViewModel.notify(message = eventMessage)
             closeDialog()
         }
     }
