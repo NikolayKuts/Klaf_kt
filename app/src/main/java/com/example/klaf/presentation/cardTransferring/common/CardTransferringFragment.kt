@@ -69,7 +69,7 @@ class CardTransferringFragment : BaseFragment(R.layout.common_compose_layout) {
                 is ToCardDeletingDialog -> {
                     navigateToCardDeletingDialog(cardQuantity = event.cardQuantity)
                 }
-                ToCardTransferringScreen -> navController.popBackStack()
+                ToPrevious -> navController.popBackStack()
             }
         }
     }

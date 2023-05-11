@@ -2,7 +2,7 @@ package com.example.klaf.presentation.cardTransferring.common
 
 sealed interface CardTransferringNavigationEvent {
 
-    object ToCardTransferringScreen : CardTransferringNavigationEvent
+    object ToPrevious : CardTransferringNavigationEvent
 
     object ToCardMovingDialog : CardTransferringNavigationEvent
 

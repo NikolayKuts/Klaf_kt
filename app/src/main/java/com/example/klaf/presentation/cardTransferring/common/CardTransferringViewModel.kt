@@ -3,7 +3,6 @@ package com.example.klaf.presentation.cardTransferring.common
 import androidx.lifecycle.viewModelScope
 import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.example.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
-import com.example.domain.common.LoadingState
 import com.example.domain.common.catchWithCrashlyticsReport
 import com.example.domain.entities.Deck
 import com.example.domain.repositories.CrashlyticsRepository
@@ -42,8 +41,6 @@ class CardTransferringViewModel @AssistedInject constructor(
     override val cardHolders = MutableStateFlow<List<SelectableCardHolder>>(value = emptyList())
 
     override val navigationEvent = MutableSharedFlow<CardTransferringNavigationEvent>()
-
-    override val cardsDeletingState = MutableStateFlow<LoadingState<Unit>>(value = LoadingState.Non)
 
     override val decks: StateFlow<List<Deck>> = fetchDeckSource()
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {
@@ -98,16 +95,13 @@ class CardTransferringViewModel @AssistedInject constructor(
             .map { card -> card.id }
             .also { cardIds ->
                 viewModelScope.launchWithState {
-                    cardsDeletingState.value = LoadingState.Loading
                     deleteCardsFromDeckUseCase(
                         cardIds = cardIds.toIntArray(),
                         deckId = sourceDeckId
                     )
-                    cardsDeletingState.value = LoadingState.Success(data = Unit)
-                    cardsDeletingState.value = LoadingState.Non
                     eventMessage.tryEmit(messageId = R.string.message_deletion_completed_successfully)
+                    navigationEvent.emit(value = ToPrevious)
                 }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-                    cardsDeletingState.value = LoadingState.Non
                     eventMessage.tryEmit(messageId = R.string.problem_with_removing_cards)
                 }
             }
@@ -122,7 +116,7 @@ class CardTransferringViewModel @AssistedInject constructor(
                     cards = selectedCards.value.toTypedArray()
                 )
 
-                navigationEvent.emit(value = ToCardTransferringScreen)
+                navigationEvent.emit(value = ToPrevious)
                 eventMessage.tryEmit(messageId = (R.string.message_transfer_completed_successfully))
             }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
