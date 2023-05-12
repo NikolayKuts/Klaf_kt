@@ -60,10 +60,9 @@ class CardAdditionFragment : BaseFragment(layoutId = R.layout.common_compose_lay
 
     private fun observeEventMessage() {
         viewModel.eventMessage.collectWhenStarted(
-            lifecycleOwner = viewLifecycleOwner
-        ) { eventMessage ->
-            sharedViewModel.notify(message = eventMessage)
-        }
+            lifecycleOwner = viewLifecycleOwner,
+            onEach = sharedViewModel::notify
+        )
     }
 
     private fun subscribeAudioPlayerObserver() {
