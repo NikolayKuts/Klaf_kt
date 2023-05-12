@@ -6,20 +6,19 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import com.example.domain.common.ifTrue
 import com.example.klaf.R
 import com.example.klaf.data.common.MIME_TYPE_TEXT_PLAIN
+import com.example.klaf.presentation.common.BaseFragment
 import com.example.klaf.presentation.common.collectWhenStarted
-import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CardAdditionFragment : Fragment(R.layout.common_compose_layout) {
+class CardAdditionFragment : BaseFragment(layoutId = R.layout.common_compose_layout) {
 
     private val args by navArgs<CardAdditionFragmentArgs>()
 
@@ -33,9 +32,16 @@ class CardAdditionFragment : Fragment(R.layout.common_compose_layout) {
         )
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        subscribeAudioPlayerObserver()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setEventMessageObserver(view = view)
+
+        observeEventMessage()
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
@@ -44,19 +50,19 @@ class CardAdditionFragment : Fragment(R.layout.common_compose_layout) {
                 }
             }
         }
-
-        subscribeAudioPlayerObserver()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+
         lifecycle.removeObserver(viewModel.audioPlayer)
     }
 
-    private fun setEventMessageObserver(view: View) {
-        viewModel.eventMessage.collectWhenStarted(lifecycleOwner = this) { eventMessage ->
-            view.showSnackBar(messageId = eventMessage.resId)
-        }
+    private fun observeEventMessage() {
+        viewModel.eventMessage.collectWhenStarted(
+            lifecycleOwner = viewLifecycleOwner,
+            onEach = sharedViewModel::notify
+        )
     }
 
     private fun subscribeAudioPlayerObserver() {

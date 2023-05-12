@@ -11,7 +11,6 @@ import com.example.domain.entities.Deck
 import com.example.klaf.R
 import com.example.klaf.presentation.common.BaseFragment
 import com.example.klaf.presentation.common.collectWhenStarted
-import com.example.klaf.presentation.common.log
 import com.example.klaf.presentation.deckList.common.DeckListNavigationEvent.*
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -72,7 +71,6 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
 
     private fun observeNavigationEvent() {
         viewModel.navigationEvent.collectWhenStarted(lifecycleOwner = this) { event ->
-            log(event, "event")
             when (event) {
                 ToDataSynchronizationDialog -> {
                     navigateToDataSynchronizationDialog()

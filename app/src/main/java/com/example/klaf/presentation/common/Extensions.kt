@@ -43,7 +43,6 @@ val Long.timeAsString: String
 
 fun Context.showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
     val toast = Toast.makeText(this, message, duration)
-        toast.setGravity(Gravity.TOP , 0, 0)
         toast.show()
 }
 

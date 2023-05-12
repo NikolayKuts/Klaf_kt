@@ -27,6 +27,7 @@ fun DeckNavigationDialogView(
 ) {
     ScrollableBox(
         modifier = Modifier.noRippleClickable { onCloseDialogClick() },
+        isDialog = true,
     ) {
         FullBackgroundDialog(
             onBackgroundClick = onCloseDialogClick,
