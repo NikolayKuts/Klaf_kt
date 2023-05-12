@@ -4,19 +4,18 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.klaf.R
+import com.example.klaf.presentation.common.BaseFragment
 import com.example.klaf.presentation.common.collectWhenStarted
-import com.example.klaf.presentation.common.showSnackBar
 import com.example.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CardEditingFragment : Fragment(R.layout.common_compose_layout) {
+class CardEditingFragment : BaseFragment(layoutId = R.layout.common_compose_layout) {
 
     private val args by navArgs<CardEditingFragmentArgs>()
 
@@ -30,10 +29,17 @@ class CardEditingFragment : Fragment(R.layout.common_compose_layout) {
         )
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        subscribeAudioPlayerObserver()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setObserves(view = view)
+        observeEventMessage()
+        observeCardEditingState()
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
@@ -46,24 +52,19 @@ class CardEditingFragment : Fragment(R.layout.common_compose_layout) {
 
     override fun onDestroy() {
         super.onDestroy()
-        lifecycle.removeObserver(viewModel.audioPlayer)
+
+        unsubscribeAudioPlayerObserver()
     }
 
-    private fun setObserves(view: View) {
-        setEventMessageObserver(view = view)
-        setCardEditingStateObserver()
-        subscribeAudioPlayerObserver()
-    }
-
-    private fun setEventMessageObserver(view: View) {
+    private fun observeEventMessage() {
         viewModel.eventMessage.collectWhenStarted(
             lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->
-            view.showSnackBar(messageId = eventMessage.resId)
+            sharedViewModel.notify(message = eventMessage)
         }
     }
 
-    private fun setCardEditingStateObserver() {
+    private fun observeCardEditingState() {
         viewModel.cardEditingState.collectWhenStarted(
             lifecycleOwner = viewLifecycleOwner
         ) { editingState ->
@@ -76,5 +77,9 @@ class CardEditingFragment : Fragment(R.layout.common_compose_layout) {
 
     private fun subscribeAudioPlayerObserver() {
         lifecycle.addObserver(viewModel.audioPlayer)
+    }
+
+    private fun unsubscribeAudioPlayerObserver() {
+        lifecycle.removeObserver(viewModel.audioPlayer)
     }
 }
