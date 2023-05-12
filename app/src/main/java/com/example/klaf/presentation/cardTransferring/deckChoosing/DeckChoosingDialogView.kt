@@ -30,6 +30,7 @@ fun DeckChoosingDialogView(
 ) {
     ScrollableBox(
         modifier = Modifier.noRippleClickable { onCloseClick() },
+        isDialog = true,
         topContent = {
             eventMessage.ifNotNull { EventMessageView(message = it) }
         }

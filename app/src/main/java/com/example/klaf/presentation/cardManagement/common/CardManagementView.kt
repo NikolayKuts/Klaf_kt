@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -43,6 +45,7 @@ import com.example.klaf.presentation.theme.MainTheme
 
 private const val CARD_MANAGEMENT_CONTAINER_WIDTH = 500
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun CardManagementView(
     deckName: String,
@@ -63,6 +66,7 @@ fun CardManagementView(
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
 ) {
     ScrollableBox { parentHeightPx ->
+        val keyboardController = LocalSoftwareKeyboardController.current
         val density = LocalDensity.current
         val minContentHeightDp = 500.dp
         val confirmationButtonPadding = getConfirmationButtonPadding(
@@ -114,7 +118,10 @@ fun CardManagementView(
                             ),
                         background = MainTheme.colors.common.positiveDialogButton,
                         iconId = R.drawable.ic_confirmation_24,
-                        onClick = onConfirmClick
+                        onClick = {
+                            keyboardController?.hide()
+                            onConfirmClick()
+                        }
                     )
                 },
             )

@@ -31,7 +31,8 @@ fun SigningTypeChoosingView(
     onCloseButtonClick: () -> Unit,
 ) {
     ScrollableBox(
-        modifier = Modifier.noRippleClickable { onCloseButtonClick() }
+        modifier = Modifier.noRippleClickable { onCloseButtonClick() },
+        isDialog = true,
     ) {
         FullBackgroundDialog(
             onBackgroundClick = onCloseButtonClick,
