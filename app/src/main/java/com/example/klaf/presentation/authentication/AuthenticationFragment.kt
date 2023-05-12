@@ -39,9 +39,10 @@ class AuthenticationFragment : BaseFragment(layoutId = R.layout.common_compose_l
     }
 
     private fun observeEventMessage() {
-        viewModel.eventMessage.collectWhenStarted(lifecycleOwner = viewLifecycleOwner) { message ->
-            sharedViewModel.notify(message = message)
-        }
+        viewModel.eventMessage.collectWhenStarted(
+            lifecycleOwner = viewLifecycleOwner,
+            onEach = sharedViewModel::notify
+        )
     }
 
     private fun navigateToDataSynchronizationDialog() {

@@ -58,10 +58,9 @@ class CardEditingFragment : BaseFragment(layoutId = R.layout.common_compose_layo
 
     private fun observeEventMessage() {
         viewModel.eventMessage.collectWhenStarted(
-            lifecycleOwner = viewLifecycleOwner
-        ) { eventMessage ->
-            sharedViewModel.notify(message = eventMessage)
-        }
+            lifecycleOwner = viewLifecycleOwner,
+            onEach = sharedViewModel::notify
+        )
     }
 
     private fun observeCardEditingState() {
