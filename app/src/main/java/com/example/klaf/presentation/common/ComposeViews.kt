@@ -241,6 +241,7 @@ fun CustomCheckBox(
 fun ScrollableBox(
     modifier: Modifier = Modifier,
     reverseLayout: Boolean = false,
+    isDialog: Boolean = false,
     verticalArrangement: Arrangement.Vertical =
         if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
@@ -252,13 +253,14 @@ fun ScrollableBox(
     var parentHeightPx by rememberAsMutableStateOf(value = density.run { screenHeightDp.toPx() })
 
     Box(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .onSizeChanged { parentHeightPx = it.height.toFloat() },
         contentAlignment = Alignment.TopCenter
     ) {
         LazyColumn(
             modifier = Modifier
-                .align(Alignment.Center)
-                .onSizeChanged { parentHeightPx = it.height.toFloat() },
+                .align(alignment = if (isDialog) Alignment.Center else Alignment.TopCenter),
             reverseLayout = reverseLayout,
             verticalArrangement = verticalArrangement,
             horizontalAlignment = horizontalAlignment,
@@ -364,6 +366,7 @@ fun CardDeletingDialogView(
 ) {
     ScrollableBox(
         modifier = Modifier.noRippleClickable { onCancel() },
+        isDialog = true,
         topContent = {
             eventMessage.ifNotNull { EventMessageView(message = it) }
         }
@@ -390,6 +393,8 @@ fun CardDeletingDialogView(
         )
     }
 }
+
+fun Modifier.background(color: Long): Modifier = this.background(Color(color))
 
 @Composable
 private fun getDialogTitleByCardCount(quantity: Int): String {
