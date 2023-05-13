@@ -22,7 +22,8 @@ import com.example.klaf.presentation.cardManagement.cardAddition.CardAdditionEve
 import com.example.klaf.presentation.cardManagement.common.MAX_IPA_LENGTH
 import com.example.klaf.presentation.cardManagement.common.MAX_WORD_LENGTH
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.tryEmit
+import com.example.klaf.presentation.common.tryEmitAsNegative
+import com.example.klaf.presentation.common.tryEmitAsPositive
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -43,7 +44,7 @@ class CardAdditionViewModel @AssistedInject constructor(
 
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {
-            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
         }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -133,7 +134,7 @@ class CardAdditionViewModel @AssistedInject constructor(
         ipaHolders: List<IpaHolder>,
     ) {
         if (nativeWordState.value.isEmpty() || foreignWord.isEmpty()) {
-            eventMessage.tryEmit(messageId = R.string.native_and_foreign_words_must_be_filled)
+            eventMessage.tryEmitAsNegative(resId = R.string.native_and_foreign_words_must_be_filled)
         } else {
             val newCard = Card(
                 deckId = deckId,
@@ -146,9 +147,9 @@ class CardAdditionViewModel @AssistedInject constructor(
                 addNewCardIntoDeck(card = newCard)
                 resetAddingState()
                 cardAdditionState.value = CardAdditionState.Finished
-                eventMessage.tryEmit(messageId = R.string.card_has_been_added)
+                eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_added)
             }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-                eventMessage.tryEmit(messageId = R.string.exception_adding_card)
+                eventMessage.tryEmitAsNegative(resId = R.string.exception_adding_card)
             }
         }
     }

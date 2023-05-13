@@ -8,7 +8,7 @@ import com.example.domain.repositories.CrashlyticsRepository
 import com.example.domain.useCases.FetchDeckRepetitionInfoUseCase
 import com.example.klaf.R
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.tryEmit
+import com.example.klaf.presentation.common.tryEmitAsNegative
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
@@ -24,7 +24,7 @@ class DeckRepetitionInfoViewModel @AssistedInject constructor(
     override val repetitionInfo: StateFlow<Emptiable<DeckRepetitionInfo?>> =
         fetchDeckRepetitionInfo(deckId = deckId)
             .catchWithCrashlyticsReport(crashlytics = crashlytics) {
-                eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck_repetition_info)
+                eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck_repetition_info)
             }.map { info -> Emptiable.Content(data = info) }
             .stateIn(
                 scope = viewModelScope,

@@ -24,10 +24,7 @@ import com.example.klaf.data.common.isRepetitionSucceeded
 import com.example.klaf.data.common.lastIterationSuccessMark
 import com.example.klaf.data.common.notifications.DeckRepetitionNotifier
 import com.example.klaf.data.networking.CardAudioPlayer
-import com.example.klaf.presentation.common.ButtonState
-import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.RepetitionTimer
-import com.example.klaf.presentation.common.tryEmit
+import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.deckRepetition.RepetitionScreenState.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -59,7 +56,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {
-            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
         }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -72,7 +69,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
     private val cardsSource: SharedFlow<List<Card>> = fetchCards(deckId)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {
-            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
         }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Lazily,
@@ -130,7 +127,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
     override fun startRepeating() {
         if (repetitionCards.value.isEmpty()) {
-            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
         } else if (screenState.value is StartState || screenState.value is FinishState) {
             startRepetitionCard = currentCard.replayCache.first()
             screenState.value = RepetitionState
@@ -154,7 +151,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         val cardForMoving = currentCard.replayCache.firstOrNull()
 
         if (repetitionCards.value.isEmpty()) {
-            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
         } else if (cardForMoving != null) {
             var actualLevel: DifficultyRecallingLevel = level
 
@@ -199,11 +196,11 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         viewModelScope.launchWithState {
             cardDeletingState.value = LoadingState.Loading
             deleteCardsFromDeck(deckId = deckId, cardIds = intArrayOf(cardId))
-            eventMessage.tryEmit(messageId = R.string.card_has_been_deleted)
+            eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_deleted)
             cardDeletingState.value = LoadingState.Success(data = Unit)
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
             cardDeletingState.value = LoadingState.Non
-            eventMessage.tryEmit(messageId = R.string.problem_with_removing_card)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_removing_card)
         }
     }
 
@@ -235,7 +232,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
     private fun observeCardSource() {
         cardsSource.catchWithCrashlyticsReport(crashlytics = crashlytics) {
-            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
         }.onEach { receivedCards ->
             if (
                 (screenState.value !is StartState)
@@ -253,7 +250,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         currentCard.filterNotNull()
             .onEach { card -> audioPlayer.preparePronunciation(word = card.foreignWord) }
             .catchWithCrashlyticsReport(crashlytics = crashlytics) {
-                eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card)
+                eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_card)
             }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
     }
 
@@ -374,7 +371,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             screenState.value = FinishState
             screenState.value = StartState
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-            eventMessage.tryEmit(messageId = R.string.problem_with_updating_deck)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_updating_deck)
         }
     }
 
