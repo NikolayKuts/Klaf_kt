@@ -7,8 +7,11 @@ import com.example.klaf.common.MainDispatcherRule
 import com.example.klaf.common.launchEventMassageIdEqualsTest
 import com.example.klaf.data.common.notifications.NotificationChannelInitializer
 import com.example.domain.entities.Deck
+import com.example.domain.repositories.CrashlyticsRepository
 import com.example.domain.useCases.*
+import com.example.klaf.data.firestore.repositoryImplementations.CrashlyticsRepositoryFirebaseImp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -275,6 +278,7 @@ class DeckListViewModelTest {
         notificationChannelInitializer: NotificationChannelInitializer = mockk(relaxed = true),
         workManager: WorkManager = mockk(relaxed = true),
         auth: FirebaseAuth = FirebaseAuth.getInstance(),
+        crashlyticsRepository: CrashlyticsRepository = mockk(relaxed = true),
     ): BaseDeckListViewModel {
         return DeckListViewModel(
             fetchDeckSource = fetchDeckSource,
@@ -285,6 +289,7 @@ class DeckListViewModelTest {
             notificationChannelInitializer = notificationChannelInitializer,
             workManager = workManager,
             auth = auth,
+            crashlytics = crashlyticsRepository,
         )
     }
 }

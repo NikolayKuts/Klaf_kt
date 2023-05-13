@@ -32,7 +32,7 @@ fun SigningTypeChoosingView(
 ) {
     ScrollableBox(
         modifier = Modifier.noRippleClickable { onCloseButtonClick() },
-        isDialog = true,
+        dialogMode = true,
     ) {
         FullBackgroundDialog(
             onBackgroundClick = onCloseButtonClick,

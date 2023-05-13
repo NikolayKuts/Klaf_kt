@@ -40,7 +40,7 @@ fun DataSynchronizationDialogView(
 ) {
     ScrollableBox(
         modifier = Modifier.noRippleClickable { onCloseClick() },
-        isDialog = true,
+        dialogMode = true,
         topContent = { eventMassage.ifNotNull { EventMessageView(message = it) } }
     ) {
         when (synchronizationState) {

@@ -31,7 +31,7 @@ fun DeckNamingView(
 
     ScrollableBox(
         modifier = modifier.noRippleClickable { onCloseDialogClick() },
-        isDialog = true,
+        dialogMode = true,
         topContent = {
             eventMessage.ifNotNull { EventMessageView(message = it) }
         },
