@@ -23,11 +23,9 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
-                TransparentSurface {
-                    setStatusBarColor()
-                    sharedViewModel.eventMessage.collectAsState(null)
-                        .value?.let { message -> EventMessageView(message = message) }
-                }
+                setStatusBarColor()
+                sharedViewModel.eventMessage.collectAsState(null)
+                    .value?.let { message -> EventMessageView(message = message) }
             }
         }
     }

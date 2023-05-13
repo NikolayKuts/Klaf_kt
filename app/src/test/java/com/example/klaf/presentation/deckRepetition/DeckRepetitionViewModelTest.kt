@@ -10,8 +10,11 @@ import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.domain.entities.Card
 import com.example.domain.entities.Deck
 import com.example.domain.enums.DifficultyRecallingLevel
+import com.example.domain.repositories.CrashlyticsRepository
 import com.example.domain.useCases.*
+import com.example.klaf.data.firestore.repositoryImplementations.CrashlyticsRepositoryFirebaseImp
 import com.example.klaf.presentation.common.RepetitionTimer
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
@@ -159,7 +162,8 @@ class DeckRepetitionViewModelTest {
         deleteCardFromDeck: DeleteCardsFromDeckUseCase = mockk(relaxed = true),
         workManager: WorkManager = mockk(relaxed = true),
         saveDeckRepetitionInfo: SaveDeckRepetitionInfoUseCase = mockk(relaxed = true),
-        deckRepetitionNotifier: DeckRepetitionNotifier = mockk(relaxed = true)
+        deckRepetitionNotifier: DeckRepetitionNotifier = mockk(relaxed = true),
+        crashlyticsRepository: CrashlyticsRepository = mockk(relaxed = true)
     ): BaseDeckRepetitionViewModel = DeckRepetitionViewModel(
         deckId = deckId,
         fetchCards = fetchCards,
@@ -170,6 +174,7 @@ class DeckRepetitionViewModelTest {
         deleteCardsFromDeck = deleteCardFromDeck,
         workManager = workManager,
         saveDeckRepetitionInfo = saveDeckRepetitionInfo,
-        deckRepetitionNotifier = deckRepetitionNotifier
+        deckRepetitionNotifier = deckRepetitionNotifier,
+        crashlytics = crashlyticsRepository,
     )
 }

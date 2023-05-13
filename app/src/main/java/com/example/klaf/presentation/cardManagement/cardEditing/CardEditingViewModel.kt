@@ -20,6 +20,8 @@ import com.example.klaf.data.networking.CardAudioPlayer
 import com.example.klaf.presentation.cardManagement.cardAddition.AutocompleteState
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.tryEmit
+import com.example.klaf.presentation.common.tryEmitAsNegative
+import com.example.klaf.presentation.common.tryEmitAsPositive
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -47,7 +49,7 @@ class CardEditingViewModel @AssistedInject constructor(
 
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {
-            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
         }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -56,7 +58,7 @@ class CardEditingViewModel @AssistedInject constructor(
 
     override val card: SharedFlow<Card?> = fetchCard(cardId = cardId)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {
-            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_card)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_card)
         }.onEach { card: Card? ->
             card?.ifNotNull { audioPlayer.preparePronunciation(word = it.foreignWord) }
         }.shareIn(
@@ -89,18 +91,18 @@ class CardEditingViewModel @AssistedInject constructor(
 
         when {
             updatedCard.nativeWord.isEmpty() || updatedCard.foreignWord.isEmpty() -> {
-                eventMessage.tryEmit(messageId = R.string.native_and_foreign_words_must_be_filled)
+                eventMessage.tryEmitAsNegative(resId = R.string.native_and_foreign_words_must_be_filled)
             }
             updatedCard == oldCard -> {
-                eventMessage.tryEmit(messageId = R.string.card_has_not_been_changed)
+                eventMessage.tryEmitAsNegative(resId = R.string.card_has_not_been_changed)
             }
             else -> {
                 viewModelScope.launchWithState {
                     updateCard(newCard = updatedCard)
-                    eventMessage.tryEmit(R.string.card_has_been_changed)
+                    eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_changed)
                     cardEditingState.value = CardEditingState.CHANGED
                 }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-                    eventMessage.tryEmit(messageId = R.string.problem_with_updating_card)
+                    eventMessage.tryEmitAsNegative(resId = R.string.problem_with_updating_card)
                 }
             }
         }

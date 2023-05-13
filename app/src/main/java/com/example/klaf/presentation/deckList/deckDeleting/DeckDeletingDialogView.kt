@@ -21,7 +21,7 @@ fun DeckDeletionDialogView(
 ) {
     ScrollableBox(
         modifier = Modifier.noRippleClickable { onCloseDialogClick() },
-        isDialog = true,
+        dialogMode = true,
         topContent = {
             eventMessage.ifNotNull { EventMessageView(message = it) }
         }

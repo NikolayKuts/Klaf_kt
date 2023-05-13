@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 
 class MainViewModel : BaseMainViewModel() {
 
-    override val eventMessage = MutableSharedFlow<EventMessage>()
+    override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override fun notify(message: EventMessage) {
         viewModelScope.launch(Dispatchers.IO) { eventMessage.emit(value = message) }

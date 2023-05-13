@@ -11,7 +11,8 @@ import com.example.klaf.R
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
 import com.example.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.tryEmit
+import com.example.klaf.presentation.common.tryEmitAsNegative
+import com.example.klaf.presentation.common.tryEmitAsPositive
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
@@ -31,7 +32,7 @@ class CardTransferringViewModel @AssistedInject constructor(
 
     override val sourceDeck = fetchDeckById(deckId = sourceDeckId)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {
-            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
         }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -44,7 +45,7 @@ class CardTransferringViewModel @AssistedInject constructor(
 
     override val decks: StateFlow<List<Deck>> = fetchDeckSource()
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {
-            eventMessage.tryEmit(messageId = R.string.problem_fetching_decks)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_fetching_decks)
         }.filterNotCurrentAndInterimDecks()
         .stateIn(
             scope = viewModelScope,
@@ -100,10 +101,10 @@ class CardTransferringViewModel @AssistedInject constructor(
                         cardIds = cardIds.toIntArray(),
                         deckId = sourceDeckId
                     )
-                    eventMessage.tryEmit(messageId = R.string.message_deletion_completed_successfully)
+                    eventMessage.tryEmitAsPositive(resId = R.string.message_deletion_completed_successfully)
                     navigationEvent.emit(value = ToPrevious)
                 }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-                    eventMessage.tryEmit(messageId = R.string.problem_with_removing_cards)
+                    eventMessage.tryEmitAsNegative(resId = R.string.problem_with_removing_cards)
                 }
             }
     }
@@ -118,17 +119,17 @@ class CardTransferringViewModel @AssistedInject constructor(
                 )
 
                 navigationEvent.emit(value = ToPrevious)
-                eventMessage.tryEmit(messageId = (R.string.message_transfer_completed_successfully))
+                eventMessage.tryEmitAsPositive(resId = (R.string.message_transfer_completed_successfully))
             }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-            eventMessage.tryEmit(messageId = R.string.problem_with_moving_cards)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_moving_cards)
         }
     }
 
     private fun observeCardSource() {
         fetchCards(deckId = sourceDeckId)
             .catchWithCrashlyticsReport(crashlytics = crashlytics) {
-                eventMessage.tryEmit(messageId = R.string.problem_with_fetching_cards)
+                eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
             }.onEach { cards ->
                 cardHolders.value = cards.map { card -> SelectableCardHolder(card = card) }
             }.launchIn(viewModelScope)
@@ -150,7 +151,7 @@ class CardTransferringViewModel @AssistedInject constructor(
         val cardForDeleting = selectedCards.value
 
         if (cardForDeleting.isEmpty()) {
-            eventMessage.tryEmit(messageId = R.string.message_no_cards_selected)
+            eventMessage.tryEmitAsNegative(resId = R.string.message_no_cards_selected)
         } else {
             emitEvent(event = ToCardDeletingDialog(cardQuantity = cardForDeleting.size))
         }
@@ -158,7 +159,7 @@ class CardTransferringViewModel @AssistedInject constructor(
 
     private fun sendCardMovingDialogEvent() {
         if (selectedCards.value.isEmpty()) {
-            eventMessage.tryEmit(messageId = R.string.message_no_cards_selected)
+            eventMessage.tryEmitAsNegative(resId = R.string.message_no_cards_selected)
         } else {
             emitEvent(event = ToCardMovingDialog)
         }
