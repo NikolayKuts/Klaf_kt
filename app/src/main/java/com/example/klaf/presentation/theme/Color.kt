@@ -4,6 +4,7 @@ import androidx.compose.material.Colors
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.ui.graphics.Color
+import com.example.klaf.presentation.common.ColorHolder
 
 val LightMainPalettes = MainColors(
     material = MaterialColors.Theme.light,
@@ -16,6 +17,7 @@ val LightMainPalettes = MainColors(
     deckRepetitionInfoScreen = DeckRepetitionInfoScreenColors.Theme.light,
     cardTransferringScreen = CardTransferringScreenColors.Theme.light,
     authenticationScreen = AuthenticationScreenColors.Theme.light,
+    eventMessageColors = EventMessageColors.Theme.light
 )
 
 val DarkMainPalettes = MainColors(
@@ -29,6 +31,7 @@ val DarkMainPalettes = MainColors(
     deckRepetitionInfoScreen = DeckRepetitionInfoScreenColors.Theme.dark,
     cardTransferringScreen = CardTransferringScreenColors.Theme.dark,
     authenticationScreen = AuthenticationScreenColors.Theme.dark,
+    eventMessageColors = EventMessageColors.Theme.dark,
 )
 
 data class MainColors(
@@ -42,6 +45,7 @@ data class MainColors(
     val deckRepetitionInfoScreen: DeckRepetitionInfoScreenColors,
     val cardTransferringScreen: CardTransferringScreenColors,
     val authenticationScreen: AuthenticationScreenColors,
+    val eventMessageColors: EventMessageColors,
 )
 
 class MaterialColors {
@@ -375,6 +379,55 @@ data class AuthenticationScreenColors(
 
         override val dark = AuthenticationScreenColors(
             textFieldBackground = Color(0xFF1A1A1A),
+        )
+    }
+}
+
+data class EventMessageColors(
+    val negative: ColorHolder,
+    val warning: ColorHolder,
+    val neutral: ColorHolder,
+    val positive: ColorHolder,
+) {
+
+    object Theme : Themable<EventMessageColors> {
+
+        override val light: EventMessageColors = EventMessageColors(
+            negative = ColorHolder(
+                initial = Color(0xFFFFF4F4),
+                target = Color(0xFFFFDDE1)
+            ),
+            warning = ColorHolder(
+                initial = Color(0xFFFFFDF0),
+                target = Color(0xFFFFF6AC)
+            ),
+            neutral = ColorHolder(
+                initial = Color(0xFFFFFFFF),
+                target = Color(0xFFFFFFFF)
+            ),
+            positive = ColorHolder(
+                initial = Color(0xFFF9FFF2),
+                target = Color(0xFFE2FFC4)
+            ),
+        )
+
+        override val dark: EventMessageColors = EventMessageColors(
+            negative = ColorHolder(
+                initial = Color(0xFF413333),
+                target = Color(0xFF6D3939)
+            ),
+            warning = ColorHolder(
+                initial = Color(0xFF3A3832),
+                target = Color(0xFF867F44)
+            ),
+            neutral = ColorHolder(
+                initial = Color(0xFF333333),
+                target = Color(0xFF444444)
+            ),
+            positive = ColorHolder(
+                initial = Color(0xFF38422D),
+                target = Color(0xFF60724B)
+            ),
         )
     }
 }

@@ -46,6 +46,7 @@ fun DeckRepetitionInfoView(
         is Emptiable.Content -> {
             ScrollableBox(
                 modifier = Modifier.noRippleClickable { onCloseClick() },
+                dialogMode = true,
             ) {
                 FullBackgroundDialog(
                     onBackgroundClick = onCloseClick,
