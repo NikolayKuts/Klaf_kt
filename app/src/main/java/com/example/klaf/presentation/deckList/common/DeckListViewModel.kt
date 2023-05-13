@@ -20,7 +20,8 @@ import com.example.klaf.data.common.DataSynchronizationWorker.Companion.performD
 import com.example.klaf.data.common.DeckRepetitionReminderChecker.Companion.scheduleDeckRepetitionChecking
 import com.example.klaf.data.common.notifications.NotificationChannelInitializer
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.tryEmit
+import com.example.klaf.presentation.common.tryEmitAsNegative
+import com.example.klaf.presentation.common.tryEmitAsPositive
 import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.DataSynchronizationDialog
 import com.example.klaf.presentation.deckList.common.DeckListNavigationDestination.Unspecified
 import com.example.klaf.presentation.deckList.common.DeckListNavigationEvent.*
@@ -72,27 +73,28 @@ class DeckListViewModel @AssistedInject constructor(
         val decks = deckSource.value
 
         if (decks == null) {
-            eventMessage.tryEmit(messageId = R.string.problem_fetching_decks)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_fetching_decks)
+
         } else {
             val deckNames = decks.map { deck -> deck.name }
             val trimmedDeckName = deckName.trim()
 
             when {
                 deckNames.contains(deckName) -> {
-                    eventMessage.tryEmit(messageId = R.string.such_deck_is_already_exist)
+                    eventMessage.tryEmitAsNegative(resId = R.string.such_deck_is_already_exist)
                 }
                 trimmedDeckName.isEmpty() -> {
-                    eventMessage.tryEmit(messageId = R.string.warning_deck_name_empty)
+                    eventMessage.tryEmitAsNegative(resId = R.string.warning_deck_name_empty)
                 }
                 else -> {
                     viewModelScope.launchWithState {
                         createDeck(
                             deck = Deck(name = deckName, creationDate = getCurrentDateAsLong())
                         )
-                        eventMessage.tryEmit(messageId = R.string.deck_has_been_created)
+                        eventMessage.tryEmitAsPositive(resId = R.string.deck_has_been_created)
                         navigationEvent.emit(value = ToPrevious)
                     }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-                        eventMessage.tryEmit(messageId = R.string.problem_with_creating_deck)
+                        eventMessage.tryEmitAsNegative(resId = R.string.problem_with_creating_deck)
                     }
                 }
             }
@@ -104,25 +106,25 @@ class DeckListViewModel @AssistedInject constructor(
         val decks = deckSource.value
 
         if (decks == null) {
-            eventMessage.tryEmit(messageId = R.string.problem_fetching_decks)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_fetching_decks)
         } else {
             when {
                 updatedName.isEmpty() -> {
-                    eventMessage.tryEmit(messageId = R.string.type_deck_name)
+                    eventMessage.tryEmitAsNegative(resId = R.string.type_deck_name)
                 }
                 updatedName == deck.name -> {
-                    eventMessage.tryEmit(messageId = R.string.deck_name_is_not_changed)
+                    eventMessage.tryEmitAsNegative(resId = R.string.deck_name_is_not_changed)
                 }
                 decks.any { it.name == newName } -> {
-                    eventMessage.tryEmit(messageId = R.string.such_deck_is_already_exist)
+                    eventMessage.tryEmitAsNegative(resId = R.string.such_deck_is_already_exist)
                 }
                 else -> {
                     viewModelScope.launchWithState {
                         renameDeck(oldDeck = deck, name = updatedName)
-                        eventMessage.tryEmit(messageId = R.string.deck_has_been_renamed)
+                        eventMessage.tryEmitAsPositive(resId = R.string.deck_has_been_renamed)
                         navigationEvent.emit(value = ToPrevious)
                     }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-                        eventMessage.tryEmit(messageId = R.string.problem_with_renaming_deck)
+                        eventMessage.tryEmitAsPositive(resId = R.string.problem_with_renaming_deck)
                     }
                 }
             }
@@ -132,10 +134,10 @@ class DeckListViewModel @AssistedInject constructor(
     override fun deleteDeck(deckId: Int) {
         viewModelScope.launchWithState {
             removeDeck(deckId = deckId)
-            eventMessage.tryEmit(messageId = R.string.the_deck_has_been_removed)
+            eventMessage.tryEmitAsPositive(resId = R.string.the_deck_has_been_removed)
             navigationEvent.emit(value = ToPrevious)
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-            eventMessage.tryEmit(messageId = R.string.problem_with_removing_deck)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_removing_deck)
         }
     }
 
@@ -143,7 +145,7 @@ class DeckListViewModel @AssistedInject constructor(
         val deck = deckSource.value?.find { deck -> deck.id == deckId }
 
         if (deck == null) {
-            eventMessage.tryEmit(messageId = R.string.problem_with_fetching_deck)
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
         }
 
         return deck
@@ -200,7 +202,7 @@ class DeckListViewModel @AssistedInject constructor(
                         && navigationDestination.value != DataSynchronizationDialog
 
                 shouldSendEventMessage.ifTrue {
-                    eventMessage.tryEmit(messageId = R.string.problem_with_data_synchronization)
+                    eventMessage.tryEmitAsNegative(resId = R.string.problem_with_data_synchronization)
                 }
             }.launchIn(scope = viewModelScope)
     }

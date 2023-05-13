@@ -2,7 +2,6 @@ package com.example.klaf.presentation.common
 
 import android.content.Context
 import android.util.Log
-import android.view.Gravity
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
@@ -111,4 +110,20 @@ fun ConstraintSetScope.constrainRefFor(
     constrain(ref = reference, constrainBlock = constrainBlock)
 
     return reference
+}
+
+fun MutableSharedFlow<EventMessage>.tryEmitAsNegative(
+    @StringRes resId: Int,
+    duration: EventMessage.Duration = EventMessage.Duration.Medium,
+) {
+    this.tryEmit(
+        value = EventMessage(resId = resId, type = EventMessage.Type.Negative, duration = duration))
+}
+
+fun MutableSharedFlow<EventMessage>.tryEmitAsPositive(
+    @StringRes resId: Int,
+    duration: EventMessage.Duration = EventMessage.Duration.Medium,
+) {
+    this.tryEmit(
+        value = EventMessage(resId = resId, type = EventMessage.Type.Positive, duration = duration))
 }

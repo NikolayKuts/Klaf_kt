@@ -5,12 +5,12 @@ import androidx.annotation.StringRes
 class EventMessage(
     @StringRes val resId: Int,
     val type: Type = Type.Neutral,
-    val duration: EvenMessageDuration = EvenMessageDuration.Medium,
+    val duration: Duration = Duration.Medium,
 ) {
 
     enum class Type { Negative, Waring, Neutral, Positive }
 
-    enum class EvenMessageDuration {
+    enum class Duration {
 
         Short,
         Medium,

@@ -17,7 +17,8 @@ import com.example.klaf.presentation.authentication.PasswordValidator.PasswordVa
 import com.example.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult.ToLong
 import com.example.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult.ToShort
 import com.example.klaf.presentation.common.EventMessage
-import com.example.klaf.presentation.common.tryEmit
+import com.example.klaf.presentation.common.tryEmitAsNegative
+import com.example.klaf.presentation.common.tryEmitAsPositive
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -83,7 +84,7 @@ class AuthenticationViewModel @Inject constructor(
                     LoadingState.Loading -> {}
                     is LoadingState.Error -> handleSigningInError(loadingState)
                     is LoadingState.Success -> {
-                        eventMessage.tryEmit(messageId = R.string.authentication_sign_in_success)
+                        eventMessage.tryEmitAsPositive(resId = R.string.authentication_sign_in_success)
                     }
                 }
             }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
@@ -112,7 +113,7 @@ class AuthenticationViewModel @Inject constructor(
                     LoadingState.Loading -> {}
                     is LoadingState.Error -> handleSigningUpError(loadingState = loadingState)
                     is LoadingState.Success -> {
-                        eventMessage.tryEmit(messageId = R.string.authentication_sign_up_success)
+                        eventMessage.tryEmitAsPositive(resId = R.string.authentication_sign_up_success)
                     }
                 }
             }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
@@ -138,7 +139,7 @@ class AuthenticationViewModel @Inject constructor(
             else -> R.string.authentication_warning_common_error_message
         }
 
-        eventMessage.tryEmit(messageId = errorMessageId)
+        eventMessage.tryEmitAsNegative(resId = errorMessageId)
     }
 
     private fun handleSigningUpError(loadingState: LoadingState.Error) {
@@ -160,7 +161,7 @@ class AuthenticationViewModel @Inject constructor(
             else -> R.string.authentication_warning_common_error_message
         }
 
-        eventMessage.tryEmit(messageId = errorMessageId)
+        eventMessage.tryEmitAsNegative(resId = errorMessageId)
     }
 
     private fun manageValidation(
@@ -177,20 +178,20 @@ class AuthenticationViewModel @Inject constructor(
                 getPasswordConfirmationMessageId(password = password, confirmation = confirmation)
 
             passwordConfirmationMessageId ifNotNull {
-                eventMessage.tryEmit(messageId = it)
+                eventMessage.tryEmitAsNegative(resId = it)
                 isValid = false
                 setErrorStateForPasswordConfirmationHolder()
             }
         }
 
         passwordValidationMessageId ifNotNull {
-            eventMessage.tryEmit(messageId = it)
+            eventMessage.tryEmitAsNegative(resId = it)
             isValid = false
             setErrorStateForPasswordHolder()
         }
 
         emailValidationMessageId ifNotNull {
-            eventMessage.tryEmit(messageId = it)
+            eventMessage.tryEmitAsNegative(resId = it)
             isValid = false
             setErrorStateForEmailHolder()
         }
