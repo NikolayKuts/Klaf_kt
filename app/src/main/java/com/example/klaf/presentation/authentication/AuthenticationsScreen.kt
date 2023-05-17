@@ -11,14 +11,17 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -29,11 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
+import com.example.domain.common.AuthenticationAction
 import com.example.domain.common.LoadingState
 import com.example.domain.common.ifTrue
 import com.example.klaf.R
-import com.example.klaf.presentation.authentication.AuthenticationAction.SIGN_IN
-import com.example.klaf.presentation.authentication.AuthenticationAction.SIGN_UP
+import com.example.domain.common.AuthenticationAction.SIGN_IN
+import com.example.domain.common.AuthenticationAction.SIGN_UP
 import com.example.klaf.presentation.common.AdaptiveScalableBox
 import com.example.klaf.presentation.common.ConfirmationButton
 import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
@@ -46,18 +50,16 @@ private const val PASSWORD_TEXT_FIELD_ID = "PasswordTextField"
 private const val PASSWORD_CONFIRMATION_TEXT_FIELD_ID = "PasswordConfirmationTextField"
 private const val CONFIRMATION_BUTTON_ID = "ConfirmationButton"
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AuthenticationScreen(
     viewModel: BaseAuthenticationViewModel,
     action: AuthenticationAction,
-    onAuthenticationFinished: () -> Unit,
+    onAuthenticationFinished: (authenticationAction: AuthenticationAction) -> Unit,
 ) {
     val inputState by viewModel.typingState.collectAsState()
-    val loadingState by viewModel.screenLoadingState.collectAsState()
-
-    if (loadingState is LoadingState.Success) {
-        onAuthenticationFinished()
-    }
+    val loadingState = viewModel.screenLoadingState.collectAsState().value
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     AdaptiveScalableBox { adaptiveModifier ->
         ConstraintLayout(
@@ -95,6 +97,13 @@ fun AuthenticationScreen(
                 onPasswordConfirmationChange = viewModel::updatePasswordConfirmation,
                 onConfirmationClick = onConfirmationClick,
             )
+
+            LaunchedEffect(key1 = loadingState) {
+                if (loadingState is LoadingState.Success) {
+                    keyboardController?.hide()
+                    onAuthenticationFinished(loadingState.data)
+                }
+            }
         }
     }
 }

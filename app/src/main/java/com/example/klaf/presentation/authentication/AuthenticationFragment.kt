@@ -7,6 +7,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.example.domain.common.AuthenticationAction
 import com.example.klaf.R
 import com.example.klaf.presentation.common.BaseFragment
 import com.example.klaf.presentation.common.collectWhenStarted
@@ -45,9 +46,13 @@ class AuthenticationFragment : BaseFragment(layoutId = R.layout.common_compose_l
         )
     }
 
-    private fun navigateToDataSynchronizationDialog() {
-        findNavController().navigate(
-            R.id.action_authenticationFragment_to_dataSynchronizationDialogFragment
-        )
+    private fun navigateToDataSynchronizationDialog(authenticationAction: AuthenticationAction) {
+        AuthenticationFragmentDirections
+            .actionAuthenticationFragmentToDataSynchronizationDialogFragment(
+                authenticationActionResult = AuthenticationActionResult(
+                    action = authenticationAction,
+                    isSuccessful = true,
+                )
+            ).also { findNavController().navigate(directions = it) }
     }
 }
