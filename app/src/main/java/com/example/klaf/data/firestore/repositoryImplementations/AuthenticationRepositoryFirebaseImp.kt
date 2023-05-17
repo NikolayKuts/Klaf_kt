@@ -1,5 +1,6 @@
 package com.example.klaf.data.firestore.repositoryImplementations
 
+import com.example.domain.common.AuthenticationAction
 import com.example.domain.common.LoadingError
 import com.example.domain.common.LoadingState
 import com.example.domain.repositories.AuthenticationRepository
@@ -43,13 +44,13 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
     override fun signInWithEmailAndPassword(
         email: String,
         password: String,
-    ): Flow<LoadingState<Unit>> = flow {
+    ): Flow<LoadingState<AuthenticationAction>> = flow {
         emit(LoadingState.Loading)
         auth.signInWithEmailAndPassword(
             "$ROOT_COLLECTION_NAME_PREFIX$email",
             password
         ).await()
-        emit(LoadingState.Success(data = Unit))
+        emit(LoadingState.Success(data = AuthenticationAction.SIGN_IN))
     }.catch { error ->
         val errorType = when (error) {
             is FirebaseAuthInvalidUserException -> SigningInLoadingError.NoUserRecord
@@ -64,13 +65,13 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
     override fun signUpWithEmailAndPassword(
         email: String,
         password: String,
-    ): Flow<LoadingState<Unit>> = flow {
+    ): Flow<LoadingState<AuthenticationAction>> = flow {
         emit(LoadingState.Loading)
         auth.createUserWithEmailAndPassword(
             "$ROOT_COLLECTION_NAME_PREFIX$email",
             password
         ).await()
-        emit(LoadingState.Success(data = Unit))
+        emit(LoadingState.Success(data = AuthenticationAction.SIGN_UP))
     }.catch { error ->
         val errorType = when (error) {
             is FirebaseAuthUserCollisionException -> EmailAlreadyInUse

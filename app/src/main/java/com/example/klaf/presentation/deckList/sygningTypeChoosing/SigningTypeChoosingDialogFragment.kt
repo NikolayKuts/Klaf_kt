@@ -6,7 +6,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.example.klaf.R
-import com.example.klaf.presentation.authentication.AuthenticationAction
+import com.example.domain.common.AuthenticationAction
 import com.example.klaf.presentation.common.TransparentDialogFragment
 import com.example.klaf.presentation.deckList.common.BaseDeckListViewModel
 import com.example.klaf.presentation.deckList.common.DeckListNavigationEvent
