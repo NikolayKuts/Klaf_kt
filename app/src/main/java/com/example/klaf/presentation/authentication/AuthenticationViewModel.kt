@@ -1,10 +1,7 @@
 package com.example.klaf.presentation.authentication
 
 import androidx.lifecycle.viewModelScope
-import com.example.domain.common.LoadingState
-import com.example.domain.common.ifNotNull
-import com.example.domain.common.ifTrue
-import com.example.domain.common.launchIn
+import com.example.domain.common.*
 import com.example.domain.interactors.AuthenticationInteractor
 import com.example.klaf.R
 import com.example.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError
@@ -18,7 +15,6 @@ import com.example.klaf.presentation.authentication.PasswordValidator.PasswordVa
 import com.example.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult.ToShort
 import com.example.klaf.presentation.common.EventMessage
 import com.example.klaf.presentation.common.tryEmitAsNegative
-import com.example.klaf.presentation.common.tryEmitAsPositive
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -41,7 +37,8 @@ class AuthenticationViewModel @Inject constructor(
         )
     )
 
-    override val screenLoadingState = MutableStateFlow<LoadingState<Unit>?>(value = null)
+    override val screenLoadingState =
+        MutableStateFlow<LoadingState<AuthenticationAction>>(value = LoadingState.Non)
 
     override fun updateEmail(value: String) {
         typingState.update { state ->
@@ -77,16 +74,11 @@ class AuthenticationViewModel @Inject constructor(
                 email = email,
                 password = password
             ).onEach { loadingState ->
-                screenLoadingState.value = loadingState
-
-                when (loadingState) {
-                    LoadingState.Non -> {}
-                    LoadingState.Loading -> {}
-                    is LoadingState.Error -> handleSigningInError(loadingState)
-                    is LoadingState.Success -> {
-                        eventMessage.tryEmitAsPositive(resId = R.string.authentication_sign_in_success)
-                    }
+                if (loadingState is LoadingState.Error) {
+                    handleSigningInError(loadingState)
                 }
+
+                screenLoadingState.value = loadingState
             }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
         }
     }
@@ -106,16 +98,11 @@ class AuthenticationViewModel @Inject constructor(
                 email = email,
                 password = password
             ).onEach { loadingState ->
-                screenLoadingState.value = loadingState
-
-                when (loadingState) {
-                    LoadingState.Non -> {}
-                    LoadingState.Loading -> {}
-                    is LoadingState.Error -> handleSigningUpError(loadingState = loadingState)
-                    is LoadingState.Success -> {
-                        eventMessage.tryEmitAsPositive(resId = R.string.authentication_sign_up_success)
-                    }
+                if (loadingState is LoadingState.Error) {
+                    handleSigningUpError(loadingState = loadingState)
                 }
+
+                screenLoadingState.value = loadingState
             }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
         }
     }

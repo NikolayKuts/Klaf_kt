@@ -9,10 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -36,12 +33,15 @@ fun DataSynchronizationDialogView(
     onConfirmClick: () -> Unit,
     onCloseClick: () -> Unit,
     onDispose: () -> Unit,
-    eventMassage: EventMessage? = null,
+    eventMassage: EventMessage?,
+    onLaunched: () -> Unit,
 ) {
     ScrollableBox(
         modifier = Modifier.noRippleClickable { onCloseClick() },
         dialogMode = true,
-        topContent = { eventMassage.ifNotNull { EventMessageView(message = it) } }
+        topContent = {
+            eventMassage.ifNotNull { EventMessageView(message = it) }
+        }
     ) {
         when (synchronizationState) {
             Uncertain -> {}
@@ -66,6 +66,8 @@ fun DataSynchronizationDialogView(
         DisposableEffect(key1 = null) {
             onDispose { onDispose() }
         }
+
+        LaunchedEffect(key1 = null) { onLaunched() }
     }
 }
 
