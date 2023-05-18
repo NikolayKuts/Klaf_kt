@@ -29,10 +29,7 @@ import com.example.domain.common.isEven
 import com.example.domain.entities.Deck
 import com.example.klaf.R
 import com.example.klaf.data.common.getScheduledDateStateByByCalculatedRange
-import com.example.klaf.presentation.common.FullBackgroundDialog
-import com.example.klaf.presentation.common.RoundButton
-import com.example.klaf.presentation.common.RoundedIcon
-import com.example.klaf.presentation.common.rememberAsMutableStateOf
+import com.example.klaf.presentation.common.*
 import com.example.klaf.presentation.theme.MainTheme
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -70,7 +67,7 @@ fun DeckListScreen(
 private fun FetchingDecksWarningView(onRestartApp: () -> Unit) {
     FullBackgroundDialog(
         onBackgroundClick = {},
-        topContent = {
+        topContent = ContentHolder(size = ROUNDED_ELEMENT_SIZE.dp) {
             RoundedIcon(background = Color.Transparent, iconId = R.drawable.ic_sad_face_24)
         },
         mainContent = {
@@ -131,7 +128,7 @@ private fun LazyItemScope.DeckItemView(
     deck: Deck,
     position: Int,
     onItemClick: (deck: Deck) -> Unit,
-    onLongItemClick: (deck: Deck) -> Unit
+    onLongItemClick: (deck: Deck) -> Unit,
 ) {
     var animationFloat by rememberAsMutableStateOf(value = 0F)
     val animationFloatState by animateFloatAsState(

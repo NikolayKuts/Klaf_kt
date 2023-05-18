@@ -74,6 +74,7 @@ data class CommonColors(
     val negativeDialogButton: Color,
     val neutralDialogButton: Color,
     val separator: Color,
+    val dialogBackground: Color,
 ) {
 
     object Theme : Themable<CommonColors> {
@@ -87,6 +88,7 @@ data class CommonColors(
             negativeDialogButton = Color(0xFFEBAEB1),
             neutralDialogButton = Color(0xFFB9E5EB),
             separator = Color(0xFF818181),
+            dialogBackground = Color.White,
         )
 
         override val dark: CommonColors = CommonColors(
@@ -98,6 +100,7 @@ data class CommonColors(
             negativeDialogButton = Color(0xFFB1645F),
             neutralDialogButton = Color(0xFF6F797C),
             separator = Color(0xFF4D4D4D),
+            dialogBackground = Color(0xFF202020),
         )
     }
 }
@@ -244,7 +247,6 @@ data class DeckRepetitionScreenColors(
 }
 
 data class DataSynchronizationViewColors(
-    val initialLabelBackground: Color,
     val targetLabelBackground: Color,
     val progressIndicator: Color,
     val initialWarning: Color,
@@ -254,7 +256,6 @@ data class DataSynchronizationViewColors(
     object Theme : Themable<DataSynchronizationViewColors> {
 
         override val light = DataSynchronizationViewColors(
-            initialLabelBackground = Color(0xFFFFFFFF),
             targetLabelBackground = Color(0xFFC4ECB0),
             progressIndicator = Color(0xFF92CFC3),
             initialWarning = Color(0x4FD85B5B),
@@ -262,7 +263,6 @@ data class DataSynchronizationViewColors(
         )
 
         override val dark = DataSynchronizationViewColors(
-            initialLabelBackground = Color(0xFF1F1F1F),
             targetLabelBackground = Color(0xFF576F58),
             progressIndicator = Color(0xF0AC6761),
             initialWarning = Color(0x4FD67A7A),

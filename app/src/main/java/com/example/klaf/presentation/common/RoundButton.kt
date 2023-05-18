@@ -15,7 +15,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-const val DIALOG_BUTTON_SIZE = 50
+const val ROUNDED_ELEMENT_SIZE = 50
 
 @Composable
 fun RoundButton(
@@ -27,8 +27,8 @@ fun RoundButton(
     elevation: Dp = 0.dp,
 ) {
     Card(
-        shape = RoundedCornerShape(DIALOG_BUTTON_SIZE.dp),
-        modifier = modifier.size(DIALOG_BUTTON_SIZE.dp),
+        shape = RoundedCornerShape(ROUNDED_ELEMENT_SIZE.dp),
+        modifier = modifier.size(ROUNDED_ELEMENT_SIZE.dp),
         elevation = elevation,
     ) {
         Icon(
@@ -52,9 +52,9 @@ fun RoundedIcon(
     elevation: Dp = 0.dp,
 ) {
     Card(
-        shape = RoundedCornerShape(DIALOG_BUTTON_SIZE.dp),
+        shape = RoundedCornerShape(ROUNDED_ELEMENT_SIZE.dp),
         modifier = modifier
-            .size(DIALOG_BUTTON_SIZE.dp),
+            .size(ROUNDED_ELEMENT_SIZE.dp),
         elevation = elevation,
     ) {
         Icon(

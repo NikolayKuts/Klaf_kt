@@ -78,7 +78,7 @@ private fun InitialStateView(
 ) {
     FullBackgroundDialog(
         onBackgroundClick = onCloseClick,
-        topContent = { SynchronizationLabel() },
+        topContent = ContentHolder(size = ROUNDED_ELEMENT_SIZE.dp) { SynchronizationLabel() },
         mainContent = {
             Text(
                 style = MainTheme.typographies.dialogTextStyle,
@@ -105,7 +105,7 @@ private fun InitialStateView(
 private fun SynchronizationStateView(synchronizationData: String) {
     FullBackgroundDialog(
         onBackgroundClick = { },
-        topContent = { AnimatedSynchronizationLabel() },
+        topContent = ContentHolder(size = ROUNDED_ELEMENT_SIZE.dp) { AnimatedSynchronizationLabel() },
         mainContent = {
             Column(modifier = Modifier.width(IntrinsicSize.Max)) {
                 WarningMessage(textId = R.string.data_synchronization_dialog_waiting_message)
@@ -130,7 +130,7 @@ private fun SynchronizationStateView(synchronizationData: String) {
 private fun FinishStateView(onCloseClick: () -> Unit) {
     FullBackgroundDialog(
         onBackgroundClick = onCloseClick,
-        topContent = {
+        topContent = ContentHolder(size = ROUNDED_ELEMENT_SIZE.dp) {
             RoundedIcon(
                 background = MainTheme.colors.common.positiveDialogButton,
                 iconId = R.drawable.ic_confirmation_24,
@@ -160,7 +160,7 @@ private fun FailureStateView(
     FullBackgroundDialog(
         mainContentModifier = Modifier,
         onBackgroundClick = onCloseClick,
-        topContent = {
+        topContent = ContentHolder(size = ROUNDED_ELEMENT_SIZE.dp) {
             RoundedIcon(
                 background = MainTheme.colors.common.negativeDialogButton,
                 iconId = R.drawable.ic_attention_mark_24,
@@ -206,7 +206,7 @@ private fun AnimatedSynchronizationLabel() {
         )
     )
     val color by infiniteTransition.animateColor(
-        initialValue = MainTheme.colors.dataSynchronizationView.initialLabelBackground,
+        initialValue = MainTheme.colors.common.dialogBackground,
         targetValue = MainTheme.colors.dataSynchronizationView.targetLabelBackground,
         animationSpec = infiniteRepeatable(
             animation = tween(
@@ -226,13 +226,13 @@ private fun AnimatedSynchronizationLabel() {
 @Composable
 private fun SynchronizationLabel(
     modifier: Modifier = Modifier,
-    color: Color = MainTheme.colors.dataSynchronizationView.initialLabelBackground,
+    color: Color = MainTheme.colors.common.dialogBackground,
 ) {
     Card(
         modifier = Modifier
-            .size(DIALOG_BUTTON_SIZE.dp)
+            .size(ROUNDED_ELEMENT_SIZE.dp)
             .noRippleClickable { },
-        shape = RoundedCornerShape(DIALOG_BUTTON_SIZE.dp),
+        shape = RoundedCornerShape(ROUNDED_ELEMENT_SIZE.dp),
         elevation = 0.dp,
     ) {
         Icon(

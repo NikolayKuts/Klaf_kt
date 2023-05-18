@@ -1,9 +1,6 @@
 package com.example.klaf.presentation.deckList.common
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +35,7 @@ fun DeckNamingView(
     ) {
         FullBackgroundDialog(
             onBackgroundClick = onCloseDialogClick,
+            topContent = ContentHolder(size = DIALOG_APP_LABEL_SIZE.dp) { DialogAppLabel() },
             mainContent = {
                 Column {
                     title()

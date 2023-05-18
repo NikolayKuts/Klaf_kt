@@ -40,7 +40,7 @@ import com.example.domain.common.AuthenticationAction.SIGN_IN
 import com.example.domain.common.AuthenticationAction.SIGN_UP
 import com.example.klaf.presentation.common.AdaptiveScalableBox
 import com.example.klaf.presentation.common.ConfirmationButton
-import com.example.klaf.presentation.common.DIALOG_BUTTON_SIZE
+import com.example.klaf.presentation.common.ROUNDED_ELEMENT_SIZE
 import com.example.klaf.presentation.theme.MainTheme
 
 private const val LABEL_ID = "labelBox"
@@ -227,7 +227,7 @@ private fun AuthenticationView(
             CircularProgressIndicator(
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .size(DIALOG_BUTTON_SIZE.dp)
+                    .size(ROUNDED_ELEMENT_SIZE.dp)
             )
         } else {
             ConfirmationButton(onClick = onConfirmationClick)
