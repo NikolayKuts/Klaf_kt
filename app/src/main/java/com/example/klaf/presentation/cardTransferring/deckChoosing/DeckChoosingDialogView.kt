@@ -39,6 +39,7 @@ fun DeckChoosingDialogView(
 
         FullBackgroundDialog(
             onBackgroundClick = onCloseClick,
+            topContent = ContentHolder(size = DIALOG_APP_LABEL_SIZE.dp) { DialogAppLabel() },
             mainContent = {
                 Column(modifier = Modifier.width(IntrinsicSize.Max)) {
                     var expandedState by rememberAsMutableStateOf(value = false)
