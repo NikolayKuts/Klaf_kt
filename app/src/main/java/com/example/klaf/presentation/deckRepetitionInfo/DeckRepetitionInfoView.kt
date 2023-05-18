@@ -50,6 +50,7 @@ fun DeckRepetitionInfoView(
             ) {
                 FullBackgroundDialog(
                     onBackgroundClick = onCloseClick,
+                    topContent = ContentHolder(size = DIALOG_APP_LABEL_SIZE.dp) { DialogAppLabel() },
                     mainContent = {
                         infoContent.data.ifNull {
                             Text(
