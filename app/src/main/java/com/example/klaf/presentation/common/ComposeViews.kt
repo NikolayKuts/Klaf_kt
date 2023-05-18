@@ -25,10 +25,12 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
@@ -41,8 +43,13 @@ import com.example.klaf.R
 import com.example.klaf.presentation.theme.MainTheme
 
 val MinElementWidth = 400.dp
+
 val Configuration.isOrientationLandscape: Boolean
     get() = this.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+const val DIALOG_APP_LABEL_SIZE = 70
+
+data class ContentHolder(val size: Dp, val content: @Composable RowScope.() -> Unit)
 
 @Composable
 fun Pointer(
@@ -72,7 +79,7 @@ fun FullBackgroundDialog(
     mainContent: @Composable BoxScope.() -> Unit,
     modifier: Modifier = Modifier,
     mainContentModifier: Modifier = Modifier,
-    topContent: @Composable (RowScope.() -> Unit)? = null,
+    topContent: ContentHolder? = null,
     bottomContent: @Composable (RowScope.() -> Unit)? = null,
     corners: Shape = RoundedCornerShape(10.dp),
 ) {
@@ -105,11 +112,13 @@ fun FullBackgroundDialog(
                 modifier = Modifier
                     .heightIn(min = 150.dp)
                     .widthIn(min = Dp.Unspecified, max = maxCardWidth)
-                    .clip(shape = corners)
                     .padding(
-                        top = (DIALOG_BUTTON_SIZE / 2).dp,
-                        bottom = (DIALOG_BUTTON_SIZE / 2).dp,
-                    ),
+                        top = ((topContent?.size ?: 0.dp) / 2),
+                        bottom = (ROUNDED_ELEMENT_SIZE.dp / 2),
+                    )
+                    .clip(shape = corners),
+                backgroundColor = MainTheme.colors.common.dialogBackground,
+                contentColor = contentColorFor(MaterialTheme.colors.surface),
             ) {
                 Box(
                     modifier = mainContentModifier
@@ -122,13 +131,11 @@ fun FullBackgroundDialog(
                 )
             }
 
-            topContent?.let {
+            topContent?.let { contentHolder ->
                 Row(
-                    modifier = Modifier
-                        .padding(bottom = (DIALOG_BUTTON_SIZE / 4).dp)
-                        .align(alignment = Alignment.TopCenter),
+                    modifier = Modifier.align(alignment = Alignment.TopCenter),
                     horizontalArrangement = Arrangement.SpaceAround,
-                    content = it
+                    content = contentHolder.content
                 )
             }
 
@@ -163,11 +170,11 @@ fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier = composed {
 }
 
 private fun Modifier.topPadding(apply: Boolean): Modifier {
-    return if (apply) this.padding(top = (DIALOG_BUTTON_SIZE / 4).dp) else this
+    return if (apply) this.padding(top = (ROUNDED_ELEMENT_SIZE / 4).dp) else this
 }
 
 private fun Modifier.bottomPadding(apply: Boolean): Modifier {
-    return if (apply) this.padding(bottom = (DIALOG_BUTTON_SIZE / 4).dp) else this
+    return if (apply) this.padding(bottom = (ROUNDED_ELEMENT_SIZE / 4).dp) else this
 }
 
 @Composable
@@ -373,7 +380,7 @@ fun CardDeletingDialogView(
     ) {
         FullBackgroundDialog(
             onBackgroundClick = onCancel,
-            topContent = {
+            topContent = ContentHolder(size = ROUNDED_ELEMENT_SIZE.dp) {
                 RoundedIcon(
                     background = MainTheme.colors.common.negativeDialogButton,
                     iconId = R.drawable.ic_attention_mark_24
@@ -392,6 +399,22 @@ fun CardDeletingDialogView(
             },
         )
     }
+}
+
+@Composable
+fun DialogAppLabel() {
+    val filterColor = MainTheme.colors.common.appLabelColorFilter
+
+    Image(
+        modifier = Modifier
+            .size(70.dp)
+            .clip(shape = RoundedCornerShape(50.dp))
+            .background(MainTheme.colors.common.dialogBackground)
+            .padding(10.dp),
+        painter = painterResource(id = R.drawable.ic_app_labale),
+        contentDescription = null,
+        colorFilter = ColorFilter.lighting(filterColor, filterColor)
+    )
 }
 
 @Composable

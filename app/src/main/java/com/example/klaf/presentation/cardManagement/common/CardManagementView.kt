@@ -491,7 +491,7 @@ private fun IpaSection(
                 ),
             state = scrollState,
             horizontalAlignment = Alignment.CenterHorizontally,
-            contentPadding = PaddingValues(bottom = DIALOG_BUTTON_SIZE.dp * 2 / 3)
+            contentPadding = PaddingValues(bottom = ROUNDED_ELEMENT_SIZE.dp * 2 / 3)
         ) {
             itemsIndexed(items = ipaHolders) { letterGroupIndex, ipaHolder ->
                 Row(
