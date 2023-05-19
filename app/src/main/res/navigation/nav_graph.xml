@@ -7,7 +7,7 @@
     app:startDestination="@id/deckListFragment">
     <fragment
         android:id="@+id/deckListFragment"
-        android:name="com.example.klaf.presentation.deckList.common.DeckListFragment"
+        android:name="com.kuts.klaf.presentation.deckList.common.DeckListFragment"
         android:label="fragment_deck_list">
         <action
             android:id="@+id/action_deckListFragment_to_deckCreationDialogFragment"
@@ -27,7 +27,7 @@
     </fragment>
     <fragment
         android:id="@+id/cardEditingFragment"
-        android:name="com.example.klaf.presentation.cardManagement.cardEditing.CardEditingFragment"
+        android:name="com.kuts.klaf.presentation.cardManagement.cardEditing.CardEditingFragment"
         android:label="fragment_card_editing">
         <argument
             android:name="cardId"
@@ -43,7 +43,7 @@
     </fragment>
     <fragment
         android:id="@+id/cardViewerFragment"
-        android:name="com.example.klaf.presentation.cardViewing.CardViewingFragment"
+        android:name="com.kuts.klaf.presentation.cardViewing.CardViewingFragment"
         android:label="fragment_card_viewer">
         <argument
             android:name="deckId"
@@ -56,12 +56,12 @@
     </fragment>
     <dialog
         android:id="@+id/deckCreationDialogFragment"
-        android:name="com.example.klaf.presentation.deckList.deckCreation.DeckCreationDialogFragment"
+        android:name="com.kuts.klaf.presentation.deckList.deckCreation.DeckCreationDialogFragment"
         android:label="dialog_deck_creation"/>
 
     <dialog
         android:id="@+id/deckRenamingDialogFragment"
-        android:name="com.example.klaf.presentation.deckList.deckRenaming.DeckRenamingDialogFragment"
+        android:name="com.kuts.klaf.presentation.deckList.deckRenaming.DeckRenamingDialogFragment"
         android:label="dialog_deck_renaming">
         <argument
             android:name="deckId"
@@ -69,7 +69,7 @@
     </dialog>
     <fragment
         android:id="@+id/cardAdditionFragment"
-        android:name="com.example.klaf.presentation.cardManagement.cardAddition.CardAdditionFragment"
+        android:name="com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionFragment"
         android:label="fragment_card_addition">
         <argument
             android:name="deckId"
@@ -79,12 +79,12 @@
             android:id="@+id/deepLink"
             app:action="ACTION_PROCESS_TEXT"
             app:mimeType="text/plain"
-            app:uri="app://com.example.klaf" />
+            app:uri="app://com.kuts.klaf" />
 
     </fragment>
     <dialog
         android:id="@+id/cardRemovingDialogFragment"
-        android:name="com.example.klaf.presentation.deckRepetition.cardDeleting.CardDeletingDialogFragment"
+        android:name="com.kuts.klaf.presentation.deckRepetition.cardDeleting.CardDeletingDialogFragment"
         android:label="dialog_card_removing">
         <argument
             android:name="deckId"
@@ -97,7 +97,7 @@
     </dialog>
     <dialog
         android:id="@+id/deckRepetitionInfoDialogFragment"
-        android:name="com.example.klaf.presentation.deckRepetitionInfo.DeckRepetitionInfoDialogFragment"
+        android:name="com.kuts.klaf.presentation.deckRepetitionInfo.DeckRepetitionInfoDialogFragment"
         android:label="dialog_deck_repetition_info">
         <argument
             android:name="deckId"
@@ -108,7 +108,7 @@
     </dialog>
     <dialog
         android:id="@+id/deckNavigationDialog"
-        android:name="com.example.klaf.presentation.deckList.deckNavigation.DeckNavigationDialogFragment"
+        android:name="com.kuts.klaf.presentation.deckList.deckNavigation.DeckNavigationDialogFragment"
         android:label="dialog_deck_navigation">
         <argument
             android:name="deckId"
@@ -145,7 +145,7 @@
     </dialog>
     <dialog
         android:id="@+id/deckDeletingDialogFragment"
-        android:name="com.example.klaf.presentation.deckList.deckDeleting.DeckDeletingDialogFragment"
+        android:name="com.kuts.klaf.presentation.deckList.deckDeleting.DeckDeletingDialogFragment"
         android:label="dialog_deck_deleting">
         <argument
             android:name="deckId"
@@ -156,7 +156,7 @@
     </dialog>
     <fragment
         android:id="@+id/deckRepetitionFragment"
-        android:name="com.example.klaf.presentation.deckRepetition.DeckRepetitionFragment"
+        android:name="com.kuts.klaf.presentation.deckRepetition.DeckRepetitionFragment"
         android:label="fragment_deck_repetion">
         <action
             android:id="@+id/action_deckRepetitionFragment_to_deckListFragment"
@@ -182,7 +182,7 @@
     </fragment>
     <dialog
         android:id="@+id/dataSynchronizationDialogFragment"
-        android:name="com.example.klaf.presentation.deckList.dataSynchronization.DataSynchronizationDialogFragment"
+        android:name="com.kuts.klaf.presentation.deckList.dataSynchronization.DataSynchronizationDialogFragment"
         android:label="dialog_data_synchronization">
         <action
             android:id="@+id/action_dataSynchronizationDialogFragment_to_signingTypeChoosingDialogFragment"
@@ -190,13 +190,12 @@
             app:popUpTo="@id/deckListFragment" />
         <argument
             android:name="authenticationActionResult"
-            app:argType="com.example.klaf.presentation.authentication.AuthenticationActionResult"
-            app:nullable="true"
-            android:defaultValue="@null" />
+            app:argType="com.kuts.klaf.presentation.authentication.AuthenticationActionResult"
+            app:nullable="true" />
     </dialog>
     <fragment
         android:id="@+id/cardTransferringFragment"
-        android:name="com.example.klaf.presentation.cardTransferring.common.CardTransferringFragment"
+        android:name="com.kuts.klaf.presentation.cardTransferring.common.CardTransferringFragment"
         android:label="fragment_interim_deck">
         <action
             android:id="@+id/action_interimDeckFragment_to_cardAdditionFragment"
@@ -216,7 +215,7 @@
     </fragment>
     <dialog
         android:id="@+id/cardDeletingDialogFragment"
-        android:name="com.example.klaf.presentation.cardTransferring.cardDeleting.CardDeletingDialogFragment"
+        android:name="com.kuts.klaf.presentation.cardTransferring.cardDeleting.CardDeletingDialogFragment"
         android:label="CardDeletingDialogFragment" >
         <argument
             android:name="cardQuantity"
@@ -224,11 +223,11 @@
     </dialog>
     <dialog
         android:id="@+id/cardMovingDialogFragment"
-        android:name="com.example.klaf.presentation.cardTransferring.deckChoosing.DeckChoosingDialogFragment"
+        android:name="com.kuts.klaf.presentation.cardTransferring.deckChoosing.DeckChoosingDialogFragment"
         android:label="CardMovingDialogFragment" />
     <dialog
         android:id="@+id/signingTypeChoosingDialogFragment"
-        android:name="com.example.klaf.presentation.deckList.sygningTypeChoosing.SigningTypeChoosingDialogFragment"
+        android:name="com.kuts.klaf.presentation.deckList.sygningTypeChoosing.SigningTypeChoosingDialogFragment"
         android:label="SigningTypeChoosingDialogFragment" >
         <action
             android:id="@+id/action_signingTypeChoosingDialogFragment_to_authenticationFragment"
@@ -236,11 +235,11 @@
     </dialog>
     <fragment
         android:id="@+id/authenticationFragment"
-        android:name="com.example.klaf.presentation.authentication.AuthenticationFragment"
+        android:name="com.kuts.klaf.presentation.authentication.AuthenticationFragment"
         android:label="AuthenticationFragment" >
         <argument
             android:name="authenticationAction"
-            app:argType="com.example.domain.common.AuthenticationAction" />
+            app:argType="com.kuts.domain.common.AuthenticationAction" />
         <action
             android:id="@+id/action_authenticationFragment_to_dataSynchronizationDialogFragment"
             app:destination="@id/dataSynchronizationDialogFragment"
