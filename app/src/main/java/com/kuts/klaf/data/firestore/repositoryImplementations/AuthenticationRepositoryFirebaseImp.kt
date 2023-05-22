@@ -41,6 +41,11 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
         object CommonError : SigningUpLoadingError
     }
 
+    sealed interface SigningOutLoadingError : LoadingError {
+
+        object CommonError : SigningOutLoadingError
+    }
+
     override fun signInWithEmailAndPassword(
         email: String,
         password: String,
@@ -59,7 +64,7 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
             else -> SigningInLoadingError.CommonError
         }
 
-        emit(LoadingState.Error(value = errorType))
+        emit(value = LoadingState.Error(value = errorType))
     }
 
     override fun signUpWithEmailAndPassword(
@@ -79,6 +84,14 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
             else -> CommonError
         }
 
-        emit(LoadingState.Error(value = errorType))
+        emit(value = LoadingState.Error(value = errorType))
+    }
+
+    override fun signOut(): Flow<LoadingState<Unit>> = flow {
+        emit(LoadingState.Loading)
+        auth.signOut()
+        emit(LoadingState.Success(data = Unit))
+    }.catch {
+        emit(value = LoadingState.Error(value = SigningOutLoadingError.CommonError))
     }
 }
