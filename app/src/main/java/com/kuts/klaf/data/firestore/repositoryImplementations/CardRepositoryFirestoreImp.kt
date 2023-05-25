@@ -1,14 +1,15 @@
 package com.kuts.klaf.data.firestore.repositoryImplementations
 
-import com.kuts.domain.entities.Card
-import com.kuts.domain.repositories.CardRepository
-import com.kuts.klaf.data.firestore.entities.FirestoreCard
-import com.kuts.klaf.data.firestore.toDomainEntity
-import com.kuts.klaf.data.firestore.toFirestoreEntity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
+import com.kuts.domain.entities.Card
+import com.kuts.domain.repositories.CardRepository
+import com.kuts.klaf.data.firestore.entities.FirestoreCard
+import com.kuts.klaf.data.firestore.rootCollection
+import com.kuts.klaf.data.firestore.toDomainEntity
+import com.kuts.klaf.data.firestore.toFirestoreEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -68,10 +69,10 @@ class CardRepositoryFirestoreImp @Inject constructor(
     }
 
     private fun getCardSubCollection(): CollectionReference {
-        val mainCollectionName = auth.currentUser?.email
+        val userEmail = auth.currentUser?.email
             ?: throw RuntimeException("There is no authorized user")
 
-        return firestore.collection(mainCollectionName)
+        return firestore.rootCollection(email = userEmail)
             .document(CARD_DOCUMENT_NAME)
             .collection(CARD_SUB_COLLECTION_NAME)
     }
