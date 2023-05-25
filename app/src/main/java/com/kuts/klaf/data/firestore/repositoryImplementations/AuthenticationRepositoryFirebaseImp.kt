@@ -10,7 +10,6 @@ import com.kuts.domain.common.LoadingError
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.repositories.AuthenticationRepository
 import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError.*
-import com.kuts.klaf.presentation.common.log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -101,7 +100,7 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
             user.delete().await()
             emit(value = LoadingState.Success(data = Unit))
         }
-    }.catch { error ->
-        log(error)
+    }.catch {
+        TODO("Handle exceptions")
     }
 }
