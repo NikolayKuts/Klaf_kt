@@ -2,6 +2,7 @@ package com.kuts.klaf.presentation.deckList.common
 
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
+import com.google.firebase.auth.FirebaseAuth
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
@@ -25,7 +26,6 @@ import com.kuts.klaf.presentation.common.tryEmitAsPositive
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationDestination.DataSynchronizationDialog
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationDestination.Unspecified
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.*
-import com.google.firebase.auth.FirebaseAuth
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

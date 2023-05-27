@@ -1,14 +1,15 @@
 package com.kuts.klaf.data.firestore.repositoryImplementations
 
-import com.kuts.domain.entities.StorageSaveVersion
-import com.kuts.domain.repositories.StorageSaveVersionRepository
-import com.kuts.klaf.data.firestore.entities.FirestoreStorageSaveVersion
-import com.kuts.klaf.data.firestore.toDomainEntity
-import com.kuts.klaf.data.firestore.toFirestoreEntity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
+import com.kuts.domain.entities.StorageSaveVersion
+import com.kuts.domain.repositories.StorageSaveVersionRepository
+import com.kuts.klaf.data.firestore.entities.FirestoreStorageSaveVersion
+import com.kuts.klaf.data.firestore.rootCollection
+import com.kuts.klaf.data.firestore.toDomainEntity
+import com.kuts.klaf.data.firestore.toFirestoreEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -50,10 +51,10 @@ class StorageSaveVersionRepositoryFirestoreImp @Inject constructor(
     }
 
     private fun getStorageSaveVersionDocument(): DocumentReference {
-        val mainCollectionName = auth.currentUser?.email
+        val userEmail = auth.currentUser?.email
             ?: throw RuntimeException("There is no authorized user")
 
-        return firestore.collection(mainCollectionName)
+        return firestore.rootCollection(email = userEmail)
             .document(SAVE_VERSION_DOCUMENT_NAME)
     }
 }

@@ -1,16 +1,15 @@
 package com.kuts.klaf.data.firestore.repositoryImplementations
 
-import com.kuts.domain.common.AuthenticationAction
-import com.kuts.domain.common.LoadingError
-import com.kuts.domain.common.LoadingState
-import com.kuts.domain.repositories.AuthenticationRepository
-import com.kuts.klaf.data.firestore.ROOT_COLLECTION_NAME_PREFIX
-import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError.*
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.kuts.domain.common.AuthenticationAction
+import com.kuts.domain.common.LoadingError
+import com.kuts.domain.common.LoadingState
+import com.kuts.domain.repositories.AuthenticationRepository
+import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -41,13 +40,18 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
         object CommonError : SigningUpLoadingError
     }
 
+    sealed interface SigningOutLoadingError : LoadingError {
+
+        object CommonError : SigningOutLoadingError
+    }
+
     override fun signInWithEmailAndPassword(
         email: String,
         password: String,
     ): Flow<LoadingState<AuthenticationAction>> = flow {
         emit(LoadingState.Loading)
         auth.signInWithEmailAndPassword(
-            "$ROOT_COLLECTION_NAME_PREFIX$email",
+            email,
             password
         ).await()
         emit(LoadingState.Success(data = AuthenticationAction.SIGN_IN))
@@ -59,7 +63,7 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
             else -> SigningInLoadingError.CommonError
         }
 
-        emit(LoadingState.Error(value = errorType))
+        emit(value = LoadingState.Error(value = errorType))
     }
 
     override fun signUpWithEmailAndPassword(
@@ -68,7 +72,7 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
     ): Flow<LoadingState<AuthenticationAction>> = flow {
         emit(LoadingState.Loading)
         auth.createUserWithEmailAndPassword(
-            "$ROOT_COLLECTION_NAME_PREFIX$email",
+            email,
             password
         ).await()
         emit(LoadingState.Success(data = AuthenticationAction.SIGN_UP))
@@ -79,6 +83,24 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
             else -> CommonError
         }
 
-        emit(LoadingState.Error(value = errorType))
+        emit(value = LoadingState.Error(value = errorType))
+    }
+
+    override fun signOut(): Flow<LoadingState<Unit>> = flow {
+        emit(LoadingState.Loading)
+        auth.signOut()
+        emit(LoadingState.Success(data = Unit))
+    }.catch {
+        emit(value = LoadingState.Error(value = SigningOutLoadingError.CommonError))
+    }
+
+    override fun deleteProfile(): Flow<LoadingState<Unit>> = flow {
+        auth.currentUser?.let { user ->
+            emit(value = LoadingState.Loading)
+            user.delete().await()
+            emit(value = LoadingState.Success(data = Unit))
+        }
+    }.catch {
+        TODO("Handle exceptions")
     }
 }
