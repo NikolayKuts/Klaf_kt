@@ -1,14 +1,15 @@
 package com.kuts.klaf.data.firestore.repositoryImplementations
 
-import com.kuts.klaf.data.firestore.entities.FirestoreDeck
-import com.kuts.klaf.data.firestore.toDomainEntity
-import com.kuts.klaf.data.firestore.toFirestoreEntity
-import com.kuts.domain.entities.Deck
-import com.kuts.domain.repositories.DeckRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
+import com.kuts.domain.entities.Deck
+import com.kuts.domain.repositories.DeckRepository
+import com.kuts.klaf.data.firestore.entities.FirestoreDeck
+import com.kuts.klaf.data.firestore.rootCollection
+import com.kuts.klaf.data.firestore.toDomainEntity
+import com.kuts.klaf.data.firestore.toFirestoreEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -64,10 +65,10 @@ class DeckRepositoryFirestoreImp @Inject constructor(
     }
 
     private fun getDeckSubCollection(): CollectionReference {
-        val collectionName = auth.currentUser?.email
+        val userEmail = auth.currentUser?.email
             ?: throw RuntimeException("There is no authorized user")
 
-        return firestore.collection(collectionName)
+        return firestore.rootCollection(email = userEmail)
             .document(DECK_DOCUMENT_NAME)
             .collection(DECK_SUB_COLLECTION_NAME)
     }

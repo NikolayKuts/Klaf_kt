@@ -3,8 +3,8 @@ package com.kuts.klaf.data.common
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
-import com.kuts.klaf.data.common.notifications.DeckRepetitionNotifier
 import com.kuts.domain.common.UNASSIGNED_INT_VALUE
+import com.kuts.klaf.data.common.notifications.DeckRepetitionNotifier
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
@@ -28,14 +28,11 @@ class DeckRepetitionReminder @AssistedInject constructor(
             deckName: String,
             deckId: Int,
             atTime: Long = 0,
-        ) {
-            cancelUniqueWork(deckId.toString())
-            enqueueUniqueWork(
-                deckId.toString(),
-                ExistingWorkPolicy.KEEP,
-                makeWorkRequest(deckName = deckName, deckId = deckId, atTime = atTime)
-            )
-        }
+        ): Operation = enqueueUniqueWork(
+            deckId.toString(),
+            ExistingWorkPolicy.REPLACE,
+            makeWorkRequest(deckName = deckName, deckId = deckId, atTime = atTime)
+        )
 
         private fun makeWorkRequest(
             deckName: String,

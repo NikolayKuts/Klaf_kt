@@ -2,6 +2,7 @@ package com.kuts.klaf.presentation.deckRepetitionInfo
 
 import android.os.Bundle
 import android.view.View
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -31,20 +32,21 @@ class DeckRepetitionInfoDialogFragment : TransparentDialogFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setEventMessageObserver()
+        observeEventMessage()
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 DeckRepetitionInfoView(
                     viewModel = viewModel,
                     deckName = args.deckName,
-                    onCloseClick = ::closeDialog
+                    onCloseClick = ::closeDialog,
+                    eventMessage = sharedViewModel.eventMessage.collectAsState(null).value,
                 )
             }
         }
     }
 
-    private fun setEventMessageObserver() {
+    private fun observeEventMessage() {
         viewModel.eventMessage.collectWhenStarted(
             lifecycleOwner = viewLifecycleOwner
         ) { eventMessage ->

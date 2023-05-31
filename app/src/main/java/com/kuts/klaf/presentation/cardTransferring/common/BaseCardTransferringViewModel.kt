@@ -14,7 +14,7 @@ abstract class BaseCardTransferringViewModel : ViewModel(), EventMessageSource {
     abstract val decks: StateFlow<List<Deck>>
 
     abstract fun changeSelectionState(position: Int)
-    abstract fun selectAllCards()
+    abstract fun changeAllCardSelection()
     abstract fun navigateTo(destination: CardTransferringNavigationDestination)
     abstract fun deleteCards()
     abstract fun moveCards(targetDeck: Deck)

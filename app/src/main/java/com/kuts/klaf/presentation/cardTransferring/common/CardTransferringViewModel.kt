@@ -69,14 +69,17 @@ class CardTransferringViewModel @AssistedInject constructor(
     override fun changeSelectionState(position: Int) {
         cardHolders.update { holders ->
             val holder = holders[position]
+
             holders.toMutableList()
                 .apply { this[position] = holder.copy(isSelected = !holder.isSelected) }
         }
     }
 
-    override fun selectAllCards() {
+    override fun changeAllCardSelection() {
+        val isAllSelected = cardHolders.value.all { it.isSelected }
+
         cardHolders.update { holders ->
-            holders.map { holder -> holder.copy(isSelected = true) }
+            holders.map { holder -> holder.copy(isSelected = !isAllSelected) }
         }
     }
 

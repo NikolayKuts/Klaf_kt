@@ -1,7 +1,7 @@
 package com.kuts.klaf.presentation.cardTransferring.common
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -70,6 +70,13 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
                 )
 
                 Spacer(modifier = Modifier.height(28.dp))
+
+                AllSelectionItem(
+                    isVisible = true,
+                    isChecked = cardHolders.all { it.isSelected },
+                    onClick = { viewModel.changeAllCardSelection() },
+                )
+
                 DividingLine()
 
                 DeckList(
@@ -82,7 +89,9 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
                         moreButtonClickedState = false
                     },
                     onLongItemClick = { index ->
-                        viewModel.navigateTo(destination = CardEditingFragment(selectedCardIndexIndex = index))
+                        viewModel.navigateTo(
+                            destination = CardEditingFragment(selectedCardIndexIndex = index),
+                        )
                     }
                 )
             }
@@ -187,6 +196,32 @@ private fun QuantityPointer(
             text = pointerValue,
             style = MainTheme.typographies.cardTransferringScreenTextStyles.quantityPointerValue,
         )
+    }
+}
+
+@Composable
+private fun ColumnScope.AllSelectionItem(
+    isVisible: Boolean,
+    isChecked: Boolean,
+    onClick: () -> Unit,
+) {
+    AnimatedVisibility(
+        modifier = Modifier
+            .align(Alignment.End)
+            .noRippleClickable { onClick() },
+        visible = isVisible,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = stringResource(R.string.all))
+
+            CustomCheckBox(
+                modifier = Modifier.padding(6.dp),
+                checked = isChecked,
+                onCheckedChange = { onClick() },
+                uncheckedBorderColor = MainTheme.colors.cardTransferringScreen.unCheckedBorder,
+                checkedBoxColor = MainTheme.colors.cardTransferringScreen.selectedCheckBox
+            )
+        }
     }
 }
 
