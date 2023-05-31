@@ -2,6 +2,7 @@ package com.kuts.klaf.presentation.deckRepetition
 
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
+import androidx.work.await
 import com.kuts.domain.common.*
 import com.kuts.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE
 import com.kuts.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN
@@ -427,11 +428,18 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             && updatedDeck.repetitionQuantity >= MINIMUM_NUMBER_OF_FIRST_REPETITIONS
             && updatedDeck.repetitionQuantity.isEven()
         ) {
-            workManager.scheduleDeckRepetition(
-                deckName = repeatedDeck.name,
-                deckId = repeatedDeck.id,
-                atTime = scheduledDate
-            )
+            viewModelScope.launchWithState(context = Dispatchers.IO) {
+                val workOperation = workManager.scheduleDeckRepetition(
+                    deckName = repeatedDeck.name,
+                    deckId = repeatedDeck.id,
+                    atTime = scheduledDate
+                )
+
+                workOperation.await()
+                eventMessage.tryEmitAsPositive(resId = R.string.deck_repetition_scheduled_successfully)
+            }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+                eventMessage.tryEmitAsPositive(resId = R.string.deck_repetition_scheduling_failed)
+            }
 
             deckRepetitionNotifier.removeNotificationFromNotificationBar(deckId = repeatedDeck.id)
         }

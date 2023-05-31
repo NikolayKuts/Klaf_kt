@@ -18,11 +18,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.kuts.domain.common.DeckRepetitionSuccessMark
+import com.kuts.domain.common.*
 import com.kuts.domain.common.DeckRepetitionSuccessMark.*
-import com.kuts.domain.common.Emptiable
-import com.kuts.domain.common.ifNull
-import com.kuts.domain.common.otherwise
 import com.kuts.domain.entities.DeckRepetitionInfo
 import com.kuts.klaf.R
 import com.kuts.klaf.data.common.calculateDetailedPreviousScheduledRange
@@ -38,6 +35,7 @@ fun DeckRepetitionInfoView(
     viewModel: DeckRepetitionInfoViewModel,
     deckName: String,
     onCloseClick: () -> Unit,
+    eventMessage: EventMessage?
 ) {
     val deckRepetitionInfo by viewModel.repetitionInfo.collectAsState()
 
@@ -47,6 +45,9 @@ fun DeckRepetitionInfoView(
             ScrollableBox(
                 modifier = Modifier.noRippleClickable { onCloseClick() },
                 dialogMode = true,
+                topContent = {
+                    eventMessage.ifNotNull { EventMessageView(message = it) }
+                },
             ) {
                 FullBackgroundDialog(
                     onBackgroundClick = onCloseClick,

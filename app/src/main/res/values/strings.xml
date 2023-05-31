@@ -134,4 +134,6 @@
     <string name="data_synchronization_dialog_waiting_message">Please wait for the end of synchronization</string>
     <string name="problem_with_data_synchronization">There is a problem with data synchronization</string>
     <string name="all">all</string>
+    <string name="deck_repetition_scheduled_successfully">Deck repetition scheduled successfully</string>
+    <string name="deck_repetition_scheduling_failed">Scheduling deck repetition failed</string>
 </resources>
