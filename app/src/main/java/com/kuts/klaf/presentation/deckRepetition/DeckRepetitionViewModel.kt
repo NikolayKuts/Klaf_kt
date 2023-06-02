@@ -438,7 +438,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 workOperation.await()
                 eventMessage.tryEmitAsPositive(resId = R.string.deck_repetition_scheduled_successfully)
             }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-                eventMessage.tryEmitAsPositive(resId = R.string.deck_repetition_scheduling_failed)
+                eventMessage.tryEmitAsNegative(resId = R.string.deck_repetition_scheduling_failed)
             }
 
             deckRepetitionNotifier.removeNotificationFromNotificationBar(deckId = repeatedDeck.id)

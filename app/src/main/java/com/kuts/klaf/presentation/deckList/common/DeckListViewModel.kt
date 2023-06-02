@@ -19,6 +19,7 @@ import com.kuts.klaf.data.common.DataSynchronizationState
 import com.kuts.klaf.data.common.DataSynchronizationWorker.Companion.getDataSynchronizationProgressState
 import com.kuts.klaf.data.common.DataSynchronizationWorker.Companion.performDataSynchronization
 import com.kuts.klaf.data.common.DeckRepetitionReminderChecker.Companion.scheduleDeckRepetitionChecking
+import com.kuts.klaf.data.common.NetworkConnectivity
 import com.kuts.klaf.data.common.notifications.NotificationChannelInitializer
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
@@ -32,14 +33,15 @@ import kotlinx.coroutines.launch
 
 class DeckListViewModel @AssistedInject constructor(
     fetchDeckSource: FetchDeckSourceUseCase,
+    createInterimDeck: CreateInterimDeckUseCase,
+    notificationChannelInitializer: NotificationChannelInitializer,
     private val createDeck: CreateDeckUseCase,
     private val renameDeck: RenameDeckUseCase,
     private val removeDeck: RemoveDeckUseCase,
-    createInterimDeck: CreateInterimDeckUseCase,
-    notificationChannelInitializer: NotificationChannelInitializer,
     private val workManager: WorkManager,
     private val auth: FirebaseAuth,
     private val crashlytics: CrashlyticsRepository,
+    private val networkConnectivity: NetworkConnectivity,
 ) : BaseDeckListViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
@@ -155,7 +157,13 @@ class DeckListViewModel @AssistedInject constructor(
         if (auth.currentUser == null) {
             viewModelScope.launch { navigationEvent.emit(value = ToSigningTypeChoosingDialog) }
         } else {
-            workManager.performDataSynchronization()
+            if (networkConnectivity.isNetworkConnected()) {
+                workManager.performDataSynchronization()
+            } else {
+                eventMessage.tryEmitAsNegative(
+                    resId = R.string.data_synchronization_network_connection_warning
+                )
+            }
         }
     }
 

@@ -136,4 +136,5 @@
     <string name="all">all</string>
     <string name="deck_repetition_scheduled_successfully">Deck repetition scheduled successfully</string>
     <string name="deck_repetition_scheduling_failed">Scheduling deck repetition failed</string>
+    <string name="data_synchronization_network_connection_warning">Check network connection</string>
 </resources>

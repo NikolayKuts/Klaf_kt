@@ -1,6 +1,7 @@
 package com.kuts.klaf.di
 
 import android.content.Context
+import android.net.ConnectivityManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
@@ -46,7 +47,6 @@ class DataModule {
         return FirebaseFirestore.getInstance()
     }
 
-
     @Singleton
     @Provides
     fun provideDeckRepetitionInfoDataStore(
@@ -73,4 +73,9 @@ class DataModule {
     fun provideCardAudioPlayer(
         crashlyticsRepository: CrashlyticsRepository
     ): CardAudioPlayer = CardAudioPlayer(crashlytics = crashlyticsRepository)
+
+    @Provides
+    fun provideConnectivityManager(@ApplicationContext context: Context): ConnectivityManager {
+        return context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    }
 }
