@@ -29,12 +29,7 @@ fun DeckDeletionDialogView(
     ) {
         FullBackgroundDialog(
             onBackgroundClick = onCloseDialogClick,
-            topContent = ContentHolder(size = ROUNDED_ELEMENT_SIZE.dp) {
-                RoundedIcon(
-                    background = MainTheme.colors.common.negativeDialogButton,
-                    iconId = R.drawable.ic_attention_mark_24,
-                )
-            },
+            topContent = ContentHolder(size = DIALOG_APP_LABEL_SIZE.dp) { DialogAppLabel() },
             mainContent = {
                 Text(
                     style = MainTheme.typographies.dialogTextStyle,
