@@ -8,7 +8,6 @@ import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.common.getCurrentDateAsLong
-import com.kuts.domain.common.ifTrue
 import com.kuts.domain.common.launchIn
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.repositories.CrashlyticsRepository
@@ -28,6 +27,7 @@ import com.kuts.klaf.presentation.deckList.common.DeckListNavigationDestination.
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationDestination.Unspecified
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.*
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -62,6 +62,17 @@ class DeckListViewModel @AssistedInject constructor(
     )
 
     override val navigationEvent = MutableSharedFlow<DeckListNavigationEvent>()
+
+    override val shouldSynchronizationIndicatorBeShown = combine(
+        dataSynchronizationState,
+        navigationDestination,
+    ) { synchronizationState, destination ->
+        synchronizationState is DataSynchronizationState.Synchronizing && destination is Unspecified
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = false,
+    )
 
     init {
         notificationChannelInitializer.initialize()
@@ -203,14 +214,20 @@ class DeckListViewModel @AssistedInject constructor(
         workManager.getDataSynchronizationProgressState()
             .catch { crashlytics.report(exception = it) }
             .filterNot { it is DataSynchronizationState.Uncertain }
+            .flowOn(context = Dispatchers.IO)
             .onEach {
                 dataSynchronizationState.value = it
 
-                val shouldSendEventMessage = it is DataSynchronizationState.Failed
-                        && navigationDestination.value != DataSynchronizationDialog
-
-                shouldSendEventMessage.ifTrue {
-                    eventMessage.tryEmitAsNegative(resId = R.string.problem_with_data_synchronization)
+                if (navigationDestination.value != DataSynchronizationDialog) {
+                    when (it) {
+                        is DataSynchronizationState.Failed -> {
+                            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_data_synchronization)
+                        }
+                        is DataSynchronizationState.SuccessfullyFinished -> {
+                            eventMessage.tryEmitAsPositive(resId = R.string.data_synchronization_dialog_data_synchronized)
+                        }
+                        else -> {}
+                    }
                 }
             }.launchIn(scope = viewModelScope)
     }

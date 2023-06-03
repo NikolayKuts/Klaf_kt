@@ -6,17 +6,13 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -25,6 +21,8 @@ import com.kuts.klaf.R
 import com.kuts.klaf.data.common.DataSynchronizationState
 import com.kuts.klaf.data.common.DataSynchronizationState.*
 import com.kuts.klaf.presentation.common.*
+import com.kuts.klaf.presentation.deckList.common.AnimatedSynchronizationLabel
+import com.kuts.klaf.presentation.deckList.common.SynchronizationLabel
 import com.kuts.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -188,63 +186,6 @@ private fun FailureStateView(
             ClosingButton(onClick = onCloseClick)
         },
     )
-}
-
-@Composable
-private fun AnimatedSynchronizationLabel() {
-    val animationDuration = 1000
-    val infiniteTransition = rememberInfiniteTransition()
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0F,
-        targetValue = -360F,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = animationDuration,
-                easing = LinearEasing
-            ),
-            repeatMode = RepeatMode.Restart
-        )
-    )
-    val color by infiniteTransition.animateColor(
-        initialValue = MainTheme.colors.common.dialogBackground,
-        targetValue = MainTheme.colors.dataSynchronizationView.targetLabelBackground,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = animationDuration,
-                easing = LinearEasing
-            ),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-
-    SynchronizationLabel(
-        modifier = Modifier.rotate(degrees = rotation),
-        color = color
-    )
-}
-
-@Composable
-private fun SynchronizationLabel(
-    modifier: Modifier = Modifier,
-    color: Color = MainTheme.colors.common.dialogBackground,
-) {
-    Card(
-        modifier = Modifier
-            .size(ROUNDED_ELEMENT_SIZE.dp)
-            .noRippleClickable { },
-        shape = RoundedCornerShape(ROUNDED_ELEMENT_SIZE.dp),
-        elevation = 0.dp,
-    ) {
-        Icon(
-            modifier = modifier
-                .size(20.dp)
-                .background(color)
-                .padding(8.dp)
-                .then(modifier),
-            painter = painterResource(id = R.drawable.ic_sync_24),
-            contentDescription = null,
-        )
-    }
 }
 
 @Composable

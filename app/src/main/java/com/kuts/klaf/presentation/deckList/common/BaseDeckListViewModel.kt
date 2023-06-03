@@ -13,6 +13,7 @@ abstract class BaseDeckListViewModel : ViewModel(), EventMessageSource {
     abstract val deckSource: StateFlow<List<Deck>?>
     abstract val navigationDestination: StateFlow<DeckListNavigationDestination>
     abstract val navigationEvent: SharedFlow<DeckListNavigationEvent>
+    abstract val shouldSynchronizationIndicatorBeShown: StateFlow<Boolean>
 
     abstract fun resetSynchronizationState()
     abstract fun createNewDeck(deckName: String)

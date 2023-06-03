@@ -43,6 +43,8 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
                 Surface {
                     DeckListScreen(
                         decks = viewModel.deckSource.collectAsState().value,
+                        shouldSynchronizationIndicatorBeShown = viewModel.shouldSynchronizationIndicatorBeShown
+                            .collectAsState().value,
                         onItemClick = {
                             viewModel.handleNavigation(event = ToDeckRepetitionScreen(deck = it))
                         },

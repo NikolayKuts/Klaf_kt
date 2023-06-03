@@ -1,13 +1,16 @@
 package com.kuts.klaf.presentation.deckList.common
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.*
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -24,6 +27,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kuts.domain.common.ScheduledDateState
 import com.kuts.domain.common.isEven
 import com.kuts.domain.entities.Deck
@@ -31,12 +36,11 @@ import com.kuts.klaf.R
 import com.kuts.klaf.data.common.getScheduledDateStateByByCalculatedRange
 import com.kuts.klaf.presentation.common.*
 import com.kuts.klaf.presentation.theme.MainTheme
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @Composable
 fun DeckListScreen(
     decks: List<Deck>?,
+    shouldSynchronizationIndicatorBeShown: Boolean,
     onRefresh: () -> Unit,
     onItemClick: (deck: Deck) -> Unit,
     onLongItemClick: (deck: Deck) -> Unit,
@@ -58,6 +62,8 @@ fun DeckListScreen(
                     onLongItemClick = onLongItemClick,
                     onMainButtonClick = onMainButtonClick
                 )
+
+                DataSynchronizationIndicator(visible = shouldSynchronizationIndicatorBeShown)
             }
         }
     }
@@ -251,5 +257,40 @@ private fun getScheduledDateStyleByScheduledDateState(state: ScheduledDateState)
         MainTheme.typographies.overdueScheduledDateRange
     } else {
         MainTheme.typographies.scheduledDateRange
+    }
+}
+
+@Composable
+private fun BoxScope.DataSynchronizationIndicator(visible: Boolean) {
+    val visibilityState = remember { MutableTransitionState(initialState = false) }
+    val transitionDuration = 500
+    val additionOffset = 50
+
+    AnimatedVisibility(
+        modifier = Modifier
+            .align(Alignment.TopCenter)
+            .padding(32.dp),
+        visibleState = visibilityState,
+        enter = slideInVertically(
+            animationSpec = tween(durationMillis = transitionDuration),
+            initialOffsetY = { fullWidth -> -(fullWidth + additionOffset) },
+        ),
+        exit = slideOutVertically(
+            animationSpec = tween(durationMillis = transitionDuration),
+            targetOffsetY = { fullWidth -> -(fullWidth + additionOffset) },
+        )
+    ) {
+        Card(
+            modifier = Modifier.align(Alignment.TopCenter),
+            shape = RoundedCornerShape(size = ROUNDED_ELEMENT_SIZE.dp),
+            contentColor = MainTheme.colors.material.onBackground,
+            elevation = 4.dp
+        ) {
+            AnimatedSynchronizationLabel()
+        }
+    }
+
+    LaunchedEffect(key1 = visible) {
+        visibilityState.targetState = visible
     }
 }
