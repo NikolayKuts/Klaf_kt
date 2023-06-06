@@ -10,7 +10,6 @@ import com.kuts.klaf.data.common.DataSynchronizationState.*
 import com.kuts.klaf.data.common.notifications.DataSynchronizationNotifier
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -85,9 +84,6 @@ class DataSynchronizationWorker @AssistedInject constructor(
     }
 
     override suspend fun doWork(): Result = try {
-
-        delay(5000) ///////////////
-
         synchronizeLocalAndRemoteData().collect { progress ->
             setProgress(workDataOf(PROGRESS_STATE_KEY to progress))
         }

@@ -2,17 +2,18 @@ package com.kuts.klaf.presentation.deckList.common
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,12 +21,15 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -47,11 +51,22 @@ fun DeckListScreen(
     onMainButtonClick: () -> Unit,
     onRestartApp: () -> Unit,
 ) {
+    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = false)
+    val offsetY = swipeRefreshState.indicatorOffset
+    var visible by rememberAsMutableStateOf(value = false)
+
     SwipeRefresh(
         modifier = Modifier.fillMaxSize(),
-        state = rememberSwipeRefreshState(isRefreshing = false),
-        onRefresh = onRefresh
+        state = swipeRefreshState,
+        onRefresh = onRefresh,
+        indicator = { _, _ ->
+            SynchronizationRefreshingIndicator(
+                visible = visible,
+                offsetY = LocalDensity.current.run { offsetY.toDp() - 50.dp }
+            )
+        }
     ) {
+
         Box(modifier = Modifier.fillMaxSize()) {
             if (decks == null) {
                 FetchingDecksWarningView(onRestartApp = onRestartApp)
@@ -60,12 +75,19 @@ fun DeckListScreen(
                     decks = decks,
                     onItemClick = onItemClick,
                     onLongItemClick = onLongItemClick,
-                    onMainButtonClick = onMainButtonClick
+                    onMainButtonClick = onMainButtonClick,
                 )
 
-                DataSynchronizationIndicator(visible = shouldSynchronizationIndicatorBeShown)
+                AnimatableDataSynchronizationIndicator(
+                    visible = shouldSynchronizationIndicatorBeShown,
+                    modifier = Modifier.offset(y = LocalDensity.current.run { offsetY.toDp() })
+                )
             }
         }
+    }
+
+    LaunchedEffect(key1 = swipeRefreshState.isSwipeInProgress) {
+        visible = swipeRefreshState.isSwipeInProgress && !shouldSynchronizationIndicatorBeShown
     }
 }
 
@@ -93,6 +115,32 @@ private fun FetchingDecksWarningView(onRestartApp: () -> Unit) {
 }
 
 @Composable
+private fun SynchronizationRefreshingIndicator(
+    visible: Boolean,
+    offsetY: Dp,
+) {
+    if (visible) {
+        Card(
+            modifier = Modifier
+                .size(ROUNDED_ELEMENT_SIZE.dp)
+                .noRippleClickable { }
+                .offset(y = offsetY),
+            shape = RoundedCornerShape(ROUNDED_ELEMENT_SIZE.dp),
+            elevation = 0.dp,
+        ) {
+            Icon(
+                modifier = Modifier
+                    .size(20.dp)
+                    .background(MainTheme.colors.common.dialogBackground)
+                    .padding(8.dp),
+                painter = painterResource(id = R.drawable.ic_sync_24),
+                contentDescription = null,
+            )
+        }
+    }
+}
+
+@Composable
 private fun BoxScope.DecksContentView(
     decks: List<Deck>,
     onItemClick: (deck: Deck) -> Unit,
@@ -101,7 +149,7 @@ private fun BoxScope.DecksContentView(
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 124.dp)
+        contentPadding = PaddingValues(bottom = 124.dp),
     ) {
         itemsIndexed(
             items = decks,
@@ -261,8 +309,11 @@ private fun getScheduledDateStyleByScheduledDateState(state: ScheduledDateState)
 }
 
 @Composable
-private fun BoxScope.DataSynchronizationIndicator(visible: Boolean) {
-    val visibilityState = remember { MutableTransitionState(initialState = false) }
+private fun BoxScope.AnimatableDataSynchronizationIndicator(
+    visible: Boolean,
+    modifier: Modifier,
+) {
+    val visibilityState = remember(visible) { MutableTransitionState(initialState = false) }
     val transitionDuration = 500
     val additionOffset = 50
 
@@ -275,13 +326,12 @@ private fun BoxScope.DataSynchronizationIndicator(visible: Boolean) {
             animationSpec = tween(durationMillis = transitionDuration),
             initialOffsetY = { fullWidth -> -(fullWidth + additionOffset) },
         ),
-        exit = slideOutVertically(
-            animationSpec = tween(durationMillis = transitionDuration),
-            targetOffsetY = { fullWidth -> -(fullWidth + additionOffset) },
+        exit = fadeOut(
+            animationSpec = tween(durationMillis = 1),
         )
     ) {
         Card(
-            modifier = Modifier.align(Alignment.TopCenter),
+            modifier = modifier.align(Alignment.TopCenter),
             shape = RoundedCornerShape(size = ROUNDED_ELEMENT_SIZE.dp),
             contentColor = MainTheme.colors.material.onBackground,
             elevation = 4.dp
