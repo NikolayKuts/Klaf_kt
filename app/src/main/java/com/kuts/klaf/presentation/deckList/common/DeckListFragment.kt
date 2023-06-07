@@ -43,6 +43,8 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
                 Surface {
                     DeckListScreen(
                         decks = viewModel.deckSource.collectAsState().value,
+                        shouldSynchronizationIndicatorBeShown = viewModel.shouldSynchronizationIndicatorBeShown
+                            .collectAsState().value,
                         onItemClick = {
                             viewModel.handleNavigation(event = ToDeckRepetitionScreen(deck = it))
                         },
@@ -70,7 +72,7 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
     }
 
     private fun observeNavigationEvent() {
-        viewModel.navigationEvent.collectWhenStarted(lifecycleOwner = this) { event ->
+        viewModel.navigationEvent.collectWhenStarted(lifecycleOwner = this) { event->
             when (event) {
                 ToDataSynchronizationDialog -> {
                     navigateToDataSynchronizationDialog()
@@ -89,6 +91,7 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
                 ToSigningTypeChoosingDialog -> {
                     navigateToSigningTypeChoosingDialog()
                 }
+                null -> {}
             }
         }
     }

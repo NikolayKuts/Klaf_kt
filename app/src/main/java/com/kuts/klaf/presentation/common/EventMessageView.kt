@@ -25,7 +25,7 @@ fun EventMessageView(
     message: EventMessage,
     modifier: Modifier = Modifier,
     animationDuration: Int = 500,
-    enterDuration: Int = 500,
+    transitionDuration: Int = 500,
     initialElevation: Int = 1,
     targetElevation: Int = 12,
 ) {
@@ -74,11 +74,11 @@ fun EventMessageView(
         modifier = modifier.padding(32.dp),
         visibleState = visibilityState,
         enter = slideInVertically(
-            animationSpec = tween(durationMillis = enterDuration),
+            animationSpec = tween(durationMillis = transitionDuration),
             initialOffsetY = { fullWidth -> - (fullWidth + additionOffset) },
         ),
         exit = slideOutVertically(
-            animationSpec = tween(durationMillis = enterDuration),
+            animationSpec = tween(durationMillis = transitionDuration),
             targetOffsetY = { fullWidth -> -(fullWidth + additionOffset) },
         )
     ) {

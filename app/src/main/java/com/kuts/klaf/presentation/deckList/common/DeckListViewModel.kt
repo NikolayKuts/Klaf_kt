@@ -8,7 +8,6 @@ import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.common.getCurrentDateAsLong
-import com.kuts.domain.common.ifTrue
 import com.kuts.domain.common.launchIn
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.repositories.CrashlyticsRepository
@@ -16,6 +15,7 @@ import com.kuts.domain.useCases.*
 import com.kuts.klaf.R
 import com.kuts.klaf.data.common.AppReopeningWorker.Companion.scheduleAppReopening
 import com.kuts.klaf.data.common.DataSynchronizationState
+import com.kuts.klaf.data.common.DataSynchronizationState.*
 import com.kuts.klaf.data.common.DataSynchronizationWorker.Companion.getDataSynchronizationProgressState
 import com.kuts.klaf.data.common.DataSynchronizationWorker.Companion.performDataSynchronization
 import com.kuts.klaf.data.common.DeckRepetitionReminderChecker.Companion.scheduleDeckRepetitionChecking
@@ -28,6 +28,7 @@ import com.kuts.klaf.presentation.deckList.common.DeckListNavigationDestination.
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationDestination.Unspecified
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.*
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -47,7 +48,7 @@ class DeckListViewModel @AssistedInject constructor(
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override val dataSynchronizationState =
-        MutableStateFlow<DataSynchronizationState>(DataSynchronizationState.Initial)
+        MutableStateFlow<DataSynchronizationState>(Initial)
 
     override val deckSource: StateFlow<List<Deck>?> = (fetchDeckSource() as Flow<List<Deck>?>)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { this.emit(value = null) }
@@ -61,7 +62,18 @@ class DeckListViewModel @AssistedInject constructor(
         value = Unspecified
     )
 
-    override val navigationEvent = MutableSharedFlow<DeckListNavigationEvent>()
+    override val navigationEvent = MutableSharedFlow<DeckListNavigationEvent?>()
+
+    override val shouldSynchronizationIndicatorBeShown = combine(
+        dataSynchronizationState,
+        navigationDestination,
+    ) { synchronizationState, destination ->
+        synchronizationState is Synchronizing && destination is Unspecified
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = false,
+    )
 
     init {
         notificationChannelInitializer.initialize()
@@ -94,7 +106,7 @@ class DeckListViewModel @AssistedInject constructor(
                             deck = Deck(name = deckName, creationDate = getCurrentDateAsLong())
                         )
                         eventMessage.tryEmitAsPositive(resId = R.string.deck_has_been_created)
-                        navigationEvent.emit(value = ToPrevious)
+                        emitNavigationEvent(value = ToPrevious)
                     }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
                         eventMessage.tryEmitAsNegative(resId = R.string.problem_with_creating_deck)
                     }
@@ -124,7 +136,7 @@ class DeckListViewModel @AssistedInject constructor(
                     viewModelScope.launchWithState {
                         renameDeck(oldDeck = deck, name = updatedName)
                         eventMessage.tryEmitAsPositive(resId = R.string.deck_has_been_renamed)
-                        navigationEvent.emit(value = ToPrevious)
+                        emitNavigationEvent(value = ToPrevious)
                     }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
                         eventMessage.tryEmitAsPositive(resId = R.string.problem_with_renaming_deck)
                     }
@@ -137,7 +149,7 @@ class DeckListViewModel @AssistedInject constructor(
         viewModelScope.launchWithState {
             removeDeck(deckId = deckId)
             eventMessage.tryEmitAsPositive(resId = R.string.the_deck_has_been_removed)
-            navigationEvent.emit(value = ToPrevious)
+            emitNavigationEvent(value = ToPrevious)
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_removing_deck)
         }
@@ -155,7 +167,7 @@ class DeckListViewModel @AssistedInject constructor(
 
     override fun synchronizeData() {
         if (auth.currentUser == null) {
-            viewModelScope.launch { navigationEvent.emit(value = ToSigningTypeChoosingDialog) }
+            viewModelScope.launch { emitNavigationEvent(value = ToSigningTypeChoosingDialog) }
         } else {
             if (networkConnectivity.isNetworkConnected()) {
                 workManager.performDataSynchronization()
@@ -191,7 +203,7 @@ class DeckListViewModel @AssistedInject constructor(
                 Unspecified
             }
 
-            navigationEvent.emit(value = targetEvent)
+            emitNavigationEvent(value = targetEvent)
         }
     }
 
@@ -202,22 +214,28 @@ class DeckListViewModel @AssistedInject constructor(
     private fun observeDataSynchronizationStateWorker() {
         workManager.getDataSynchronizationProgressState()
             .catch { crashlytics.report(exception = it) }
-            .filterNot { it is DataSynchronizationState.Uncertain }
+            .filterNot { it is Uncertain }
+            .flowOn(context = Dispatchers.IO)
             .onEach {
                 dataSynchronizationState.value = it
 
-                val shouldSendEventMessage = it is DataSynchronizationState.Failed
-                        && navigationDestination.value != DataSynchronizationDialog
-
-                shouldSendEventMessage.ifTrue {
-                    eventMessage.tryEmitAsNegative(resId = R.string.problem_with_data_synchronization)
+                if (navigationDestination.value != DataSynchronizationDialog) {
+                    when (it) {
+                        is Failed -> {
+                            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_data_synchronization)
+                        }
+                        is SuccessfullyFinished -> {
+                            eventMessage.tryEmitAsPositive(resId = R.string.data_synchronization_dialog_data_synchronized)
+                        }
+                        else -> {}
+                    }
                 }
             }.launchIn(scope = viewModelScope)
     }
 
     override fun resetSynchronizationState() {
-        if (dataSynchronizationState.value == DataSynchronizationState.SuccessfullyFinished) {
-            dataSynchronizationState.value = DataSynchronizationState.Initial
+        if (dataSynchronizationState.value == SuccessfullyFinished) {
+            dataSynchronizationState.value = Initial
         }
     }
 
@@ -228,5 +246,16 @@ class DeckListViewModel @AssistedInject constructor(
         ToCardTransferringScreen(deckId = deckId)
     } else {
         ifDeckIsNotInterim()
+    }
+
+    private suspend fun emitNavigationEvent(value: DeckListNavigationEvent) {
+        val actualEvent = when {
+            value is ToDataSynchronizationDialog -> value
+            value is ToPrevious -> value
+            dataSynchronizationState.value !is Synchronizing -> value
+            else -> null
+        }
+
+        navigationEvent.emit(value = actualEvent)
     }
 }
