@@ -2,7 +2,7 @@ package com.example.klaf.di.dependencies
 
 object Versions {
 
-    const val Kotlin = "1.7.10"
+    const val Kotlin = "1.8.21"
     const val AndroidxCore = "1.9.0"
     const val AndroidxAppCompat = "1.5.1"
     const val AndroidxLegacySupport = "1.0.0"
@@ -27,8 +27,8 @@ object Versions {
     const val HiltWork = "1.0.0"
     const val FirebaseBom = "31.5.0"
     const val FirebaseCoroutinePlayServices = "1.6.1"
-    const val ComposeBom = "2023.01.00"
-    const val ComposeCompiler = "1.3.2"
+    const val ComposeBom = "2023.06.00"
+    const val ComposeCompiler = "1.4.7"
     const val ComposeConstraintLayout = "1.0.1"
     const val ComposeThemeAdapter = "1.2.1"
     const val ComposeAccompanist = "0.19.0"
