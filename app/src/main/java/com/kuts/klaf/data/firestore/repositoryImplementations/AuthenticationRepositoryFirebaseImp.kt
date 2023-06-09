@@ -2,6 +2,7 @@ package com.kuts.klaf.data.firestore.repositoryImplementations
 
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuth.AuthStateListener
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -9,8 +10,11 @@ import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.common.LoadingError
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.repositories.AuthenticationRepository
+import com.kuts.domain.repositories.AuthenticationState
 import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError.*
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
@@ -43,6 +47,16 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
     sealed interface SigningOutLoadingError : LoadingError {
 
         object CommonError : SigningOutLoadingError
+    }
+
+    override val authenticationState: Flow<AuthenticationState> = callbackFlow {
+        val authStateListener = AuthStateListener { firebaseAuth ->
+            trySend(element = AuthenticationState(email = firebaseAuth.currentUser?.email))
+        }
+
+        auth.addAuthStateListener(authStateListener)
+
+        awaitClose { auth.removeAuthStateListener(authStateListener) }
     }
 
     override fun signInWithEmailAndPassword(
