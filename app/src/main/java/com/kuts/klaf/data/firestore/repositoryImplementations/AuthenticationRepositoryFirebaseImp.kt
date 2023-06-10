@@ -49,6 +49,11 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
         object CommonError : SigningOutLoadingError
     }
 
+    sealed interface AccountDeletingError : LoadingError {
+
+        object CommonError : AccountDeletingError
+    }
+
     override val authenticationState: Flow<AuthenticationState> = callbackFlow {
         val authStateListener = AuthStateListener { firebaseAuth ->
             trySend(element = AuthenticationState(email = firebaseAuth.currentUser?.email))
@@ -115,6 +120,8 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
             emit(value = LoadingState.Success(data = Unit))
         }
     }.catch {
-        TODO("Handle exceptions")
+        emit(value = LoadingState.Error(value = AccountDeletingError.CommonError))
+
+        // TODO("Handle exceptions")
     }
 }

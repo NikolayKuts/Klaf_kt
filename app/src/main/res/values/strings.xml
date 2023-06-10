@@ -137,4 +137,12 @@
     <string name="deck_repetition_scheduled_successfully">Deck repetition scheduled successfully</string>
     <string name="deck_repetition_scheduling_failed">Scheduling deck repetition failed</string>
     <string name="data_synchronization_network_connection_warning">Check network connection</string>
+    <string name="account_deleting_warning_message">Warning!!! If you confirm deleting account local and remote storage state will be reset</string>
+    <string name="account_deleting_confirmation_question">Would you like to delete account?</string>
+    <string name="log_out_confirmation_question">Would you like to log out?</string>
+    <string name="log_out_action">Log out</string>
+    <string name="account_deleting_action">Delete account</string>
+    <string name="log_in_action">Log in</string>
+    <string name="log_out_success_message">You have logged out</string>
+    <string name="log_in_negative_state">not logged in</string>
 </resources>

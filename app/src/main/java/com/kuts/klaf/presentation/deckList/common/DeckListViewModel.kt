@@ -3,12 +3,10 @@ package com.kuts.klaf.presentation.deckList.common
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.google.firebase.auth.FirebaseAuth
+import com.kuts.domain.common.*
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
-import com.kuts.domain.common.catchWithCrashlyticsReport
-import com.kuts.domain.common.getCurrentDateAsLong
-import com.kuts.domain.common.isNotNull
 import com.kuts.domain.common.launchIn
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.interactors.AuthenticationInteractor
@@ -44,7 +42,7 @@ class DeckListViewModel @AssistedInject constructor(
     private val auth: FirebaseAuth,
     private val crashlytics: CrashlyticsRepository,
     private val networkConnectivity: NetworkConnectivity,
-    authenticationInteractor: AuthenticationInteractor,
+    private val authenticationInteractor: AuthenticationInteractor,
 ) : BaseDeckListViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
@@ -85,17 +83,7 @@ class DeckListViewModel @AssistedInject constructor(
             .onException { _, throwable -> crashlytics.report(exception = throwable) }
         observeDataSynchronizationStateWorker()
         workManager.scheduleDeckRepetitionChecking()
-
-        authenticationInteractor.getObservableAuthenticationState()
-            .flowOn(Dispatchers.IO)
-            .onEach {
-                drawerState.emit(
-                    DrawerViewState(
-                        signedIn = it.email.isNotNull(),
-                        userEmail = it.email),
-                )
-            }
-            .launchIn(scope = viewModelScope)
+        observeAuthenticationState()
     }
 
     override fun createNewDeck(deckName: String) {
@@ -183,7 +171,7 @@ class DeckListViewModel @AssistedInject constructor(
     override fun synchronizeData() {
         if (auth.currentUser == null) {
             viewModelScope.launch {
-                val source = NavigationDestination.DataSynchronizationDialogFragment
+                val source = NavigationDestination.DATA_SYNCHRONIZATION_DIALOG
                 emitNavigationEvent(value = ToSigningTypeChoosingDialog(fromSourceDestination = source))
             }
         } else {
@@ -229,6 +217,30 @@ class DeckListViewModel @AssistedInject constructor(
         workManager.scheduleAppReopening()
     }
 
+    override fun resetSynchronizationState() {
+        if (dataSynchronizationState.value == SuccessfullyFinished) {
+            dataSynchronizationState.value = Initial
+        }
+    }
+
+    override fun logOut() {
+        authenticationInteractor.logOut().onEach {
+            when (it) {
+                is LoadingState.Success -> {
+                    emitNavigationEvent(value = ToPrevious)
+                    eventMessage.tryEmitAsPositive(resId = R.string.log_out_success_message)
+                }
+                is LoadingState.Error -> {}
+                LoadingState.Loading -> {}
+                LoadingState.Non -> {}
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    override fun deleteAccount() {
+        authenticationInteractor.deleteAccount()
+    }
+
     private fun observeDataSynchronizationStateWorker() {
         workManager.getDataSynchronizationProgressState()
             .catch { crashlytics.report(exception = it) }
@@ -251,10 +263,17 @@ class DeckListViewModel @AssistedInject constructor(
             }.launchIn(scope = viewModelScope)
     }
 
-    override fun resetSynchronizationState() {
-        if (dataSynchronizationState.value == SuccessfullyFinished) {
-            dataSynchronizationState.value = Initial
-        }
+    private fun observeAuthenticationState() {
+        authenticationInteractor.getObservableAuthenticationState()
+            .flowOn(Dispatchers.IO)
+            .onEach {
+                drawerState.emit(
+                    DrawerViewState(
+                        signedIn = it.email.isNotNull(),
+                        userEmail = it.email),
+                )
+            }
+            .launchIn(scope = viewModelScope)
     }
 
     private fun getEventByDeckId(

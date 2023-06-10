@@ -26,4 +26,6 @@ abstract class BaseDeckListViewModel : ViewModel(), EventMessageSource {
     abstract fun synchronizeData()
     abstract fun handleNavigation(event: DeckListNavigationEvent)
     abstract fun reopenApp()
+    abstract fun logOut()
+    abstract fun deleteAccount()
 }

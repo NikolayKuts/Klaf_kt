@@ -76,7 +76,7 @@ class AuthenticationFragment : BaseFragment(layoutId = R.layout.common_compose_l
 
     private fun navigateBySourceDestination(authenticationAction: AuthenticationAction) {
         when (args.fromSourceDestination) {
-            NavigationDestination.DeckListFragment -> {
+            NavigationDestination.DECK_LIST_FRAGMENT -> {
                 val authenticationResult =
                     AuthenticationActionResult(action = authenticationAction, isSuccessful = true)
 
@@ -88,7 +88,7 @@ class AuthenticationFragment : BaseFragment(layoutId = R.layout.common_compose_l
                 findNavController().popBackStack()
             }
 
-            NavigationDestination.DataSynchronizationDialogFragment -> {
+            NavigationDestination.DATA_SYNCHRONIZATION_DIALOG -> {
                 AuthenticationFragmentDirections
                     .actionAuthenticationFragmentToDataSynchronizationDialogFragment(
                         authenticationActionResult = AuthenticationActionResult(

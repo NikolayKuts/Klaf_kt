@@ -28,4 +28,8 @@ class AuthenticationInteractor @Inject constructor(
     ): Flow<LoadingState<AuthenticationAction>> {
         return authRepository.signUpWithEmailAndPassword(email = email, password = password)
     }
+
+    fun logOut(): Flow<LoadingState<Unit>> = authRepository.signOut()
+
+    fun deleteAccount(): Flow<LoadingState<Unit>> = authRepository.deleteProfile()
 }

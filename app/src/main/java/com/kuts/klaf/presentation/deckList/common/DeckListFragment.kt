@@ -16,6 +16,7 @@ import com.kuts.klaf.presentation.common.*
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.*
 import com.kuts.klaf.presentation.deckList.dataSynchronization.DataSynchronizationDialogFragmentDirections
 import com.kuts.klaf.presentation.deckList.drawer.Drawer
+import com.kuts.klaf.presentation.deckList.drawer.DrawerAction
 import com.kuts.klaf.presentation.deckList.drawer.DrawerViewState
 import com.kuts.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -62,18 +63,30 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
                                     initial = DrawerViewState(signedIn = false, userEmail = null)
                                 ).value,
                                 onLogInClick = {
-//                                    viewLifecycleOwner.lifecycleScope.launch {
+                                    scope.launch {
+                                        scaffoldState.drawerState.close()
+                                        val event = ToSigningTypeChoosingDialog(
+                                            fromSourceDestination = NavigationDestination.DECK_LIST_FRAGMENT
+                                        )
+                                        viewModel.handleNavigation(event = event)
+                                    }
+                                },
+                                onLogOutClick = {
                                     scope.launch {
                                         scaffoldState.drawerState.close()
                                         viewModel.handleNavigation(
-                                            event = ToSigningTypeChoosingDialog(
-                                                fromSourceDestination = NavigationDestination.DeckListFragment
-                                            )
+                                            event = ToDrawerActionDialog(action = DrawerAction.LOG_OUT)
                                         )
                                     }
                                 },
-                                onLogOutClick = { },
-                                onDeleteAccountClick = {},
+                                onDeleteAccountClick = {
+                                    scope.launch {
+                                        scaffoldState.drawerState.close()
+                                        viewModel.handleNavigation(
+                                            event = ToDrawerActionDialog(action = DrawerAction.DELETE_ACCOUNT)
+                                        )
+                                    }
+                                },
 
                                 )
                         },
@@ -153,6 +166,9 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
                 is ToSigningTypeChoosingDialog -> {
                     navigateToSigningTypeChoosingDialog(fromDestination = event.fromSourceDestination)
                 }
+                is ToDrawerActionDialog -> {
+                    navigateToDrawerActionDialog(action = event.action)
+                }
                 null -> {}
             }
         }
@@ -188,12 +204,12 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
 
     private fun navigateToSigningTypeChoosingDialog(fromDestination: NavigationDestination) {
         val navDirection = when (fromDestination) {
-            NavigationDestination.DeckListFragment -> {
+            NavigationDestination.DECK_LIST_FRAGMENT -> {
                 DeckListFragmentDirections.actionDeckListFragmentToSigningTypeChoosingDialogFragment(
                     fromSourceDestination = fromDestination
                 )
             }
-            NavigationDestination.DataSynchronizationDialogFragment -> {
+            NavigationDestination.DATA_SYNCHRONIZATION_DIALOG -> {
                 DataSynchronizationDialogFragmentDirections
                     .actionDataSynchronizationDialogFragmentToSigningTypeChoosingDialogFragment(
                         fromSourceDestination = fromDestination
@@ -201,6 +217,12 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
             }
         }
         navController.navigate(directions = navDirection)
+    }
+
+    private fun navigateToDrawerActionDialog(action: DrawerAction) {
+        DeckListFragmentDirections.actionDeckListFragmentToDrawerActionDialogFragment(
+            drawerAction = action,
+        ).also { navController.navigate(directions = it) }
     }
 
     private fun restartApp() {

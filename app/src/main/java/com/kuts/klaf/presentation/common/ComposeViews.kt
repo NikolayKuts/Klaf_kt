@@ -1,8 +1,9 @@
 package com.kuts.klaf.presentation.common
 
 import android.content.res.Configuration
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.annotation.StringRes
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -252,7 +253,7 @@ fun ScrollableBox(
     verticalArrangement: Arrangement.Vertical =
         if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
-    topContent: @Composable BoxScope.() -> Unit = {},
+    eventContent: @Composable BoxScope.() -> Unit = {},
     content: @Composable LazyItemScope.(parentHeightPx: Float) -> Unit,
 ) {
     val density = LocalDensity.current
@@ -275,7 +276,7 @@ fun ScrollableBox(
             item { content(parentHeightPx) }
         }
 
-        topContent()
+        eventContent()
     }
 }
 
@@ -374,7 +375,7 @@ fun CardDeletingDialogView(
     ScrollableBox(
         modifier = Modifier.noRippleClickable { onCancel() },
         dialogMode = true,
-        topContent = {
+        eventContent = {
             eventMessage.ifNotNull { EventMessageView(message = it) }
         }
     ) {
@@ -418,6 +419,19 @@ fun DialogAppLabel() {
 }
 
 @Composable
+fun WarningMessage(@StringRes textId: Int) {
+    Text(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape = RoundedCornerShape(6.dp))
+            .background(animatedWarningColor())
+            .padding(16.dp),
+        text = stringResource(textId),
+        style = MainTheme.typographies.dialogTextStyle
+    )
+}
+
+@Composable
 private fun getDialogTitleByCardCount(quantity: Int): String {
     return if (quantity == 1) {
         stringResource(id = R.string.single_cards_deleting_dialog_title, quantity)
@@ -425,3 +439,14 @@ private fun getDialogTitleByCardCount(quantity: Int): String {
         stringResource(id = R.string.multiple_cards_deleting_dialog_title, quantity)
     }
 }
+
+@Composable
+private fun animatedWarningColor(): Color = rememberInfiniteTransition()
+    .animateColor(
+        initialValue = MainTheme.colors.dataSynchronizationView.initialWarning,
+        targetValue = MainTheme.colors.dataSynchronizationView.targetWarning,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 800),
+            repeatMode = RepeatMode.Reverse
+        )
+    ).value

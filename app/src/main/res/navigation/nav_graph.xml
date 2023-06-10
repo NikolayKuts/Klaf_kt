@@ -27,6 +27,9 @@
         <action
             android:id="@+id/action_deckListFragment_to_signingTypeChoosingDialogFragment"
             app:destination="@id/signingTypeChoosingDialogFragment" />
+        <action
+            android:id="@+id/action_deckListFragment_to_drawerActionDialogFragment"
+            app:destination="@id/drawerActionDialogFragment" />
     </fragment>
     <fragment
         android:id="@+id/cardEditingFragment"
@@ -252,5 +255,13 @@
             android:name="fromSourceDestination"
             app:argType="com.kuts.klaf.presentation.common.NavigationDestination" />
     </fragment>
+    <dialog
+        android:id="@+id/drawerActionDialogFragment"
+        android:name="com.kuts.klaf.presentation.deckList.drawer.DrawerActionDialogFragment"
+        android:label="DrawerActionDialogFragment" >
+        <argument
+            android:name="drawerAction"
+            app:argType="com.kuts.klaf.presentation.deckList.drawer.DrawerAction" />
+    </dialog>
 
 </navigation>

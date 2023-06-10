@@ -11,8 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
-import com.kuts.domain.common.isNotNull
 import com.kuts.klaf.R
 
 @Composable
@@ -39,30 +40,20 @@ fun Drawer(
             if (state.signedIn) {
                 DrawerItem(
                     iconId = R.drawable.ic_logout_24,
-                    text = "Log out",
+                    text = stringResource(R.string.log_out_action),
                     onClick = onLogOutClick
                 )
                 DrawerItem(
-                    iconId = R.drawable.ic_logout_24,
-                    text = "Delete account",
+                    iconId = R.drawable.ic_delete_account_24,
+                    text = stringResource(R.string.account_deleting_action),
                     onClick = onDeleteAccountClick
                 )
             } else {
                 DrawerItem(
                     iconId = R.drawable.ic_login_24,
-                    text = "Log in",
+                    text = stringResource(R.string.log_in_action),
                     onClick = onLogInClick
                 )
-            }
-            
-            listOf(
-                R.drawable.ic_close_24,
-                R.drawable.ic_deck_popup_menu_24,
-                R.drawable.ic_arrow_drop_down_24,
-                R.drawable.ic_sync_24,
-            ).forEach {
-                DrawerItem(iconId = it, text = state.userEmail ?: "null", onClick = {})
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -83,7 +74,7 @@ private fun Header(
     ) {
         val iconTint = if (signedIn) Color(0xFFC3E799) else Color(0xF1FFB0B0)
 
-        Column() {
+        Column {
             Icon(
                 modifier = Modifier
                     .size(70.dp)
@@ -95,9 +86,9 @@ private fun Header(
 
             Text(
                 modifier = Modifier
-                    .padding(start = 8.dp)
-                    .background(Color(0x8BC34A)),
-                text = email ?: "not signed up",
+                    .padding(start = 8.dp),
+                text = email ?: stringResource(R.string.log_in_negative_state),
+                fontStyle = FontStyle.Italic
             )
         }
     }
@@ -111,7 +102,8 @@ private fun DrawerItem(
 ) {
     Row(
         modifier = Modifier.clickable { onClick() },
-        verticalAlignment = Alignment.CenterVertically) {
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Icon(
             modifier = Modifier
                 .padding(end = 16.dp)
@@ -122,9 +114,10 @@ private fun DrawerItem(
 
         Text(
             modifier = Modifier
-                .weight(weight = 1F)
-                .background(Color(0xFF5722)),
+                .weight(weight = 1F),
             text = text,
         )
+
+        Spacer(modifier = Modifier.height(50.dp))
     }
 }

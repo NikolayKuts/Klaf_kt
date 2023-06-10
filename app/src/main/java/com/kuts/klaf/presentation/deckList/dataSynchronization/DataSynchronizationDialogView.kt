@@ -1,18 +1,15 @@
 package com.kuts.klaf.presentation.deckList.dataSynchronization
 
-import androidx.annotation.StringRes
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.background
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -37,7 +34,7 @@ fun DataSynchronizationDialogView(
     ScrollableBox(
         modifier = Modifier.noRippleClickable { onCloseClick() },
         dialogMode = true,
-        topContent = {
+        eventContent = {
             eventMassage.ifNotNull { EventMessageView(message = it) }
         }
     ) {
@@ -174,7 +171,6 @@ private fun FailureStateView(
                     style = MainTheme.typographies.dialogTextStyle
                 )
             }
-
         },
         bottomContent = {
             RoundButton(
@@ -256,27 +252,3 @@ private fun animateAlphaWithDelay(
 private fun ContentSpacer() {
     Spacer(modifier = Modifier.height(16.dp))
 }
-
-@Composable
-private fun WarningMessage(@StringRes textId: Int) {
-    Text(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape = RoundedCornerShape(6.dp))
-            .background(animatedWarningColor())
-            .padding(16.dp),
-        text = stringResource(textId),
-        style = MainTheme.typographies.dialogTextStyle
-    )
-}
-
-@Composable
-private fun animatedWarningColor(): Color = rememberInfiniteTransition()
-    .animateColor(
-        initialValue = MainTheme.colors.dataSynchronizationView.initialWarning,
-        targetValue = MainTheme.colors.dataSynchronizationView.targetWarning,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 800),
-            repeatMode = RepeatMode.Reverse
-        )
-    ).value
