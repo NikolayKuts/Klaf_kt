@@ -13,14 +13,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.kuts.domain.common.AuthenticationAction
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.*
 import com.kuts.klaf.presentation.theme.MainTheme
 
 @Composable
 fun SigningTypeChoosingView(
-    onSignInButtonClick: () -> Unit,
-    onSignUpButtonClick: () -> Unit,
+    onSigningActionButtonClick: (action: AuthenticationAction) -> Unit,
     onCloseButtonClick: () -> Unit,
 ) {
     ScrollableBox(
@@ -41,14 +41,14 @@ fun SigningTypeChoosingView(
 
                     SigningButton(
                         text = stringResource(id = R.string.authentication_sign_in_label),
-                        onClick = onSignInButtonClick
+                        onClick = { onSigningActionButtonClick(AuthenticationAction.SIGN_IN) }
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     SigningButton(
                         text = stringResource(id = R.string.authentication_sign_up_label),
-                        onClick = onSignUpButtonClick
+                        onClick = { onSigningActionButtonClick(AuthenticationAction.SIGN_UP) }
                     )
                 }
             },

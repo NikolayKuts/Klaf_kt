@@ -8,8 +8,10 @@ import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.common.getCurrentDateAsLong
+import com.kuts.domain.common.isNotNull
 import com.kuts.domain.common.launchIn
 import com.kuts.domain.entities.Deck
+import com.kuts.domain.interactors.AuthenticationInteractor
 import com.kuts.domain.repositories.CrashlyticsRepository
 import com.kuts.domain.useCases.*
 import com.kuts.klaf.R
@@ -21,12 +23,11 @@ import com.kuts.klaf.data.common.DataSynchronizationWorker.Companion.performData
 import com.kuts.klaf.data.common.DeckRepetitionReminderChecker.Companion.scheduleDeckRepetitionChecking
 import com.kuts.klaf.data.common.NetworkConnectivity
 import com.kuts.klaf.data.common.notifications.NotificationChannelInitializer
-import com.kuts.klaf.presentation.common.EventMessage
-import com.kuts.klaf.presentation.common.tryEmitAsNegative
-import com.kuts.klaf.presentation.common.tryEmitAsPositive
+import com.kuts.klaf.presentation.common.*
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationDestination.DataSynchronizationDialog
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationDestination.Unspecified
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.*
+import com.kuts.klaf.presentation.deckList.drawer.DrawerViewState
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -43,6 +44,7 @@ class DeckListViewModel @AssistedInject constructor(
     private val auth: FirebaseAuth,
     private val crashlytics: CrashlyticsRepository,
     private val networkConnectivity: NetworkConnectivity,
+    authenticationInteractor: AuthenticationInteractor,
 ) : BaseDeckListViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
@@ -75,12 +77,25 @@ class DeckListViewModel @AssistedInject constructor(
         initialValue = false,
     )
 
+    override val drawerState = MutableSharedFlow<DrawerViewState>(replay = 1)
+
     init {
         notificationChannelInitializer.initialize()
         viewModelScope.launchWithState { createInterimDeck() }
             .onException { _, throwable -> crashlytics.report(exception = throwable) }
         observeDataSynchronizationStateWorker()
         workManager.scheduleDeckRepetitionChecking()
+
+        authenticationInteractor.getObservableAuthenticationState()
+            .flowOn(Dispatchers.IO)
+            .onEach {
+                drawerState.emit(
+                    DrawerViewState(
+                        signedIn = it.email.isNotNull(),
+                        userEmail = it.email),
+                )
+            }
+            .launchIn(scope = viewModelScope)
     }
 
     override fun createNewDeck(deckName: String) {
@@ -167,7 +182,10 @@ class DeckListViewModel @AssistedInject constructor(
 
     override fun synchronizeData() {
         if (auth.currentUser == null) {
-            viewModelScope.launch { emitNavigationEvent(value = ToSigningTypeChoosingDialog) }
+            viewModelScope.launch {
+                val source = NavigationDestination.DataSynchronizationDialogFragment
+                emitNavigationEvent(value = ToSigningTypeChoosingDialog(fromSourceDestination = source))
+            }
         } else {
             if (networkConnectivity.isNetworkConnected()) {
                 workManager.performDataSynchronization()

@@ -2,18 +2,24 @@ package com.kuts.klaf.presentation.deckList.common
 
 import android.os.Bundle
 import android.view.View
-import androidx.compose.material.Surface
+import androidx.compose.material.*
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
+import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.entities.Deck
 import com.kuts.klaf.R
-import com.kuts.klaf.presentation.common.BaseFragment
-import com.kuts.klaf.presentation.common.collectWhenStarted
+import com.kuts.klaf.presentation.authentication.AuthenticationFragment.Companion.setAuthenticationFragmentResultListener
+import com.kuts.klaf.presentation.common.*
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.*
+import com.kuts.klaf.presentation.deckList.dataSynchronization.DataSynchronizationDialogFragmentDirections
+import com.kuts.klaf.presentation.deckList.drawer.Drawer
+import com.kuts.klaf.presentation.deckList.drawer.DrawerViewState
 import com.kuts.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -37,28 +43,69 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
         super.onViewCreated(view, savedInstanceState)
 
         observeEvenMessage()
+        observeAuthenticationResult()
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 Surface {
-                    DeckListScreen(
-                        decks = viewModel.deckSource.collectAsState().value,
-                        shouldSynchronizationIndicatorBeShown = viewModel.shouldSynchronizationIndicatorBeShown
-                            .collectAsState().value,
-                        onItemClick = {
-                            viewModel.handleNavigation(event = ToDeckRepetitionScreen(deck = it))
-                        },
-                        onLongItemClick = {
-                            viewModel.handleNavigation(event = ToDeckNavigationDialog(deck = it))
-                        },
-                        onRefresh = {
-                            viewModel.handleNavigation(event = ToDataSynchronizationDialog)
-                        },
-                        onMainButtonClick = {
-                            viewModel.handleNavigation(event = ToDeckCreationDialog)
-                        },
-                        onRestartApp = ::restartApp,
+                    val scaffoldState = rememberScaffoldState(
+                        drawerState = rememberDrawerState(initialValue = DrawerValue.Open)
                     )
+
+                    val scope = rememberCoroutineScope()
+
+                    Scaffold(
+                        scaffoldState = scaffoldState,
+                        drawerContent = {
+                            Drawer(
+                                state = viewModel.drawerState.collectAsState(
+                                    initial = DrawerViewState(signedIn = false, userEmail = null)
+                                ).value,
+                                onLogInClick = {
+//                                    viewLifecycleOwner.lifecycleScope.launch {
+                                    scope.launch {
+                                        scaffoldState.drawerState.close()
+                                        viewModel.handleNavigation(
+                                            event = ToSigningTypeChoosingDialog(
+                                                fromSourceDestination = NavigationDestination.DeckListFragment
+                                            )
+                                        )
+                                    }
+                                },
+                                onLogOutClick = { },
+                                onDeleteAccountClick = {},
+
+                                )
+                        },
+//                        drawerGesturesEnabled = false,
+//                        drawerShape =,
+//                        drawerElevation =,
+//                        drawerBackgroundColor =,
+//                        drawerContentColor =,
+//                        drawerScrimColor =,
+//                        backgroundColor =,
+//                        contentColor =,
+                    ) { paddingValues ->
+                        DeckListScreen(
+                            decks = viewModel.deckSource.collectAsState().value,
+                            shouldSynchronizationIndicatorBeShown = viewModel.shouldSynchronizationIndicatorBeShown
+                                .collectAsState().value,
+                            contentPadding = paddingValues,
+                            onItemClick = {
+                                viewModel.handleNavigation(event = ToDeckRepetitionScreen(deck = it))
+                            },
+                            onLongItemClick = {
+                                viewModel.handleNavigation(event = ToDeckNavigationDialog(deck = it))
+                            },
+                            onRefresh = {
+                                viewModel.handleNavigation(event = ToDataSynchronizationDialog)
+                            },
+                            onMainButtonClick = {
+                                viewModel.handleNavigation(event = ToDeckCreationDialog)
+                            },
+                            onRestartApp = ::restartApp,
+                        )
+                    }
                 }
             }
         }
@@ -71,8 +118,23 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
         )
     }
 
+    private fun observeAuthenticationResult() {
+        setAuthenticationFragmentResultListener { authenticationResult ->
+            if (authenticationResult.isSuccessful) {
+                val messageId = when (authenticationResult.action) {
+                    AuthenticationAction.SIGN_IN -> R.string.authentication_sign_in_success
+                    AuthenticationAction.SIGN_UP -> R.string.authentication_sign_up_success
+                }
+
+                sharedViewModel.notify(
+                    message = EventMessage(resId = messageId, type = EventMessage.Type.Positive)
+                )
+            }
+        }
+    }
+
     private fun observeNavigationEvent() {
-        viewModel.navigationEvent.collectWhenStarted(lifecycleOwner = this) { event->
+        viewModel.navigationEvent.collectWhenStarted(lifecycleOwner = this) { event ->
             when (event) {
                 ToDataSynchronizationDialog -> {
                     navigateToDataSynchronizationDialog()
@@ -88,8 +150,8 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
                 is ToCardTransferringScreen -> {
                     navigateCardTransferringFragment(deckId = event.deckId)
                 }
-                ToSigningTypeChoosingDialog -> {
-                    navigateToSigningTypeChoosingDialog()
+                is ToSigningTypeChoosingDialog -> {
+                    navigateToSigningTypeChoosingDialog(fromDestination = event.fromSourceDestination)
                 }
                 null -> {}
             }
@@ -124,10 +186,21 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
         ).also { navController.navigate(directions = it) }
     }
 
-    private fun navigateToSigningTypeChoosingDialog() {
-        navController.navigate(
-            R.id.action_dataSynchronizationDialogFragment_to_signingTypeChoosingDialogFragment
-        )
+    private fun navigateToSigningTypeChoosingDialog(fromDestination: NavigationDestination) {
+        val navDirection = when (fromDestination) {
+            NavigationDestination.DeckListFragment -> {
+                DeckListFragmentDirections.actionDeckListFragmentToSigningTypeChoosingDialogFragment(
+                    fromSourceDestination = fromDestination
+                )
+            }
+            NavigationDestination.DataSynchronizationDialogFragment -> {
+                DataSynchronizationDialogFragmentDirections
+                    .actionDataSynchronizationDialogFragmentToSigningTypeChoosingDialogFragment(
+                        fromSourceDestination = fromDestination
+                    )
+            }
+        }
+        navController.navigate(directions = navDirection)
     }
 
     private fun restartApp() {

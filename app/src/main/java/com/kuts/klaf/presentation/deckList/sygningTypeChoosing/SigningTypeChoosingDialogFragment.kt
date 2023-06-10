@@ -4,9 +4,10 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
-import com.kuts.klaf.R
 import com.kuts.domain.common.AuthenticationAction
+import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.TransparentDialogFragment
 import com.kuts.klaf.presentation.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent
@@ -19,6 +20,7 @@ class SigningTypeChoosingDialogFragment : TransparentDialogFragment(
 ) {
 
     private val navController by lazy { findNavController() }
+    private val args by navArgs<SigningTypeChoosingDialogFragmentArgs>()
     private val viewModel by navGraphViewModels<BaseDeckListViewModel>(R.id.deckListFragment)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -27,8 +29,7 @@ class SigningTypeChoosingDialogFragment : TransparentDialogFragment(
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 SigningTypeChoosingView(
-                    onSignInButtonClick = ::navigateToSigningInDialog,
-                    onSignUpButtonClick = ::navigateToSigningUpDialog,
+                    onSigningActionButtonClick = ::navigateByAuthenticationAction,
                     onCloseButtonClick = {
                         viewModel.handleNavigation(event = DeckListNavigationEvent.ToPrevious)
                     }
@@ -37,17 +38,11 @@ class SigningTypeChoosingDialogFragment : TransparentDialogFragment(
         }
     }
 
-    private fun navigateToSigningInDialog() {
+    private fun navigateByAuthenticationAction(action: AuthenticationAction) {
         SigningTypeChoosingDialogFragmentDirections
             .actionSigningTypeChoosingDialogFragmentToAuthenticationFragment(
-                authenticationAction = AuthenticationAction.SIGN_IN
-            ).also { navController.navigate(directions = it) }
-    }
-
-    private fun navigateToSigningUpDialog() {
-        SigningTypeChoosingDialogFragmentDirections
-            .actionSigningTypeChoosingDialogFragmentToAuthenticationFragment(
-                authenticationAction = AuthenticationAction.SIGN_UP
+                authenticationAction = action,
+                fromSourceDestination = args.fromSourceDestination
             ).also { navController.navigate(directions = it) }
     }
 }

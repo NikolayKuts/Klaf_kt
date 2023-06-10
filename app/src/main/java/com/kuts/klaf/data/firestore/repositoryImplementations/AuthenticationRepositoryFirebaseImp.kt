@@ -9,8 +9,8 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.common.LoadingError
 import com.kuts.domain.common.LoadingState
+import com.kuts.domain.entities.AuthenticationState
 import com.kuts.domain.repositories.AuthenticationRepository
-import com.kuts.domain.repositories.AuthenticationState
 import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow

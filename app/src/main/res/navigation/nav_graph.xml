@@ -24,6 +24,9 @@
         <action
             android:id="@+id/action_deckListFragment_to_cardTransferringFragment"
             app:destination="@id/cardTransferringFragment" />
+        <action
+            android:id="@+id/action_deckListFragment_to_signingTypeChoosingDialogFragment"
+            app:destination="@id/signingTypeChoosingDialogFragment" />
     </fragment>
     <fragment
         android:id="@+id/cardEditingFragment"
@@ -136,9 +139,6 @@
             android:id="@+id/action_deckNavigationDialog_to_cardTransferringFragment"
             app:destination="@id/cardTransferringFragment" />
         <action
-            android:id="@+id/action_deckNavigationDialog_self"
-            app:destination="@id/deckNavigationDialog" />
-        <action
             android:id="@+id/action_deckNavigationDialog_to_deckRepetitionInfoDialogFragment"
             app:destination="@id/deckRepetitionInfoDialogFragment"
             app:popUpTo="@id/deckListFragment" />
@@ -233,6 +233,9 @@
         <action
             android:id="@+id/action_signingTypeChoosingDialogFragment_to_authenticationFragment"
             app:destination="@id/authenticationFragment" />
+        <argument
+            android:name="fromSourceDestination"
+            app:argType="com.kuts.klaf.presentation.common.NavigationDestination" />
     </dialog>
     <fragment
         android:id="@+id/authenticationFragment"
@@ -245,6 +248,9 @@
             android:id="@+id/action_authenticationFragment_to_dataSynchronizationDialogFragment"
             app:destination="@id/dataSynchronizationDialogFragment"
             app:popUpTo="@id/deckListFragment" />
+        <argument
+            android:name="fromSourceDestination"
+            app:argType="com.kuts.klaf.presentation.common.NavigationDestination" />
     </fragment>
 
 </navigation>

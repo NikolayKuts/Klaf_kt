@@ -1,4 +1,7 @@
 package com.kuts.klaf.presentation.deckList.drawer
 
-class DrawerViewState {
+data class DrawerViewState(
+    val signedIn: Boolean,
+    val userEmail: String?
+) {
 }
