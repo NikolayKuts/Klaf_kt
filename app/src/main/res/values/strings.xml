@@ -122,7 +122,8 @@
     <string name="authentication_password_label">password</string>
     <string name="authentication_sign_in_label">Sign in</string>
     <string name="authentication_sign_up_label">Sign up</string>
-    <string name="authentication_sync_data_message">To sync data, you must be authenticated</string>
+    <string name="authentication_sync_data_message">To sync data, you must be authenticated. Please choose authentication action</string>
+    <string name="authentication_type_choosing_message">Please choose authentication action</string>
     <string name="authentication_warning_network_error">Check internet connection</string>
     <string name="authentication_password_confirmation">password confirmation</string>
     <string name="authentication_warning_type_password_confirmation">Type password confirmation</string>

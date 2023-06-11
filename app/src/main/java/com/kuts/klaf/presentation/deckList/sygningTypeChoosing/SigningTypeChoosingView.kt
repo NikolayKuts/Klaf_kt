@@ -16,10 +16,12 @@ import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.*
+import com.kuts.klaf.presentation.common.NavigationDestination.*
 import com.kuts.klaf.presentation.theme.MainTheme
 
 @Composable
 fun SigningTypeChoosingView(
+    fromSourceDestination: NavigationDestination,
     onSigningActionButtonClick: (action: AuthenticationAction) -> Unit,
     onCloseButtonClick: () -> Unit,
 ) {
@@ -31,10 +33,14 @@ fun SigningTypeChoosingView(
             onBackgroundClick = onCloseButtonClick,
             topContent = ContentHolder(size = DIALOG_APP_LABEL_SIZE.dp) { DialogAppLabel() },
             mainContent = {
+                val textId = when (fromSourceDestination) {
+                    DECK_LIST_FRAGMENT -> R.string.authentication_type_choosing_message
+                    DATA_SYNCHRONIZATION_DIALOG -> R.string.authentication_sync_data_message
+                }
                 Column {
                     Text(
                         style = MainTheme.typographies.dialogTextStyle,
-                        text = stringResource(R.string.authentication_sync_data_message),
+                        text = stringResource(id = textId),
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))

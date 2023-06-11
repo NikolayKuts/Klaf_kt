@@ -29,6 +29,7 @@ class SigningTypeChoosingDialogFragment : TransparentDialogFragment(
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 SigningTypeChoosingView(
+                    fromSourceDestination = args.fromSourceDestination,
                     onSigningActionButtonClick = ::navigateByAuthenticationAction,
                     onCloseButtonClick = {
                         viewModel.handleNavigation(event = DeckListNavigationEvent.ToPrevious)
