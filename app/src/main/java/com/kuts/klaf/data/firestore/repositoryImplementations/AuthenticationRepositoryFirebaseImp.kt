@@ -13,6 +13,7 @@ import com.kuts.domain.entities.AuthenticationState
 import com.kuts.domain.repositories.AuthenticationRepository
 import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError.*
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
@@ -107,7 +108,11 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
 
     override fun signOut(): Flow<LoadingState<Unit>> = flow {
         emit(LoadingState.Loading)
-        auth.signOut()
+
+        //auth.signOut()
+        delay(3000)
+
+
         emit(LoadingState.Success(data = Unit))
     }.catch {
         emit(value = LoadingState.Error(value = SigningOutLoadingError.CommonError))

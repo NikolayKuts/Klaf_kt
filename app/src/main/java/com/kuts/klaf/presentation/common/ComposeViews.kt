@@ -403,19 +403,25 @@ fun CardDeletingDialogView(
 }
 
 @Composable
-fun DialogAppLabel() {
+fun DialogAppLabel(isLoading: Boolean = false) {
     val filterColor = MainTheme.colors.common.appLabelColorFilter
 
-    Image(
-        modifier = Modifier
-            .size(70.dp)
-            .clip(shape = RoundedCornerShape(50.dp))
-            .background(MainTheme.colors.common.dialogBackground)
-            .padding(10.dp),
-        painter = painterResource(id = R.drawable.ic_app_labale),
-        contentDescription = null,
-        colorFilter = ColorFilter.lighting(filterColor, filterColor)
-    )
+    Box {
+        Image(
+            modifier = Modifier
+                .size(70.dp)
+                .clip(shape = RoundedCornerShape(50.dp))
+                .background(MainTheme.colors.common.dialogBackground)
+                .padding(10.dp),
+            painter = painterResource(id = R.drawable.ic_app_labale),
+            contentDescription = null,
+            colorFilter = ColorFilter.lighting(filterColor, filterColor)
+        )
+
+        isLoading.ifTrue {
+            CircularProgressIndicator(modifier = Modifier.size(70.dp))
+        }
+    }
 }
 
 @Composable

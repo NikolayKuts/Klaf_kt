@@ -146,4 +146,5 @@
     <string name="log_in_action">Log in</string>
     <string name="log_out_success_message">You have logged out</string>
     <string name="log_in_negative_state">not logged in</string>
+    <string name="log_out_negative_message">Logging out is failed</string>
 </resources>

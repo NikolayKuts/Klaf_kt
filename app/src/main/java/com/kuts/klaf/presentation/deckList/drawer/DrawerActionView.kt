@@ -16,6 +16,7 @@ import com.kuts.klaf.presentation.theme.MainTheme
 @Composable
 fun DrawerActionView(
     action: DrawerAction,
+    loadingState: Boolean,
     onCloseDialog: () -> Unit,
     onConfirmationClick: () -> Unit,
 ) {
@@ -28,7 +29,9 @@ fun DrawerActionView(
     ) {
         FullBackgroundDialog(
             onBackgroundClick = { onCloseDialog() },
-            topContent = ContentHolder(size = DIALOG_APP_LABEL_SIZE.dp) { DialogAppLabel() },
+            topContent = ContentHolder(size = DIALOG_APP_LABEL_SIZE.dp) {
+                DialogAppLabel(isLoading = loadingState)
+                                                                        },
             mainContent = {
                 when (action) {
                     DrawerAction.LOG_OUT -> LogOutView()

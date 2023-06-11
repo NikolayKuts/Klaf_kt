@@ -3,10 +3,13 @@ package com.kuts.klaf.presentation.deckList.common
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.google.firebase.auth.FirebaseAuth
-import com.kuts.domain.common.*
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.kuts.domain.common.LoadingState
+import com.kuts.domain.common.catchWithCrashlyticsReport
+import com.kuts.domain.common.getCurrentDateAsLong
+import com.kuts.domain.common.isNotNull
 import com.kuts.domain.common.launchIn
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.interactors.AuthenticationInteractor
@@ -21,7 +24,10 @@ import com.kuts.klaf.data.common.DataSynchronizationWorker.Companion.performData
 import com.kuts.klaf.data.common.DeckRepetitionReminderChecker.Companion.scheduleDeckRepetitionChecking
 import com.kuts.klaf.data.common.NetworkConnectivity
 import com.kuts.klaf.data.common.notifications.NotificationChannelInitializer
-import com.kuts.klaf.presentation.common.*
+import com.kuts.klaf.presentation.common.EventMessage
+import com.kuts.klaf.presentation.common.NavigationDestination
+import com.kuts.klaf.presentation.common.tryEmitAsNegative
+import com.kuts.klaf.presentation.common.tryEmitAsPositive
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationDestination.DataSynchronizationDialog
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationDestination.Unspecified
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.*
@@ -76,6 +82,8 @@ class DeckListViewModel @AssistedInject constructor(
     )
 
     override val drawerState = MutableSharedFlow<DrawerViewState>(replay = 1)
+
+    override val drawerActionLoadingState = MutableStateFlow(value = false)
 
     init {
         notificationChannelInitializer.initialize()
@@ -224,13 +232,17 @@ class DeckListViewModel @AssistedInject constructor(
     }
 
     override fun logOut() {
-        authenticationInteractor.logOut().onEach {
-            when (it) {
+        authenticationInteractor.logOut().onEach { loadingState ->
+            drawerActionLoadingState.value = loadingState is LoadingState.Loading
+
+            when (loadingState) {
                 is LoadingState.Success -> {
                     emitNavigationEvent(value = ToPrevious)
                     eventMessage.tryEmitAsPositive(resId = R.string.log_out_success_message)
                 }
-                is LoadingState.Error -> {}
+                is LoadingState.Error -> {
+                    eventMessage.tryEmitAsNegative(resId = R.string.log_out_negative_message)
+                }
                 LoadingState.Loading -> {}
                 LoadingState.Non -> {}
             }

@@ -15,8 +15,8 @@ abstract class BaseDeckListViewModel : ViewModel(), EventMessageSource {
     abstract val navigationDestination: StateFlow<DeckListNavigationDestination>
     abstract val navigationEvent: SharedFlow<DeckListNavigationEvent?>
     abstract val shouldSynchronizationIndicatorBeShown: StateFlow<Boolean>
-
     abstract val drawerState: SharedFlow<DrawerViewState>
+    abstract val drawerActionLoadingState: StateFlow<Boolean>
 
     abstract fun resetSynchronizationState()
     abstract fun createNewDeck(deckName: String)
