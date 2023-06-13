@@ -19,7 +19,12 @@ interface AuthenticationRepository {
         password: String,
     ): Flow<LoadingState<AuthenticationAction>>
 
-    fun signOut() : Flow<LoadingState<Unit>>
+    fun signOut(): Flow<LoadingState<Unit>>
 
     fun deleteProfile(): Flow<LoadingState<Unit>>
+
+    fun reauthenticateWithEmailAndPassword(
+        email: String,
+        password: String,
+    ): Flow<LoadingState<AuthenticationAction>>
 }

@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.kuts.domain.common.ifNotNull
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.*
 import com.kuts.klaf.presentation.theme.MainTheme
@@ -19,12 +20,13 @@ fun DrawerActionView(
     loadingState: Boolean,
     onCloseDialog: () -> Unit,
     onConfirmationClick: () -> Unit,
+    eventMessage: EventMessage?
 ) {
     ScrollableBox(
         modifier = Modifier.noRippleClickable(onClick = onCloseDialog),
         dialogMode = true,
         eventContent = {
-//            eventMessage.ifNotNull { EventMessageView(message = it) }
+            eventMessage.ifNotNull { EventMessageView(message = it) }
         },
     ) {
         FullBackgroundDialog(

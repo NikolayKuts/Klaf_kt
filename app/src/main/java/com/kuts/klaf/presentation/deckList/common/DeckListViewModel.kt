@@ -3,13 +3,10 @@ package com.kuts.klaf.presentation.deckList.common
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.google.firebase.auth.FirebaseAuth
+import com.kuts.domain.common.*
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
-import com.kuts.domain.common.LoadingState
-import com.kuts.domain.common.catchWithCrashlyticsReport
-import com.kuts.domain.common.getCurrentDateAsLong
-import com.kuts.domain.common.isNotNull
 import com.kuts.domain.common.launchIn
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.interactors.AuthenticationInteractor
@@ -24,6 +21,8 @@ import com.kuts.klaf.data.common.DataSynchronizationWorker.Companion.performData
 import com.kuts.klaf.data.common.DeckRepetitionReminderChecker.Companion.scheduleDeckRepetitionChecking
 import com.kuts.klaf.data.common.NetworkConnectivity
 import com.kuts.klaf.data.common.notifications.NotificationChannelInitializer
+import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp
+import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.*
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.NavigationDestination
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
@@ -241,7 +240,7 @@ class DeckListViewModel @AssistedInject constructor(
                     eventMessage.tryEmitAsPositive(resId = R.string.log_out_success_message)
                 }
                 is LoadingState.Error -> {
-                    eventMessage.tryEmitAsNegative(resId = R.string.log_out_negative_message)
+                    eventMessage.tryEmitAsNegative(resId = R.string.log_out_failure_message)
                 }
                 LoadingState.Loading -> {}
                 LoadingState.Non -> {}
@@ -250,7 +249,22 @@ class DeckListViewModel @AssistedInject constructor(
     }
 
     override fun deleteAccount() {
-        authenticationInteractor.deleteAccount()
+        authenticationInteractor.deleteAccount().flowOn(context = Dispatchers.IO)
+            .onEach { loadingState ->
+                drawerActionLoadingState.value = loadingState is LoadingState.Loading
+
+                when (loadingState) {
+                    is LoadingState.Success -> {
+                        emitNavigationEvent(value = ToPrevious)
+                        eventMessage.tryEmitAsPositive(resId = R.string.delete_account_success_message)
+                    }
+                    is LoadingState.Error -> {
+                        handleAccountDeletingError(throwable = loadingState.value)
+                    }
+                    LoadingState.Loading -> {}
+                    LoadingState.Non -> {}
+                }
+            }.launchIn(scope = viewModelScope)
     }
 
     private fun observeDataSynchronizationStateWorker() {
@@ -306,5 +320,18 @@ class DeckListViewModel @AssistedInject constructor(
         }
 
         navigationEvent.emit(value = actualEvent)
+    }
+
+    private fun handleAccountDeletingError(throwable: LoadingError) {
+        val messageId = if (throwable is AccountDeletingError) {
+            when (throwable) {
+                AccountDeletingError.CommonError -> R.string.delete_account_failure_message
+                AccountDeletingError.NetworkError -> R.string.authentication_warning_network_error
+            }
+        } else {
+            R.string.delete_account_failure_message
+        }
+
+        eventMessage.tryEmitAsNegative(resId = messageId)
     }
 }

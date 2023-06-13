@@ -24,11 +24,14 @@ class DrawerActionDialogFragment : TransparentDialogFragment(
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
+                val eventMessageState = sharedViewModel.eventMessage.collectAsState(initial = null)
+
                 DrawerActionView(
                     action = args.drawerAction,
                     loadingState  = viewModel.drawerActionLoadingState.collectAsState().value,
                     onCloseDialog = ::closeDialog,
-                    onConfirmationClick = ::handleActionConfirmation
+                    onConfirmationClick = ::handleActionConfirmation,
+                    eventMessage = eventMessageState.value,
                 )
             }
         }

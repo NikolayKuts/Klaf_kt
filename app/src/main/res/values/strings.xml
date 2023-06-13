@@ -144,7 +144,9 @@
     <string name="log_out_action">Log out</string>
     <string name="account_deleting_action">Delete account</string>
     <string name="log_in_action">Log in</string>
-    <string name="log_out_success_message">You have logged out</string>
+    <string name="log_out_success_message">You have logged out successfully</string>
+    <string name="delete_account_success_message">You have deleted account successfully</string>
+    <string name="delete_account_failure_message">Deleting account is failed</string>
     <string name="log_in_negative_state">not logged in</string>
-    <string name="log_out_negative_message">Logging out is failed</string>
+    <string name="log_out_failure_message">Logging out is failed</string>
 </resources>
