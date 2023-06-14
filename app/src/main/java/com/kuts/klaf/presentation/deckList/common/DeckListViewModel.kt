@@ -327,6 +327,7 @@ class DeckListViewModel @AssistedInject constructor(
             when (throwable) {
                 AccountDeletingError.CommonError -> R.string.delete_account_failure_message
                 AccountDeletingError.NetworkError -> R.string.authentication_warning_network_error
+                AccountDeletingError.RecentLoginRequired -> TODO()
             }
         } else {
             R.string.delete_account_failure_message
