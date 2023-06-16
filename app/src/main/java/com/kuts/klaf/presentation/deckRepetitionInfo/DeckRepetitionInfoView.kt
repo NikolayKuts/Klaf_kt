@@ -45,7 +45,7 @@ fun DeckRepetitionInfoView(
             ScrollableBox(
                 modifier = Modifier.noRippleClickable { onCloseClick() },
                 dialogMode = true,
-                topContent = {
+                eventContent = {
                     eventMessage.ifNotNull { EventMessageView(message = it) }
                 },
             ) {

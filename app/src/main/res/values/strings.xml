@@ -122,7 +122,8 @@
     <string name="authentication_password_label">password</string>
     <string name="authentication_sign_in_label">Sign in</string>
     <string name="authentication_sign_up_label">Sign up</string>
-    <string name="authentication_sync_data_message">To sync data, you must be authenticated</string>
+    <string name="authentication_sync_data_message">To sync data, you must be authenticated. Please choose authentication action</string>
+    <string name="authentication_type_choosing_message">Please choose authentication action</string>
     <string name="authentication_warning_network_error">Check internet connection</string>
     <string name="authentication_password_confirmation">password confirmation</string>
     <string name="authentication_warning_type_password_confirmation">Type password confirmation</string>
@@ -137,4 +138,15 @@
     <string name="deck_repetition_scheduled_successfully">Deck repetition scheduled successfully</string>
     <string name="deck_repetition_scheduling_failed">Scheduling deck repetition failed</string>
     <string name="data_synchronization_network_connection_warning">Check network connection</string>
+    <string name="account_deleting_warning_message">Warning!!! If you confirm deleting account local and remote storage state will be reset</string>
+    <string name="account_deleting_confirmation_question">Would you like to delete account?</string>
+    <string name="log_out_confirmation_question">Would you like to log out?</string>
+    <string name="log_out_action">Log out</string>
+    <string name="account_deleting_action">Delete account</string>
+    <string name="log_in_action">Log in</string>
+    <string name="log_out_success_message">You have logged out successfully</string>
+    <string name="delete_account_success_message">You have deleted account successfully</string>
+    <string name="delete_account_failure_message">Deleting account is failed</string>
+    <string name="log_in_negative_state">not logged in</string>
+    <string name="log_out_failure_message">Logging out is failed</string>
 </resources>

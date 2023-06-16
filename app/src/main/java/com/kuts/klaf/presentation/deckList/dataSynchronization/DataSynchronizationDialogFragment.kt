@@ -7,8 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
-import com.kuts.klaf.R
 import com.kuts.domain.common.AuthenticationAction
+import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.TransparentDialogFragment
 import com.kuts.klaf.presentation.deckList.common.BaseDeckListViewModel

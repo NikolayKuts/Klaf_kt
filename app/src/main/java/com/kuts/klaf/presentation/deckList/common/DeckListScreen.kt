@@ -45,6 +45,7 @@ import com.kuts.klaf.presentation.theme.MainTheme
 fun DeckListScreen(
     decks: List<Deck>?,
     shouldSynchronizationIndicatorBeShown: Boolean,
+    contentPadding: PaddingValues,
     onRefresh: () -> Unit,
     onItemClick: (deck: Deck) -> Unit,
     onLongItemClick: (deck: Deck) -> Unit,
@@ -56,7 +57,9 @@ fun DeckListScreen(
     var visible by rememberAsMutableStateOf(value = false)
 
     SwipeRefresh(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues = contentPadding),
         state = swipeRefreshState,
         onRefresh = onRefresh,
         indicator = { _, _ ->

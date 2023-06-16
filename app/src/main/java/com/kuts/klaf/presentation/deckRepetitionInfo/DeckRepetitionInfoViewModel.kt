@@ -29,6 +29,6 @@ class DeckRepetitionInfoViewModel @AssistedInject constructor(
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.Eagerly,
-                initialValue = Emptiable.Empty()
+                initialValue = Emptiable.Empty
             )
 }
