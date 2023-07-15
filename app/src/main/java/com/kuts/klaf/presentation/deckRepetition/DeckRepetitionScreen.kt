@@ -115,7 +115,7 @@ fun DeckRepetitionScreen(
                 onEditClick = {
                     repetitionState.card?.id?.let { cardId -> onEditCardClick(cardId) }
                 },
-                onMainButtonClick = { viewModel.changeStateOnMainButtonClick() }
+                onCommonButtonClick = { viewModel.changeButtonsStateOnCommonButtonClick() }
             )
         }
     }
@@ -410,12 +410,12 @@ private fun AdditionalButtons(
     onDeleteClick: () -> Unit,
     onAddClick: () -> Unit,
     onEditClick: () -> Unit,
-    onMainButtonClick: () -> Unit,
+    onCommonButtonClick: () -> Unit,
 ) {
     DeleteButton(enabled = additionalButtonsEnabled, onClick = onDeleteClick)
     AddButton(enabled = additionalButtonsEnabled, onClick = onAddClick)
     EditButton(enabled = additionalButtonsEnabled, onClick = onEditClick)
-    MoreButton(clicked = additionalButtonsEnabled, onClick = onMainButtonClick)
+    CommonButton(clicked = additionalButtonsEnabled, onClick = onCommonButtonClick)
 }
 
 @Composable
@@ -504,7 +504,7 @@ private fun AnimatableButtonBox(
 }
 
 @Composable
-private fun MoreButton(
+private fun CommonButton(
     clicked: Boolean,
     onClick: () -> Unit,
 ) {

@@ -50,7 +50,7 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
             MainTheme {
                 Surface {
                     val scaffoldState = rememberScaffoldState(
-                        drawerState = rememberDrawerState(initialValue = DrawerValue.Open)
+                        drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                     )
 
                     val scope = rememberCoroutineScope()

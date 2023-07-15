@@ -9,6 +9,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.*
+import com.kuts.klaf.presentation.deckRepetitionInfo.RepetitionInfoEvent.*
 import com.kuts.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -40,7 +41,8 @@ class DeckRepetitionInfoDialogFragment : TransparentDialogFragment(
                     viewModel = viewModel,
                     deckName = args.deckName,
                     onCloseClick = ::closeDialog,
-                    eventMessage = sharedViewModel.eventMessage.collectAsState(null).value,
+                    eventMessage = sharedViewModel.eventMessage.collectAsState(initial = null).value,
+                    onRendered = ::handleRepetitionInfoEvent,
                 )
             }
         }
@@ -55,7 +57,35 @@ class DeckRepetitionInfoDialogFragment : TransparentDialogFragment(
         }
     }
 
+    private fun handleRepetitionInfoEvent() {
+        val eventMessage = when (args.repetitionInfoEvent) {
+            ScheduledSuccessfully -> {
+                EventMessage(
+                    resId = R.string.deck_repetition_scheduled_successfully,
+                    type = EventMessage.Type.Positive
+                )
+            }
+            SchedulingFailed -> {
+                EventMessage(
+                    resId = R.string.deck_repetition_scheduling_failed,
+                    type = EventMessage.Type.Negative
+                )
+            }
+            OneRepetitionToFinish -> {
+                EventMessage(resId = R.string.deck_repetition_one_repetition_to_finish_iteration)
+            }
+            Non -> return
+        }
+
+        sharedViewModel.notify(message = eventMessage)
+        resetRepetitionInfoEventArgument()
+    }
+
     private fun closeDialog() {
         findNavController().popBackStack()
+    }
+
+    private fun resetRepetitionInfoEventArgument() {
+        arguments?.putSerializable(args::repetitionInfoEvent.name, Non)
     }
 }

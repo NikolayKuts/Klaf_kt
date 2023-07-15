@@ -42,7 +42,7 @@ val Long.timeAsString: String
 
 fun Context.showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
     val toast = Toast.makeText(this, message, duration)
-        toast.show()
+    toast.show()
 }
 
 fun Context.showToast(@StringRes messageId: Int, duration: Int = Toast.LENGTH_SHORT) {
@@ -56,11 +56,9 @@ fun View.showSnackBar(@StringRes messageId: Int, duration: Int = Snackbar.LENGTH
 inline fun <T> Flow<T>.collectWhenStarted(
     lifecycleOwner: LifecycleOwner,
     crossinline onEach: (T) -> Unit,
-): Job {
-    return lifecycleOwner.lifecycleScope.launch {
-        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            collect { element -> onEach(element) }
-        }
+): Job = lifecycleOwner.lifecycleScope.launch {
+    lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        collect { element -> onEach(element) }
     }
 }
 
@@ -126,4 +124,13 @@ fun MutableSharedFlow<EventMessage>.tryEmitAsPositive(
 ) {
     this.tryEmit(
         value = EventMessage(resId = resId, type = EventMessage.Type.Positive, duration = duration))
+}
+
+fun MutableSharedFlow<EventMessage>.tryEmitAsNeutral(
+    @StringRes resId: Int,
+    duration: EventMessage.Duration = EventMessage.Duration.Medium,
+) {
+    tryEmit(
+        value = EventMessage(resId = resId, type = EventMessage.Type.Neutral, duration = duration)
+    )
 }

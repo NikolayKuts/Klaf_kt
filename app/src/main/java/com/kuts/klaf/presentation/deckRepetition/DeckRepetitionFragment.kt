@@ -10,6 +10,8 @@ import androidx.navigation.navGraphViewModels
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.BaseFragment
 import com.kuts.klaf.presentation.common.collectWhenStarted
+import com.kuts.klaf.presentation.common.log
+import com.kuts.klaf.presentation.deckRepetitionInfo.RepetitionInfoEvent
 import com.kuts.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -79,7 +81,8 @@ class DeckRepetitionFragment : BaseFragment(layoutId = R.layout.common_compose_l
     private fun observeScreenState() {
         viewModel.screenState.collectWhenStarted(lifecycleOwner = this) {
             if (it is RepetitionScreenState.FinishState) {
-                navigateToDeckRepetitionInfoDialogFragment()
+                viewModel.resetScreenState()
+                navigateToDeckRepetitionInfoDialogFragment(infoEvent = it.repetitionInfoEvent)
             }
         }
     }
@@ -104,11 +107,12 @@ class DeckRepetitionFragment : BaseFragment(layoutId = R.layout.common_compose_l
         ).also { navController.navigate(it) }
     }
 
-    private fun navigateToDeckRepetitionInfoDialogFragment() {
+    private fun navigateToDeckRepetitionInfoDialogFragment(infoEvent: RepetitionInfoEvent) {
         DeckRepetitionFragmentDirections
             .actionDeckRepetitionFragmentToDeckRepetitionInfoDialogFragment(
                 deckId = args.deckId,
-                deckName = args.deckName
+                deckName = args.deckName,
+                repetitionInfoEvent = infoEvent,
             ).also { navController.navigate(it) }
     }
 }
