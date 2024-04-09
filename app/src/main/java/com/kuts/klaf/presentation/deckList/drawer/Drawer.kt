@@ -3,18 +3,33 @@ package com.kuts.klaf.presentation.deckList.drawer
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.kuts.klaf.R
+import com.kuts.klaf.presentation.theme.MainTheme
 
 @Composable
 fun Drawer(
@@ -23,9 +38,16 @@ fun Drawer(
     onLogOutClick: () -> Unit,
     onDeleteAccountClick: () -> Unit,
 ) {
+    val rightCorners = RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp)
+    val drawerWidth = LocalConfiguration.current.screenWidthDp.dp / 2
+
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxHeight()
+            .clip(rightCorners)
+            .widthIn(min = drawerWidth)
+            .width(IntrinsicSize.Max)
+            .background(color = MainTheme.colors.deckListScreen.drawerColors.contentBackground)
     ) {
         Header(
             signedIn = state.signedIn,
@@ -35,6 +57,8 @@ fun Drawer(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight()
+                .width(IntrinsicSize.Max)
                 .padding(16.dp)
         ) {
             if (state.signedIn) {
@@ -67,12 +91,16 @@ private fun Header(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xF04D4D4D))
+            .background(MainTheme.colors.deckListScreen.drawerColors.headerBackground)
             .padding(16.dp)
             .heightIn(min = 100.dp),
         contentAlignment = Alignment.BottomStart
     ) {
-        val iconTint = if (signedIn) Color(0xFFC3E799) else Color(0xF1FFB0B0)
+        val iconTint = if (signedIn) {
+            MainTheme.colors.deckListScreen.drawerColors.profileIconPositiveTint
+        } else {
+            MainTheme.colors.deckListScreen.drawerColors.profileIconNegativeTint
+        }
 
         Column {
             Icon(
@@ -113,8 +141,7 @@ private fun DrawerItem(
         )
 
         Text(
-            modifier = Modifier
-                .weight(weight = 1F),
+            modifier = Modifier.fillMaxWidth(),
             text = text,
         )
 
