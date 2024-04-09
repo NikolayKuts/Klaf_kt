@@ -30,5 +30,6 @@ abstract class BaseDeckRepetitionViewModel : ViewModel(), EventMessageSource {
     abstract fun resumeTimerCounting()
     abstract fun pauseTimerCounting()
     abstract fun deleteCard(cardId: Int, deckId: Int)
-    abstract fun changeStateOnMainButtonClick()
+    abstract fun changeButtonsStateOnCommonButtonClick()
+    abstract fun resetScreenState()
 }

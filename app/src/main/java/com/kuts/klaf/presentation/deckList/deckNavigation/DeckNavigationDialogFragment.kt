@@ -10,6 +10,7 @@ import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.TransparentDialogFragment
 import com.kuts.klaf.presentation.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent
+import com.kuts.klaf.presentation.deckRepetitionInfo.RepetitionInfoEvent
 import com.kuts.klaf.presentation.theme.MainTheme
 
 class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.common_compose_layout) {

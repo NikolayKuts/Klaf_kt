@@ -149,4 +149,5 @@
     <string name="delete_account_failure_message">Deleting account is failed</string>
     <string name="log_in_negative_state">not logged in</string>
     <string name="log_out_failure_message">Logging out is failed</string>
+    <string name="deck_repetition_one_repetition_to_finish_iteration">There is one repetition to finish iteration</string>
 </resources>

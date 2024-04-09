@@ -4,16 +4,21 @@ import android.content.Context
 import com.kuts.domain.common.ScheduledDateState
 import com.kuts.domain.common.getCurrentDateAsLong
 import com.kuts.domain.entities.Deck
+import com.kuts.domain.entities.Deck.Companion.MIN_SCHEDULED_REPETITION_INTERVAL_MINUTES
 import com.kuts.domain.entities.DeckRepetitionInfo
-import com.kuts.domain.enums.DayFactor.*
+import com.kuts.domain.enums.DayIncreaseFactor.FIRST_DAY_INCREASE_FACTOR
+import com.kuts.domain.enums.DayIncreaseFactor.SECOND_DAY_INCREASE_FACTOR
+import com.kuts.domain.enums.DayIncreaseFactor.THIRD_DAY_INCREASE_FACTOR
+import com.kuts.domain.enums.DayIncreaseFactor.WHOLE_DAY_INCREASE_FACTOR
 import com.kuts.klaf.R
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-private const val DERATION_FACTOR = 0.07
-private const val DECREASE_FACTOR = 0.1
+private const val ADDITIONAL_ALLOWABLE_DURATION_FACTOR = 0.07F
+private const val DECREASE_FACTOR = 0.2F
 
 private const val DATE_FORMAT_PATTERN = "dd.MM.yy|HH:mm"
 
@@ -47,37 +52,58 @@ fun Deck.calculateNextScheduledRepeatDate(currentRepetitionIterationDuration: Lo
 }
 
 fun Deck.getNewInterval(currentIterationDuration: Long): Long {
-    if (repetitionQuantity < 5) return 0
-    if (scheduledDateInterval == 0L) return TimeUnit.MINUTES.toMillis(15)
+    val minScheduledRepetitionInterval = MIN_SCHEDULED_REPETITION_INTERVAL_MINUTES.toMillis()
 
-    return if (
-        currentIterationDuration <=
-        lastRepetitionIterationDuration + lastRepetitionIterationDuration * DERATION_FACTOR
-    ) {
-        scheduledDateInterval + (scheduledDateInterval * getDayFactorByNumberDay(
-            dayQuantity = this.existenceDayQuantity
-        )).toLong()
+    if (repetitionQuantity < 5) return 0
+    if (scheduledDateInterval <= 0L) return minScheduledRepetitionInterval
+
+    val additionalDuration =
+        (lastRepetitionIterationDuration * ADDITIONAL_ALLOWABLE_DURATION_FACTOR).toLong()
+    val allowableIterationDuration = lastRepetitionIterationDuration + additionalDuration
+    val shouldIntervalBeIncreased = currentIterationDuration <= allowableIterationDuration
+
+    return if (shouldIntervalBeIncreased) {
+        calculateIncreasedInterval()
     } else {
-        if (isLastIterationSucceeded) {
-            scheduledDateInterval
-        } else {
-            scheduledDateInterval - scheduledDateInterval * DECREASE_FACTOR.toLong()
-        }
+        calculateDecreasedInterval(currentIterationDuration = currentIterationDuration)
     }
 }
+
+private fun Deck.calculateIncreasedInterval(): Long {
+    val dayIncreaseFactor = getDayIncreaseFactorByDayQuantity(quantity = existenceDayQuantity)
+    val increaseInterval = (scheduledDateInterval * dayIncreaseFactor).toLong()
+    return scheduledDateInterval + increaseInterval
+}
+
+private fun Deck.calculateDecreasedInterval(currentIterationDuration: Long): Long {
+    val minScheduledRepetitionInterval = MIN_SCHEDULED_REPETITION_INTERVAL_MINUTES.toMillis()
+    val multiplicationFactor =
+        (currentIterationDuration.toFloat() / lastRepetitionIterationDuration)
+    val actualDecreaseFactor = DECREASE_FACTOR * multiplicationFactor
+    val decreaseInterval = (scheduledDateInterval * actualDecreaseFactor).toLong()
+    val decreasedInterval = scheduledDateInterval - decreaseInterval
+
+    return if (decreaseInterval >= scheduledDateInterval) {
+        minScheduledRepetitionInterval
+    } else {
+        decreasedInterval
+    }
+}
+
+private fun Long.toMillis(): Long = TimeUnit.MINUTES.toMillis(this)
 
 fun Deck.isRepetitionSucceeded(currentRepetitionDuration: Long): Boolean {
     val lastRepetitionDuration: Long = this.lastRepetitionIterationDuration
     return currentRepetitionDuration <=
-            lastRepetitionDuration + lastRepetitionDuration * DERATION_FACTOR
+            lastRepetitionDuration + lastRepetitionDuration * ADDITIONAL_ALLOWABLE_DURATION_FACTOR
 }
 
-private fun getDayFactorByNumberDay(dayQuantity: Long): Double {
-    return when (dayQuantity) {
-        1L -> FIRST_DAY_FACTOR.factor
-        2L -> SECOND_DAY_FACTOR.factor
-        3L -> THIRD_DAY_FACTOR.factor
-        else -> WHOLE_DAY_FACTOR.factor
+private fun getDayIncreaseFactorByDayQuantity(quantity: Long): Float {
+    return when (quantity) {
+        1L -> FIRST_DAY_INCREASE_FACTOR.value
+        2L -> SECOND_DAY_INCREASE_FACTOR.value
+        3L -> THIRD_DAY_INCREASE_FACTOR.value
+        else -> WHOLE_DAY_INCREASE_FACTOR.value
     }
 }
 
@@ -188,6 +214,7 @@ private fun Context.getYearsMonthsWeeks(years: Long, months: Long, weeks: Long):
         yearsAsString.isEmpty() && monthsAsString.isEmpty() && weeksAsString.isNotEmpty() -> {
             weeksAsString
         }
+
         else -> ""
     }
 }
@@ -211,6 +238,7 @@ private fun Context.getDaysHoursMinutes(days: Long, hours: Long, minutes: Long):
         daysAsString.isEmpty() && hoursAsString.isEmpty() && minutesAsString.isNotEmpty() -> {
             minutesAsString
         }
+
         else -> getString(R.string.time_pointer_now)
     }
 }

@@ -3,20 +3,37 @@ package com.kuts.klaf.presentation.deckRepetition
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import androidx.work.await
-import com.kuts.domain.common.*
 import com.kuts.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE
 import com.kuts.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN
 import com.kuts.domain.common.CardSide.BACK
 import com.kuts.domain.common.CardSide.FRONT
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.kuts.domain.common.DeckRepetitionState
+import com.kuts.domain.common.DeckRepetitionSuccessMark
+import com.kuts.domain.common.LoadingState
+import com.kuts.domain.common.MINIMUM_NUMBER_OF_FIRST_REPETITIONS
+import com.kuts.domain.common.UNASSIGNED_LONG_VALUE
+import com.kuts.domain.common.addIntoNewInstance
+import com.kuts.domain.common.catchWithCrashlyticsReport
+import com.kuts.domain.common.getCurrentDateAsLong
+import com.kuts.domain.common.isEven
+import com.kuts.domain.common.isNotNull
+import com.kuts.domain.common.launchIn
+import com.kuts.domain.common.update
 import com.kuts.domain.entities.Card
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.entities.DeckRepetitionInfo
 import com.kuts.domain.enums.DifficultyRecallingLevel
-import com.kuts.domain.enums.DifficultyRecallingLevel.*
+import com.kuts.domain.enums.DifficultyRecallingLevel.EASY
+import com.kuts.domain.enums.DifficultyRecallingLevel.GOOD
+import com.kuts.domain.enums.DifficultyRecallingLevel.HARD
 import com.kuts.domain.repositories.CrashlyticsRepository
-import com.kuts.domain.useCases.*
+import com.kuts.domain.useCases.DeleteCardsFromDeckUseCase
+import com.kuts.domain.useCases.FetchCardsUseCase
+import com.kuts.domain.useCases.FetchDeckByIdUseCase
+import com.kuts.domain.useCases.SaveDeckRepetitionInfoUseCase
+import com.kuts.domain.useCases.UpdateDeckUseCase
 import com.kuts.klaf.R
 import com.kuts.klaf.data.common.DeckRepetitionReminder.Companion.scheduleDeckRepetition
 import com.kuts.klaf.data.common.calculateNextScheduledRepeatDate
@@ -25,13 +42,29 @@ import com.kuts.klaf.data.common.isRepetitionSucceeded
 import com.kuts.klaf.data.common.lastIterationSuccessMark
 import com.kuts.klaf.data.common.notifications.DeckRepetitionNotifier
 import com.kuts.klaf.data.networking.CardAudioPlayer
-import com.kuts.klaf.presentation.common.*
-import com.kuts.klaf.presentation.deckRepetition.RepetitionScreenState.*
+import com.kuts.klaf.presentation.common.ButtonState
+import com.kuts.klaf.presentation.common.EventMessage
+import com.kuts.klaf.presentation.common.RepetitionTimer
+import com.kuts.klaf.presentation.common.tryEmitAsNegative
+import com.kuts.klaf.presentation.common.tryEmitAsPositive
+import com.kuts.klaf.presentation.deckRepetition.RepetitionScreenState.FinishState
+import com.kuts.klaf.presentation.deckRepetition.RepetitionScreenState.RepetitionState
+import com.kuts.klaf.presentation.deckRepetition.RepetitionScreenState.StartState
+import com.kuts.klaf.presentation.deckRepetitionInfo.RepetitionInfoEvent
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
-import java.util.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
+import java.util.LinkedList
 
 class DeckRepetitionViewModel @AssistedInject constructor(
     @Assisted private val deckId: Int,
@@ -205,7 +238,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         }
     }
 
-    override fun changeStateOnMainButtonClick() {
+    override fun changeButtonsStateOnCommonButtonClick() {
         when (mainButtonState.value) {
             ButtonState.PRESSED -> {
                 mainButtonState.value = ButtonState.UNPRESSED
@@ -221,6 +254,10 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     override fun onCleared() {
         super.onCleared()
         timer.disableAndClear()
+    }
+
+    override fun resetScreenState() {
+        screenState.value = StartState
     }
 
     private fun manageCardSide() {
@@ -365,12 +402,14 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                     previousIterationSuccessMark = repeatedDeck.lastIterationSuccessMark
                 )
             )
+
             manageSchedulingAndNotificationState(
                 repeatedDeck = repeatedDeck,
-                updatedDeck = updatedDeck
+                updatedDeck = updatedDeck,
+                onFinished = { infoEvent ->
+                    screenState.value = FinishState(repetitionInfoEvent = infoEvent)
+                }
             )
-            screenState.value = FinishState
-            screenState.value = StartState
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_updating_deck)
         }
@@ -419,16 +458,21 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         }
     }
 
-    private fun manageSchedulingAndNotificationState(repeatedDeck: Deck, updatedDeck: Deck) {
+    private suspend fun manageSchedulingAndNotificationState(
+        repeatedDeck: Deck,
+        updatedDeck: Deck,
+        onFinished: (event: RepetitionInfoEvent) -> Unit,
+    ) {
         val currentTime = System.currentTimeMillis()
         val scheduledDate = updatedDeck.scheduledDate ?: return
+        val isIterationFinished = scheduledDate > currentTime
+                && updatedDeck.repetitionQuantity >= MINIMUM_NUMBER_OF_FIRST_REPETITIONS
+                && updatedDeck.repetitionQuantity.isEven()
 
-        if (
-            scheduledDate > currentTime
-            && updatedDeck.repetitionQuantity >= MINIMUM_NUMBER_OF_FIRST_REPETITIONS
-            && updatedDeck.repetitionQuantity.isEven()
-        ) {
+        if (isIterationFinished) {
             viewModelScope.launchWithState(context = Dispatchers.IO) {
+                delay(1000)
+
                 val workOperation = workManager.scheduleDeckRepetition(
                     deckName = repeatedDeck.name,
                     deckId = repeatedDeck.id,
@@ -436,12 +480,14 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 )
 
                 workOperation.await()
-                eventMessage.tryEmitAsPositive(resId = R.string.deck_repetition_scheduled_successfully)
+                onFinished(RepetitionInfoEvent.ScheduledSuccessfully)
             }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-                eventMessage.tryEmitAsNegative(resId = R.string.deck_repetition_scheduling_failed)
+                onFinished(RepetitionInfoEvent.SchedulingFailed)
             }
 
             deckRepetitionNotifier.removeNotificationFromNotificationBar(deckId = repeatedDeck.id)
+        } else {
+            onFinished(RepetitionInfoEvent.OneRepetitionToFinish)
         }
     }
 }

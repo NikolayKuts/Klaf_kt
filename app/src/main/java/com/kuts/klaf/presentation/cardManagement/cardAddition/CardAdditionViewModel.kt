@@ -146,6 +146,7 @@ class CardAdditionViewModel @AssistedInject constructor(
             viewModelScope.launchWithState {
                 addNewCardIntoDeck(card = newCard)
                 resetAddingState()
+                audioPlayer.preparePronunciation(word = "")
                 cardAdditionState.value = CardAdditionState.Finished
                 eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_added)
             }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
@@ -213,6 +214,7 @@ class CardAdditionViewModel @AssistedInject constructor(
     private fun resetAddingState() {
         letterInfosState.value = emptyList()
         nativeWordState.value = ""
+        foreignWordState.value = ""
         ipaHoldersState.value = emptyList()
     }
 }

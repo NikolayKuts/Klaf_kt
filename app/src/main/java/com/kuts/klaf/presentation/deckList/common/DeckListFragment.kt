@@ -2,18 +2,34 @@ package com.kuts.klaf.presentation.deckList.common
 
 import android.os.Bundle
 import android.view.View
-import androidx.compose.material.*
+import androidx.compose.material.DrawerValue
+import androidx.compose.material.Scaffold
+import androidx.compose.material.rememberDrawerState
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.entities.Deck
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.authentication.AuthenticationFragment.Companion.setAuthenticationFragmentResultListener
-import com.kuts.klaf.presentation.common.*
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.*
+import com.kuts.klaf.presentation.common.BaseFragment
+import com.kuts.klaf.presentation.common.EventMessage
+import com.kuts.klaf.presentation.common.NavigationDestination
+import com.kuts.klaf.presentation.common.TransparentSurface
+import com.kuts.klaf.presentation.common.collectWhenStarted
+import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToCardTransferringScreen
+import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDataSynchronizationDialog
+import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDeckCreationDialog
+import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDeckNavigationDialog
+import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDeckRepetitionScreen
+import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDrawerActionDialog
+import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToPrevious
+import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToSigningTypeChoosingDialog
 import com.kuts.klaf.presentation.deckList.dataSynchronization.DataSynchronizationDialogFragmentDirections
 import com.kuts.klaf.presentation.deckList.drawer.Drawer
 import com.kuts.klaf.presentation.deckList.drawer.DrawerAction
@@ -48,56 +64,45 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
-                Surface {
+                TransparentSurface {
                     val scaffoldState = rememberScaffoldState(
-                        drawerState = rememberDrawerState(initialValue = DrawerValue.Open)
+                        drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                     )
-
                     val scope = rememberCoroutineScope()
+                    val closeDrawerAndPerform: (performBlock: () -> Unit) -> Unit = {
+                        scope.launch {
+                            scaffoldState.drawerState.close()
+                            it.invoke()
+                        }
+                    }
 
                     Scaffold(
                         scaffoldState = scaffoldState,
                         drawerContent = {
                             Drawer(
                                 state = viewModel.drawerState.collectAsState(
-                                    initial = DrawerViewState(signedIn = false, userEmail = null)
+                                    initial = DrawerViewState(
+                                        signedIn = false,
+                                        userEmail = null
+                                    )
                                 ).value,
                                 onLogInClick = {
-                                    scope.launch {
-                                        scaffoldState.drawerState.close()
-                                        val event = ToSigningTypeChoosingDialog(
-                                            fromSourceDestination = NavigationDestination.DECK_LIST_FRAGMENT
-                                        )
-                                        viewModel.handleNavigation(event = event)
-                                    }
+                                    closeDrawerAndPerform { sendToSigningTypeChoosingDialogEvent() }
                                 },
                                 onLogOutClick = {
-                                    scope.launch {
-                                        scaffoldState.drawerState.close()
-                                        viewModel.handleNavigation(
-                                            event = ToDrawerActionDialog(action = DrawerAction.LOG_OUT)
-                                        )
+                                    closeDrawerAndPerform {
+                                        sendToDrawerActionDialogEvent(action = DrawerAction.LOG_OUT)
                                     }
                                 },
                                 onDeleteAccountClick = {
-                                    scope.launch {
-                                        scaffoldState.drawerState.close()
-                                        viewModel.handleNavigation(
-                                            event = ToDrawerActionDialog(action = DrawerAction.DELETE_ACCOUNT)
-                                        )
+                                    closeDrawerAndPerform {
+                                        sendToDrawerActionDialogEvent(action = DrawerAction.DELETE_ACCOUNT)
                                     }
                                 },
-
-                                )
+                            )
                         },
-//                        drawerGesturesEnabled = false,
-//                        drawerShape =,
-//                        drawerElevation =,
-//                        drawerBackgroundColor =,
-//                        drawerContentColor =,
-//                        drawerScrimColor =,
-//                        backgroundColor =,
-//                        contentColor =,
+                        drawerElevation = 0.dp,
+                        drawerBackgroundColor = Color.Transparent,
                     ) { paddingValues ->
                         DeckListScreen(
                             decks = viewModel.deckSource.collectAsState().value,
@@ -152,23 +157,31 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
                 ToDataSynchronizationDialog -> {
                     navigateToDataSynchronizationDialog()
                 }
+
                 ToDeckCreationDialog -> navigateToDeckCreationDialog()
+
                 is ToDeckNavigationDialog -> {
                     navigateToDeckNavigationDialog(deck = event.deck)
                 }
+
                 is ToDeckRepetitionScreen -> {
                     navigateToRepetitionFragment(deck = event.deck)
                 }
+
                 ToPrevious -> navController.popBackStack()
+
                 is ToCardTransferringScreen -> {
                     navigateCardTransferringFragment(deckId = event.deckId)
                 }
+
                 is ToSigningTypeChoosingDialog -> {
                     navigateToSigningTypeChoosingDialog(fromDestination = event.fromSourceDestination)
                 }
+
                 is ToDrawerActionDialog -> {
                     navigateToDrawerActionDialog(action = event.action)
                 }
+
                 null -> {}
             }
         }
@@ -209,6 +222,7 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
                     fromSourceDestination = fromDestination
                 )
             }
+
             NavigationDestination.DATA_SYNCHRONIZATION_DIALOG -> {
                 DataSynchronizationDialogFragmentDirections
                     .actionDataSynchronizationDialogFragmentToSigningTypeChoosingDialogFragment(
@@ -228,5 +242,19 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
     private fun restartApp() {
         viewModel.reopenApp()
         requireActivity().finish()
+    }
+
+    private fun sendToSigningTypeChoosingDialogEvent() {
+        val event = ToSigningTypeChoosingDialog(
+            fromSourceDestination = NavigationDestination.DECK_LIST_FRAGMENT
+        )
+
+        viewModel.handleNavigation(event = event)
+    }
+
+    private fun sendToDrawerActionDialogEvent(action: DrawerAction) {
+        viewModel.handleNavigation(
+            event = ToDrawerActionDialog(action = action)
+        )
     }
 }

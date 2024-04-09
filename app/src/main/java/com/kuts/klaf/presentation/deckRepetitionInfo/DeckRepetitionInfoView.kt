@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -35,7 +36,8 @@ fun DeckRepetitionInfoView(
     viewModel: DeckRepetitionInfoViewModel,
     deckName: String,
     onCloseClick: () -> Unit,
-    eventMessage: EventMessage?
+    eventMessage: EventMessage?,
+    onRendered: () -> Unit,
 ) {
     val deckRepetitionInfo by viewModel.repetitionInfo.collectAsState()
 
@@ -64,6 +66,8 @@ fun DeckRepetitionInfoView(
                     },
                     bottomContent = { ClosingButton(onClick = onCloseClick) },
                 )
+
+                LaunchedEffect(key1 = null) { onRendered() }
             }
         }
     }

@@ -111,6 +111,10 @@
         <argument
             android:name="deckName"
             app:argType="string" />
+        <argument
+            android:name="repetitionInfoEvent"
+            app:argType="com.kuts.klaf.presentation.deckRepetitionInfo.RepetitionInfoEvent"
+            android:defaultValue="Non" />
     </dialog>
     <dialog
         android:id="@+id/deckNavigationDialog"

@@ -17,7 +17,7 @@ val LightMainPalettes = MainColors(
     deckRepetitionInfoScreen = DeckRepetitionInfoScreenColors.Theme.light,
     cardTransferringScreen = CardTransferringScreenColors.Theme.light,
     authenticationScreen = AuthenticationScreenColors.Theme.light,
-    eventMessageColors = EventMessageColors.Theme.light
+    eventMessageColors = EventMessageColors.Theme.light,
 )
 
 val DarkMainPalettes = MainColors(
@@ -115,6 +115,7 @@ data class DeckListScreenColors(
     val deckItemRepetitionQuantity: Color,
     val deckItemCardQuantity: Color,
     val deckItemPointer: Color,
+    val drawerColors: DrawerColors,
 ) {
 
     object Theme : Themable<DeckListScreenColors> {
@@ -129,6 +130,7 @@ data class DeckListScreenColors(
             deckItemRepetitionQuantity = Color(0xFFFF9800),
             deckItemCardQuantity = Color(0xFFB27DBB),
             deckItemPointer = Color(0xFF7C7C7C),
+            drawerColors = DrawerColors.Theme.light,
         )
 
         override val dark = DeckListScreenColors(
@@ -141,6 +143,7 @@ data class DeckListScreenColors(
             deckItemRepetitionQuantity = Color(0xFF56C2CF),
             deckItemCardQuantity = Color(0xFFD5C85B),
             deckItemPointer = Color(0xFF969696),
+            drawerColors = DrawerColors.Theme.dark,
         )
     }
 }
@@ -428,6 +431,31 @@ data class EventMessageColors(
                 initial = Color(0xFF38422D),
                 target = Color(0xFF60724B)
             ),
+        )
+    }
+}
+
+data class DrawerColors(
+    val headerBackground: Color,
+    val contentBackground: Color,
+    val profileIconPositiveTint: Color,
+    val profileIconNegativeTint: Color,
+) {
+
+    object Theme : Themable<DrawerColors> {
+
+        override val light: DrawerColors = DrawerColors(
+            headerBackground = Color(0xFFEBEBEB),
+            contentBackground = CommonColors.Theme.light.dialogBackground,
+            profileIconPositiveTint = Color(0xFF8AA768),
+            profileIconNegativeTint = Color(0xFFE07277),
+        )
+
+        override val dark: DrawerColors = DrawerColors(
+            headerBackground = Color(0xFF4D4D4D),
+            contentBackground = CommonColors.Theme.dark.dialogBackground,
+            profileIconPositiveTint = Color(0xFFBFE295),
+            profileIconNegativeTint = Color(0xFFEBAEB1),
         )
     }
 }
