@@ -109,6 +109,7 @@ dependencies {
     implementation(Firebase.CoroutinePlayServices)
     implementation(Firebase.Crashlytics)
 
+
     /** compose **/
     implementation platform(Compose.Bom)
     implementation(Compose.Compiler)
