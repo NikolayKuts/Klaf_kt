@@ -1,0 +1,7 @@
+[versions]
+kotlinSerialization="1.6.10"
+
+[libraries]
+
+[plugins]
+android-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerialization" }

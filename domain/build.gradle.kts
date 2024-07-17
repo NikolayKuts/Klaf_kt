@@ -1,11 +1,13 @@
 import com.example.klaf.di.dependencies.Core
 import com.example.klaf.di.dependencies.Serialization
 import com.example.klaf.di.dependencies.Tests
+import org.jetbrains.kotlin.gradle.plugin.extraProperties
+import org.jetbrains.kotlin.gradle.plugin.ide.kotlinExtrasSerialization
 
 plugins {
-    id 'java-library'
-    id 'org.jetbrains.kotlin.jvm'
-    id 'org.jetbrains.kotlin.plugin.serialization' version ("$kotlin_plugin_serialization_version")
+    id("java-library")
+    id("org.jetbrains.kotlin.jvm")
+    alias(libs.plugins.android.serialization)
 }
 
 java {
