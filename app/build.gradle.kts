@@ -1,16 +1,15 @@
 import com.example.klaf.di.dependencies.*
 
 plugins {
-    id("com.android.application")
-    id("kotlin-android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
     id("kotlin-kapt")
-    id("androidx.navigation.safeargs.kotlin")
-    id("dagger.hilt.android.plugin")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
-    alias(libs.plugins.android.serialization)
-//    id "org.jetbrains.kotlin.android.extensions"
+    alias(libs.plugins.hilt.android)
     id("kotlin-parcelize")
+    alias(libs.plugins.navigation.safeargs.kotlin)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.android.serialization)
 }
 
 android {
@@ -22,7 +21,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner("androidx.test.runner.AndroidJUnitRunner")
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         kapt {
             arguments { arg("room.schemaLocation", "$projectDir/schemas") }
@@ -31,7 +30,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled = false
+            isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
@@ -51,15 +50,15 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = compose_version
+        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtension.get()
     }
     namespace = "com.kuts.klaf"
 }
 
 dependencies {
 
-    /** nodules **/
-    implementation project(Modules.Domain)
+    /** modules **/
+    implementation(project(Modules.Domain))
 
     /** core **/
     implementation(Kotlin.Stdlib)
@@ -102,38 +101,38 @@ dependencies {
     implementation(Hilt.Work)
 
     /** firebase **/
-    implementation platform(Firebase.Bom)
+    implementation(platform(Firebase.Bom))
     implementation(Firebase.AnalyticsKts)
     implementation(Firebase.FirestoreKtx)
     implementation(Firebase.Authentication)
     implementation(Firebase.CoroutinePlayServices)
     implementation(Firebase.Crashlytics)
 
-    /** compose **/
-    implementation platform(Compose.Bom)
-    implementation(Compose.Compiler)
-    implementation(Compose.Runtime)
-    implementation(Compose.Ui)
-    implementation(Compose.Foundation)
-    implementation(Compose.FoundationLayout)
-    implementation(Compose.Material)
-    implementation(Compose.RuntimeLivedata)
-    implementation(Compose.UiTooling)
-    implementation(Compose.Activity)
-    implementation(Compose.UiToolingPreview)
-    implementation(Compose.ConstraintLayout)
-    implementation(Compose.ThemeAdapter)
-    implementation(Compose.Accompanist)
+    /** Compose **/
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.compiler)
+    implementation(libs.compose.runtime)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.foundation)
+    implementation(libs.compose.foundation.layout)
+    implementation(libs.compose.material)
+    implementation(libs.compose.runtime.livedata)
+    implementation(libs.compose.ui.tooling)
+    implementation(libs.compose.activity)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.compose.constraintLayout)
+    implementation(libs.compose.theme.adapter)
+    implementation(libs.compose.accompanist)
 
-    /** work manager **/
-    implementation(WorkManager.Core)
+    /** Work Manager **/
+    implementation(libs.work.manager)
 
-    /** serialization **/
-    implementation(Serialization.Core)
+    /** Kotlin serialization **/
+    implementation(libs.kotlin.serilization)
 
     /** DataStore **/
-    implementation(DataStore.Core)
+    implementation(libs.datastore.android)
 
     /** Retrofit **/
-    implementation(Retrofit.Core)
+    implementation(libs.retrofit.core)
 }
