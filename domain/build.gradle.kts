@@ -1,9 +1,3 @@
-import com.example.klaf.di.dependencies.Core
-import com.example.klaf.di.dependencies.Serialization
-import com.example.klaf.di.dependencies.Tests
-import org.jetbrains.kotlin.gradle.plugin.extraProperties
-import org.jetbrains.kotlin.gradle.plugin.ide.kotlinExtrasSerialization
-
 plugins {
     id("java-library")
     id("org.jetbrains.kotlin.jvm")
@@ -17,15 +11,15 @@ java {
 
 dependencies {
 
-    /** core **/
-    implementation(Core.CoroutinesCoreJvm)
-    implementation(Core.JavaxInject)
+    /** Core **/
+    implementation(libs.core.coroutines.core.jvm)
+    implementation(libs.core.javax.inject)
 
-    /** tests **/
-    testImplementation(Tests.JunitCore)
-    testImplementation(Tests.Kotlin)
-    testImplementation(Tests.Coroutine)
+    /** Tests **/
+    testImplementation(libs.tests.junit.core)
+    testImplementation(libs.tests.kotlin)
+    testImplementation(libs.tests.coroutine)
 
-    /** serialization **/
-    implementation(Serialization.Core)
+    /** Kotlin Serialization **/
+    implementation(libs.kotlin.serilization)
 }

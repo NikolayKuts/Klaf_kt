@@ -57,56 +57,56 @@ android {
 
 dependencies {
 
-    /** modules **/
+    /** Modules **/
     implementation(project(Modules.Domain))
 
-    /** core **/
-    implementation(Kotlin.Stdlib)
-    implementation(Core.Core)
-    implementation(Core.AppCompat)
-    implementation(Core.ConstraintLayout)
-    implementation(Core.LegacySupport)
-    implementation(Core.Fragment)
-    implementation(Core.Material)
-    implementation(Core.Preferences)
+    /** Core **/
+    implementation(libs.core.kotlin.stdlib)
+    implementation(libs.core.android.ktx)
+    implementation(libs.core.app.compat)
+    implementation(libs.core.constraintlayout)
+    implementation(libs.core.legacy.support)
+    implementation(libs.core.fragment.ktx)
+    implementation(libs.core.material)
+    implementation(libs.core.preferences)
 
-    /** tests **/
-    testImplementation(Tests.JunitCore)
-    androidTestImplementation(Tests.JunitAndroid)
-    androidTestImplementation(Tests.Espresso)
-    testImplementation(Tests.Mockk)
-    testImplementation(Tests.Coroutine)
-    testImplementation(Tests.Turbine)
-    testImplementation(Tests.Kotlin)
+    /** Tests **/
+    testImplementation(libs.tests.junit.core)
+    androidTestImplementation(libs.tests.junit.android)
+    androidTestImplementation(libs.tests.espresso)
+    testImplementation(libs.tests.mockk)
+    testImplementation(libs.tests.coroutine)
+    testImplementation(libs.tests.turbine)
+    testImplementation(libs.tests.kotlin)
 
-    /** navigation **/
-    implementation(Navigation.FragmentKtx)
-    implementation(Navigation.UiKtx)
-    implementation(Navigation.DynamicFeaturesFragment)
+    /** Navigation **/
+    implementation(libs.navigation.fragment.ktx)
+    implementation(libs.navigation.ui.ktx)
+    implementation(libs.navigation.dynamic.features.fragment)
 
-    /** room **/
-    implementation(Room.Runtime)
-    implementation(Room.Ktx)
-    kapt(Room.Compiler)
+    /** Room **/
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    kapt(libs.room.compiler)
 
-    /** lifecycle **/
-    implementation(Lifecycle.ViewModelKtx)
-    implementation(Lifecycle.LiveDataKtx)
-    implementation(Lifecycle.ViewModelSavedState)
+    /** Lifecycle **/
+    implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.lifecycle.livedata.ktx)
+    implementation(libs.lifecycle.viewmodel.savedstate)
 
-    /** hilt **/
-    implementation(Hilt.Android)
-    kapt(Hilt.DaggerCompiler)
-    kapt(Hilt.AndroidCompiler)
-    implementation(Hilt.Work)
+    /** Hilt **/
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.dagger.compiler)
+    kapt(libs.hilt.android.compiler)
+    implementation(libs.hilt.work)
 
-    /** firebase **/
-    implementation(platform(Firebase.Bom))
-    implementation(Firebase.AnalyticsKts)
-    implementation(Firebase.FirestoreKtx)
-    implementation(Firebase.Authentication)
-    implementation(Firebase.CoroutinePlayServices)
-    implementation(Firebase.Crashlytics)
+    /** Firebase **/
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics.kts)
+    implementation(libs.firebase.rirestore.ktx)
+    implementation(libs.firebase.authentication)
+    implementation(libs.firebase.coroutine.play.services)
+    implementation(libs.firebase.crashlytics)
 
     /** Compose **/
     implementation(platform(libs.compose.bom))
@@ -127,7 +127,7 @@ dependencies {
     /** Work Manager **/
     implementation(libs.work.manager)
 
-    /** Kotlin serialization **/
+    /** Kotlin Serialization **/
     implementation(libs.kotlin.serilization)
 
     /** DataStore **/
