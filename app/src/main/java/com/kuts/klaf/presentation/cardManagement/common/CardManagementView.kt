@@ -223,14 +223,6 @@ private fun CardManagementFields(
         modifier = modifier.width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        WordTextField(
-            value = nativeWord,
-            labelTextId = R.string.label_native_word,
-            textColor = MainTheme.colors.cardManagementView.nativeWord,
-            onClick = onNativeWordFieldClick,
-            onValueChange = onNativeWordChange,
-        )
-
         DropDownAutocompleteFiled(
             expanded = autocompleteState.isActive && autocompleteState.autocomplete.isNotEmpty(),
             typedWord = foreignWord,
@@ -239,6 +231,14 @@ private fun CardManagementFields(
             onTypedWordChange = onForeignWordChange,
             onPronounceIconClick = onPronounceIconClick,
             onAutocompleteItemClick = onAutocompleteItemClick,
+        )
+
+        WordTextField(
+            value = nativeWord,
+            labelTextId = R.string.label_native_word,
+            textColor = MainTheme.colors.cardManagementView.nativeWord,
+            onClick = onNativeWordFieldClick,
+            onValueChange = onNativeWordChange,
         )
 
         IpaSection(
