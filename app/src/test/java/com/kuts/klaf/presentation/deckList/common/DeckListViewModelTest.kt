@@ -2,17 +2,25 @@ package com.kuts.klaf.presentation.deckList.common
 
 import androidx.work.WorkManager
 import app.cash.turbine.test
-import com.example.klaf.R
-import com.example.klaf.common.MainDispatcherRule
-import com.example.klaf.common.launchEventMassageIdEqualsTest
-import com.example.klaf.data.common.notifications.NotificationChannelInitializer
-import com.example.domain.entities.Deck
-import com.example.domain.repositories.CrashlyticsRepository
-import com.example.domain.useCases.*
-import com.example.klaf.data.firestore.repositoryImplementations.CrashlyticsRepositoryFirebaseImp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.crashlytics.FirebaseCrashlytics
-import io.mockk.*
+import com.kuts.domain.entities.Deck
+import com.kuts.domain.interactors.AuthenticationInteractor
+import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.domain.useCases.CreateDeckUseCase
+import com.kuts.domain.useCases.CreateInterimDeckUseCase
+import com.kuts.domain.useCases.FetchDeckSourceUseCase
+import com.kuts.domain.useCases.RemoveDeckUseCase
+import com.kuts.domain.useCases.RenameDeckUseCase
+import com.kuts.klaf.R
+import com.kuts.klaf.common.MainDispatcherRule
+import com.kuts.klaf.common.launchEventMassageIdEqualsTest
+import com.kuts.klaf.data.common.NetworkConnectivity
+import com.kuts.klaf.data.common.notifications.NotificationChannelInitializer
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
@@ -277,8 +285,10 @@ class DeckListViewModelTest {
         createInterimDeck: CreateInterimDeckUseCase = mockk(relaxed = true),
         notificationChannelInitializer: NotificationChannelInitializer = mockk(relaxed = true),
         workManager: WorkManager = mockk(relaxed = true),
-        auth: FirebaseAuth = FirebaseAuth.getInstance(),
+        auth: FirebaseAuth = mockk(relaxed = true),
         crashlyticsRepository: CrashlyticsRepository = mockk(relaxed = true),
+        networkConnectivity: NetworkConnectivity = mockk(relaxed = true) ,
+        authenticationInteractor: AuthenticationInteractor = mockk(relaxed = true)
     ): BaseDeckListViewModel {
         return DeckListViewModel(
             fetchDeckSource = fetchDeckSource,
@@ -290,6 +300,8 @@ class DeckListViewModelTest {
             workManager = workManager,
             auth = auth,
             crashlytics = crashlyticsRepository,
+            networkConnectivity = networkConnectivity,
+            authenticationInteractor = authenticationInteractor
         )
     }
 }

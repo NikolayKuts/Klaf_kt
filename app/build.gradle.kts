@@ -16,7 +16,7 @@ android {
     defaultConfig {
         applicationId = "com.kuts.klaf"
         compileSdk = 34
-        minSdk = 21
+        minSdk = 25
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
@@ -68,7 +68,6 @@ dependencies {
     implementation(libs.core.legacy.support)
     implementation(libs.core.fragment.ktx)
     implementation(libs.core.material)
-    implementation(libs.core.preferences)
 
     /** Tests **/
     testImplementation(libs.tests.junit.core)
@@ -88,6 +87,9 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     kapt(libs.room.compiler)
+
+    // When using Kotlin.
+//    ksp("androidx.hilt:hilt-compiler:1.1.0")
 
     /** Lifecycle **/
     implementation(libs.lifecycle.viewmodel.ktx)
@@ -135,4 +137,7 @@ dependencies {
 
     /** Retrofit **/
     implementation(libs.retrofit.core)
+
+    /** LoKdroid **/
+    implementation(libs.lokdroid.core)
 }

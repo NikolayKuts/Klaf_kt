@@ -1,8 +1,12 @@
 package com.kuts.klaf.data.firestore.repositoryImplementations
 
 import com.google.firebase.FirebaseNetworkException
-import com.google.firebase.auth.*
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.common.LoadingError
 import com.kuts.domain.common.LoadingState
@@ -10,8 +14,9 @@ import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.entities.AuthenticationState
 import com.kuts.domain.repositories.AuthenticationRepository
 import com.kuts.domain.repositories.CrashlyticsRepository
-import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError.*
-import com.kuts.klaf.presentation.common.log
+import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError.CommonError
+import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError.EmailAlreadyInUse
+import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError.NetworkError
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow

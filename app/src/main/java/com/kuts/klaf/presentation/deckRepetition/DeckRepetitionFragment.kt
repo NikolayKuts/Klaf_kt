@@ -10,7 +10,6 @@ import androidx.navigation.navGraphViewModels
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.BaseFragment
 import com.kuts.klaf.presentation.common.collectWhenStarted
-import com.kuts.klaf.presentation.common.log
 import com.kuts.klaf.presentation.deckRepetitionInfo.RepetitionInfoEvent
 import com.kuts.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint

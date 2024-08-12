@@ -2,7 +2,7 @@ package com.kuts.klaf.common
 
 import androidx.annotation.StringRes
 import app.cash.turbine.test
-import com.example.klaf.presentation.common.EventMessageSource
+import com.kuts.klaf.presentation.common.EventMessageSource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch

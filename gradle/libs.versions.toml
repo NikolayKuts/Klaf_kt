@@ -1,29 +1,28 @@
 [versions]
-kotlinCompilerExtension = "1.4.7"
-kotlinSerializationPlugin = "1.6.10"
-googleServices = "4.3.15"
-navigationSafeArgsKotlin = "2.5.0"
+kotlinCompilerExtension = "1.5.9"
+googleServices = "4.4.2"
+navigationSafeArgsKotlinPlugin = "2.5.0"
 agp = "8.5.1"
-kotlin = "1.8.21" #"1.9.0"
-firevaseCrashlyticsPlugin = "2.9.5"
+kotlin = "1.9.22"
+firevaseCrashlyticsPlugin = "3.0.2"
 # Retrofit #
 retrofit = "2.9.0"
 # DataStore #
-dataStore = "1.0.0"
+dataStore = "1.1.1"
 # Kotlin Serialization #
-kotlinSerialization = "1.4.1"
+kotlinSerialization = "1.6.3"
+kotlinSerializationPlugin = "1.9.10"
 # Work Manager #
-workManager = "2.7.1"
+workManager = "2.9.0"
 # Core #
-androidxCore = "1.9.0"
-androidxAppCompat = "1.5.1"
+androidxCore = "1.13.1"
+androidxAppCompat = "1.7.0"
 androidxLegacySupport = "1.0.0"
 androidxConstraintLayout = "2.1.4"
-androidxFragmentKtx = "1.5.4"
-material = "1.7.0"
-coroutinesCoreJvm = "1.6.4"
+androidxFragmentKtx = "1.8.1"
+material = "1.12.0"
+coroutinesCoreJvm = "1.7.3"
 javaxInject = "1"
-preferences = "1.2.0"
 # Tests #
 junitCore = "4.13.2"
 mockkCore = "1.12.4"
@@ -32,26 +31,27 @@ junitAndroid = "1.1.3"
 coroutineTest = "1.6.4"
 turbine = "0.10.0"
 # Navigation #
-navigationCore = "2.4.2"
+navigationCore = "2.7.7"
 # Room #
-roomCore = "2.4.3"
+roomCore = "2.6.1"
 # Lifecycle #
-lifecycle = "2.4.1"
+lifecycle = "2.8.3"
 # Hilt #
-hiltAndroid = "2.44.2"
-hiltDaggerCompiler = "2.44.2"
-hiltAndroidCompiler = "1.0.0"
-hiltWork = "1.0.0"
+hiltAndroid = "2.48"
+hiltDaggerCompiler = "2.48"
+hiltAndroidCompiler = "1.2.0"
+hiltWork = "1.2.0"
 # Firebase #
-firebaseBom = "31.5.0"
-firebaseCoroutinePlayServices = "1.6.1"
+firebaseBom = "33.1.2"
+firebaseCoroutinePlayServices = "1.7.3"
 # Compose #
-composeBom = "2023.06.00"
-composeComiler = "1.4.7"
-compseActivity = "1.6.1"
+composeBom = "2024.06.00"
+composeComiler = "1.5.14"
 composeConstraintLayout = "1.0.1"
 compseThemeAdapter = "1.2.1"
 compseAccompanist = "0.19.0"
+# LoKdroid #
+lokdroid = "0.0.1"
 
 [libraries]
 # Core #
@@ -64,7 +64,6 @@ core-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", versio
 core-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 core-coroutines-core-jvm = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core-jvm", version.ref = "coroutinesCoreJvm" }
 core-javax-inject = { group = "javax.inject", name = "javax.inject", version.ref = "javaxInject" }
-core-preferences = { group = "androidx.preference", name = "preference-ktx", version.ref = "preferences" }
 # Tests #
 tests-junit-core = { group = "junit", name = "junit", version.ref = "junitCore" }
 tests-mockk = { group = "io.mockk", name = "mockk", version.ref = "mockkCore" }
@@ -87,7 +86,7 @@ lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-lived
 lifecycle-viewmodel-savedstate = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-savedstate", version.ref = "lifecycle" }
 # Hilt #
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hiltAndroid" }
-hilt-dagger-compiler ={ group = "com.google.dagger", name = "hilt-compiler", version.ref = "hiltDaggerCompiler" }
+hilt-dagger-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hiltDaggerCompiler" }
 hilt-android-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltAndroidCompiler" }
 hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltWork" }
 # Firebase #
@@ -100,6 +99,7 @@ firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashly
 # Compose #
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 compose-compiler = { group = "androidx.compose.compiler", name = "compiler", version.ref = "composeComiler" }
+compose-activity = { group = "androidx.activity", name = "activity-compose" }
 compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 compose-ui = { group = "androidx.compose.ui", name = "ui" }
 compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
@@ -107,7 +107,6 @@ compose-foundation-layout = { group = "androidx.compose.foundation", name = "fou
 compose-material = { group = "androidx.compose.material", name = "material" }
 compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-compose-activity = { group = "androidx.activity", name = "activity-compose", version.ref = "compseActivity" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 compose-constraintLayout = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "composeConstraintLayout" }
 compose-theme-adapter = { group = "com.google.android.material", name = "compose-theme-adapter", version.ref = "compseThemeAdapter" }
@@ -120,13 +119,15 @@ kotlin-serilization = { group = "org.jetbrains.kotlinx", name = "kotlinx-seriali
 datastore-android = { group = "androidx.datastore", name = "datastore", version.ref = "dataStore" }
 # Retrofit #
 retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+# LoKdroid #
+lokdroid-core = { group = "com.lokdroid", name = "core", version.ref = "lokdroid" }
 
 [plugins]
 android-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerializationPlugin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-navigation-safeargs-kotlin = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigationSafeArgsKotlin" }
+navigation-safeargs-kotlin = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigationSafeArgsKotlinPlugin" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firevaseCrashlyticsPlugin" }
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hiltAndroid" }
 
