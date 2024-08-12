@@ -4,6 +4,7 @@
 /.idea
 .DS_Store
 /build
+build/
 /captures
 .externalNativeBuild
 .cxx
@@ -12,6 +13,11 @@ local.properties
 /gradlew.bat
 /app/google-services.json
 /app/release/
+
+buildSrc/build/
+
+app/.idea/
+.idea/
 
 # cash
 buildSrc/build/kotlin/buildSrcjar-classes.txt

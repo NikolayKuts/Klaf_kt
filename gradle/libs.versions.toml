@@ -1,0 +1,133 @@
+[versions]
+kotlinCompilerExtension = "1.5.9"
+googleServices = "4.4.2"
+navigationSafeArgsKotlinPlugin = "2.5.0"
+agp = "8.5.1"
+kotlin = "1.9.22"
+firevaseCrashlyticsPlugin = "3.0.2"
+# Retrofit #
+retrofit = "2.9.0"
+# DataStore #
+dataStore = "1.1.1"
+# Kotlin Serialization #
+kotlinSerialization = "1.6.3"
+kotlinSerializationPlugin = "1.9.10"
+# Work Manager #
+workManager = "2.9.0"
+# Core #
+androidxCore = "1.13.1"
+androidxAppCompat = "1.7.0"
+androidxLegacySupport = "1.0.0"
+androidxConstraintLayout = "2.1.4"
+androidxFragmentKtx = "1.8.1"
+material = "1.12.0"
+coroutinesCoreJvm = "1.7.3"
+javaxInject = "1"
+# Tests #
+junitCore = "4.13.2"
+mockkCore = "1.12.4"
+espressoCore = "3.4.0"
+junitAndroid = "1.1.3"
+coroutineTest = "1.6.4"
+turbine = "0.10.0"
+# Navigation #
+navigationCore = "2.7.7"
+# Room #
+roomCore = "2.6.1"
+# Lifecycle #
+lifecycle = "2.8.3"
+# Hilt #
+hiltAndroid = "2.48"
+hiltDaggerCompiler = "2.48"
+hiltAndroidCompiler = "1.2.0"
+hiltWork = "1.2.0"
+# Firebase #
+firebaseBom = "33.1.2"
+firebaseCoroutinePlayServices = "1.7.3"
+# Compose #
+composeBom = "2024.06.00"
+composeComiler = "1.5.14"
+composeConstraintLayout = "1.0.1"
+compseThemeAdapter = "1.2.1"
+compseAccompanist = "0.19.0"
+# LoKdroid #
+lokdroid = "0.0.1"
+
+[libraries]
+# Core #
+core-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
+core-android-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
+core-app-compat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppCompat" }
+core-legacy-support = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "androidxLegacySupport" }
+core-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidxConstraintLayout" }
+core-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidxFragmentKtx" }
+core-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+core-coroutines-core-jvm = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core-jvm", version.ref = "coroutinesCoreJvm" }
+core-javax-inject = { group = "javax.inject", name = "javax.inject", version.ref = "javaxInject" }
+# Tests #
+tests-junit-core = { group = "junit", name = "junit", version.ref = "junitCore" }
+tests-mockk = { group = "io.mockk", name = "mockk", version.ref = "mockkCore" }
+tests-espresso = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+tests-junit-android = { group = "androidx.test.ext", name = "junit", version.ref = "junitAndroid" }
+tests-coroutine = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutineTest" }
+tests-kotlin = { group = "org.jetbrains.kotlin", name = "kotlin-test" }
+tests-turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+# Navigation
+navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationCore" }
+navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationCore" }
+navigation-dynamic-features-fragment = { group = "androidx.navigation", name = "navigation-dynamic-features-fragment", version.ref = "navigationCore" }
+# Room #
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomCore" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomCore" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCore" }
+# Lifecycle #
+lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
+lifecycle-viewmodel-savedstate = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-savedstate", version.ref = "lifecycle" }
+# Hilt #
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hiltAndroid" }
+hilt-dagger-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hiltDaggerCompiler" }
+hilt-android-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltAndroidCompiler" }
+hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltWork" }
+# Firebase #
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-coroutine-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "firebaseCoroutinePlayServices" }
+firebase-analytics-kts = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
+firebase-rirestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
+firebase-authentication = { group = "com.google.firebase", name = "firebase-auth-ktx" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
+# Compose #
+compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+compose-compiler = { group = "androidx.compose.compiler", name = "compiler", version.ref = "composeComiler" }
+compose-activity = { group = "androidx.activity", name = "activity-compose" }
+compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
+compose-ui = { group = "androidx.compose.ui", name = "ui" }
+compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
+compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout" }
+compose-material = { group = "androidx.compose.material", name = "material" }
+compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
+compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+compose-constraintLayout = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "composeConstraintLayout" }
+compose-theme-adapter = { group = "com.google.android.material", name = "compose-theme-adapter", version.ref = "compseThemeAdapter" }
+compose-accompanist = { group = "com.google.accompanist", name = "accompanist-swiperefresh", version.ref = "compseAccompanist" }
+# Work Manager #
+work-manager = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
+# Kotlin Serialization #
+kotlin-serilization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" }
+# DataStore #
+datastore-android = { group = "androidx.datastore", name = "datastore", version.ref = "dataStore" }
+# Retrofit #
+retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+# LoKdroid #
+lokdroid-core = { group = "com.lokdroid", name = "core", version.ref = "lokdroid" }
+
+[plugins]
+android-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerializationPlugin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+navigation-safeargs-kotlin = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigationSafeArgsKotlinPlugin" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firevaseCrashlyticsPlugin" }
+hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hiltAndroid" }
+

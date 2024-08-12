@@ -1,6 +1,6 @@
 package com.kuts.klaf.data.common
 
-import com.example.domain.entities.Deck
+import com.kuts.domain.entities.Deck
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
