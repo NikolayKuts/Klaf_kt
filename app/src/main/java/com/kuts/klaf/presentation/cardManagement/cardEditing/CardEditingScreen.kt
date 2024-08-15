@@ -10,9 +10,12 @@ import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.ipa.toLetterInfos
 import com.kuts.domain.ipa.toRowInfos
 import com.kuts.domain.ipa.toRowIpaItemHolders
-import com.kuts.klaf.presentation.cardManagement.common.MAX_IPA_LENGTH
-import com.kuts.klaf.presentation.cardManagement.common.MAX_FOREIGN_WORD_LENGTH
+import com.kuts.klaf.R
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementView
+import com.kuts.klaf.presentation.cardManagement.common.MAX_FOREIGN_WORD_LENGTH
+import com.kuts.klaf.presentation.cardManagement.common.MAX_IPA_LENGTH
+import com.kuts.klaf.presentation.cardManagement.common.MAX_NATIVE_WORD_LENGTH
+import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.rememberAsMutableStateOf
 
 @Composable
@@ -21,6 +24,7 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
     val card by viewModel.card.collectAsState(initial = null)
     val autocompleteState by viewModel.autocompleteState.collectAsState()
     val pronunciationLoadingState by viewModel.pronunciationLoadingState.collectAsState()
+    val nativeWordSuggestionsState by viewModel.nativeWordSuggestionsState.collectAsState()
 
     deck?.let { receivedDeck ->
         card?.let { receivedCard ->
@@ -39,7 +43,7 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                 autocompleteState = autocompleteState,
                 pronunciationLoadingState = pronunciationLoadingState,
                 closeAutocompletePopupMenu = { viewModel.closeAutocompleteMenu() },
-                closeNativeWordSuggestionsPopupMenu = { TODO("Not yet implemented") },
+                nativeWordSuggestionsState = nativeWordSuggestionsState,
                 onLetterClick = { index, letterInfo ->
                     val updatedIsChecked = when (letterInfo.letter) {
                         LetterInfo.EMPTY_LETTER -> false
@@ -53,8 +57,16 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                     ipaHoldersState = letterInfosState.toRowIpaItemHolders()
                 },
                 onNativeWordChange = { nativeWord ->
-                    if (nativeWord.length < MAX_FOREIGN_WORD_LENGTH) {
+                    if (nativeWord.length < MAX_NATIVE_WORD_LENGTH) {
                         nativeWordState = nativeWord
+                    } else {
+                        viewModel.sendEventMessage(
+                            message = EventMessage(
+                                resId = R.string.native_word_is_too_long,
+                                type = EventMessage.Type.Negative,
+                                duration = EventMessage.Duration.Long
+                            )
+                        )
                     }
                 },
                 onForeignWordChange = { foreignWord ->
@@ -62,7 +74,16 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                         foreignWordState = foreignWord
                         letterInfosState = foreignWord.generateLetterInfos()
                         ipaHoldersState = emptyList()
-                        viewModel.updateAutocompleteState(word = foreignWord)
+                        nativeWordState = ""
+                        viewModel.updateEditingState(word = foreignWord)
+                    } else {
+                        viewModel.sendEventMessage(
+                            message = EventMessage(
+                                resId = R.string.foreign_word_is_too_long,
+                                type = EventMessage.Type.Negative,
+                                duration = EventMessage.Duration.Long
+                            )
+                        )
                     }
                 },
                 onIpaChange = { letterGroupIndex: Int, ipa: String ->
@@ -71,6 +92,14 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                             ipaHoldersState.updatedAt(index = letterGroupIndex) { oldValue ->
                                 oldValue.copy(ipa = ipa)
                             }
+                    } else {
+                        viewModel.sendEventMessage(
+                            message = EventMessage(
+                                resId = R.string.ipa_is_too_long,
+                                type = EventMessage.Type.Negative,
+                                duration = EventMessage.Duration.Long
+                            )
+                        )
                     }
                 },
                 onConfirmClick = {
@@ -89,13 +118,62 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                     letterInfosState = chosenWord.toRowInfos()
                     viewModel.setSelectedAutocomplete(selectedWord = chosenWord)
                 },
-                onNativeWordSuggestionItemClick = {
-                    TODO("Not yet implemented")
+                closeNativeWordSuggestionsPopupMenu = {
+                    viewModel.manageNativeWordSuggestionsState(
+                        state = nativeWordSuggestionsState.copy(isActive = false)
+                    )
                 },
-                onNativeWordFieldArrowIconClick = { TODO("Not yet implemented") },
-                nativeWordSuggestionsState = TODO("Not yet implemented"),
-                onConfirmSuggestionsSelection = { TODO("Not yet implemented") },
-                onClearNativeWordSuggestionsSelectionClick = { TODO("Not yet implemented") }
+                onNativeWordSuggestionItemClick = { chosenWordIndex ->
+                    val updatedSuggestions = nativeWordSuggestionsState.suggestions
+                        .updatedAt(index = chosenWordIndex) { oldValue ->
+                            oldValue.copy(isSelected = !oldValue.isSelected)
+                        }
+
+                    viewModel.manageNativeWordSuggestionsState(
+                        state = nativeWordSuggestionsState.copy(suggestions = updatedSuggestions)
+                    )
+                },
+                onNativeWordFieldArrowIconClick = {
+                    val invertedSuggestionsMenuState = nativeWordSuggestionsState.isActive.not()
+
+                    viewModel.manageNativeWordSuggestionsState(
+                        state = nativeWordSuggestionsState.copy(isActive = invertedSuggestionsMenuState)
+                    )
+                },
+                onConfirmSuggestionsSelection = {
+                    viewModel.manageNativeWordSuggestionsState(
+                        state = nativeWordSuggestionsState.copy(isActive = false)
+                    )
+                    val selectedNativeWordSuggestions = nativeWordSuggestionsState.suggestions
+                        .filter { suggestionItem -> suggestionItem.isSelected }
+                        .joinToString(separator = ", ") { suggestionItem -> suggestionItem.word }
+
+                    if (selectedNativeWordSuggestions.length <= MAX_NATIVE_WORD_LENGTH) {
+                        nativeWordState = selectedNativeWordSuggestions
+                    } else {
+                        viewModel.sendEventMessage(
+                            message = EventMessage(
+                                resId = R.string.native_word_is_too_long,
+                                type = EventMessage.Type.Negative,
+                                duration = EventMessage.Duration.Long
+                            )
+                        )
+                    }
+                },
+                onClearNativeWordSuggestionsSelectionClick = {
+                    val updatedSuggestions = nativeWordSuggestionsState.suggestions.map { suggestionItem ->
+                        suggestionItem.copy(isSelected = false)
+                    }
+
+                    viewModel.manageNativeWordSuggestionsState(
+                        state = nativeWordSuggestionsState.copy(
+                            suggestions = updatedSuggestions,
+                            isActive = false
+                        )
+                    )
+
+                    nativeWordState = ""
+                }
             )
         }
     }
