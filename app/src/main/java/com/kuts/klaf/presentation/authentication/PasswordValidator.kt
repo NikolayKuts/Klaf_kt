@@ -7,13 +7,13 @@ class PasswordValidator : Validator<String, PasswordValidationResult> {
 
     sealed interface PasswordValidationResult : Validator.ValidationResult {
 
-        object Empty : PasswordValidationResult
+        data object Empty : PasswordValidationResult
 
-        object ToShort : PasswordValidationResult
+        data object ToShort : PasswordValidationResult
 
-        object ToLong : PasswordValidationResult
+        data object ToLong : PasswordValidationResult
 
-        object Valid : PasswordValidationResult
+        data object Valid : PasswordValidationResult
     }
 
     companion object {

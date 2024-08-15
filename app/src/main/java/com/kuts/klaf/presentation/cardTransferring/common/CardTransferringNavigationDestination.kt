@@ -2,13 +2,13 @@ package com.kuts.klaf.presentation.cardTransferring.common
 
 sealed interface CardTransferringNavigationDestination {
 
-    object CardMovingDialog : CardTransferringNavigationDestination
+    data object CardMovingDialog : CardTransferringNavigationDestination
 
-    object CardAddingFragment : CardTransferringNavigationDestination
+    data object CardAddingFragment : CardTransferringNavigationDestination
 
-    object CardDeletionDialog : CardTransferringNavigationDestination
+    data object CardDeletionDialog : CardTransferringNavigationDestination
 
-    object CardTransferringScreen : CardTransferringNavigationDestination
+    data object CardTransferringScreen : CardTransferringNavigationDestination
 
     data class CardEditingFragment(
         val selectedCardIndexIndex: Int,

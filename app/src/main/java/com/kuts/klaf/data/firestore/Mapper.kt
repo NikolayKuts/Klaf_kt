@@ -71,7 +71,3 @@ fun StorageSaveVersion.toFirestoreEntity(): FirestoreStorageSaveVersion {
 fun FirestoreAutocompleteWord.toDomainEntity(): AutocompleteWord = AutocompleteWord(
     value = word
 )
-
-fun AutocompleteWord.toDomainEntity(): FirestoreAutocompleteWord = FirestoreAutocompleteWord(
-    word = value
-)

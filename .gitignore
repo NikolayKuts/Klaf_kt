@@ -24,3 +24,5 @@ buildSrc/build/kotlin/buildSrcjar-classes.txt
 buildSrc/build/libs/buildSrc.jar
 buildSrc/build/pluginUnderTestMetadata/plugin-under-test-metadata.properties
 buildSrc/build/tmp/jar/MANIFEST.MF
+
+/app/src/main/java/com/kuts/klaf/common/SecretConstants.kt

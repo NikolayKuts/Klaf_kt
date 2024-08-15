@@ -43,8 +43,8 @@ class WordAutocompleteFirestoreImp @Inject constructor(
                 .await()
                 .documents.mapNotNull { document -> document.toObject<FirestoreAutocompleteWord>() }
                 .map { firestoreAutocompleteWord -> firestoreAutocompleteWord.toDomainEntity() }
-                .map { autocompleteWord -> AutocompleteWord(value = autocompleteWord.value.trim()) }
-                .filter { autocompleteWord -> autocompleteWord.value.length > MIN_WORD_LENGTH }
+                .map { autocompleteWord -> AutocompleteWord(value = autocompleteWord.word().trim()) }
+                .filter { autocompleteWord -> autocompleteWord.word().length > MIN_WORD_LENGTH }
         }
     }
 }

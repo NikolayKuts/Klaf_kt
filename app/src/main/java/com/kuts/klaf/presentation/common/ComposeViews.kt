@@ -197,8 +197,9 @@ fun ClosingButton(onClick: () -> Unit) {
 }
 
 @Composable
-fun ConfirmationButton(onClick: () -> Unit) {
+fun ConfirmationButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
     RoundButton(
+        modifier = modifier,
         background = MainTheme.colors.common.positiveDialogButton,
         iconId = R.drawable.ic_confirmation_24,
         onClick = onClick

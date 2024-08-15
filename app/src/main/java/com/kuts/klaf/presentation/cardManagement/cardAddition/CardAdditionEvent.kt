@@ -12,6 +12,12 @@ sealed interface CardAdditionEvent {
 
     data class UpdateDataOnAutocompleteSelected(val word: String) : CardAdditionEvent
 
+    data class NativeWordSelected(val wordIndex: Int) : CardAdditionEvent
+
+    data object ConfirmSuggestionsSelection : CardAdditionEvent
+
+    data object ClearNativeWordSuggestionsSelectionClicked : CardAdditionEvent
+
     data class UpdateIpa(val letterGroupIndex: Int, val ipa: String) : CardAdditionEvent
 
     data class ChangeLetterSelectionWithIpaTemplate(
@@ -27,7 +33,11 @@ sealed interface CardAdditionEvent {
         val ipaHolders: List<IpaHolder>,
     ) : CardAdditionEvent
 
-    object PronounceForeignWord : CardAdditionEvent
+    data object PronounceForeignWordClicked : CardAdditionEvent
 
-    object CloseAutocompleteMenu : CardAdditionEvent
+    data object ManageNativeWordSuggestionsMenuState : CardAdditionEvent
+
+    data object CloseAutocompleteMenu : CardAdditionEvent
+
+    data object CloseNativeWordSuggestionsMenu : CardAdditionEvent
 }

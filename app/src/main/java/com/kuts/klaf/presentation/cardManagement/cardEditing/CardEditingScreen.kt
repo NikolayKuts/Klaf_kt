@@ -11,7 +11,7 @@ import com.kuts.domain.ipa.toLetterInfos
 import com.kuts.domain.ipa.toRowInfos
 import com.kuts.domain.ipa.toRowIpaItemHolders
 import com.kuts.klaf.presentation.cardManagement.common.MAX_IPA_LENGTH
-import com.kuts.klaf.presentation.cardManagement.common.MAX_WORD_LENGTH
+import com.kuts.klaf.presentation.cardManagement.common.MAX_FOREIGN_WORD_LENGTH
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementView
 import com.kuts.klaf.presentation.common.rememberAsMutableStateOf
 
@@ -38,7 +38,8 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                 ipaHolders = ipaHoldersState,
                 autocompleteState = autocompleteState,
                 pronunciationLoadingState = pronunciationLoadingState,
-                onCloseAutocompletePopupMenuClick = { viewModel.closeAutocompleteMenu() },
+                closeAutocompletePopupMenu = { viewModel.closeAutocompleteMenu() },
+                closeNativeWordSuggestionsPopupMenu = { TODO("Not yet implemented") },
                 onLetterClick = { index, letterInfo ->
                     val updatedIsChecked = when (letterInfo.letter) {
                         LetterInfo.EMPTY_LETTER -> false
@@ -52,12 +53,12 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                     ipaHoldersState = letterInfosState.toRowIpaItemHolders()
                 },
                 onNativeWordChange = { nativeWord ->
-                    if (nativeWord.length < MAX_WORD_LENGTH) {
+                    if (nativeWord.length < MAX_FOREIGN_WORD_LENGTH) {
                         nativeWordState = nativeWord
                     }
                 },
                 onForeignWordChange = { foreignWord ->
-                    if (foreignWord.length < MAX_WORD_LENGTH) {
+                    if (foreignWord.length < MAX_FOREIGN_WORD_LENGTH) {
                         foreignWordState = foreignWord
                         letterInfosState = foreignWord.generateLetterInfos()
                         ipaHoldersState = emptyList()
@@ -87,7 +88,14 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                     foreignWordState = chosenWord
                     letterInfosState = chosenWord.toRowInfos()
                     viewModel.setSelectedAutocomplete(selectedWord = chosenWord)
-                }
+                },
+                onNativeWordSuggestionItemClick = {
+                    TODO("Not yet implemented")
+                },
+                onNativeWordFieldArrowIconClick = { TODO("Not yet implemented") },
+                nativeWordSuggestionsState = TODO("Not yet implemented"),
+                onConfirmSuggestionsSelection = { TODO("Not yet implemented") },
+                onClearNativeWordSuggestionsSelectionClick = { TODO("Not yet implemented") }
             )
         }
     }

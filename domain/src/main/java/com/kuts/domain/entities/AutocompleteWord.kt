@@ -1,3 +1,8 @@
 package com.kuts.domain.entities
 
-data class AutocompleteWord(val value: String)
+import com.kuts.domain.common.Wordable
+
+data class AutocompleteWord(private val value: String) : Wordable {
+
+    override fun word(): String = value
+}
