@@ -29,6 +29,9 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
             autocompleteState = autocompleteState,
             pronunciationLoadingState = loadingState,
             nativeWordSuggestionsState = nativeWordSuggestions,
+            onForeignWordTextFieldClick = {
+                viewModel.sendEvent(event = CloseNativeWordSuggestionsMenu)
+            },
             closeAutocompletePopupMenu = { viewModel.sendEvent(event = CloseAutocompleteMenu) },
             closeNativeWordSuggestionsPopupMenu = {
                 viewModel.sendEvent(event = CloseNativeWordSuggestionsMenu)

@@ -70,12 +70,13 @@ fun CardManagementFields(
     loadingState: LoadingState<Unit>,
     modifier: Modifier = Modifier,
     confirmationButtonSection: @Composable BoxScope.() -> Unit,
-    onNativeWordFieldClick: () -> Unit,
+    onForeignWordTextFieldClick: () -> Unit,
     onNativeWordChange: (String) -> Unit,
     onForeignWordChange: (String) -> Unit,
     onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
+    onNativeWordFieldClick: () -> Unit,
     nativeWordSuggestionsState: NativeWordSuggestionsState,
     onNativeWordSuggestionClick: (wordIndex: Int) -> Unit,
     onNativeWordFieldArrowIconClick: () -> Unit,
@@ -86,7 +87,7 @@ fun CardManagementFields(
         modifier = modifier.width(CARD_MANAGEMENT_CONTAINER_WIDTH.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        DropDownAutocompleteFiled(
+        DropDownForeignWordField(
             expanded = autocompleteState.isActive && autocompleteState.autocomplete.isNotEmpty(),
             typedWord = foreignWord,
             autocompleteState = autocompleteState,
@@ -96,12 +97,13 @@ fun CardManagementFields(
             onAutocompleteItemClick = { autoCompleteWord, _ ->
                 onAutocompleteItemClick(autoCompleteWord.word())
             },
+            onTextFiledClick = onForeignWordTextFieldClick
         )
 
         val isNativeWordSuggestionsStateActiveAndNotEmpty = nativeWordSuggestionsState.isActive
                 && nativeWordSuggestionsState.suggestions.isNotEmpty()
 
-        DropDownNativeWordFiled(
+        DropDownNativeWordField(
             expanded = isNativeWordSuggestionsStateActiveAndNotEmpty,
             typedWord = nativeWord,
             nativeWordSuggestionsState = nativeWordSuggestionsState,
@@ -109,7 +111,7 @@ fun CardManagementFields(
             onTypedWordChange = onNativeWordChange,
             onArrowIconClick = onNativeWordFieldArrowIconClick,
             onSuggestionClick = onNativeWordSuggestionClick,
-            onTextFiledClick = onNativeWordFieldClick,
+            onTextFieldClick = onNativeWordFieldClick,
             onConfirmSuggestionsSelection = onConfirmSuggestionsSelection,
             onClearSelectionClick = onClearSelectionClick,
         )
@@ -123,16 +125,17 @@ fun CardManagementFields(
 }
 
 @Composable
-private fun DropDownAutocompleteFiled(
+private fun DropDownForeignWordField(
     expanded: Boolean,
     typedWord: String,
     autocompleteState: AutocompleteState,
     loadingState: LoadingState<Unit>,
     onTypedWordChange: (String) -> Unit,
     onPronounceIconClick: () -> Unit,
+    onTextFiledClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: AutocompleteWord, choseIndex: Int) -> Unit,
 ) {
-    DropDownWordFiled(
+    DropDownWordField(
         expanded = expanded,
         typedWord = typedWord,
         dropdownContent = autocompleteState.autocomplete,
@@ -170,12 +173,12 @@ private fun DropDownAutocompleteFiled(
                 onAutocompleteItemClick = { onAutocompleteItemClick(wordable, wordableIndex) }
             )
         },
-        onTextFiledClick = {}
+        onTextFieldClick = onTextFiledClick
     )
 }
 
 @Composable
-fun DropDownNativeWordFiled(
+fun DropDownNativeWordField(
     expanded: Boolean,
     typedWord: String,
     nativeWordSuggestionsState: NativeWordSuggestionsState,
@@ -183,11 +186,11 @@ fun DropDownNativeWordFiled(
     onTypedWordChange: (String) -> Unit,
     onArrowIconClick: () -> Unit,
     onSuggestionClick: (wordIndex: Int) -> Unit,
-    onTextFiledClick: () -> Unit,
+    onTextFieldClick: () -> Unit,
     onConfirmSuggestionsSelection: () -> Unit,
     onClearSelectionClick: () -> Unit,
 ) {
-    DropDownWordFiled(
+    DropDownWordField(
         expanded = expanded,
         typedWord = typedWord,
         dropdownContent = nativeWordSuggestionsState.suggestions.map { wordSuggestion ->
@@ -222,16 +225,15 @@ fun DropDownNativeWordFiled(
             )
         },
         onTypedWordChange = onTypedWordChange,
-        onTextFiledClick = onTextFiledClick,
+        onTextFieldClick = onTextFieldClick,
         itemContent = { wordable, wordableIndex, onItemSizeChange ->
             Row(
-                modifier = Modifier.noRippleClickable { onSuggestionClick(wordableIndex) },
+                modifier = Modifier.noRippleClickable { onSuggestionClick(wordableIndex) }
+                    .onSizeChanged { intSize -> onItemSizeChange(intSize) },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    modifier = Modifier
-                        .weight(1f)
-                        .onSizeChanged { intSize -> onItemSizeChange(intSize) },
+                    modifier = Modifier.weight(1f),
                     text = wordable.word(),
                     fontStyle = FontStyle.Italic
                 )
@@ -246,7 +248,7 @@ fun DropDownNativeWordFiled(
             }
             Divider()
         },
-        dropdownMenuContent = {
+        bottomDropdownMenuContent = {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

@@ -42,6 +42,11 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                 ipaHolders = ipaHoldersState,
                 autocompleteState = autocompleteState,
                 pronunciationLoadingState = pronunciationLoadingState,
+                onForeignWordTextFieldClick = {
+                    viewModel.manageNativeWordSuggestionsState(
+                        state = nativeWordSuggestionsState.copy(isActive = false)
+                    )
+                },
                 closeAutocompletePopupMenu = { viewModel.closeAutocompleteMenu() },
                 nativeWordSuggestionsState = nativeWordSuggestionsState,
                 onLetterClick = { index, letterInfo ->

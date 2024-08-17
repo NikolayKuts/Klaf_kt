@@ -44,49 +44,52 @@ import com.kuts.klaf.presentation.common.verticalScrollbar
 import com.kuts.klaf.presentation.theme.MainTheme
 
 @Composable
-fun <T : Wordable> DropDownWordFiled(
+fun <T : Wordable> DropDownWordField(
     expanded: Boolean,
     typedWord: String,
     dropdownContent: List<T>,
     trailingIcon: @Composable () -> Unit,
     @StringRes labelResId: Int,
     textColor: Color,
-    onTextFiledClick: () -> Unit,
+    onTextFieldClick: () -> Unit,
     onTypedWordChange: (String) -> Unit,
     itemContent: @Composable (wordable: T, wordableIndex: Int, onSizeChange: (IntSize) -> Unit) -> Unit,
-    dropdownMenuContent: @Composable () -> Unit = { },
+    bottomDropdownMenuContent: @Composable () -> Unit = { },
 ) {
     val density = LocalDensity.current
     val screenHeightDp = LocalConfiguration.current.screenHeightDp
     var textFieldPosition by remember { mutableStateOf(Offset.Zero) }
     var textFieldSize by remember { mutableStateOf(IntSize.Zero) }
-    var itemsHeightDp by rememberAsMutableStateOf(value = 10.dp)
-    var popupContentContainerHeight by rememberAsMutableStateOf(value = 0.dp)
+    var itemHeightDp by rememberAsMutableStateOf(value = 10.dp)
+    var popupContentContainerHeightDp by rememberAsMutableStateOf(value = 0.dp)
     val popupMenuPadding = 6.dp
+    var bottomDropdownMenuContentHeightDp by remember { mutableStateOf(0.dp) }
+
 
     val interactionSource = remember { MutableInteractionSource() }
 
     LaunchedEffect(interactionSource) {
         interactionSource.interactions.collect { interaction ->
             if (interaction is PressInteraction.Release) {
-                onTextFiledClick()
+                onTextFieldClick()
             }
         }
     }
 
     LaunchedEffect(
         dropdownContent,
-        textFieldPosition,
         textFieldSize,
-        itemsHeightDp,
+        itemHeightDp,
+        textFieldPosition,
+        bottomDropdownMenuContentHeightDp
     ) {
         val popupMenuPosition = density.run {
             textFieldPosition.y.toDp() + textFieldSize.height.toDp()
         }
         val freeContentHeight = screenHeightDp.dp - popupMenuPosition - 32.dp
-        val neededHeight = itemsHeightDp * dropdownContent.size
+        val neededHeight = itemHeightDp * dropdownContent.size
 
-        popupContentContainerHeight = if (neededHeight < freeContentHeight) {
+        popupContentContainerHeightDp = if (neededHeight < freeContentHeight) {
             neededHeight
         } else {
             freeContentHeight
@@ -105,7 +108,8 @@ fun <T : Wordable> DropDownWordFiled(
         )
 
         if (textFieldValue.text != typedWord) {
-            textFieldValue = TextFieldValue(text = typedWord, selection = TextRange(typedWord.length))
+            textFieldValue =
+                TextFieldValue(text = typedWord, selection = TextRange(typedWord.length))
         }
 
         TextField(
@@ -147,7 +151,7 @@ fun <T : Wordable> DropDownWordFiled(
                 ) {
                     LazyColumn(
                         modifier = Modifier
-                            .height(popupContentContainerHeight)
+                            .height(popupContentContainerHeightDp)
                             .verticalScrollbar(
                                 state = lazySate,
                                 color = MainTheme.colors.material.primary,
@@ -157,13 +161,19 @@ fun <T : Wordable> DropDownWordFiled(
                         dropdownContent.onEachIndexed { index, wordable ->
                             item {
                                 itemContent(wordable, index) { intSize ->
-                                    itemsHeightDp = density.run { intSize.height.toDp() }
+                                    itemHeightDp = density.run { intSize.height.toDp() }
                                 }
                             }
                         }
                     }
 
-                    dropdownMenuContent()
+                    Box(
+                        modifier = Modifier.onGloballyPositioned { coordinates ->
+                            bottomDropdownMenuContentHeightDp = coordinates.size.height.dp
+                        }
+                    ) {
+                        bottomDropdownMenuContent()
+                    }
                 }
             }
         }
