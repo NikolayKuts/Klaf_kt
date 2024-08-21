@@ -153,4 +153,5 @@
     <string name="native_word_is_too_long">Input length limit exceeded for \'native\'</string>
     <string name="foreign_word_is_too_long">Input length limit exceeded for \'foreign\'</string>
     <string name="ipa_is_too_long">Input length limit exceeded for \'IPA\'</string>
+    <string name="word_info_retrieving_common_warning_message">Retrieving word info is failed</string>
 </resources>

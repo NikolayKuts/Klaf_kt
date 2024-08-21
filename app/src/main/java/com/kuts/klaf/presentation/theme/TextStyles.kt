@@ -186,7 +186,6 @@ val DarkBackSideCardWordTextStyle = MainTextStyle.copy(
     color = DarkMainPalettes.deckRepetitionScreen.backSideCardWord,
 )
 
-
 val IpaPromptsTextStyle = MainTextStyle.copy(
     fontSize = CommonDimension.ipaPromptsTextSize,
     fontStyle = FontStyle.Italic
@@ -273,4 +272,16 @@ val DarkIpaValueTextStyle = MainTextStyle.copy(color = DarkMainPalettes.material
 val commonDeckNavigationDialogTitle = MainTextStyle.copy(
     fontSize = 30.sp,
     fontStyle = FontStyle.Italic
+)
+
+val LightCardManagementTranscriptionTextStyles = MainTextStyle.copy(
+    fontSize = CommonDimension.viewingCardContentTextSize,
+    fontStyle = FontStyle.Italic,
+    color = LightMainPalettes.cardManagementView.transcription
+)
+
+val DarkCardManagementTranscriptionTextStyles = MainTextStyle.copy(
+    fontSize = CommonDimension.viewingCardContentTextSize,
+    fontStyle = FontStyle.Italic,
+    color = DarkMainPalettes.cardManagementView.transcription
 )

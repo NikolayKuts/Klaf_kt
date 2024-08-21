@@ -31,36 +31,36 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
 
     sealed interface SigningInLoadingError : LoadingError {
 
-        object NoUserRecord : SigningInLoadingError
+        data object NoUserRecord : SigningInLoadingError
 
-        object InvalidPassword : SigningInLoadingError
+        data object InvalidPassword : SigningInLoadingError
 
-        object NetworkError : SigningInLoadingError
+        data object NetworkError : SigningInLoadingError
 
-        object CommonError : SigningInLoadingError
+        data object CommonError : SigningInLoadingError
     }
 
     sealed interface SigningUpLoadingError : LoadingError {
 
-        object EmailAlreadyInUse : SigningUpLoadingError
+        data object EmailAlreadyInUse : SigningUpLoadingError
 
-        object NetworkError : SigningUpLoadingError
+        data object NetworkError : SigningUpLoadingError
 
-        object CommonError : SigningUpLoadingError
+        data object CommonError : SigningUpLoadingError
     }
 
     sealed interface SigningOutLoadingError : LoadingError {
 
-        object CommonError : SigningOutLoadingError
+        data object CommonError : SigningOutLoadingError
     }
 
     sealed interface AccountDeletingError : LoadingError {
 
-        object CommonError : AccountDeletingError
+        data object CommonError : AccountDeletingError
 
-        object NetworkError : AccountDeletingError
+        data object NetworkError : AccountDeletingError
 
-        object RecentLoginRequired : AccountDeletingError
+        data object RecentLoginRequired : AccountDeletingError
     }
 
     override val authenticationState: Flow<AuthenticationState> = callbackFlow {

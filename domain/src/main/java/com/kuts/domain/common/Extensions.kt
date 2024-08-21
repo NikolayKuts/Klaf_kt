@@ -4,6 +4,9 @@ import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.repositories.CrashlyticsRepository
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -140,3 +143,17 @@ fun <T> Flow<T>.launchIn(
 ): Job = scope.launch(context = context) {
     collect() // tail-call
 }
+
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+fun <Input, Output> Flow<Input>.debouncedLaunch(
+    scope: CoroutineScope,
+    timeoutMillis: Long = 300,
+    context: CoroutineContext = Dispatchers.IO,
+    execute: suspend (Input) -> Flow<Output>,
+    onEach: suspend (Output) -> Unit
+): Job = this.debounce(timeoutMillis)
+    .distinctUntilChanged()
+    .flatMapLatest { input -> execute(input) }
+    .onEach { value -> onEach(value) }
+    .flowOn(context = context)
+    .launchIn(scope = scope)

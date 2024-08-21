@@ -15,8 +15,9 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
     val nativeWord = cardState.nativeWord
     val ipaHolders = cardState.ipaHolders
     val autocompleteState by viewModel.autocompleteState.collectAsState()
-    val loadingState by viewModel.pronunciationLoadingState.collectAsState()
-    val nativeWordSuggestions by viewModel.nativeWordSuggestionsState.collectAsState()
+    val pronunciationLoadingState by viewModel.pronunciationLoadingState.collectAsState()
+    val nativeWordSuggestionsState by viewModel.nativeWordSuggestionsState.collectAsState()
+    val transcription by viewModel.transcriptionState.collectAsState()
 
     deck.value?.let { receivedDeck ->
         CardManagementView(
@@ -27,8 +28,8 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
             foreignWord = foreignWord,
             ipaHolders = ipaHolders,
             autocompleteState = autocompleteState,
-            pronunciationLoadingState = loadingState,
-            nativeWordSuggestionsState = nativeWordSuggestions,
+            pronunciationLoadingState = pronunciationLoadingState,
+            nativeWordSuggestionsState = nativeWordSuggestionsState,
             onForeignWordTextFieldClick = {
                 viewModel.sendEvent(event = CloseNativeWordSuggestionsMenu)
             },
@@ -71,6 +72,7 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
             onAutocompleteItemClick = { autocompleteWord ->
                 viewModel.sendEvent(event = UpdateDataOnAutocompleteSelected(word = autocompleteWord))
             },
+            transcription = transcription,
             onNativeWordFieldArrowIconClick = {
                 viewModel.sendEvent(event = ManageNativeWordSuggestionsMenuState)
             },

@@ -23,6 +23,7 @@ abstract class BaseCardEditingViewModel : ViewModel(), EventMessageSource {
     abstract val autocompleteState: StateFlow<AutocompleteState>
     abstract val pronunciationLoadingState: StateFlow<LoadingState<Unit>>
     abstract val nativeWordSuggestionsState: StateFlow<NativeWordSuggestionsState>
+    abstract val transcriptionState: StateFlow<String>
 
     abstract fun updateCard(
         oldCard: Card,

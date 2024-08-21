@@ -58,6 +58,7 @@ fun CardManagementView(
     onConfirmClick: () -> Unit,
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
+    transcription: String,
     closeNativeWordSuggestionsPopupMenu: () -> Unit,
     onNativeWordChange: (String) -> Unit,
     nativeWordSuggestionsState: NativeWordSuggestionsState,
@@ -99,6 +100,12 @@ fun CardManagementView(
                 }
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Transcription(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                text = transcription
+            )
             Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.1f))
 
             CardManagementFields(
@@ -168,6 +175,15 @@ private fun ForeignWordLettersSelector(
             )
         }
     }
+}
+
+@Composable
+fun Transcription(modifier: Modifier, text: String) {
+    Text(
+        modifier = modifier,
+        style = MainTheme.typographies.cardManagementTranscription,
+        text = text,
+    )
 }
 
 @OptIn(ExperimentalFoundationApi::class)
