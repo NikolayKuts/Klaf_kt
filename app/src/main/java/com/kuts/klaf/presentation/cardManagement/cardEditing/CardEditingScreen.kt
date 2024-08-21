@@ -25,6 +25,7 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
     val autocompleteState by viewModel.autocompleteState.collectAsState()
     val pronunciationLoadingState by viewModel.pronunciationLoadingState.collectAsState()
     val nativeWordSuggestionsState by viewModel.nativeWordSuggestionsState.collectAsState()
+    val transcription by viewModel.transcriptionState.collectAsState()
 
     deck?.let { receivedDeck ->
         card?.let { receivedCard ->
@@ -123,6 +124,7 @@ fun CardEditingScreen(viewModel: BaseCardEditingViewModel) {
                     letterInfosState = chosenWord.toRowInfos()
                     viewModel.setSelectedAutocomplete(selectedWord = chosenWord)
                 },
+                transcription = transcription,
                 closeNativeWordSuggestionsPopupMenu = {
                     viewModel.manageNativeWordSuggestionsState(
                         state = nativeWordSuggestionsState.copy(isActive = false)

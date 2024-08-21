@@ -6,6 +6,7 @@ import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.catchWithCrashlyticsReport
+import com.kuts.domain.common.debouncedLaunch
 import com.kuts.domain.common.generateLetterInfos
 import com.kuts.domain.common.updatedAt
 import com.kuts.domain.entities.Card
@@ -16,26 +17,47 @@ import com.kuts.domain.ipa.toRowIpaItemHolders
 import com.kuts.domain.repositories.CrashlyticsRepository
 import com.kuts.domain.useCases.AddNewCardIntoDeckUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
-import com.kuts.domain.useCases.FetchNativeWordSuggestionsUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
+import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.klaf.R
 import com.kuts.klaf.data.networking.CardAudioPlayer
-import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.*
-import com.kuts.klaf.presentation.cardManagement.common.MAX_IPA_LENGTH
+import com.kuts.klaf.data.networking.yandexApi.YandexWordInfoProvider
+import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.AddNewCard
+import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.ChangeLetterSelectionWithIpaTemplate
+import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.ClearNativeWordSuggestionsSelectionClicked
+import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.CloseAutocompleteMenu
+import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.CloseNativeWordSuggestionsMenu
+import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.ConfirmSuggestionsSelection
+import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.ManageNativeWordSuggestionsMenuState
+import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.NativeWordSelected
+import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.PronounceForeignWordClicked
+import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.UpdateDataOnAutocompleteSelected
+import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.UpdateDataOnForeignWordChanged
+import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.UpdateIpa
+import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.UpdateNativeWord
 import com.kuts.klaf.presentation.cardManagement.common.MAX_FOREIGN_WORD_LENGTH
+import com.kuts.klaf.presentation.cardManagement.common.MAX_IPA_LENGTH
 import com.kuts.klaf.presentation.cardManagement.common.MAX_NATIVE_WORD_LENGTH
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import com.kuts.klaf.presentation.common.tryEmitAsPositive
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
-import com.lib.lokdroid.core.logW
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.update
 
 class CardAdditionViewModel @AssistedInject constructor(
     @Assisted deckId: Int,
@@ -44,7 +66,7 @@ class CardAdditionViewModel @AssistedInject constructor(
     private val addNewCardIntoDeck: AddNewCardIntoDeckUseCase,
     override val audioPlayer: CardAudioPlayer,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
-    private val fetchNativeWordSuggestions: FetchNativeWordSuggestionsUseCase,
+    private val fetchWordInfo: FetchWordInfoUseCase,
     private val crashlytics: CrashlyticsRepository,
 ) : BaseCardAdditionViewModel() {
 
@@ -72,13 +94,14 @@ class CardAdditionViewModel @AssistedInject constructor(
 
     override val nativeWordSuggestionsState = MutableStateFlow(value = NativeWordSuggestionsState())
 
+    override val transcriptionState = MutableStateFlow(value = "")
+
     private val nativeWordState = MutableStateFlow(value = cardAdditionState.value.nativeWord)
     private val foreignWordState = MutableStateFlow(value = cardAdditionState.value.foreignWord)
     private val ipaHoldersState = MutableStateFlow(value = cardAdditionState.value.ipaHolders)
     private val letterInfosState = MutableStateFlow(value = cardAdditionState.value.letterInfos)
 
     private var autocompleteFetchingJob: Job? = null
-    private var nativeWordSuggestionsFetchingJob: Job? = null
 
     init {
         observeCardManagementChanges()
@@ -157,48 +180,79 @@ class CardAdditionViewModel @AssistedInject constructor(
     }
 
     private fun observeForeignWordChanges() {
-        foreignWordState.onEach { foreignWord ->
-            logD {
-                message("observeForeignWordChanges() called")
-                message("foreignWord: $foreignWord")
-                message("isActive: ${autocompleteState.value.isActive}")
-            }
+        foreignWordState.debouncedLaunch(
+            scope = viewModelScope,
+            execute = { foreignWord ->
+                val trimmedForeignWord = foreignWord.trim()
 
-            audioPlayer.preparePronunciation(word = foreignWord)
-            nativeWordState.value = ""
-            nativeWordSuggestionsFetchingJob?.cancel()
-            nativeWordSuggestionsFetchingJob = viewModelScope.launch {
-                retrieveNativeWordSuggestionsState(foreignWord = foreignWord)
-            }
-        }.flowOn(Dispatchers.IO)
-            .launchIn(viewModelScope)
-    }
-
-    private suspend fun retrieveNativeWordSuggestionsState(foreignWord: String) {
-        if (foreignWord.isNotEmpty()) {
-            try {
-                nativeWordSuggestionsState.update { it.copy(loadingState = LoadingState.Loading) }
-
-                val suggestions = fetchNativeWordSuggestions(word = foreignWord)
-                val suggestionItems = suggestions.map { suggestion ->
-                    NativeWordSuggestionItem(word = suggestion, isSelected = false)
+                logD {
+                    message("observeForeignWordChanges() called")
+                    message("foreignWord: $trimmedForeignWord")
+                    message("isActive: ${autocompleteState.value.isActive}")
                 }
 
-                nativeWordSuggestionsState.value = NativeWordSuggestionsState(
-                    suggestions = suggestionItems,
-                    isActive = false,
-                    loadingState = LoadingState.Success(data = Unit)
-                )
-                logD("retrievedSuggestions: $suggestions")
-            } catch (e: io.ktor.serialization.JsonConvertException) {
-                logE("observeForeignWordChanges() catch for foreignWord: '$foreignWord'")
-                throw e
-            } catch (e: Exception) {
-                logW("observeForeignWordChanges() catch for foreignWord: $foreignWord: ${e.stackTraceToString()}")
+                audioPlayer.preparePronunciation(word = trimmedForeignWord)
+                nativeWordState.value = ""
+
+                if (trimmedForeignWord.isNotEmpty()) {
+                    fetchWordInfo(word = trimmedForeignWord)
+                } else {
+                    flow { emit(LoadingState.Non) }
+                }
+            },
+            onEach = { wordInfoState ->
+                when (wordInfoState) {
+                    LoadingState.Non -> {
+                        transcriptionState.value = ""
+                        nativeWordSuggestionsState.value = NativeWordSuggestionsState()
+                    }
+
+                    is LoadingState.Error -> {
+                        handleWordInfoError(loadingState = wordInfoState)
+                    }
+
+                    LoadingState.Loading -> {
+                        transcriptionState.value = ""
+                        nativeWordSuggestionsState.update {
+                            it.copy(loadingState = LoadingState.Loading)
+                        }
+                    }
+
+                    is LoadingState.Success -> {
+                        transcriptionState.value =
+                            getWrappedTranscription(value = wordInfoState.data.transcription)
+
+                        val suggestionItems =
+                            wordInfoState.data.translations.map { suggestion ->
+                                NativeWordSuggestionItem(word = suggestion, isSelected = false)
+                            }
+
+                        nativeWordSuggestionsState.value = NativeWordSuggestionsState(
+                            suggestions = suggestionItems,
+                            isActive = false,
+                            loadingState = LoadingState.Success(data = Unit)
+                        )
+                    }
+                }
+            },
+        )
+    }
+
+    private fun handleWordInfoError(loadingState: LoadingState.Error) {
+        val errorMessageId = when (val error = loadingState.value) {
+            is YandexWordInfoProvider.WordInfoLoadingError -> {
+                when (error) {
+                    is YandexWordInfoProvider.WordInfoLoadingError.Common,
+                    YandexWordInfoProvider.WordInfoLoadingError.JsonConvert -> {
+                        R.string.word_info_retrieving_common_warning_message
+                    }
+                }
             }
-        } else {
-            nativeWordSuggestionsState.value = NativeWordSuggestionsState()
+
+            else -> R.string.word_info_retrieving_common_warning_message
         }
+
+        eventMessage.tryEmitAsNegative(resId = errorMessageId)
     }
 
     private fun saveNewCard(
@@ -251,7 +305,7 @@ class CardAdditionViewModel @AssistedInject constructor(
         } else {
             eventMessage.tryEmitAsNegative(
                 resId = R.string.native_word_is_too_long,
-                duration =  EventMessage.Duration.Long
+                duration = EventMessage.Duration.Long
             )
         }
     }
@@ -311,7 +365,7 @@ class CardAdditionViewModel @AssistedInject constructor(
         } else {
             eventMessage.tryEmitAsNegative(
                 resId = R.string.native_word_is_too_long,
-                duration =  EventMessage.Duration.Long
+                duration = EventMessage.Duration.Long
             )
         }
     }
@@ -347,5 +401,9 @@ class CardAdditionViewModel @AssistedInject constructor(
         nativeWordState.value = ""
         foreignWordState.value = ""
         ipaHoldersState.value = emptyList()
+    }
+
+    private fun getWrappedTranscription(value: String): String {
+        return if (value.isEmpty()) "" else "[$value]"
     }
 }

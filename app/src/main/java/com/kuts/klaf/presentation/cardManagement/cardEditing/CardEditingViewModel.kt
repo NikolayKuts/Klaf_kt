@@ -6,6 +6,7 @@ import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.catchWithCrashlyticsReport
+import com.kuts.domain.common.debouncedLaunch
 import com.kuts.domain.common.ifNotNull
 import com.kuts.domain.entities.Card
 import com.kuts.domain.entities.Deck
@@ -14,26 +15,30 @@ import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.repositories.CrashlyticsRepository
 import com.kuts.domain.useCases.FetchCardUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
-import com.kuts.domain.useCases.FetchNativeWordSuggestionsUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
+import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.domain.useCases.UpdateCardUseCase
 import com.kuts.klaf.R
 import com.kuts.klaf.data.networking.CardAudioPlayer
+import com.kuts.klaf.data.networking.yandexApi.YandexWordInfoProvider
 import com.kuts.klaf.presentation.cardManagement.cardAddition.AutocompleteState
 import com.kuts.klaf.presentation.cardManagement.cardAddition.NativeWordSuggestionItem
 import com.kuts.klaf.presentation.cardManagement.cardAddition.NativeWordSuggestionsState
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import com.kuts.klaf.presentation.common.tryEmitAsPositive
-import com.lib.lokdroid.core.logD
-import com.lib.lokdroid.core.logE
-import com.lib.lokdroid.core.logW
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.update
 
 class CardEditingViewModel @AssistedInject constructor(
     @Assisted(DECK_ARGUMENT_NAME) private val deckId: Int,
@@ -43,7 +48,7 @@ class CardEditingViewModel @AssistedInject constructor(
     fetchCard: FetchCardUseCase,
     private val updateCard: UpdateCardUseCase,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
-    private val fetchNativeWordSuggestions: FetchNativeWordSuggestionsUseCase,
+    private val fetchWordInfo: FetchWordInfoUseCase,
     private val crashlytics: CrashlyticsRepository,
 ) : BaseCardEditingViewModel() {
 
@@ -70,9 +75,7 @@ class CardEditingViewModel @AssistedInject constructor(
         }.onEach { card: Card? ->
             card?.ifNotNull {
                 audioPlayer.preparePronunciation(word = it.foreignWord)
-                nativeWordSuggestionsFetchingJob = viewModelScope.launch(Dispatchers.IO) {
-                    retrieveNativeWordSuggestionsState(foreignWord = card.foreignWord)
-                }
+                typedForeignWord.value = card.foreignWord
             }
         }.shareIn(
             scope = viewModelScope,
@@ -88,8 +91,15 @@ class CardEditingViewModel @AssistedInject constructor(
 
     override val nativeWordSuggestionsState = MutableStateFlow(value = NativeWordSuggestionsState())
 
+    override val transcriptionState = MutableStateFlow(value = "")
+
+    private val typedForeignWord = MutableStateFlow("")
+
     private var autocompleteFetchingJob: Job? = null
-    private var nativeWordSuggestionsFetchingJob: Job? = null
+
+    init {
+        observeTypedForeignWordChange()
+    }
 
     override fun updateCard(
         oldCard: Card,
@@ -110,9 +120,11 @@ class CardEditingViewModel @AssistedInject constructor(
             updatedCard.nativeWord.isEmpty() || updatedCard.foreignWord.isEmpty() -> {
                 eventMessage.tryEmitAsNegative(resId = R.string.native_and_foreign_words_must_be_filled)
             }
+
             updatedCard == oldCard -> {
                 eventMessage.tryEmitAsNegative(resId = R.string.card_has_not_been_changed)
             }
+
             else -> {
                 viewModelScope.launchWithState {
                     updateCard(newCard = updatedCard)
@@ -136,7 +148,8 @@ class CardEditingViewModel @AssistedInject constructor(
     override fun updateEditingState(word: String) {
         val clearedWord = word.trim()
 
-        preparePronunciation(word = word)
+        preparePronunciation(word = clearedWord)
+        typedForeignWord.value = clearedWord
         autocompleteFetchingJob?.cancel()
         autocompleteFetchingJob = viewModelScope.launchWithState(context = Dispatchers.IO) {
             autocompleteState.value = AutocompleteState(
@@ -144,20 +157,13 @@ class CardEditingViewModel @AssistedInject constructor(
                 autocomplete = fetchWordAutocomplete(prefix = clearedWord),
                 isActive = true,
             )
-            nativeWordSuggestionsFetchingJob?.cancel()
-            nativeWordSuggestionsFetchingJob = viewModelScope.launch(Dispatchers.IO) {
-                retrieveNativeWordSuggestionsState(foreignWord = word)
-            }
         } onException { _, throwable -> crashlytics.report(exception = throwable) }
     }
 
     override fun setSelectedAutocomplete(selectedWord: String) {
         autocompleteState.value = AutocompleteState()
         preparePronunciation(word = selectedWord)
-        nativeWordSuggestionsFetchingJob?.cancel()
-        nativeWordSuggestionsFetchingJob = viewModelScope.launch(Dispatchers.IO) {
-            retrieveNativeWordSuggestionsState(foreignWord = selectedWord)
-        }
+        typedForeignWord.value = selectedWord
     }
 
     override fun closeAutocompleteMenu() {
@@ -172,30 +178,74 @@ class CardEditingViewModel @AssistedInject constructor(
         eventMessage.tryEmit(value = message)
     }
 
-    private suspend fun retrieveNativeWordSuggestionsState(foreignWord: String) {
-        if (foreignWord.isNotEmpty()) {
-            try {
-                nativeWordSuggestionsState.update { it.copy(loadingState = LoadingState.Loading) }
+    private fun observeTypedForeignWordChange() {
+        typedForeignWord.debouncedLaunch(
+            scope = viewModelScope,
+            execute = { foreignWord ->
+                val trimmedForeignWord = foreignWord.trim()
 
-                val suggestions = fetchNativeWordSuggestions(word = foreignWord)
-                val suggestionItems = suggestions.map { suggestion ->
-                    NativeWordSuggestionItem(word = suggestion, isSelected = false)
+                if (trimmedForeignWord.isNotEmpty()) {
+                    fetchWordInfo(word = trimmedForeignWord)
+                } else {
+                    flow { emit(LoadingState.Non) }
                 }
+            },
+            onEach = { wordInfoState ->
+                when (wordInfoState) {
+                    LoadingState.Non -> {
+                        transcriptionState.value = ""
+                        nativeWordSuggestionsState.value = NativeWordSuggestionsState()
+                    }
 
-                nativeWordSuggestionsState.value = NativeWordSuggestionsState(
-                    suggestions = suggestionItems,
-                    isActive = false,
-                    loadingState = LoadingState.Success(data = Unit)
-                )
-                logD("retrievedSuggestions: $suggestions")
-            } catch (e: io.ktor.serialization.JsonConvertException) {
-                logE("observeForeignWordChanges() catch for foreignWord: '$foreignWord'")
-                throw e
-            } catch (e: Exception) {
-                logW("observeForeignWordChanges() catch for foreignWord: $foreignWord: ${e.stackTraceToString()}")
+                    is LoadingState.Error -> {
+                        handleRetrieveWordInfoError(loadingState = wordInfoState)
+                    }
+
+                    LoadingState.Loading -> {
+                        transcriptionState.value = ""
+                        nativeWordSuggestionsState.update {
+                            it.copy(loadingState = LoadingState.Loading)
+                        }
+                    }
+
+                    is LoadingState.Success -> {
+                        transcriptionState.value =
+                            getWrappedTranscription(value = wordInfoState.data.transcription)
+
+                        val suggestionItems =
+                            wordInfoState.data.translations.map { suggestion ->
+                                NativeWordSuggestionItem(word = suggestion, isSelected = false)
+                            }
+
+                        nativeWordSuggestionsState.value = NativeWordSuggestionsState(
+                            suggestions = suggestionItems,
+                            isActive = false,
+                            loadingState = LoadingState.Success(data = Unit)
+                        )
+                    }
+                }
+            },
+        )
+    }
+
+    private fun handleRetrieveWordInfoError(loadingState: LoadingState.Error) {
+        val errorMessageId = when (val error = loadingState.value) {
+            is YandexWordInfoProvider.WordInfoLoadingError -> {
+                when (error) {
+                    is YandexWordInfoProvider.WordInfoLoadingError.Common,
+                    YandexWordInfoProvider.WordInfoLoadingError.JsonConvert -> {
+                        R.string.word_info_retrieving_common_warning_message
+                    }
+                }
             }
-        } else {
-            nativeWordSuggestionsState.value = NativeWordSuggestionsState()
+
+            else -> R.string.word_info_retrieving_common_warning_message
         }
+
+        eventMessage.tryEmitAsNegative(resId = errorMessageId)
+    }
+
+    private fun getWrappedTranscription(value: String): String {
+        return if (value.isEmpty()) "" else "[$value]"
     }
 }
