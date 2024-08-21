@@ -16,6 +16,7 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
     val ipaHolders = cardState.ipaHolders
     val autocompleteState by viewModel.autocompleteState.collectAsState()
     val loadingState by viewModel.pronunciationLoadingState.collectAsState()
+    val nativeWordSuggestions by viewModel.nativeWordSuggestionsState.collectAsState()
 
     deck.value?.let { receivedDeck ->
         CardManagementView(
@@ -27,7 +28,14 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
             ipaHolders = ipaHolders,
             autocompleteState = autocompleteState,
             pronunciationLoadingState = loadingState,
-            onCloseAutocompletePopupMenuClick = { viewModel.sendEvent(event = CloseAutocompleteMenu) },
+            nativeWordSuggestionsState = nativeWordSuggestions,
+            onForeignWordTextFieldClick = {
+                viewModel.sendEvent(event = CloseNativeWordSuggestionsMenu)
+            },
+            closeAutocompletePopupMenu = { viewModel.sendEvent(event = CloseAutocompleteMenu) },
+            closeNativeWordSuggestionsPopupMenu = {
+                viewModel.sendEvent(event = CloseNativeWordSuggestionsMenu)
+            },
             onLetterClick = { index, letterInfo ->
                 viewModel.sendEvent(
                     event = ChangeLetterSelectionWithIpaTemplate(
@@ -58,9 +66,22 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
                     )
                 )
             },
-            onPronounceIconClick = { viewModel.sendEvent(event = PronounceForeignWord) },
+            onPronounceIconClick = { viewModel.sendEvent(event = PronounceForeignWordClicked) },
+
             onAutocompleteItemClick = { autocompleteWord ->
                 viewModel.sendEvent(event = UpdateDataOnAutocompleteSelected(word = autocompleteWord))
+            },
+            onNativeWordFieldArrowIconClick = {
+                viewModel.sendEvent(event = ManageNativeWordSuggestionsMenuState)
+            },
+            onNativeWordSuggestionItemClick = { chosenWordIndex ->
+                viewModel.sendEvent(event = NativeWordSelected(wordIndex = chosenWordIndex))
+            },
+            onConfirmSuggestionsSelection = {
+                viewModel.sendEvent(event = ConfirmSuggestionsSelection)
+            },
+            onClearNativeWordSuggestionsSelectionClick = {
+                viewModel.sendEvent(event = ClearNativeWordSuggestionsSelectionClicked)
             }
         )
     }

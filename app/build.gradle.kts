@@ -19,7 +19,7 @@ android {
         minSdk = 25
         targetSdk = 33
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -135,8 +135,12 @@ dependencies {
     /** DataStore **/
     implementation(libs.datastore.android)
 
-    /** Retrofit **/
-    implementation(libs.retrofit.core)
+    /** Ktor **/
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.content.negotiation)
 
     /** LoKdroid **/
     implementation(libs.lokdroid.core)

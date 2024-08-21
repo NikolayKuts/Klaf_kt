@@ -15,6 +15,7 @@ abstract class BaseCardAdditionViewModel : ViewModel(), EventMessageSource {
     abstract val audioPlayer: CardAudioPlayer
     abstract val autocompleteState: StateFlow<AutocompleteState>
     abstract val pronunciationLoadingState: StateFlow<LoadingState<Unit>>
+    abstract val nativeWordSuggestionsState: StateFlow<NativeWordSuggestionsState>
 
     abstract  fun sendEvent(event: CardAdditionEvent)
 }

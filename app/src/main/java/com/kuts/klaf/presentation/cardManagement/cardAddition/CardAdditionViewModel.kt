@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.common.generateLetterInfos
 import com.kuts.domain.common.updatedAt
@@ -15,20 +16,26 @@ import com.kuts.domain.ipa.toRowIpaItemHolders
 import com.kuts.domain.repositories.CrashlyticsRepository
 import com.kuts.domain.useCases.AddNewCardIntoDeckUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
+import com.kuts.domain.useCases.FetchNativeWordSuggestionsUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.klaf.R
 import com.kuts.klaf.data.networking.CardAudioPlayer
 import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.*
 import com.kuts.klaf.presentation.cardManagement.common.MAX_IPA_LENGTH
-import com.kuts.klaf.presentation.cardManagement.common.MAX_WORD_LENGTH
+import com.kuts.klaf.presentation.cardManagement.common.MAX_FOREIGN_WORD_LENGTH
+import com.kuts.klaf.presentation.cardManagement.common.MAX_NATIVE_WORD_LENGTH
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import com.kuts.klaf.presentation.common.tryEmitAsPositive
+import com.lib.lokdroid.core.logD
+import com.lib.lokdroid.core.logE
+import com.lib.lokdroid.core.logW
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
 class CardAdditionViewModel @AssistedInject constructor(
     @Assisted deckId: Int,
@@ -37,6 +44,7 @@ class CardAdditionViewModel @AssistedInject constructor(
     private val addNewCardIntoDeck: AddNewCardIntoDeckUseCase,
     override val audioPlayer: CardAudioPlayer,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
+    private val fetchNativeWordSuggestions: FetchNativeWordSuggestionsUseCase,
     private val crashlytics: CrashlyticsRepository,
 ) : BaseCardAdditionViewModel() {
 
@@ -62,12 +70,15 @@ class CardAdditionViewModel @AssistedInject constructor(
 
     override val pronunciationLoadingState = audioPlayer.loadingState
 
+    override val nativeWordSuggestionsState = MutableStateFlow(value = NativeWordSuggestionsState())
+
     private val nativeWordState = MutableStateFlow(value = cardAdditionState.value.nativeWord)
     private val foreignWordState = MutableStateFlow(value = cardAdditionState.value.foreignWord)
     private val ipaHoldersState = MutableStateFlow(value = cardAdditionState.value.ipaHolders)
     private val letterInfosState = MutableStateFlow(value = cardAdditionState.value.letterInfos)
 
     private var autocompleteFetchingJob: Job? = null
+    private var nativeWordSuggestionsFetchingJob: Job? = null
 
     init {
         observeCardManagementChanges()
@@ -82,11 +93,19 @@ class CardAdditionViewModel @AssistedInject constructor(
                     letterInfo = event.letterInfo
                 )
             }
+
             is UpdateDataOnForeignWordChanged -> updateDataOnForeignWordChanged(word = event.word)
             is UpdateDataOnAutocompleteSelected -> updateDataOnAutocompleteSelected(word = event.word)
+            is NativeWordSelected -> updateDataOnNativeWordSelected(wordIndex = event.wordIndex)
+            ConfirmSuggestionsSelection -> handleNativeWordSuggestionsSelectionConfirmation()
+            ClearNativeWordSuggestionsSelectionClicked -> {
+                handleClearNativeWordSuggestionsSelectionClicked()
+            }
+
             is UpdateIpa -> {
                 updateIpa(letterGroupIndex = event.letterGroupIndex, ipa = event.ipa)
             }
+
             is UpdateNativeWord -> updateNativeWord(word = event.word)
             is AddNewCard -> {
                 saveNewCard(
@@ -96,9 +115,18 @@ class CardAdditionViewModel @AssistedInject constructor(
                     ipaHolders = event.ipaHolders,
                 )
             }
-            PronounceForeignWord -> audioPlayer.play()
+
+            PronounceForeignWordClicked -> audioPlayer.play()
+            ManageNativeWordSuggestionsMenuState -> {
+                nativeWordSuggestionsState.update { it.copy(isActive = !it.isActive) }
+            }
+
             CloseAutocompleteMenu -> {
                 autocompleteState.update { it.copy(isActive = false) }
+            }
+
+            CloseNativeWordSuggestionsMenu -> {
+                nativeWordSuggestionsState.update { it.copy(isActive = false) }
             }
         }
     }
@@ -110,21 +138,67 @@ class CardAdditionViewModel @AssistedInject constructor(
             ipaHoldersState,
             foreignWordState,
         ) { letterInfos, nativeWord, ipaHolders, foreignWord ->
+            logD {
+                message("observeCardManagementChanges() called")
+                message("letterInfos: $letterInfos")
+                message("nativeWord: $nativeWord")
+                message("ipaHolders: $ipaHolders")
+                message("foreignWord: $foreignWord")
+            }
             CardAdditionState.Adding(
                 letterInfos = letterInfos,
                 nativeWord = nativeWord,
                 foreignWord = foreignWord,
                 ipaHolders = ipaHolders
             )
-        }.onEach { addingState ->
-            cardAdditionState.value = addingState
-        }.launchIn(viewModelScope)
+        }.onEach { addingState -> cardAdditionState.value = addingState }
+            .flowOn(Dispatchers.IO)
+            .launchIn(viewModelScope)
     }
 
     private fun observeForeignWordChanges() {
         foreignWordState.onEach { foreignWord ->
+            logD {
+                message("observeForeignWordChanges() called")
+                message("foreignWord: $foreignWord")
+                message("isActive: ${autocompleteState.value.isActive}")
+            }
+
             audioPlayer.preparePronunciation(word = foreignWord)
-        }.launchIn(viewModelScope)
+            nativeWordState.value = ""
+            nativeWordSuggestionsFetchingJob?.cancel()
+            nativeWordSuggestionsFetchingJob = viewModelScope.launch {
+                retrieveNativeWordSuggestionsState(foreignWord = foreignWord)
+            }
+        }.flowOn(Dispatchers.IO)
+            .launchIn(viewModelScope)
+    }
+
+    private suspend fun retrieveNativeWordSuggestionsState(foreignWord: String) {
+        if (foreignWord.isNotEmpty()) {
+            try {
+                nativeWordSuggestionsState.update { it.copy(loadingState = LoadingState.Loading) }
+
+                val suggestions = fetchNativeWordSuggestions(word = foreignWord)
+                val suggestionItems = suggestions.map { suggestion ->
+                    NativeWordSuggestionItem(word = suggestion, isSelected = false)
+                }
+
+                nativeWordSuggestionsState.value = NativeWordSuggestionsState(
+                    suggestions = suggestionItems,
+                    isActive = false,
+                    loadingState = LoadingState.Success(data = Unit)
+                )
+                logD("retrievedSuggestions: $suggestions")
+            } catch (e: io.ktor.serialization.JsonConvertException) {
+                logE("observeForeignWordChanges() catch for foreignWord: '$foreignWord'")
+                throw e
+            } catch (e: Exception) {
+                logW("observeForeignWordChanges() catch for foreignWord: $foreignWord: ${e.stackTraceToString()}")
+            }
+        } else {
+            nativeWordSuggestionsState.value = NativeWordSuggestionsState()
+        }
     }
 
     private fun saveNewCard(
@@ -143,7 +217,7 @@ class CardAdditionViewModel @AssistedInject constructor(
                 ipa = ipaHolders.map { ipaHolder -> ipaHolder.copy(ipa = ipaHolder.ipa.trim()) }
             )
 
-            viewModelScope.launchWithState {
+            viewModelScope.launchWithState(Dispatchers.IO) {
                 addNewCardIntoDeck(card = newCard)
                 resetAddingState()
                 audioPlayer.preparePronunciation(word = "")
@@ -172,13 +246,18 @@ class CardAdditionViewModel @AssistedInject constructor(
     }
 
     private fun updateNativeWord(word: String) {
-        if (word.length < MAX_WORD_LENGTH) {
+        if (word.length < MAX_NATIVE_WORD_LENGTH) {
             nativeWordState.value = word
+        } else {
+            eventMessage.tryEmitAsNegative(
+                resId = R.string.native_word_is_too_long,
+                duration =  EventMessage.Duration.Long
+            )
         }
     }
 
     private fun updateDataOnForeignWordChanged(word: String) {
-        if (word.length < MAX_WORD_LENGTH) {
+        if (word.length < MAX_FOREIGN_WORD_LENGTH) {
             foreignWordState.value = word
             letterInfosState.value = word.generateLetterInfos()
             ipaHoldersState.value = emptyList()
@@ -190,7 +269,15 @@ class CardAdditionViewModel @AssistedInject constructor(
                     autocomplete = fetchWordAutocomplete(prefix = word),
                     isActive = true,
                 )
-            } onException { _, throwable -> crashlytics.report(exception = throwable) }
+            } onException { _, throwable ->
+                crashlytics.report(exception = throwable)
+                logE(throwable.stackTraceToString())
+            }
+        } else {
+            eventMessage.tryEmitAsNegative(
+                resId = R.string.foreign_word_is_too_long,
+                duration = EventMessage.Duration.Long
+            )
         }
     }
 
@@ -201,6 +288,45 @@ class CardAdditionViewModel @AssistedInject constructor(
         autocompleteState.value = AutocompleteState()
     }
 
+    private fun updateDataOnNativeWordSelected(wordIndex: Int) {
+        nativeWordSuggestionsState.update { suggestionsState ->
+            val updatedSuggestions = suggestionsState.suggestions
+                .updatedAt(index = wordIndex) { oldValue ->
+                    oldValue.copy(isSelected = !oldValue.isSelected)
+                }
+
+            suggestionsState.copy(suggestions = updatedSuggestions)
+        }
+    }
+
+    private fun handleNativeWordSuggestionsSelectionConfirmation() {
+        nativeWordSuggestionsState.update { it.copy(isActive = false) }
+
+        val selectedNativeWordSuggestions = nativeWordSuggestionsState.value.suggestions
+            .filter { suggestionItem -> suggestionItem.isSelected }
+            .joinToString(separator = ", ") { suggestionItem -> suggestionItem.word }
+
+        if (selectedNativeWordSuggestions.length <= MAX_NATIVE_WORD_LENGTH) {
+            nativeWordState.value = selectedNativeWordSuggestions
+        } else {
+            eventMessage.tryEmitAsNegative(
+                resId = R.string.native_word_is_too_long,
+                duration =  EventMessage.Duration.Long
+            )
+        }
+    }
+
+    private fun handleClearNativeWordSuggestionsSelectionClicked() {
+        nativeWordSuggestionsState.update {
+            val updatedSuggestions = it.suggestions.map { suggestionItem ->
+                suggestionItem.copy(isSelected = false)
+            }
+
+            it.copy(suggestions = updatedSuggestions, isActive = false)
+        }
+        nativeWordState.value = ""
+    }
+
     private fun updateIpa(letterGroupIndex: Int, ipa: String) {
         if (ipa.length < MAX_IPA_LENGTH) {
             ipaHoldersState.update { ipaHolders ->
@@ -208,6 +334,11 @@ class CardAdditionViewModel @AssistedInject constructor(
                     oldValue.copy(ipa = ipa)
                 }
             }
+        } else {
+            eventMessage.tryEmitAsNegative(
+                resId = R.string.ipa_is_too_long,
+                duration = EventMessage.Duration.Long
+            )
         }
     }
 

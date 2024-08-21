@@ -74,4 +74,9 @@ interface DomainModule {
     fun bindCrashlyticsRepository(
         repository: CrashlyticsRepositoryFirebaseImp
     ): CrashlyticsRepository
+
+    @Binds
+    fun bindNativeWordSuggestionRepository(
+        repositoryImp: NativeWordSuggestionRepositoryImp
+    ): NativeWordSuggestionRepository
 }

@@ -1,7 +1,7 @@
 package com.kuts.domain
 
-import com.example.domain.common.CoroutineStateHolder.Companion.launchWithState
-import com.example.domain.common.CoroutineStateHolder.Companion.onException
+import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
+import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
 import org.junit.Test

@@ -1,7 +1,6 @@
 package com.kuts.klaf.presentation.cardManagement.cardAddition
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.compose.material.Surface
@@ -69,15 +68,8 @@ class CardAdditionFragment : BaseFragment(layoutId = R.layout.common_compose_lay
         lifecycle.addObserver(viewModel.audioPlayer)
     }
 
-    private fun retrieveSmartSelectedWord(): String? {
-        return when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
-                activity?.intent?.run {
-                    type?.startsWith(MIME_TYPE_TEXT_PLAIN)
-                        ?.ifTrue { this.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT).toString() }
-                }
-            }
-            else -> null
-        }
+    private fun retrieveSmartSelectedWord(): String? = activity?.intent?.run {
+        type?.startsWith(MIME_TYPE_TEXT_PLAIN)
+            ?.ifTrue { this.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT).toString() }
     }
 }

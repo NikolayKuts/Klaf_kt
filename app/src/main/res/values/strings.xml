@@ -150,4 +150,7 @@
     <string name="log_in_negative_state">not logged in</string>
     <string name="log_out_failure_message">Logging out is failed</string>
     <string name="deck_repetition_one_repetition_to_finish_iteration">There is one repetition to finish iteration</string>
+    <string name="native_word_is_too_long">Input length limit exceeded for \'native\'</string>
+    <string name="foreign_word_is_too_long">Input length limit exceeded for \'foreign\'</string>
+    <string name="ipa_is_too_long">Input length limit exceeded for \'IPA\'</string>
 </resources>
