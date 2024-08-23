@@ -1,28 +1,28 @@
-package com.kuts.klaf.presentation.cardManagement.cardAddition
+package com.kuts.klaf.presentation.cardManagement.common
 
 import com.kuts.domain.ipa.IpaHolder
 import com.kuts.domain.ipa.LetterInfo
 
-sealed class CardAdditionState(
+sealed class CardManagementState(
     val letterInfos: List<LetterInfo>,
     val nativeWord: String,
     val foreignWord: String,
     val ipaHolders: List<IpaHolder>,
 ) {
 
-    class Adding(
-        letterInfos: List<LetterInfo>,
+    class InProgress(
+        letterInfos: List<LetterInfo> = emptyList(),
         nativeWord: String = "",
         foreignWord: String = "",
         ipaHolders: List<IpaHolder> = emptyList(),
-    ) : CardAdditionState(
+    ) : CardManagementState(
         letterInfos = letterInfos,
         nativeWord = nativeWord,
         foreignWord = foreignWord,
         ipaHolders = ipaHolders,
     )
 
-    object Finished : CardAdditionState(
+    data object Finished : CardManagementState(
         letterInfos = emptyList(),
         nativeWord = "",
         foreignWord = "",

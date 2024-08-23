@@ -3,13 +3,14 @@ package com.kuts.klaf.presentation.cardManagement.cardAddition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.kuts.klaf.presentation.cardManagement.cardAddition.CardAdditionEvent.*
+import com.kuts.klaf.presentation.cardManagement.common.BaseCardManagementViewModel
+import com.kuts.klaf.presentation.cardManagement.common.CardManagementEvent
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementView
 
 @Composable
-fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
+fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
     val deck = viewModel.deck.collectAsState(initial = null)
-    val cardState by viewModel.cardAdditionState.collectAsState()
+    val cardState by viewModel.cardManagementState.collectAsState()
     val letterInfos = cardState.letterInfos
     val foreignWord = cardState.foreignWord
     val nativeWord = cardState.nativeWord
@@ -31,59 +32,63 @@ fun CardAdditionScreen(viewModel: BaseCardAdditionViewModel) {
             pronunciationLoadingState = pronunciationLoadingState,
             nativeWordSuggestionsState = nativeWordSuggestionsState,
             onForeignWordTextFieldClick = {
-                viewModel.sendEvent(event = CloseNativeWordSuggestionsMenu)
+                viewModel.sendEvent(event = CardManagementEvent.CloseNativeWordSuggestionsMenu)
             },
-            closeAutocompletePopupMenu = { viewModel.sendEvent(event = CloseAutocompleteMenu) },
+            closeAutocompletePopupMenu = {
+                viewModel.sendEvent(event = CardManagementEvent.CloseAutocompleteMenu)
+            },
             closeNativeWordSuggestionsPopupMenu = {
-                viewModel.sendEvent(event = CloseNativeWordSuggestionsMenu)
+                viewModel.sendEvent(event = CardManagementEvent.CloseNativeWordSuggestionsMenu)
             },
             onLetterClick = { index, letterInfo ->
                 viewModel.sendEvent(
-                    event = ChangeLetterSelectionWithIpaTemplate(
+                    event = CardManagementEvent.ChangeLetterSelectionWithIpaTemplate(
                         index = index,
                         letterInfo = letterInfo
                     )
                 )
             },
             onNativeWordChange = { word ->
-                viewModel.sendEvent(event = UpdateNativeWord(word = word))
+                viewModel.sendEvent(event = CardManagementEvent.UpdateNativeWord(word = word))
             },
             onForeignWordChange = { word ->
-                viewModel.sendEvent(event = UpdateDataOnForeignWordChanged(word = word))
+                viewModel.sendEvent(
+                    event = CardManagementEvent.UpdateDataOnForeignWordChanged(word = word)
+                )
             },
             onIpaChange = { letterGroupIndex, ipa ->
                 viewModel.sendEvent(
-                    event = UpdateIpa(letterGroupIndex = letterGroupIndex, ipa = ipa)
-                )
-            },
-            onConfirmClick = {
-                viewModel.sendEvent(
-                    event = AddNewCard(
-                        deckId = receivedDeck.id,
-                        nativeWord = nativeWord,
-                        foreignWord = foreignWord,
-                        letterInfos = letterInfos,
-                        ipaHolders = ipaHolders,
+                    event = CardManagementEvent.UpdateIpa(
+                        letterGroupIndex = letterGroupIndex,
+                        ipa = ipa
                     )
                 )
             },
-            onPronounceIconClick = { viewModel.sendEvent(event = PronounceForeignWordClicked) },
-
+            onConfirmClick = {
+                viewModel.sendEvent(event = CardManagementEvent.CardManagementConfirmed)
+            },
+            onPronounceIconClick = {
+                viewModel.sendEvent(event = CardManagementEvent.PronounceForeignWordClicked)
+            },
             onAutocompleteItemClick = { autocompleteWord ->
-                viewModel.sendEvent(event = UpdateDataOnAutocompleteSelected(word = autocompleteWord))
+                viewModel.sendEvent(
+                    event = CardManagementEvent.UpdateDataOnAutocompleteSelected(
+                        word = autocompleteWord
+                    )
+                )
             },
             transcription = transcription,
             onNativeWordFieldArrowIconClick = {
-                viewModel.sendEvent(event = ManageNativeWordSuggestionsMenuState)
+                viewModel.sendEvent(event = CardManagementEvent.ManageNativeWordSuggestionsMenuState)
             },
             onNativeWordSuggestionItemClick = { chosenWordIndex ->
-                viewModel.sendEvent(event = NativeWordSelected(wordIndex = chosenWordIndex))
+                viewModel.sendEvent(event = CardManagementEvent.NativeWordSelected(wordIndex = chosenWordIndex))
             },
             onConfirmSuggestionsSelection = {
-                viewModel.sendEvent(event = ConfirmSuggestionsSelection)
+                viewModel.sendEvent(event = CardManagementEvent.ConfirmSuggestionsSelection)
             },
             onClearNativeWordSuggestionsSelectionClick = {
-                viewModel.sendEvent(event = ClearNativeWordSuggestionsSelectionClicked)
+                viewModel.sendEvent(event = CardManagementEvent.ClearNativeWordSuggestionsSelectionClicked)
             }
         )
     }

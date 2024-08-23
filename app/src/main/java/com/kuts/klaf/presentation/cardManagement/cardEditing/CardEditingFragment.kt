@@ -8,6 +8,9 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.kuts.klaf.R
+import com.kuts.klaf.presentation.cardManagement.cardAddition.CardManagementScreen
+import com.kuts.klaf.presentation.cardManagement.common.BaseCardManagementViewModel
+import com.kuts.klaf.presentation.cardManagement.common.CardManagementState
 import com.kuts.klaf.presentation.common.BaseFragment
 import com.kuts.klaf.presentation.common.collectWhenStarted
 import com.kuts.klaf.presentation.theme.MainTheme
@@ -21,7 +24,7 @@ class CardEditingFragment : BaseFragment(layoutId = R.layout.common_compose_layo
 
     @Inject
     lateinit var cardEditingAssistedViewModelFactory: CardEditingAssistedViewModelFactory
-    private val viewModel: BaseCardEditingViewModel by viewModels {
+    private val viewModel: BaseCardManagementViewModel by viewModels {
         CardEditingViewModelFactory(
             assistedFactory = cardEditingAssistedViewModelFactory,
             deckId = args.deckId,
@@ -44,7 +47,7 @@ class CardEditingFragment : BaseFragment(layoutId = R.layout.common_compose_layo
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 Surface {
-                    CardEditingScreen(viewModel = viewModel)
+                    CardManagementScreen(viewModel = viewModel)
                 }
             }
         }
@@ -64,12 +67,12 @@ class CardEditingFragment : BaseFragment(layoutId = R.layout.common_compose_layo
     }
 
     private fun observeCardEditingState() {
-        viewModel.cardEditingState.collectWhenStarted(
+        viewModel.cardManagementState.collectWhenStarted(
             lifecycleOwner = viewLifecycleOwner
-        ) { editingState ->
-            when (editingState) {
-                CardEditingState.NOT_CHANGED -> {}
-                CardEditingState.CHANGED -> findNavController().popBackStack()
+        ) { managementState ->
+            when (managementState) {
+                is CardManagementState.InProgress -> {}
+                is CardManagementState.Finished -> findNavController().popBackStack()
             }
         }
     }
