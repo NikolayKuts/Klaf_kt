@@ -77,7 +77,9 @@ class YandexWordInfoProvider @Inject constructor() : WordInfoRepository {
             else -> emit(value = LoadingState.Error(value = Common))
         }
 
-        logW("fetchWordInfo caught ERROR: ${throwable.stackTraceToString()}")
+        if (throwable !is CancellationException) {
+            logW("fetchWordInfo caught ERROR: ${throwable.stackTraceToString()}")
+        }
     }
 
     private fun buildUrl(apiKey: String, word: String): String {

@@ -83,6 +83,7 @@ class CardAudioPlayer @Inject constructor(
                     wordForPreparing = word
                     isPrepared = false
 
+                    delay(500)
                     reset()
                     setDataSource(word.buildAudioUri())
                     prepareAsync()
