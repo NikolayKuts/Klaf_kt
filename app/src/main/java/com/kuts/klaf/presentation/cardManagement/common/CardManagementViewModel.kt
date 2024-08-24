@@ -1,8 +1,8 @@
 package com.kuts.klaf.presentation.cardManagement.common
 
 import androidx.lifecycle.viewModelScope
-import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
-import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
+import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.kuts.domain.common.DebouncedMutableStateFlow
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.common.debouncedLaunch
@@ -26,7 +26,6 @@ import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -36,6 +35,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
@@ -49,6 +49,8 @@ abstract class CardManagementViewModel(
     fetchDeckById: FetchDeckByIdUseCase,
 ) : BaseCardManagementViewModel(audioPlayer = audioPlayer) {
 
+    override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
+
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
@@ -57,21 +59,18 @@ abstract class CardManagementViewModel(
             started = SharingStarted.Eagerly,
             replay = 1
         )
-    override val autocompleteState = MutableStateFlow(value = AutocompleteState())
+
+    override val autocompleteState = DebouncedMutableStateFlow(value = AutocompleteState())
     override val pronunciationLoadingState: StateFlow<LoadingState<Unit>> = audioPlayer.loadingState
     override val nativeWordSuggestionsState = MutableStateFlow(value = NativeWordSuggestionsState())
     override val transcriptionState = MutableStateFlow(value = "")
+
     override val cardManagementState =
         MutableStateFlow<CardManagementState>(value = CardManagementState.InProgress())
-
     protected val nativeWordState: MutableStateFlow<String> = MutableStateFlow(value = "")
     protected val foreignWordState: MutableStateFlow<String> = MutableStateFlow(value = "")
     protected val ipaHoldersState = MutableStateFlow<List<IpaHolder>>(value = emptyList())
     protected val letterInfosState = MutableStateFlow<List<LetterInfo>>(value = emptyList())
-
-    private var autocompleteFetchingJob: Job? = null
-
-    override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     init {
         combineAndObserveCardManagementChanges()
@@ -158,7 +157,7 @@ abstract class CardManagementViewModel(
     }
 
     private fun observeForeignWordChanges() {
-        foreignWordState.debouncedLaunch(
+        foreignWordState.map { it.trim() }.debouncedLaunch(
             scope = viewModelScope,
             execute = { foreignWord ->
                 val trimmedForeignWord = foreignWord.trim()
@@ -232,16 +231,17 @@ abstract class CardManagementViewModel(
             nativeWordState.value = ""
             ipaHoldersState.value = emptyList()
 
-            autocompleteFetchingJob?.cancel()
-            autocompleteFetchingJob = viewModelScope.launchWithState(context = Dispatchers.IO) {
-                autocompleteState.value = AutocompleteState(
+            autocompleteState.launchUpdateWithState(
+                scope = viewModelScope,
+                context = Dispatchers.IO
+            ) {
+                AutocompleteState(
                     prefix = word,
                     autocomplete = fetchWordAutocomplete(prefix = word),
                     isActive = true,
                 )
-            } onException { _, throwable ->
-                crashlytics.report(exception = throwable)
-                logE(throwable.stackTraceToString())
+            }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
+                logE("fetchWordAutocomplete() caught ERROR: ${throwable.stackTraceToString()}")
             }
         } else {
             eventMessage.tryEmitAsNegative(
