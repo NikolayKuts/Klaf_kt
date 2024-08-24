@@ -227,26 +227,27 @@ fun DropDownNativeWordField(
         onTypedWordChange = onTypedWordChange,
         onTextFieldClick = onTextFieldClick,
         itemContent = { wordable, wordableIndex, onItemSizeChange ->
-            Row(
-                modifier = Modifier.noRippleClickable { onSuggestionClick(wordableIndex) }
-                    .onSizeChanged { intSize -> onItemSizeChange(intSize) },
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = wordable.word(),
-                    fontStyle = FontStyle.Italic
-                )
+            Column(modifier = Modifier.onSizeChanged { intSize -> onItemSizeChange(intSize) }) {
+                Row(
+                    modifier = Modifier.noRippleClickable { onSuggestionClick(wordableIndex) },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = wordable.word(),
+                        fontStyle = FontStyle.Italic
+                    )
 
-                CustomCheckBox(
-                    modifier = Modifier.padding(6.dp),
-                    checked = nativeWordSuggestionsState.suggestions[wordableIndex].isSelected,
-                    onCheckedChange = { onSuggestionClick(wordableIndex) },
-                    uncheckedBorderColor = MainTheme.colors.cardTransferringScreen.unCheckedBorder,
-                    checkedBoxColor = MainTheme.colors.cardTransferringScreen.selectedCheckBox
-                )
+                    CustomCheckBox(
+                        modifier = Modifier.padding(6.dp),
+                        checked = nativeWordSuggestionsState.suggestions[wordableIndex].isSelected,
+                        onCheckedChange = { onSuggestionClick(wordableIndex) },
+                        uncheckedBorderColor = MainTheme.colors.cardTransferringScreen.unCheckedBorder,
+                        checkedBoxColor = MainTheme.colors.cardTransferringScreen.selectedCheckBox
+                    )
+                }
+                Divider()
             }
-            Divider()
         },
         bottomDropdownMenuContent = {
             Row(

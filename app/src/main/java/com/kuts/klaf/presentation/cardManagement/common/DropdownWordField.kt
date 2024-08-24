@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -21,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -53,7 +53,11 @@ fun <T : Wordable> DropDownWordField(
     textColor: Color,
     onTextFieldClick: () -> Unit,
     onTypedWordChange: (String) -> Unit,
-    itemContent: @Composable (wordable: T, wordableIndex: Int, onSizeChange: (IntSize) -> Unit) -> Unit,
+    itemContent: @Composable (
+        wordable: T,
+        wordableIndex: Int,
+        onSizeChange: (IntSize) -> Unit
+    ) -> Unit,
     bottomDropdownMenuContent: @Composable () -> Unit = { },
 ) {
     val density = LocalDensity.current
@@ -83,26 +87,21 @@ fun <T : Wordable> DropDownWordField(
         textFieldPosition,
         bottomDropdownMenuContentHeightDp
     ) {
-        val popupMenuPosition = density.run {
+        val popupMenuPositionDp = density.run {
             textFieldPosition.y.toDp() + textFieldSize.height.toDp()
         }
-        val freeContentHeight = screenHeightDp.dp - popupMenuPosition - 32.dp
-        val neededHeight = itemHeightDp * dropdownContent.size
+        val freeContentHeight = screenHeightDp.dp - popupMenuPositionDp - popupMenuPadding * 2
+        val neededHeight =
+            (itemHeightDp * dropdownContent.size) + bottomDropdownMenuContentHeightDp + popupMenuPadding * 2
 
         popupContentContainerHeightDp = if (neededHeight < freeContentHeight) {
             neededHeight
         } else {
             freeContentHeight
-        } + popupMenuPadding * 2
+        }
     }
 
-    Box(
-        modifier = Modifier
-            .onGloballyPositioned { coordinates ->
-                textFieldPosition = coordinates.positionInRoot()
-                textFieldSize = coordinates.size
-            }
-    ) {
+    Box(modifier = Modifier) {
         var textFieldValue by rememberAsMutableStateOf(
             value = TextFieldValue(text = typedWord, selection = TextRange(typedWord.length))
         )
@@ -113,7 +112,12 @@ fun <T : Wordable> DropDownWordField(
         }
 
         TextField(
-            modifier = Modifier.width(500.dp),
+            modifier = Modifier
+                .onGloballyPositioned { coordinates ->
+                    textFieldPosition = coordinates.positionInRoot()
+                    textFieldSize = coordinates.size
+                }
+                .width(500.dp),
             value = textFieldValue,
             onValueChange = {
                 if (it.text != typedWord) {
@@ -134,10 +138,14 @@ fun <T : Wordable> DropDownWordField(
         expanded.ifTrue {
             Popup(offset = IntOffset(x = 0, y = textFieldSize.height)) {
                 val menuShape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
-                val lazySate = rememberLazyListState()
+                val lazyListSate = rememberLazyListState()
+                val bottomContentDividerSpace = if (bottomDropdownMenuContentHeightDp == 0.dp) 0.dp else 16.dp
+                val lazyLiatHeight =
+                    popupContentContainerHeightDp - bottomDropdownMenuContentHeightDp - bottomContentDividerSpace
 
-                Column(
+                Box(
                     Modifier
+                        .height(popupContentContainerHeightDp)
                         .width(density.run { textFieldSize.width.toDp() })
                         .shadow(elevation = 4.dp, shape = menuShape)
                         .clip(shape = menuShape)
@@ -151,12 +159,12 @@ fun <T : Wordable> DropDownWordField(
                 ) {
                     LazyColumn(
                         modifier = Modifier
-                            .height(popupContentContainerHeightDp)
+                            .height(lazyLiatHeight)
                             .verticalScrollbar(
-                                state = lazySate,
+                                state = lazyListSate,
                                 color = MainTheme.colors.material.primary,
                             ),
-                        state = lazySate
+                        state = lazyListSate
                     ) {
                         dropdownContent.onEachIndexed { index, wordable ->
                             item {
@@ -168,9 +176,13 @@ fun <T : Wordable> DropDownWordField(
                     }
 
                     Box(
-                        modifier = Modifier.onGloballyPositioned { coordinates ->
-                            bottomDropdownMenuContentHeightDp = coordinates.size.height.dp
-                        }
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .onGloballyPositioned { coordinates ->
+                                bottomDropdownMenuContentHeightDp = density.run {
+                                    coordinates.size.height.toDp()
+                                }
+                            }
                     ) {
                         bottomDropdownMenuContent()
                     }
