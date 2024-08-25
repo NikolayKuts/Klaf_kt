@@ -25,7 +25,7 @@ sealed interface CardManagementEvent {
 
     data object PronounceForeignWordClicked : CardManagementEvent
 
-    data object ManageNativeWordSuggestionsMenuState : CardManagementEvent
+    data object NativeWordFeildIconClicked : CardManagementEvent
 
     data object CloseAutocompleteMenu : CardManagementEvent
 

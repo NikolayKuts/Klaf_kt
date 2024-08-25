@@ -122,7 +122,8 @@ abstract class CardManagementViewModel(
                 audioPlayer.play()
             }
 
-            CardManagementEvent.ManageNativeWordSuggestionsMenuState -> {
+            CardManagementEvent.NativeWordFeildIconClicked -> {
+                autocompleteState.update { it.copy(isActive = false) }
                 nativeWordSuggestionsState.update { it.copy(isActive = !it.isActive) }
             }
 

@@ -79,7 +79,7 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
             },
             transcription = transcription,
             onNativeWordFieldArrowIconClick = {
-                viewModel.sendEvent(event = CardManagementEvent.ManageNativeWordSuggestionsMenuState)
+                viewModel.sendEvent(event = CardManagementEvent.NativeWordFeildIconClicked)
             },
             onNativeWordSuggestionItemClick = { chosenWordIndex ->
                 viewModel.sendEvent(event = CardManagementEvent.NativeWordSelected(wordIndex = chosenWordIndex))
