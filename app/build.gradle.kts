@@ -143,5 +143,5 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
 
     /** LoKdroid **/
-    implementation(libs.lokdroid.core)
+    implementation(libs.lokdroid)
 }

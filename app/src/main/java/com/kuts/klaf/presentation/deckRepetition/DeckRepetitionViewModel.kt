@@ -82,8 +82,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
     companion object {
 
-        private const val ONE_QUARTER: Double = 1.0 / 4.0
-        private const val THREE_QUADS: Double = 3.0 / 4.0
+        private const val HARD_WORD_POSITION_SHIFT = 5
+        private const val GOOD_WORD_POSITION_SHIFT = 10
     }
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
@@ -319,10 +319,14 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         level: DifficultyRecallingLevel,
         updatedCards: List<Card>,
     ): Int {
+
+    val calculateNewPosition: (positionShift: Int) -> Int = { positionShift ->
+        if (positionShift >= updatedCards.lastIndex) updatedCards.lastIndex else positionShift
+    }
         return when (level) {
             EASY -> updatedCards.size
-            GOOD -> (updatedCards.size * THREE_QUADS).toInt()
-            HARD -> (updatedCards.size * ONE_QUARTER).toInt()
+            GOOD -> calculateNewPosition(GOOD_WORD_POSITION_SHIFT)
+            HARD -> calculateNewPosition(HARD_WORD_POSITION_SHIFT)
         }
     }
 
