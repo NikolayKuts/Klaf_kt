@@ -31,7 +31,6 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -42,17 +41,18 @@ import com.kuts.domain.common.ifTrue
 import com.kuts.klaf.presentation.common.rememberAsMutableStateOf
 import com.kuts.klaf.presentation.common.verticalScrollbar
 import com.kuts.klaf.presentation.theme.MainTheme
+import com.lib.lokdroid.core.logD
 
 @Composable
 fun <T : Wordable> DropDownWordField(
     expanded: Boolean,
-    typedWord: String,
+    typedTextFieldValue: TextFieldValue,
     dropdownContent: List<T>,
     trailingIcon: @Composable () -> Unit,
     @StringRes labelResId: Int,
     textColor: Color,
     onTextFieldClick: () -> Unit,
-    onTypedWordChange: (String) -> Unit,
+    onTypedWordFieldValueChange: (TextFieldValue) -> Unit,
     itemContent: @Composable (
         wordable: T,
         wordableIndex: Int,
@@ -102,15 +102,6 @@ fun <T : Wordable> DropDownWordField(
     }
 
     Box(modifier = Modifier) {
-        var textFieldValue by rememberAsMutableStateOf(
-            value = TextFieldValue(text = typedWord, selection = TextRange(typedWord.length))
-        )
-
-        if (textFieldValue.text != typedWord) {
-            textFieldValue =
-                TextFieldValue(text = typedWord, selection = TextRange(typedWord.length))
-        }
-
         TextField(
             modifier = Modifier
                 .onGloballyPositioned { coordinates ->
@@ -118,12 +109,10 @@ fun <T : Wordable> DropDownWordField(
                     textFieldSize = coordinates.size
                 }
                 .width(500.dp),
-            value = textFieldValue,
+            value = typedTextFieldValue,
             onValueChange = {
-                if (it.text != typedWord) {
-                    onTypedWordChange(it.text)
-                }
-                textFieldValue = it
+                logD("onValueChange() called")
+                onTypedWordFieldValueChange(it)
             },
             label = { Text(text = stringResource(id = labelResId)) },
             colors = TextFieldDefaults.textFieldColors(
@@ -139,7 +128,8 @@ fun <T : Wordable> DropDownWordField(
             Popup(offset = IntOffset(x = 0, y = textFieldSize.height)) {
                 val menuShape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
                 val lazyListSate = rememberLazyListState()
-                val bottomContentDividerSpace = if (bottomDropdownMenuContentHeightDp == 0.dp) 0.dp else 16.dp
+                val bottomContentDividerSpace =
+                    if (bottomDropdownMenuContentHeightDp == 0.dp) 0.dp else 16.dp
                 val lazyLiatHeight =
                     popupContentContainerHeightDp - bottomDropdownMenuContentHeightDp - bottomContentDividerSpace
 

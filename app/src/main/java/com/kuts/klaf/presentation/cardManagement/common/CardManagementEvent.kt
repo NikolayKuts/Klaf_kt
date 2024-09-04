@@ -1,12 +1,15 @@
 package com.kuts.klaf.presentation.cardManagement.common
 
+import androidx.compose.ui.text.input.TextFieldValue
 import com.kuts.domain.ipa.LetterInfo
 
 sealed interface CardManagementEvent {
 
-    data class UpdateNativeWord(val word: String) : CardManagementEvent
+    data class UpdateNativeWord(val wordFieldValue: TextFieldValue) : CardManagementEvent
 
-    data class UpdateDataOnForeignWordChanged(val word: String) : CardManagementEvent
+    data class UpdateDataOnForeignWordChanged(
+        val wordFieldValue: TextFieldValue
+    ) : CardManagementEvent
 
     data class UpdateDataOnAutocompleteSelected(val word: String) : CardManagementEvent
 

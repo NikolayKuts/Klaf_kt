@@ -1,5 +1,7 @@
 package com.kuts.klaf.presentation.cardManagement.common
 
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.DebouncedMutableStateFlow
@@ -7,6 +9,7 @@ import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.common.debouncedLaunch
 import com.kuts.domain.common.generateLetterInfos
+import com.kuts.domain.common.ifTrue
 import com.kuts.domain.common.updatedAt
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.ipa.IpaHolder
@@ -24,6 +27,7 @@ import com.kuts.klaf.presentation.cardManagement.cardAddition.NativeWordSuggesti
 import com.kuts.klaf.presentation.cardManagement.cardAddition.NativeWordSuggestionsState
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
+import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -32,6 +36,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -67,8 +72,8 @@ abstract class CardManagementViewModel(
 
     override val cardManagementState =
         MutableStateFlow<CardManagementState>(value = CardManagementState.InProgress())
-    protected val nativeWordState: MutableStateFlow<String> = MutableStateFlow(value = "")
-    protected val foreignWordState: MutableStateFlow<String> = MutableStateFlow(value = "")
+    protected val nativeWordFieldValueState = MutableStateFlow(value = TextFieldValue())
+    protected val foreignWordFieldValueState = MutableStateFlow(value = TextFieldValue())
     protected val ipaHoldersState = MutableStateFlow<List<IpaHolder>>(value = emptyList())
     protected val letterInfosState = MutableStateFlow<List<LetterInfo>>(value = emptyList())
 
@@ -87,7 +92,7 @@ abstract class CardManagementViewModel(
             }
 
             is CardManagementEvent.UpdateDataOnForeignWordChanged -> {
-                updateDataOnForeignWordChanged(word = event.word)
+                updateDataOnForeignWordChanged(wordFieldValue = event.wordFieldValue)
             }
 
             is CardManagementEvent.UpdateDataOnAutocompleteSelected -> {
@@ -111,7 +116,7 @@ abstract class CardManagementViewModel(
             }
 
             is CardManagementEvent.UpdateNativeWord -> {
-                updateNativeWord(word = event.word)
+                updateNativeWord(wordFieldValue = event.wordFieldValue)
             }
 
             is CardManagementEvent.CardManagementConfirmed -> {
@@ -142,14 +147,14 @@ abstract class CardManagementViewModel(
     private fun combineAndObserveCardManagementChanges() {
         combine(
             letterInfosState,
-            nativeWordState,
+            nativeWordFieldValueState,
             ipaHoldersState,
-            foreignWordState,
-        ) { letterInfos, nativeWord, ipaHolders, foreignWord ->
+            foreignWordFieldValueState,
+        ) { letterInfos, nativeWordFieldValue, ipaHolders, foreignWordFieldValue ->
             CardManagementState.InProgress(
                 letterInfos = letterInfos,
-                nativeWord = nativeWord,
-                foreignWord = foreignWord,
+                nativeWord = nativeWordFieldValue,
+                foreignWord = foreignWordFieldValue,
                 ipaHolders = ipaHolders
             )
         }.onEach { addingState -> cardManagementState.value = addingState }
@@ -158,55 +163,58 @@ abstract class CardManagementViewModel(
     }
 
     private fun observeForeignWordChanges() {
-        foreignWordState.map { it.trim() }.debouncedLaunch(
-            scope = viewModelScope,
-            execute = { foreignWord ->
-                val trimmedForeignWord = foreignWord.trim()
+        foreignWordFieldValueState.map { fieldValue -> fieldValue.text.trim() }
+            .distinctUntilChanged()
+            .debouncedLaunch(
+                scope = viewModelScope,
+                execute = { foreignWord ->
+                    logD { message("Observed foreignWord: $foreignWord") }
 
-                audioPlayer.preparePronunciation(word = trimmedForeignWord)
 
-                if (trimmedForeignWord.isNotEmpty()) {
-                    fetchWordInfo(word = trimmedForeignWord)
-                } else {
-                    flow { emit(LoadingState.Non) }
-                }
-            },
-            onEach = { wordInfoState ->
-                when (wordInfoState) {
-                    LoadingState.Non -> {
-                        transcriptionState.value = ""
-                        nativeWordSuggestionsState.value = NativeWordSuggestionsState()
+                    audioPlayer.preparePronunciation(word = foreignWord)
+
+                    if (foreignWord.isNotEmpty()) {
+                        fetchWordInfo(word = foreignWord)
+                    } else {
+                        flow { emit(LoadingState.Non) }
                     }
+                },
+                onEach = { wordInfoState ->
+                    when (wordInfoState) {
+                        LoadingState.Non -> {
+                            transcriptionState.value = ""
+                            nativeWordSuggestionsState.value = NativeWordSuggestionsState()
+                        }
 
-                    is LoadingState.Error -> {
-                        handleWordInfoError(loadingState = wordInfoState)
-                    }
+                        is LoadingState.Error -> {
+                            handleWordInfoError(loadingState = wordInfoState)
+                        }
 
-                    LoadingState.Loading -> {
-                        transcriptionState.value = ""
-                        nativeWordSuggestionsState.update {
-                            it.copy(loadingState = LoadingState.Loading)
+                        LoadingState.Loading -> {
+                            transcriptionState.value = ""
+                            nativeWordSuggestionsState.update {
+                                it.copy(loadingState = LoadingState.Loading)
+                            }
+                        }
+
+                        is LoadingState.Success -> {
+                            transcriptionState.value =
+                                getWrappedTranscription(value = wordInfoState.data.transcription)
+
+                            val suggestionItems =
+                                wordInfoState.data.translations.map { suggestion ->
+                                    NativeWordSuggestionItem(word = suggestion, isSelected = false)
+                                }
+
+                            nativeWordSuggestionsState.value = NativeWordSuggestionsState(
+                                suggestions = suggestionItems,
+                                isActive = false,
+                                loadingState = LoadingState.Success(data = Unit)
+                            )
                         }
                     }
-
-                    is LoadingState.Success -> {
-                        transcriptionState.value =
-                            getWrappedTranscription(value = wordInfoState.data.transcription)
-
-                        val suggestionItems =
-                            wordInfoState.data.translations.map { suggestion ->
-                                NativeWordSuggestionItem(word = suggestion, isSelected = false)
-                            }
-
-                        nativeWordSuggestionsState.value = NativeWordSuggestionsState(
-                            suggestions = suggestionItems,
-                            isActive = false,
-                            loadingState = LoadingState.Success(data = Unit)
-                        )
-                    }
-                }
-            },
-        )
+                },
+            )
     }
 
     private fun changeLetterSelectionWithIpaTemplate(index: Int, letterInfo: LetterInfo) {
@@ -225,24 +233,30 @@ abstract class CardManagementViewModel(
         ipaHoldersState.value = letterInfosState.value.toRowIpaItemHolders()
     }
 
-    private fun updateDataOnForeignWordChanged(word: String) {
-        if (word.length < MAX_FOREIGN_WORD_LENGTH) {
-            foreignWordState.value = word
-            letterInfosState.value = word.generateLetterInfos()
-            nativeWordState.value = ""
-            ipaHoldersState.value = emptyList()
+    private fun updateDataOnForeignWordChanged(wordFieldValue: TextFieldValue) {
+        val word = wordFieldValue.text
+        val isForeignWordChanged = word != foreignWordFieldValueState.value.text
 
-            autocompleteState.launchUpdateWithState(
-                scope = viewModelScope,
-                context = Dispatchers.IO
-            ) {
-                AutocompleteState(
-                    prefix = word,
-                    autocomplete = fetchWordAutocomplete(prefix = word),
-                    isActive = true,
-                )
-            }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-                logE("fetchWordAutocomplete() caught ERROR: ${throwable.stackTraceToString()}")
+        if (word.length < MAX_FOREIGN_WORD_LENGTH) {
+            foreignWordFieldValueState.value = wordFieldValue
+
+            isForeignWordChanged.ifTrue {
+                letterInfosState.value = word.generateLetterInfos()
+                nativeWordFieldValueState.value = TextFieldValue()
+                ipaHoldersState.value = emptyList()
+
+                autocompleteState.launchUpdateWithState(
+                    scope = viewModelScope,
+                    context = Dispatchers.IO
+                ) {
+                    AutocompleteState(
+                        prefix = word,
+                        autocomplete = fetchWordAutocomplete(prefix = word),
+                        isActive = true,
+                    )
+                }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
+                    logE("fetchWordAutocomplete() caught ERROR: ${throwable.stackTraceToString()}")
+                }
             }
         } else {
             eventMessage.tryEmitAsNegative(
@@ -253,8 +267,10 @@ abstract class CardManagementViewModel(
     }
 
     private fun updateDataOnAutocompleteSelected(word: String) {
-        foreignWordState.value = word
-        nativeWordState.value = ""
+        foreignWordFieldValueState.update {
+            TextFieldValue(text = word, selection = TextRange(word.length))
+        }
+        nativeWordFieldValueState.update { it.copy(text = "") }
         letterInfosState.value = word.generateLetterInfos()
         ipaHoldersState.value = emptyList()
         autocompleteState.value = AutocompleteState()
@@ -279,7 +295,10 @@ abstract class CardManagementViewModel(
             .joinToString(separator = ", ") { suggestionItem -> suggestionItem.word }
 
         if (selectedNativeWordSuggestions.length <= MAX_NATIVE_WORD_LENGTH) {
-            nativeWordState.value = selectedNativeWordSuggestions
+            nativeWordFieldValueState.value = TextFieldValue(
+                text = selectedNativeWordSuggestions,
+                selection = TextRange(selectedNativeWordSuggestions.length)
+            )
         } else {
             eventMessage.tryEmitAsNegative(
                 resId = R.string.native_word_is_too_long,
@@ -296,7 +315,7 @@ abstract class CardManagementViewModel(
 
             it.copy(suggestions = updatedSuggestions, isActive = false)
         }
-        nativeWordState.value = ""
+        nativeWordFieldValueState.value = TextFieldValue()
     }
 
     private fun updateIpa(letterGroupIndex: Int, ipa: String) {
@@ -314,9 +333,11 @@ abstract class CardManagementViewModel(
         }
     }
 
-    private fun updateNativeWord(word: String) {
+    private fun updateNativeWord(wordFieldValue: TextFieldValue) {
+        val word = wordFieldValue.text
+
         if (word.length < MAX_NATIVE_WORD_LENGTH) {
-            nativeWordState.value = word
+            nativeWordFieldValueState.value = wordFieldValue
         } else {
             eventMessage.tryEmitAsNegative(
                 resId = R.string.native_word_is_too_long,

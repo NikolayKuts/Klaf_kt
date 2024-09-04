@@ -1,5 +1,6 @@
 package com.kuts.klaf.presentation.cardManagement.cardEditing
 
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
@@ -58,8 +59,8 @@ class CardEditingViewModel @AssistedInject constructor(
     override fun onCardManagementConfirmed() {
         val originalCard = originalCardState.value ?: return
         val deckId = deck.replayCache.first()?.id ?: return
-        val nativeWord = cardManagementState.value.nativeWord
-        val foreignWord = cardManagementState.value.foreignWord
+        val nativeWord = cardManagementState.value.nativeWordFieldValue.text
+        val foreignWord = cardManagementState.value.foreignWordFieldValue.text
         val ipaHoldersState = cardManagementState.value.ipaHolders
         val trimmedIpaHoldersState =
             ipaHoldersState.map { ipaHolder -> ipaHolder.copy(ipa = ipaHolder.ipa.trim()) }
@@ -107,10 +108,10 @@ class CardEditingViewModel @AssistedInject constructor(
 
                     if (card != null) {
                         audioPlayer.preparePronunciation(word = card.foreignWord)
-                        foreignWordState.value = card.foreignWord
+                        foreignWordFieldValueState.value = TextFieldValue(text = card.foreignWord)
                         letterInfosState.value = card.toLetterInfos()
                         ipaHoldersState.value = card.ipa
-                        nativeWordState.value = card.nativeWord
+                        nativeWordFieldValueState.value = TextFieldValue(text = card.nativeWord)
                     }
                 }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->

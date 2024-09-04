@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,22 +46,22 @@ fun CardManagementView(
     deckName: String,
     cardQuantity: Int,
     letterInfos: List<LetterInfo>,
-    nativeWord: String,
-    foreignWord: String,
+    foreignWordFieldValue: TextFieldValue,
+    nativeWordFieldValue: TextFieldValue,
     ipaHolders: List<IpaHolder>,
     autocompleteState: AutocompleteState,
     pronunciationLoadingState: LoadingState<Unit>,
     closeAutocompletePopupMenu: () -> Unit,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
     onForeignWordTextFieldClick: () -> Unit,
-    onForeignWordChange: (String) -> Unit,
+    onForeignWordFieldValueChange: (TextFieldValue) -> Unit,
     onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
     onConfirmClick: () -> Unit,
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
     transcription: String,
     closeNativeWordSuggestionsPopupMenu: () -> Unit,
-    onNativeWordChange: (String) -> Unit,
+    onNativeWordFieldValueChange: (TextFieldValue) -> Unit,
     nativeWordSuggestionsState: NativeWordSuggestionsState,
     onNativeWordFieldArrowIconClick: () -> Unit,
     onNativeWordSuggestionItemClick: (chosenWordIndex: Int) -> Unit,
@@ -109,17 +110,17 @@ fun CardManagementView(
             Spacer(modifier = Modifier.fillMaxHeight(fraction = 0.1f))
 
             CardManagementFields(
-                nativeWord = nativeWord,
-                foreignWord = foreignWord,
+                nativeWordFieldValue = nativeWordFieldValue,
+                foreignWordFieldValue = foreignWordFieldValue,
                 ipaHolders = ipaHolders,
                 autocompleteState = autocompleteState,
                 loadingState = pronunciationLoadingState,
                 onForeignWordTextFieldClick = onForeignWordTextFieldClick,
-                onForeignWordChange = onForeignWordChange,
+                onForeignWordFieldValueChange = onForeignWordFieldValueChange,
                 onIpaChange = onIpaChange,
                 onPronounceIconClick = onPronounceIconClick,
                 onAutocompleteItemClick = onAutocompleteItemClick,
-                onNativeWordChange = onNativeWordChange,
+                onNativeWordFieldValueChange = onNativeWordFieldValueChange,
                 onNativeWordFieldClick = closeAutocompletePopupMenu,
                 onNativeWordSuggestionClick = onNativeWordSuggestionItemClick,
                 onNativeWordFieldArrowIconClick = onNativeWordFieldArrowIconClick,

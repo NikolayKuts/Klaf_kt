@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -63,16 +64,16 @@ private const val CARD_MANAGEMENT_CONTAINER_WIDTH = 500
 
 @Composable
 fun CardManagementFields(
-    nativeWord: String,
-    foreignWord: String,
+    foreignWordFieldValue: TextFieldValue,
+    nativeWordFieldValue: TextFieldValue,
     ipaHolders: List<IpaHolder>,
     autocompleteState: AutocompleteState,
     loadingState: LoadingState<Unit>,
     modifier: Modifier = Modifier,
     confirmationButtonSection: @Composable BoxScope.() -> Unit,
     onForeignWordTextFieldClick: () -> Unit,
-    onNativeWordChange: (String) -> Unit,
-    onForeignWordChange: (String) -> Unit,
+    onForeignWordFieldValueChange: (TextFieldValue) -> Unit,
+    onNativeWordFieldValueChange: (TextFieldValue) -> Unit,
     onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
@@ -89,10 +90,10 @@ fun CardManagementFields(
     ) {
         DropDownForeignWordField(
             expanded = autocompleteState.isActive && autocompleteState.autocomplete.isNotEmpty(),
-            typedWord = foreignWord,
+            typedTextFieldValue = foreignWordFieldValue,
             autocompleteState = autocompleteState,
             loadingState = loadingState,
-            onTypedWordChange = onForeignWordChange,
+            onTypedWordFieldValueChange = onForeignWordFieldValueChange,
             onPronounceIconClick = onPronounceIconClick,
             onAutocompleteItemClick = { autoCompleteWord, _ ->
                 onAutocompleteItemClick(autoCompleteWord.word())
@@ -105,10 +106,10 @@ fun CardManagementFields(
 
         DropDownNativeWordField(
             expanded = isNativeWordSuggestionsStateActiveAndNotEmpty,
-            typedWord = nativeWord,
+            typedTextFieldValue = nativeWordFieldValue,
             nativeWordSuggestionsState = nativeWordSuggestionsState,
             loadingState = nativeWordSuggestionsState.loadingState,
-            onTypedWordChange = onNativeWordChange,
+            onTypedWordFieldValueChange = onNativeWordFieldValueChange,
             onArrowIconClick = onNativeWordFieldArrowIconClick,
             onSuggestionClick = onNativeWordSuggestionClick,
             onTextFieldClick = onNativeWordFieldClick,
@@ -127,17 +128,17 @@ fun CardManagementFields(
 @Composable
 private fun DropDownForeignWordField(
     expanded: Boolean,
-    typedWord: String,
+    typedTextFieldValue: TextFieldValue,
     autocompleteState: AutocompleteState,
     loadingState: LoadingState<Unit>,
-    onTypedWordChange: (String) -> Unit,
+    onTypedWordFieldValueChange: (TextFieldValue) -> Unit,
     onPronounceIconClick: () -> Unit,
     onTextFiledClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: AutocompleteWord, choseIndex: Int) -> Unit,
 ) {
     DropDownWordField(
         expanded = expanded,
-        typedWord = typedWord,
+        typedTextFieldValue = typedTextFieldValue,
         dropdownContent = autocompleteState.autocomplete,
         labelResId = R.string.label_foreign_word,
         textColor = MainTheme.colors.cardManagementView.foreignWord,
@@ -164,7 +165,7 @@ private fun DropDownForeignWordField(
                 tint = iconColor,
             )
         },
-        onTypedWordChange = onTypedWordChange,
+        onTypedWordFieldValueChange = onTypedWordFieldValueChange,
         itemContent = { wordable, wordableIndex, onItemSizeChange ->
             AutocompleteWordItem(
                 modifier = Modifier.onSizeChanged { intSize -> onItemSizeChange(intSize) },
@@ -180,10 +181,10 @@ private fun DropDownForeignWordField(
 @Composable
 fun DropDownNativeWordField(
     expanded: Boolean,
-    typedWord: String,
+    typedTextFieldValue: TextFieldValue,
     nativeWordSuggestionsState: NativeWordSuggestionsState,
     loadingState: LoadingState<Unit>,
-    onTypedWordChange: (String) -> Unit,
+    onTypedWordFieldValueChange: (TextFieldValue) -> Unit,
     onArrowIconClick: () -> Unit,
     onSuggestionClick: (wordIndex: Int) -> Unit,
     onTextFieldClick: () -> Unit,
@@ -192,7 +193,7 @@ fun DropDownNativeWordField(
 ) {
     DropDownWordField(
         expanded = expanded,
-        typedWord = typedWord,
+        typedTextFieldValue = typedTextFieldValue,
         dropdownContent = nativeWordSuggestionsState.suggestions.map { wordSuggestion ->
             Wordable { wordSuggestion.word }
         },
@@ -224,7 +225,7 @@ fun DropDownNativeWordField(
                 tint = iconColor,
             )
         },
-        onTypedWordChange = onTypedWordChange,
+        onTypedWordFieldValueChange = onTypedWordFieldValueChange,
         onTextFieldClick = onTextFieldClick,
         itemContent = { wordable, wordableIndex, onItemSizeChange ->
             Column(modifier = Modifier.onSizeChanged { intSize -> onItemSizeChange(intSize) }) {

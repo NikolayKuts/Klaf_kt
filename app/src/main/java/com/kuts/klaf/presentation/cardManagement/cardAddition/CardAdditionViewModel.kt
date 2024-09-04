@@ -1,5 +1,6 @@
 package com.kuts.klaf.presentation.cardManagement.cardAddition
 
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
@@ -45,8 +46,8 @@ class CardAdditionViewModel @AssistedInject constructor(
 
     override fun onCardManagementConfirmed() {
         val deckId = deck.replayCache.first()?.id ?: return
-        val nativeWord = cardManagementState.value.nativeWord
-        val foreignWord = cardManagementState.value.foreignWord
+        val nativeWord = cardManagementState.value.nativeWordFieldValue.text
+        val foreignWord = cardManagementState.value.foreignWordFieldValue.text
         val ipaHoldersState = cardManagementState.value.ipaHolders
 
         if (nativeWord.isEmpty() || foreignWord.isEmpty()) {
@@ -71,12 +72,18 @@ class CardAdditionViewModel @AssistedInject constructor(
     }
 
     private fun handleAddingStateBySelectedWord(word: String?) {
-        foreignWordState.value = word ?: ""
+        val checkedWord = word ?: ""
+
+        foreignWordFieldValueState.value = TextFieldValue(text = checkedWord)
         letterInfosState.value = word?.toRowInfos() ?: emptyList()
     }
 
     private fun finishAddingState() {
-        sendEvent(event = CardManagementEvent.UpdateDataOnForeignWordChanged(word = ""))
+        sendEvent(
+            event = CardManagementEvent.UpdateDataOnForeignWordChanged(
+                wordFieldValue = TextFieldValue()
+            )
+        )
         cardManagementState.value = CardManagementState.Finished
     }
 }

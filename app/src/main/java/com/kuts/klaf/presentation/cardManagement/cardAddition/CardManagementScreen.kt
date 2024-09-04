@@ -12,8 +12,8 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
     val deck = viewModel.deck.collectAsState(initial = null)
     val cardState by viewModel.cardManagementState.collectAsState()
     val letterInfos = cardState.letterInfos
-    val foreignWord = cardState.foreignWord
-    val nativeWord = cardState.nativeWord
+    val foreignWordFieldValue = cardState.foreignWordFieldValue
+    val nativeWordFieldValue = cardState.nativeWordFieldValue
     val ipaHolders = cardState.ipaHolders
     val autocompleteState by viewModel.autocompleteState.collectAsState()
     val pronunciationLoadingState by viewModel.pronunciationLoadingState.collectAsState()
@@ -25,8 +25,8 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
             deckName = receivedDeck.name,
             cardQuantity = receivedDeck.cardQuantity,
             letterInfos = letterInfos,
-            nativeWord = nativeWord,
-            foreignWord = foreignWord,
+            nativeWordFieldValue = nativeWordFieldValue,
+            foreignWordFieldValue = foreignWordFieldValue,
             ipaHolders = ipaHolders,
             autocompleteState = autocompleteState,
             pronunciationLoadingState = pronunciationLoadingState,
@@ -48,12 +48,12 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
                     )
                 )
             },
-            onNativeWordChange = { word ->
-                viewModel.sendEvent(event = CardManagementEvent.UpdateNativeWord(word = word))
+            onNativeWordFieldValueChange = { wordFieldValue ->
+                viewModel.sendEvent(event = CardManagementEvent.UpdateNativeWord(wordFieldValue = wordFieldValue))
             },
-            onForeignWordChange = { word ->
+            onForeignWordFieldValueChange = { wordFieldValue ->
                 viewModel.sendEvent(
-                    event = CardManagementEvent.UpdateDataOnForeignWordChanged(word = word)
+                    event = CardManagementEvent.UpdateDataOnForeignWordChanged(wordFieldValue = wordFieldValue)
                 )
             },
             onIpaChange = { letterGroupIndex, ipa ->
