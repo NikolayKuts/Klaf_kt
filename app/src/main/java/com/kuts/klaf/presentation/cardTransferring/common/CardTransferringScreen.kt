@@ -1,21 +1,45 @@
 package com.kuts.klaf.presentation.cardTransferring.common
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
-import androidx.compose.foundation.lazy.grid.LazyGridItemScope.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -30,9 +54,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.ifTrue
 import com.kuts.klaf.R
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
-import com.kuts.klaf.presentation.common.*
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardAddingFragment
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardDeletionDialog
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardEditingFragment
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardMovingDialog
+import com.kuts.klaf.presentation.common.CustomCheckBox
+import com.kuts.klaf.presentation.common.RoundButton
+import com.kuts.klaf.presentation.common.ScrollableBox
+import com.kuts.klaf.presentation.common.noRippleClickable
+import com.kuts.klaf.presentation.common.rememberAsMutableStateOf
 import com.kuts.klaf.presentation.theme.MainTheme
 import kotlinx.coroutines.delay
 
@@ -88,6 +118,7 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
                         viewModel.changeSelectionState(position = index)
                         moreButtonClickedState = false
                     },
+                    onItemClick = { index -> viewModel.pronounceWord(wordIndex = index) },
                     onLongItemClick = { index ->
                         viewModel.navigateTo(
                             destination = CardEditingFragment(selectedCardIndexIndex = index),
@@ -232,6 +263,7 @@ private fun DeckList(
     bottomContentPadding: Dp,
     onScroll: () -> Unit,
     onSelectedChanged: (index: Int) -> Unit,
+    onItemClick: (index: Int) -> Unit,
     onLongItemClick: (index: Int) -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
@@ -255,6 +287,7 @@ private fun DeckList(
                 holder = holder,
                 position = index + 1,
                 onSelectedChanged = { onSelectedChanged(index) },
+                onClick = { onItemClick(index) },
                 onLongClick = { onLongItemClick(index) }
             )
             DividingLine()
@@ -268,6 +301,7 @@ private fun LazyItemScope.CardItem(
     holder: SelectableCardHolder,
     position: Int,
     onSelectedChanged: (Boolean) -> Unit,
+    onClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
     Row(
@@ -275,7 +309,7 @@ private fun LazyItemScope.CardItem(
             .fillMaxWidth()
             .animateItemPlacement()
             .combinedClickable(
-                onClick = {},
+                onClick = onClick,
                 onLongClick = onLongClick
             ),
         verticalAlignment = Alignment.CenterVertically,

@@ -8,6 +8,7 @@ import com.kuts.domain.entities.Deck
 import com.kuts.domain.repositories.CrashlyticsRepository
 import com.kuts.domain.useCases.*
 import com.kuts.klaf.R
+import com.kuts.klaf.data.networking.CardAudioPlayer
 import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
 import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
 import com.kuts.klaf.presentation.common.EventMessage
@@ -24,6 +25,7 @@ class CardTransferringViewModel @AssistedInject constructor(
     private val fetchCards: FetchCardsUseCase,
     private val deleteCardsFromDeckUseCase: DeleteCardsFromDeckUseCase,
     fetchDeckSource: FetchDeckSourceUseCase,
+    override val audioPlayer: CardAudioPlayer,
     private val moveCardsToDeck: TransferCardsToDeckUseCase,
     private val crashlytics: CrashlyticsRepository,
 ) : BaseCardTransferringViewModel() {
@@ -127,6 +129,10 @@ class CardTransferringViewModel @AssistedInject constructor(
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_moving_cards)
         }
+    }
+
+    override fun pronounceWord(wordIndex: Int) {
+        audioPlayer.preparePronunciationAndPlay(word = cardHolders.value[wordIndex].card.foreignWord)
     }
 
     private fun observeCardSource() {
