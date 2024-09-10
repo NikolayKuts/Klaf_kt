@@ -12,6 +12,7 @@ import com.kuts.klaf.data.networking.yandexApi.entities.YandexWordInfo
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logW
 import io.ktor.client.HttpClient
+import io.ktor.client.call.NoTransformationFoundException
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -74,10 +75,13 @@ class YandexWordInfoProvider @Inject constructor() : WordInfoRepository {
                 emit(value = LoadingState.Error(value = JsonConvert))
             }
             is CancellationException -> emit(value = LoadingState.Non)
+            is NoTransformationFoundException -> emit(value = LoadingState.Non)
             else -> emit(value = LoadingState.Error(value = Common))
         }
 
-        logW("fetchWordInfo caught ERROR: ${throwable.stackTraceToString()}")
+        if (throwable !is CancellationException) {
+            logW("fetchWordInfo caught ERROR: ${throwable.stackTraceToString()}")
+        }
     }
 
     private fun buildUrl(apiKey: String, word: String): String {

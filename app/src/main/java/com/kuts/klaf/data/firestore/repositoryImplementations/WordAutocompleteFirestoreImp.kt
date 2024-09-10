@@ -1,11 +1,12 @@
 package com.kuts.klaf.data.firestore.repositoryImplementations
 
-import com.kuts.klaf.data.firestore.entities.FirestoreAutocompleteWord
-import com.kuts.klaf.data.firestore.toDomainEntity
-import com.kuts.domain.entities.AutocompleteWord
-import com.kuts.domain.repositories.WordAutocompleteRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
+import com.kuts.domain.entities.AutocompleteWord
+import com.kuts.domain.repositories.WordAutocompleteRepository
+import com.kuts.klaf.data.firestore.entities.FirestoreAutocompleteWord
+import com.kuts.klaf.data.firestore.toDomainEntity
+import com.lib.lokdroid.core.logD
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -24,6 +25,8 @@ class WordAutocompleteFirestoreImp @Inject constructor(
     }
 
     override suspend fun fetchAutocomplete(prefix: String): List<AutocompleteWord> {
+        logD("fetchAutocomplete() called")
+
         val groupLetter = prefix.trim().firstOrNull()?.lowercase()
 
         return if (groupLetter.isNullOrEmpty()) {

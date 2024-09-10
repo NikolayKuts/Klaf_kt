@@ -18,8 +18,10 @@ android {
         compileSdk = 34
         minSdk = 25
         targetSdk = 33
-        versionCode = 1
-        versionName = "1.3"
+
+        /** Version **/
+        versionName = "1.5"
+        versionCode = 5
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -143,5 +145,5 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
 
     /** LoKdroid **/
-    implementation(libs.lokdroid.core)
+    implementation(libs.lokdroid)
 }

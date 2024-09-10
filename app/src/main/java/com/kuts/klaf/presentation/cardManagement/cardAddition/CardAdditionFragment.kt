@@ -10,6 +10,7 @@ import androidx.navigation.fragment.navArgs
 import com.kuts.domain.common.ifTrue
 import com.kuts.klaf.R
 import com.kuts.klaf.data.common.MIME_TYPE_TEXT_PLAIN
+import com.kuts.klaf.presentation.cardManagement.common.BaseCardManagementViewModel
 import com.kuts.klaf.presentation.common.BaseFragment
 import com.kuts.klaf.presentation.common.collectWhenStarted
 import com.kuts.klaf.presentation.theme.MainTheme
@@ -23,7 +24,7 @@ class CardAdditionFragment : BaseFragment(layoutId = R.layout.common_compose_lay
 
     @Inject
     lateinit var cardAdditionAssistedFactory: CardAdditionViewModelAssistedFactory
-    private val viewModel: BaseCardAdditionViewModel by viewModels {
+    private val viewModel: BaseCardManagementViewModel by viewModels {
         CardAdditionViewModelFactory(
             assistedFactory = cardAdditionAssistedFactory,
             deckId = args.deckId,
@@ -45,7 +46,7 @@ class CardAdditionFragment : BaseFragment(layoutId = R.layout.common_compose_lay
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 Surface {
-                    CardAdditionScreen(viewModel = viewModel)
+                    CardManagementScreen(viewModel = viewModel)
                 }
             }
         }

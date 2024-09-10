@@ -3,6 +3,7 @@ package com.kuts.domain.common
 import com.kuts.domain.repositories.CrashlyticsRepository
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 class CoroutineStateHolder private constructor() {
 
@@ -22,7 +23,7 @@ class CoroutineStateHolder private constructor() {
     companion object {
 
         fun CoroutineScope.launchWithState(
-            context: CoroutineContext = this.coroutineContext,
+            context: CoroutineContext = EmptyCoroutineContext,
             start: CoroutineStart = CoroutineStart.DEFAULT,
             task: suspend CoroutineScope.() -> Unit,
         ): CoroutineStateHolder {

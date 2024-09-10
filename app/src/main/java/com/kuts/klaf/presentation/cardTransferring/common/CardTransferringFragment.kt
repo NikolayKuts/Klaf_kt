@@ -33,6 +33,7 @@ class CardTransferringFragment : BaseFragment(R.layout.common_compose_layout) {
         super.onCreate(savedInstanceState)
 
         observeNavigationChanges()
+        subscribeAudioPlayerObserver()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -47,6 +48,12 @@ class CardTransferringFragment : BaseFragment(R.layout.common_compose_layout) {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        lifecycle.removeObserver(viewModel.audioPlayer)
     }
 
     private fun provideViewModelFactory(): ViewModelProvider.Factory {
@@ -79,6 +86,10 @@ class CardTransferringFragment : BaseFragment(R.layout.common_compose_layout) {
             lifecycleOwner = viewLifecycleOwner,
             onEach = sharedViewModel::notify,
         )
+    }
+
+    private fun subscribeAudioPlayerObserver() {
+        lifecycle.addObserver(viewModel.audioPlayer)
     }
 
     private fun navigateToCardMovingDialog() {

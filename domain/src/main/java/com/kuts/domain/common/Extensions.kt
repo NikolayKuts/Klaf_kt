@@ -157,3 +157,17 @@ fun <Input, Output> Flow<Input>.debouncedLaunch(
     .onEach { value -> onEach(value) }
     .flowOn(context = context)
     .launchIn(scope = scope)
+
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+fun <Input, Output> Flow<Input>.debouncedLaunch(
+    scope: CoroutineScope,
+    timeoutMillis: Long = 300,
+    context: CoroutineContext = Dispatchers.IO,
+    execute: suspend (Input) -> Output,
+    onEach: suspend (Input, Output) -> Unit
+): Job = this.debounce(timeoutMillis)
+    .distinctUntilChanged()
+    .mapLatest { input -> input to execute(input) }
+    .onEach { inputOutputPair -> onEach(inputOutputPair.first, inputOutputPair.second) }
+    .flowOn(context = context)
+    .launchIn(scope = scope)

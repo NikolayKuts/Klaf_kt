@@ -64,6 +64,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.update
 import java.util.LinkedList
 
 class DeckRepetitionViewModel @AssistedInject constructor(
@@ -82,8 +83,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
     companion object {
 
-        private const val ONE_QUARTER: Double = 1.0 / 4.0
-        private const val THREE_QUADS: Double = 3.0 / 4.0
+        private const val HARD_WORD_POSITION_SHIFT = 5
+        private const val GOOD_WORD_POSITION_SHIFT = 10
     }
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
@@ -199,6 +200,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                         actualLevel = GOOD
                     }
                 }
+
                 GOOD -> goodeCards.add(cardForMoving)
                 HARD -> hardCards.add(cardForMoving)
             }
@@ -244,6 +246,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 mainButtonState.value = ButtonState.UNPRESSED
                 timer.resumeCounting()
             }
+
             ButtonState.UNPRESSED -> {
                 mainButtonState.value = ButtonState.PRESSED
                 timer.pauseCounting()
@@ -280,7 +283,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 timer.stopCounting()
             }
 
-            repetitionCards.value = getCardsByProgress(receivedCards = receivedCards)
+            repetitionCards.value = getCardsByProgress(receivedCards = receivedCards.shuffled())
         }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
     }
 
@@ -319,10 +322,14 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         level: DifficultyRecallingLevel,
         updatedCards: List<Card>,
     ): Int {
+
+        val calculateNewPosition: (positionShift: Int) -> Int = { positionShift ->
+            if (positionShift >= updatedCards.lastIndex) updatedCards.lastIndex else positionShift
+        }
         return when (level) {
             EASY -> updatedCards.size
-            GOOD -> (updatedCards.size * THREE_QUADS).toInt()
-            HARD -> (updatedCards.size * ONE_QUARTER).toInt()
+            GOOD -> calculateNewPosition(GOOD_WORD_POSITION_SHIFT)
+            HARD -> calculateNewPosition(HARD_WORD_POSITION_SHIFT)
         }
     }
 
@@ -375,6 +382,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         isWaitingForFinish = false
         clearRepetitionProgress()
         timer.stopCounting()
+        repetitionCards.update { it.shuffled() }
 
         val updatedDeck = getUpdatedDesk(deckForUpdating = repeatedDeck)
 
