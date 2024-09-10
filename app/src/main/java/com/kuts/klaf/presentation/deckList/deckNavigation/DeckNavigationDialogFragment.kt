@@ -33,6 +33,7 @@ class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.common_c
                     onAddCardsClick = ::navigateToCardAdditionFragment,
                     onTransferCardsClick = ::navigateToCardTransferringFragment,
                     onRepetitionInfoClick = ::navigateToDeckRepetitionInfoDialogFragment,
+                    onDeckManagementClick = ::navigateToDeckManagementFragment,
                     onCloseDialogClick = ::closeDialog
                 )
             }
@@ -77,6 +78,12 @@ class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.common_c
                 deckId = args.deckId,
                 deckName = args.deckName,
             ).also { navController.navigate(directions = it) }
+    }
+
+    private fun navigateToDeckManagementFragment() {
+        DeckNavigationDialogFragmentDirections.actionDeckNavigationDialogToDeckManagementFragment(
+            deckId = args.deckId,
+        ).also { navController.navigate(directions = it) }
     }
 
     private fun closeDialog() {
