@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kuts.domain.common.LoadingState
-import com.kuts.domain.ipa.IpaHolder
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.cardManagement.cardAddition.AutocompleteState
@@ -48,14 +47,14 @@ fun CardManagementView(
     letterInfos: List<LetterInfo>,
     foreignWordFieldValue: TextFieldValue,
     nativeWordFieldValue: TextFieldValue,
-    ipaHolders: List<IpaHolder>,
+    textFieldValueIpaHolders: List<TextFieldValueIpaHolder>,
     autocompleteState: AutocompleteState,
     pronunciationLoadingState: LoadingState<Unit>,
     closeAutocompletePopupMenu: () -> Unit,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
     onForeignWordTextFieldClick: () -> Unit,
     onForeignWordFieldValueChange: (TextFieldValue) -> Unit,
-    onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
+    onIpaTextFieldValueChange: (letterGroupIndex: Int, ipa: TextFieldValue) -> Unit,
     onConfirmClick: () -> Unit,
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
@@ -112,12 +111,12 @@ fun CardManagementView(
             CardManagementFields(
                 nativeWordFieldValue = nativeWordFieldValue,
                 foreignWordFieldValue = foreignWordFieldValue,
-                ipaHolders = ipaHolders,
+                textFieldValueIpaHolders = textFieldValueIpaHolders,
                 autocompleteState = autocompleteState,
                 loadingState = pronunciationLoadingState,
                 onForeignWordTextFieldClick = onForeignWordTextFieldClick,
                 onForeignWordFieldValueChange = onForeignWordFieldValueChange,
-                onIpaChange = onIpaChange,
+                onIpaTextFieldValueChange = onIpaTextFieldValueChange,
                 onPronounceIconClick = onPronounceIconClick,
                 onAutocompleteItemClick = onAutocompleteItemClick,
                 onNativeWordFieldValueChange = onNativeWordFieldValueChange,
