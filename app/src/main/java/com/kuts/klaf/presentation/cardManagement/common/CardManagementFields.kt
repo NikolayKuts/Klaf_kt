@@ -47,7 +47,6 @@ import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.Wordable
 import com.kuts.domain.common.skipOnNewLineCharacter
 import com.kuts.domain.entities.AutocompleteWord
-import com.kuts.domain.ipa.IpaHolder
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.cardManagement.cardAddition.AutocompleteState
 import com.kuts.klaf.presentation.cardManagement.cardAddition.NativeWordSuggestionsState
@@ -66,7 +65,7 @@ private const val CARD_MANAGEMENT_CONTAINER_WIDTH = 500
 fun CardManagementFields(
     foreignWordFieldValue: TextFieldValue,
     nativeWordFieldValue: TextFieldValue,
-    ipaHolders: List<IpaHolder>,
+    textFieldValueIpaHolders: List<TextFieldValueIpaHolder>,
     autocompleteState: AutocompleteState,
     loadingState: LoadingState<Unit>,
     modifier: Modifier = Modifier,
@@ -74,7 +73,7 @@ fun CardManagementFields(
     onForeignWordTextFieldClick: () -> Unit,
     onForeignWordFieldValueChange: (TextFieldValue) -> Unit,
     onNativeWordFieldValueChange: (TextFieldValue) -> Unit,
-    onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
+    onIpaTextFieldValueChange: (letterGroupIndex: Int, ipaTextFieldValue: TextFieldValue) -> Unit,
     onPronounceIconClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
     onNativeWordFieldClick: () -> Unit,
@@ -118,8 +117,8 @@ fun CardManagementFields(
         )
 
         IpaSection(
-            ipaHolders = ipaHolders,
-            onIpaChange = onIpaChange,
+            textFieldValueIpaHolders = textFieldValueIpaHolders,
+            onIpaTextFieldValueChange = onIpaTextFieldValueChange,
             confirmationButtonSection = confirmationButtonSection
         )
     }
@@ -262,16 +261,14 @@ fun DropDownNativeWordField(
                     iconId = R.drawable.ic_list_clear,
                     onClick = onClearSelectionClick
                 )
-                ConfirmationButton() {
-                    onConfirmSuggestionsSelection()
-                }
+                ConfirmationButton { onConfirmSuggestionsSelection() }
             }
         }
     )
 }
 
 @Composable
-private fun  AutocompleteWordItem(
+private fun AutocompleteWordItem(
     word: AutocompleteWord,
     prefix: String,
     onAutocompleteItemClick: () -> Unit,
@@ -298,8 +295,8 @@ private fun  AutocompleteWordItem(
 
 @Composable
 private fun IpaSection(
-    ipaHolders: List<IpaHolder>,
-    onIpaChange: (letterGroupIndex: Int, ipa: String) -> Unit,
+    textFieldValueIpaHolders: List<TextFieldValueIpaHolder>,
+    onIpaTextFieldValueChange: (letterGroupIndex: Int, ipaTextFieldValue: TextFieldValue) -> Unit,
     confirmationButtonSection: @Composable BoxScope.() -> Unit,
 ) {
     var parentWidthPx by rememberAsMutableStateOf(value = 0F)
@@ -324,7 +321,7 @@ private fun IpaSection(
             horizontalAlignment = Alignment.CenterHorizontally,
             contentPadding = PaddingValues(bottom = ROUNDED_ELEMENT_SIZE.dp * 2 / 3)
         ) {
-            itemsIndexed(items = ipaHolders) { letterGroupIndex, ipaHolder ->
+            itemsIndexed(items = textFieldValueIpaHolders) { letterGroupIndex, textFieldValueIpaHolder ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -337,7 +334,7 @@ private fun IpaSection(
                             .clip(shape = cellShape)
                             .background(color = MainTheme.colors.cardManagementView.checkedLetterCell)
                             .padding(6.dp),
-                        text = ipaHolder.letterGroup,
+                        text = textFieldValueIpaHolder.letterGroup,
                         overflow = TextOverflow.Ellipsis,
                         maxLines = 1
                     )
@@ -354,7 +351,7 @@ private fun IpaSection(
                             .clip(shape = cellShape)
                             .background(MainTheme.colors.cardManagementView.ipaCellBackground)
                             .padding(6.dp),
-                        value = ipaHolder.ipa,
+                        value = textFieldValueIpaHolder.ipaTextFieldValue,
                         cursorBrush = Brush.verticalGradient(
                             0.00f to Color.Transparent,
                             0.15f to Color.Transparent,
@@ -363,8 +360,12 @@ private fun IpaSection(
                             0.90f to Color.Transparent,
                             1.00f to Color.Transparent,
                         ),
-                        onValueChange = { newText ->
-                            onIpaChange(letterGroupIndex, newText.skipOnNewLineCharacter())
+                        onValueChange = { newTextFieldValue ->
+                            val updatedTextFieldValue = newTextFieldValue.copy(
+                                text = newTextFieldValue.text.skipOnNewLineCharacter()
+                            )
+
+                            onIpaTextFieldValueChange(letterGroupIndex, updatedTextFieldValue)
                         },
                         textStyle = MainTheme.typographies.cardManagementViewTextStyles.ipaValue,
                     )

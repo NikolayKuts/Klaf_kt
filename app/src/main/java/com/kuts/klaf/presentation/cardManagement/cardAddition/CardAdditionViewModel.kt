@@ -16,6 +16,7 @@ import com.kuts.klaf.data.networking.CardAudioPlayer
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementEvent
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementState
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementViewModel
+import com.kuts.klaf.presentation.cardManagement.common.toDomainEntity
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import com.kuts.klaf.presentation.common.tryEmitAsPositive
 import dagger.assisted.Assisted
@@ -48,16 +49,20 @@ class CardAdditionViewModel @AssistedInject constructor(
         val deckId = deck.replayCache.first()?.id ?: return
         val nativeWord = cardManagementState.value.nativeWordFieldValue.text
         val foreignWord = cardManagementState.value.foreignWordFieldValue.text
-        val ipaHoldersState = cardManagementState.value.ipaHolders
+        val textFieldIpaHoldersState = cardManagementState.value.textFieldValueIpaHolders
 
         if (nativeWord.isEmpty() || foreignWord.isEmpty()) {
             eventMessage.tryEmitAsNegative(resId = R.string.native_and_foreign_words_must_be_filled)
         } else {
+            val ipaHolders = textFieldIpaHoldersState.map { textFieldValueIpaHolder ->
+                textFieldValueIpaHolder.toDomainEntity()
+                    .copy(ipa = textFieldValueIpaHolder.ipaTextFieldValue.text.trim())
+            }
             val newCard = Card(
                 deckId = deckId,
                 nativeWord = nativeWord,
                 foreignWord = foreignWord,
-                ipa = ipaHoldersState.map { ipaHolder -> ipaHolder.copy(ipa = ipaHolder.ipa.trim()) }
+                ipa = ipaHolders
             )
 
             viewModelScope.launchWithState(Dispatchers.IO) {

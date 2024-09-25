@@ -17,6 +17,8 @@ import com.kuts.klaf.R
 import com.kuts.klaf.data.networking.CardAudioPlayer
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementState
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementViewModel
+import com.kuts.klaf.presentation.cardManagement.common.toDomainEntity
+import com.kuts.klaf.presentation.cardManagement.common.toTextFieldValueIpaHolder
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import com.kuts.klaf.presentation.common.tryEmitAsPositive
 import com.lib.lokdroid.core.logW
@@ -61,9 +63,13 @@ class CardEditingViewModel @AssistedInject constructor(
         val deckId = deck.replayCache.first()?.id ?: return
         val nativeWord = cardManagementState.value.nativeWordFieldValue.text
         val foreignWord = cardManagementState.value.foreignWordFieldValue.text
-        val ipaHoldersState = cardManagementState.value.ipaHolders
-        val trimmedIpaHoldersState =
-            ipaHoldersState.map { ipaHolder -> ipaHolder.copy(ipa = ipaHolder.ipa.trim()) }
+        val trimmedTextFieldValueIpaHoldersState = cardManagementState.value.textFieldValueIpaHolders
+            .map { textFieldValueIpaHolder ->
+                val trimmedText = textFieldValueIpaHolder.ipaTextFieldValue.text.trim()
+                val trimmedTextFieldValue = textFieldValueIpaHolder.ipaTextFieldValue.copy(text = trimmedText)
+
+                textFieldValueIpaHolder.copy(ipaTextFieldValue = trimmedTextFieldValue)
+            }
 
         if (nativeWord.isEmpty() || foreignWord.isEmpty()) {
             eventMessage.tryEmitAsNegative(resId = R.string.native_and_foreign_words_must_be_filled)
@@ -72,7 +78,7 @@ class CardEditingViewModel @AssistedInject constructor(
                 deckId = deckId,
                 nativeWord = nativeWord,
                 foreignWord = foreignWord,
-                ipa = trimmedIpaHoldersState
+                ipa = trimmedTextFieldValueIpaHoldersState.map { it.toDomainEntity() },
             )
 
             when {
@@ -110,7 +116,9 @@ class CardEditingViewModel @AssistedInject constructor(
                         audioPlayer.preparePronunciation(word = card.foreignWord)
                         foreignWordFieldValueState.value = TextFieldValue(text = card.foreignWord)
                         letterInfosState.value = card.toLetterInfos()
-                        ipaHoldersState.value = card.ipa
+                        textFieldValueIpaHoldersState.value = card.ipa.map {
+                            it.toTextFieldValueIpaHolder()
+                        }
                         nativeWordFieldValueState.value = TextFieldValue(text = card.nativeWord)
                     }
                 }

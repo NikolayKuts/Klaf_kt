@@ -14,7 +14,7 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
     val letterInfos = cardState.letterInfos
     val foreignWordFieldValue = cardState.foreignWordFieldValue
     val nativeWordFieldValue = cardState.nativeWordFieldValue
-    val ipaHolders = cardState.ipaHolders
+    val textFieldValueIpaHolders = cardState.textFieldValueIpaHolders
     val autocompleteState by viewModel.autocompleteState.collectAsState()
     val pronunciationLoadingState by viewModel.pronunciationLoadingState.collectAsState()
     val nativeWordSuggestionsState by viewModel.nativeWordSuggestionsState.collectAsState()
@@ -27,7 +27,7 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
             letterInfos = letterInfos,
             nativeWordFieldValue = nativeWordFieldValue,
             foreignWordFieldValue = foreignWordFieldValue,
-            ipaHolders = ipaHolders,
+            textFieldValueIpaHolders = textFieldValueIpaHolders,
             autocompleteState = autocompleteState,
             pronunciationLoadingState = pronunciationLoadingState,
             nativeWordSuggestionsState = nativeWordSuggestionsState,
@@ -56,7 +56,7 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
                     event = CardManagementEvent.UpdateDataOnForeignWordChanged(wordFieldValue = wordFieldValue)
                 )
             },
-            onIpaChange = { letterGroupIndex, ipa ->
+            onIpaTextFieldValueChange = { letterGroupIndex, ipa ->
                 viewModel.sendEvent(
                     event = CardManagementEvent.UpdateIpa(
                         letterGroupIndex = letterGroupIndex,

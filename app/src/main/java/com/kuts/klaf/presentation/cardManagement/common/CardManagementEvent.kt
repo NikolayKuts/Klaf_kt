@@ -19,7 +19,7 @@ sealed interface CardManagementEvent {
 
     data object ClearNativeWordSuggestionsSelectionClicked : CardManagementEvent
 
-    data class UpdateIpa(val letterGroupIndex: Int, val ipa: String) : CardManagementEvent
+    data class UpdateIpa(val letterGroupIndex: Int, val ipa: TextFieldValue) : CardManagementEvent
 
     data class ChangeLetterSelectionWithIpaTemplate(
         val index: Int,
