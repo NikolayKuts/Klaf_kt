@@ -64,6 +64,14 @@
     <string name="day_pointer">%dd</string>
     <string name="hour_pointer">%dh</string>
     <string name="minute_pointer">%dmin</string>
+
+    <string name="year">year</string>
+    <string name="month">month</string>
+    <string name="week">week</string>
+    <string name="day">day</string>
+    <string name="hour">hour</string>
+    <string name="minute">minute</string>
+
     <string name="time_pointer_now">now</string>
     <string name="repetition_quantity_pointer">r</string>
     <string name="card_quantity_pointer">c</string>

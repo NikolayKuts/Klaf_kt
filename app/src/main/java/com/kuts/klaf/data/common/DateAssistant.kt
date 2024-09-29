@@ -11,6 +11,9 @@ import com.kuts.domain.enums.DayIncreaseFactor.SECOND_DAY_INCREASE_FACTOR
 import com.kuts.domain.enums.DayIncreaseFactor.THIRD_DAY_INCREASE_FACTOR
 import com.kuts.domain.enums.DayIncreaseFactor.WHOLE_DAY_INCREASE_FACTOR
 import com.kuts.klaf.R
+import com.kuts.klaf.data.common.DateFormat.FULL_WITH_DIVIDER
+import com.kuts.klaf.presentation.deckManagment.DateData
+import com.kuts.klaf.presentation.deckManagment.DateUnit
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -20,7 +23,11 @@ import java.util.concurrent.TimeUnit
 private const val ADDITIONAL_ALLOWABLE_DURATION_FACTOR = 0.07F
 private const val DECREASE_FACTOR = 0.2F
 
-private const val DATE_FORMAT_PATTERN = "dd.MM.yy|HH:mm"
+object DateFormat {
+
+    const val FULL_WITH_DIVIDER = "dd.MM.yy|HH:mm"
+    const val FULL = "dd.MM.yy HH:mm"
+}
 
 private const val UNASSIGNED_DATE_SYMBOL = "---"
 private const val MINUS_SYMBOL = "-"
@@ -34,12 +41,13 @@ private val minuteINMillis = TimeUnit.MINUTES.toMillis(1)
 
 fun getFormattedCurrentTime(): String {
     val date = Calendar.getInstance().time
-    val dateFormat: DateFormat = SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.getDefault())
+    val dateFormat: DateFormat =
+        SimpleDateFormat(FULL_WITH_DIVIDER, Locale.getDefault())
     return dateFormat.format(date)
 }
 
-fun Long.asFormattedDate(): String {
-    val dateFormat: DateFormat = SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.getDefault())
+fun Long.asFormattedDate(pattern: String = FULL_WITH_DIVIDER): String {
+    val dateFormat: DateFormat = SimpleDateFormat(pattern, Locale.getDefault())
     return dateFormat.format(this)
 }
 
@@ -114,12 +122,12 @@ fun Long.calculateScheduledRange(context: Context): String {
 
     val range = this - currentTime
 
-    val years = range.calculateYearQuantity()
-    val months = range.calculateMonthQuantity()
-    val weeks = range.calculateWeekQuantity()
-    val days = range.calculateDayQuantity()
-    val hours = range.calculateHoursQuantity()
-    val minutes = range.calculateMinuteQuantity()
+    val years = range.calculateYearQuantity().toInt()
+    val months = range.calculateMonthQuantity().toInt()
+    val weeks = range.calculateWeekQuantity().toInt()
+    val days = range.calculateDayQuantity().toInt()
+    val hours = range.calculateHoursQuantity().toInt()
+    val minutes = range.calculateMinuteQuantity().toInt()
 
     val yearsMonthsWeeks =
         context.getYearsMonthsWeeks(years = years, months = months, weeks = weeks)
@@ -145,17 +153,20 @@ fun DeckRepetitionInfo.calculateDetailedLastIterationRange(context: Context): St
     return this.previousScheduledDate.calculateDetailedScheduledRange(context = context)
 }
 
+
+
+
 fun Long?.calculateDetailedScheduledRange(context: Context): String {
     if (this == null || this <= 0) return UNASSIGNED_DATE_SYMBOL
     val currentTime = System.currentTimeMillis()
     val range = this - currentTime
 
-    val years = range.calculateYearQuantity()
-    val months = range.calculateMonthQuantity()
-    val weeks = range.calculateWeekQuantity()
-    val days = range.calculateDayQuantity()
-    val hours = range.calculateHoursQuantity()
-    val minutes = range.calculateMinuteQuantity()
+    val years = range.calculateYearQuantity().toInt()
+    val months = range.calculateMonthQuantity().toInt()
+    val weeks = range.calculateWeekQuantity().toInt()
+    val days = range.calculateDayQuantity().toInt()
+    val hours = range.calculateHoursQuantity().toInt()
+    val minutes = range.calculateMinuteQuantity().toInt()
 
     val yearsMonthsWeeks =
         context.getDetailedYearsMonthsWeeks(years = years, months = months, weeks = weeks)
@@ -165,6 +176,41 @@ fun Long?.calculateDetailedScheduledRange(context: Context): String {
     return yearsMonthsWeeks.ifEmpty {
         daysHoursMinutes.ifEmpty { context.getString(R.string.time_pointer_now) }
     }
+}
+
+fun Long.calculateDetailedScheduledInterval(): DateData {
+//    if (this == null || this <= 0) return UNASSIGNED_DATE_SYMBOL
+//    val currentTime = System.currentTimeMillis()
+    val range = this // - currentTime
+    return DateData(
+        DateUnit.Year(value = range.calculateYearQuantity().toInt()),
+        DateUnit.Month(value = range.calculateMonthQuantity().toInt()),
+        DateUnit.Week(value = range.calculateWeekQuantity().toInt()),
+        DateUnit.Day(value = range.calculateDayQuantity().toInt()),
+        DateUnit.Hour(value = range.calculateHoursQuantity().toInt()),
+        DateUnit.Minute(value = range.calculateMinuteQuantity().toInt()),
+    )
+}
+
+fun DateData.calculateDetailedScheduledIntervalAsLong(): Long {
+    // Константы для преобразования временных единиц в миллисекунды
+    val millisInMinute = 60 * 1000L
+    val millisInHour = 60 * millisInMinute
+    val millisInDay = 24 * millisInHour
+    val millisInWeek = 7 * millisInDay
+    val millisInMonth = 30 * millisInDay
+    val millisInYear = 365 * millisInDay
+
+    // Рассчитываем длительность в миллисекундах, учитывая каждое поле
+    val yearMillis = year.value * millisInYear
+    val monthMillis = month.value * millisInMonth
+    val weekMillis = week.value * millisInWeek
+    val dayMillis = day.value * millisInDay
+    val hourMillis = hour.value * millisInHour
+    val minuteMillis = minute.value * millisInMinute
+
+    // Возвращаем суммарную длительность
+    return yearMillis + monthMillis + weekMillis + dayMillis + hourMillis + minuteMillis
 }
 
 fun Deck.getScheduledDateStateByByCalculatedRange(context: Context): ScheduledDateState {
@@ -195,7 +241,7 @@ private fun Long.calculateMinuteQuantity(): Long {
             monthInMillis % weekInMillis % dayInMillis % hourImMillis / minuteINMillis
 }
 
-private fun Context.getDetailedYearsMonthsWeeks(years: Long, months: Long, weeks: Long): String {
+private fun Context.getDetailedYearsMonthsWeeks(years: Int, months: Int, weeks: Int): String {
     val range =
         "${getYearsOrEmpty(years)} ${getMonthsOrEmpty(months)} ${getWeeksOrEmpty(weeks)}".trim()
 
@@ -203,7 +249,35 @@ private fun Context.getDetailedYearsMonthsWeeks(years: Long, months: Long, weeks
     return range.getFormatted()
 }
 
-private fun Context.getYearsMonthsWeeks(years: Long, months: Long, weeks: Long): String {
+//private fun getDetailedYearsMonthsWeeks(
+//    years: DateUnit.Year,
+//    months: DateUnit.Month,
+//    weeks: DateUnit.Week,
+//): String {
+//    val range =
+//        "${getYearsOrEmpty(years.value)} ${getMonthsOrEmpty(months.value)} ${getWeeksOrEmpty(weeks.value)}".trim()
+//
+//    if (range.isEmpty()) return ""
+//    return range.getFormatted()
+//}
+
+fun DateData.asString(context: Context): String {
+    val years = context.getYearsOrEmpty(year.value)
+    val months = context.getMonthsOrEmpty(month.value)
+    val week = context.getWeeksOrEmpty(week.value)
+    val days = context.getDaysOrEmpty(day.value)
+    val hours = context.getHoursOrEmpty(hour.value)
+    val minutes = context.getMinutesOrEmpty(minute.value)
+
+    return buildString {
+        setOf(years, months, week, days, hours, minutes).forEach {
+            if (it.isNotEmpty()) append("$it ")
+        }
+    }
+//    return "$years $months $week $days $hours $minutes"
+}
+
+private fun Context.getYearsMonthsWeeks(years: Int, months: Int, weeks: Int): String {
     val yearsAsString = getYearsOrEmpty(years)
     val monthsAsString = getMonthsOrEmpty(months)
     val weeksAsString = getWeeksOrEmpty(weeks)
@@ -219,7 +293,7 @@ private fun Context.getYearsMonthsWeeks(years: Long, months: Long, weeks: Long):
     }
 }
 
-private fun Context.getDetailedDaysHoursMinutes(days: Long, hours: Long, minutes: Long): String {
+private fun Context.getDetailedDaysHoursMinutes(days: Int, hours: Int, minutes: Int): String {
     val range = "${getDaysOrEmpty(days)} ${getHoursOrEmpty(hours)} ${getMinutesOrEmpty(minutes)}"
         .trim()
 
@@ -227,7 +301,7 @@ private fun Context.getDetailedDaysHoursMinutes(days: Long, hours: Long, minutes
     return range.getFormatted()
 }
 
-private fun Context.getDaysHoursMinutes(days: Long, hours: Long, minutes: Long): String {
+private fun Context.getDaysHoursMinutes(days: Int, hours: Int, minutes: Int): String {
     val daysAsString = getDaysOrEmpty(days)
     val hoursAsString = getHoursOrEmpty(hours)
     val minutesAsString = getMinutesOrEmpty(minutes)
@@ -248,26 +322,27 @@ private fun String.getFormatted(): String {
         .replace(oldValue = MINUS_SYMBOL, newValue = "")
 }
 
-private fun Context.getYearsOrEmpty(years: Long): String {
-    return if (years == 0L) "" else getString(R.string.year_pointer, years)
+private fun Context.getYearsOrEmpty(years: Int): String {
+    return if (years < 1L) "" else getString(R.string.year_pointer, years)
 }
 
-private fun Context.getMonthsOrEmpty(months: Long): String {
-    return if (months == 0L) "" else getString(R.string.month_pointer, months)
+private fun Context.getMonthsOrEmpty(months: Int): String {
+    return if (months < 1L) "" else getString(R.string.month_pointer, months)
 }
 
-private fun Context.getWeeksOrEmpty(weeks: Long): String {
-    return if (weeks == 0L) "" else getString(R.string.week_pointer, weeks)
+private fun Context.getWeeksOrEmpty(weeks: Int): String {
+    return if (weeks < 1L) "" else getString(R.string.week_pointer, weeks)
 }
 
-private fun Context.getDaysOrEmpty(days: Long): String {
-    return if (days == 0L) "" else getString(R.string.day_pointer, days)
+private fun Context.getDaysOrEmpty(days: Int): String {
+    return if (days < 1L) "" else getString(R.string.day_pointer, days)
 }
 
-private fun Context.getHoursOrEmpty(hours: Long): String {
-    return if (hours == 0L) "" else getString(R.string.hour_pointer, hours)
+private fun Context.getHoursOrEmpty(hours: Int): String {
+    return if (hours < 1L) "" else getString(R.string.hour_pointer, hours)
 }
 
-private fun Context.getMinutesOrEmpty(minutes: Long): String {
-    return if (minutes == 0L) "" else getString(R.string.minute_pointer, minutes)
+private fun Context.getMinutesOrEmpty(minutes: Int): String {
+//    return if (minutes == 0L) "" else getString(R.string.minute_pointer, minutes)
+    return if (minutes < 1L) "" else getString(R.string.minute_pointer, minutes)
 }

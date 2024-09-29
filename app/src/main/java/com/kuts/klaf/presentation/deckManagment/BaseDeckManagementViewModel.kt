@@ -6,7 +6,9 @@ import kotlinx.coroutines.flow.StateFlow
 
 abstract class BaseDeckManagementViewModel : ViewModel(), EventMessageSource {
 
-    abstract val deckState: StateFlow<DeckManagementState>
+    abstract val deckManagementState: StateFlow<DeckManagementState>
 
-    abstract fun sendEvent(event: DeckManagementEvent)
+    abstract val event: StateFlow<DeckManagementEvent>
+
+    abstract fun sendAction(action: DeckManagementAction)
 }
