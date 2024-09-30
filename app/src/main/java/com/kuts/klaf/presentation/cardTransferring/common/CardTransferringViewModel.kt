@@ -16,6 +16,7 @@ import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import com.kuts.klaf.presentation.common.tryEmitAsPositive
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -55,6 +56,8 @@ class CardTransferringViewModel @AssistedInject constructor(
             initialValue = emptyList()
         )
 
+    override val listHeaderState = MutableStateFlow(value = ListHeaderState())
+
     private val selectedCards = cardHolders.map { holders ->
         holders.filter { it.isSelected }
             .map { holder -> holder.card }
@@ -66,6 +69,7 @@ class CardTransferringViewModel @AssistedInject constructor(
 
     init {
         observeCardSource()
+        subscribeToCardHoldersUpdated()
     }
 
     override fun changeSelectionState(position: Int) {
@@ -135,6 +139,29 @@ class CardTransferringViewModel @AssistedInject constructor(
         audioPlayer.preparePronunciationAndPlay(word = cardHolders.value[wordIndex].card.foreignWord)
     }
 
+    override fun sendAction(action: CardTransferringAction) {
+        when (action) {
+            CardTransferringAction.ForeignWordVisibilityIconClick -> {
+                handleForeignWordVisibilityIconClick()
+            }
+            CardTransferringAction.NativeWordVisibilityIconClick -> {
+                handleNativeWordVisibilityIconClick()
+            }
+        }
+    }
+
+    private fun handleForeignWordVisibilityIconClick() {
+        listHeaderState.update { state ->
+            state.copy(foreignWordsVisible = !state.foreignWordsVisible)
+        }
+    }
+
+    private fun handleNativeWordVisibilityIconClick() {
+        listHeaderState.update { state ->
+            state.copy(nativeWordsVisible = !state.nativeWordsVisible)
+        }
+    }
+
     private fun observeCardSource() {
         fetchCards(deckId = sourceDeckId)
             .catchWithCrashlyticsReport(crashlytics = crashlytics) {
@@ -142,6 +169,15 @@ class CardTransferringViewModel @AssistedInject constructor(
             }.onEach { cards ->
                 cardHolders.value = cards.map { card -> SelectableCardHolder(card = card) }
             }.launchIn(viewModelScope)
+    }
+
+    private fun subscribeToCardHoldersUpdated() {
+        cardHolders.onEach { holders ->
+            listHeaderState.update { state ->
+                state.copy(isChecked = cardHolders.value.all { it.isSelected })
+            }
+        }.flowOn(Dispatchers.IO)
+            .launchIn(viewModelScope)
     }
 
     private fun Flow<List<Deck>>.filterNotCurrentAndInterimDecks(): Flow<List<Deck>> {
