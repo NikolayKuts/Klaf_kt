@@ -108,7 +108,9 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
 
                 ListHeaderItem(
                     listHeaderState = listHeaderState,
-                    onCheckBoxClick = { viewModel.changeAllCardSelection() },
+                    onCheckBoxClick = {
+                        viewModel.sendAction(CardTransferringAction.ChangeAllCardSelection)
+                    },
                     onForeignWordVisibilityIconClick = {
                         viewModel.sendAction(action = CardTransferringAction.ForeignWordVisibilityIconClick)
                     },
@@ -127,13 +129,17 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
                     isNativeWordsVisible = listHeaderState.nativeWordsVisible,
                     onScroll = { moreButtonClickedState = false },
                     onSelectedChanged = { index ->
-                        viewModel.changeSelectionState(position = index)
+                        viewModel.sendAction(CardTransferringAction.ChangeSelectionState(position = index))
                         moreButtonClickedState = false
                     },
-                    onItemClick = { index -> viewModel.pronounceWord(wordIndex = index) },
+                    onItemClick = { index ->
+                        viewModel.sendAction(CardTransferringAction.PronounceWord(wordIndex = index))
+                    },
                     onLongItemClick = { index ->
-                        viewModel.navigateTo(
-                            destination = CardEditingFragment(selectedCardIndexIndex = index),
+                        viewModel.sendAction(
+                            CardTransferringAction.NavigateTo(
+                                destination = CardEditingFragment(selectedCardIndexIndex = index),
+                            )
                         )
                     }
                 )
@@ -146,9 +152,21 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
             ) {
                 ManagementButtons(
                     clickState = moreButtonClickedState,
-                    onMoveCardsClick = { viewModel.navigateTo(destination = CardMovingDialog) },
-                    onAddCardsClick = { viewModel.navigateTo(destination = CardAddingFragment) },
-                    onDeleteCardsClick = { viewModel.navigateTo(destination = CardDeletionDialog) },
+                    onMoveCardsClick = {
+                        viewModel.sendAction(
+                            CardTransferringAction.NavigateTo(destination = CardMovingDialog)
+                        )
+                    },
+                    onAddCardsClick = {
+                        viewModel.sendAction(
+                            CardTransferringAction.NavigateTo(destination = CardAddingFragment)
+                        )
+                    },
+                    onDeleteCardsClick = {
+                        viewModel.sendAction(
+                            CardTransferringAction.NavigateTo(destination = CardDeletionDialog)
+                        )
+                    },
                     onMoreButtonClick = { moreButtonClickedState = !moreButtonClickedState }
                 )
             }
