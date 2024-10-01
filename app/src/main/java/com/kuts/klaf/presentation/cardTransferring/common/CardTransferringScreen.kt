@@ -11,6 +11,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberScrollableState
@@ -34,6 +35,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,7 +49,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Dp
@@ -72,6 +76,7 @@ private const val CLOSING_ANIMATION_DELAY = 500L
 fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
     val deck = viewModel.sourceDeck.collectAsState(initial = null).value ?: return
     val cardHolders by viewModel.cardHolders.collectAsState()
+    val listHeaderState by viewModel.listHeaderState.collectAsState()
     var moreButtonClickedState by rememberAsMutableStateOf(value = true)
     val density = LocalDensity.current
 
@@ -101,27 +106,40 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
 
                 Spacer(modifier = Modifier.height(28.dp))
 
-                AllSelectionItem(
-                    isVisible = true,
-                    isChecked = cardHolders.all { it.isSelected },
-                    onClick = { viewModel.changeAllCardSelection() },
+                ListHeaderItem(
+                    listHeaderState = listHeaderState,
+                    onCheckBoxClick = {
+                        viewModel.sendAction(CardTransferringAction.ChangeAllCardSelection)
+                    },
+                    onForeignWordVisibilityIconClick = {
+                        viewModel.sendAction(action = CardTransferringAction.ForeignWordVisibilityIconClick)
+                    },
+                    onNativeWordVisibilityIconClick = {
+                        viewModel.sendAction(action = CardTransferringAction.NativeWordVisibilityIconClick)
+                    },
                 )
 
                 DividingLine()
 
-                DeckList(
+                CardList(
                     moreButtonClickedState = moreButtonClickedState,
                     cardHolders = cardHolders,
                     bottomContentPadding = bottomContentPadding,
+                    isForeignWordsVisible = listHeaderState.foreignWordsVisible,
+                    isNativeWordsVisible = listHeaderState.nativeWordsVisible,
                     onScroll = { moreButtonClickedState = false },
                     onSelectedChanged = { index ->
-                        viewModel.changeSelectionState(position = index)
+                        viewModel.sendAction(CardTransferringAction.ChangeSelectionState(position = index))
                         moreButtonClickedState = false
                     },
-                    onItemClick = { index -> viewModel.pronounceWord(wordIndex = index) },
+                    onItemClick = { index ->
+                        viewModel.sendAction(CardTransferringAction.PronounceWord(wordIndex = index))
+                    },
                     onLongItemClick = { index ->
-                        viewModel.navigateTo(
-                            destination = CardEditingFragment(selectedCardIndexIndex = index),
+                        viewModel.sendAction(
+                            CardTransferringAction.NavigateTo(
+                                destination = CardEditingFragment(selectedCardIndexIndex = index),
+                            )
                         )
                     }
                 )
@@ -134,9 +152,21 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
             ) {
                 ManagementButtons(
                     clickState = moreButtonClickedState,
-                    onMoveCardsClick = { viewModel.navigateTo(destination = CardMovingDialog) },
-                    onAddCardsClick = { viewModel.navigateTo(destination = CardAddingFragment) },
-                    onDeleteCardsClick = { viewModel.navigateTo(destination = CardDeletionDialog) },
+                    onMoveCardsClick = {
+                        viewModel.sendAction(
+                            CardTransferringAction.NavigateTo(destination = CardMovingDialog)
+                        )
+                    },
+                    onAddCardsClick = {
+                        viewModel.sendAction(
+                            CardTransferringAction.NavigateTo(destination = CardAddingFragment)
+                        )
+                    },
+                    onDeleteCardsClick = {
+                        viewModel.sendAction(
+                            CardTransferringAction.NavigateTo(destination = CardDeletionDialog)
+                        )
+                    },
                     onMoreButtonClick = { moreButtonClickedState = !moreButtonClickedState }
                 )
             }
@@ -230,25 +260,55 @@ private fun QuantityPointer(
     }
 }
 
+data class ListHeaderState(
+    val isVisible: Boolean = true,
+    val isChecked: Boolean = false,
+    val foreignWordsVisible: Boolean = true,
+    val nativeWordsVisible: Boolean = true
+)
+
 @Composable
-private fun ColumnScope.AllSelectionItem(
-    isVisible: Boolean,
-    isChecked: Boolean,
-    onClick: () -> Unit,
+private fun ColumnScope.ListHeaderItem(
+    listHeaderState: ListHeaderState,
+    onCheckBoxClick: () -> Unit,
+    onForeignWordVisibilityIconClick: () -> Unit,
+    onNativeWordVisibilityIconClick: () -> Unit,
 ) {
     AnimatedVisibility(
         modifier = Modifier
             .align(Alignment.End)
-            .noRippleClickable { onClick() },
-        visible = isVisible,
+            .noRippleClickable { onCheckBoxClick() },
+        visible = listHeaderState.isVisible,
     ) {
+        val visibilityIcon: @Composable (isVisible: Boolean) -> Painter = { isVisible ->
+            val iconRes = if (isVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off
+            painterResource(id = iconRes)
+        }
         Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1F),
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .weight(1F)
+                        .clickable { onForeignWordVisibilityIconClick() },
+                    painter = visibilityIcon(listHeaderState.foreignWordsVisible),
+                    contentDescription = null
+                )
+                Icon(
+                    modifier = Modifier
+                        .weight(1F)
+                        .clickable { onNativeWordVisibilityIconClick() },
+                    painter = visibilityIcon(listHeaderState.nativeWordsVisible),
+                    contentDescription = null
+                )
+            }
             Text(text = stringResource(R.string.all))
 
             CustomCheckBox(
                 modifier = Modifier.padding(6.dp),
-                checked = isChecked,
-                onCheckedChange = { onClick() },
+                checked = listHeaderState.isChecked,
+                onCheckedChange = { onCheckBoxClick() },
                 uncheckedBorderColor = MainTheme.colors.cardTransferringScreen.unCheckedBorder,
                 checkedBoxColor = MainTheme.colors.cardTransferringScreen.selectedCheckBox
             )
@@ -257,10 +317,12 @@ private fun ColumnScope.AllSelectionItem(
 }
 
 @Composable
-private fun DeckList(
+private fun CardList(
     moreButtonClickedState: Boolean,
     cardHolders: List<SelectableCardHolder>,
     bottomContentPadding: Dp,
+    isForeignWordsVisible: Boolean,
+    isNativeWordsVisible: Boolean,
     onScroll: () -> Unit,
     onSelectedChanged: (index: Int) -> Unit,
     onItemClick: (index: Int) -> Unit,
@@ -286,6 +348,8 @@ private fun DeckList(
             CardItem(
                 holder = holder,
                 position = index + 1,
+                isForeignWordsVisible = isForeignWordsVisible,
+                isNativeWordsVisible = isNativeWordsVisible,
                 onSelectedChanged = { onSelectedChanged(index) },
                 onClick = { onItemClick(index) },
                 onLongClick = { onLongItemClick(index) }
@@ -300,10 +364,15 @@ private fun DeckList(
 private fun LazyItemScope.CardItem(
     holder: SelectableCardHolder,
     position: Int,
+    isForeignWordsVisible: Boolean,
+    isNativeWordsVisible: Boolean,
     onSelectedChanged: (Boolean) -> Unit,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
+    val foreignWord = holder.card.foreignWord.textByVisibility(isVisible = isForeignWordsVisible)
+    val nativeWord = holder.card.nativeWord.textByVisibility(isVisible = isNativeWordsVisible)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -321,13 +390,13 @@ private fun LazyItemScope.CardItem(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = holder.card.foreignWord,
+            text = foreignWord,
             color = MainTheme.colors.cardTransferringScreen.foreignWord
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             modifier = Modifier.weight(1F),
-            text = holder.card.nativeWord,
+            text = nativeWord,
         )
 
         CustomCheckBox(
@@ -488,4 +557,8 @@ private fun MoreButton(
         iconId = R.drawable.ic_more_vert_24,
         onClick = onClick
     )
+}
+
+private fun String.textByVisibility(isVisible: Boolean): String {
+    return if (isVisible) this else this.map { '*' }.joinToString("")
 }

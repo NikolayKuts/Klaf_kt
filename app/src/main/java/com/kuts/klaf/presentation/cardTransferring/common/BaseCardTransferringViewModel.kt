@@ -14,11 +14,7 @@ abstract class BaseCardTransferringViewModel : ViewModel(), EventMessageSource {
     abstract val navigationEvent: SharedFlow<CardTransferringNavigationEvent>
     abstract val decks: StateFlow<List<Deck>>
     abstract val audioPlayer: CardAudioPlayer
+    abstract val listHeaderState: StateFlow<ListHeaderState>
 
-    abstract fun changeSelectionState(position: Int)
-    abstract fun changeAllCardSelection()
-    abstract fun navigateTo(destination: CardTransferringNavigationDestination)
-    abstract fun deleteCards()
-    abstract fun moveCards(targetDeck: Deck)
-    abstract fun pronounceWord(wordIndex: Int)
+    abstract fun sendAction(action: CardTransferringAction)
 }

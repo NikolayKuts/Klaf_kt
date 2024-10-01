@@ -9,6 +9,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.cardTransferring.common.BaseCardTransferringViewModel
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringAction
 import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardTransferringScreen
 import com.kuts.klaf.presentation.common.CardDeletingDialogView
 import com.kuts.klaf.presentation.common.TransparentDialogFragment
@@ -42,10 +43,12 @@ class CardDeletingDialogFragment : TransparentDialogFragment(
     }
 
     private fun deleteCards() {
-        viewModel.deleteCards()
+        viewModel.sendAction(action = CardTransferringAction.DeleteCards)
     }
 
     private fun closeDialog() {
-        viewModel.navigateTo(destination = CardTransferringScreen)
+        viewModel.sendAction(
+            action = CardTransferringAction.NavigateTo(destination = CardTransferringScreen)
+        )
     }
 }
