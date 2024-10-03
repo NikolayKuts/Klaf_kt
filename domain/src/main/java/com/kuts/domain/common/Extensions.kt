@@ -171,3 +171,7 @@ fun <Input, Output> Flow<Input>.debouncedLaunch(
     .onEach { inputOutputPair -> onEach(inputOutputPair.first, inputOutputPair.second) }
     .flowOn(context = context)
     .launchIn(scope = scope)
+
+fun Float.invertedCoerceIn(min: Float, max: Float): Float {
+    return max - coerceIn(min, max)
+}

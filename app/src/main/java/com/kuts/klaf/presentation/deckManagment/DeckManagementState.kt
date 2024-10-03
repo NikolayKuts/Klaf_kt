@@ -46,38 +46,12 @@ sealed interface ScheduledDataIntervalChangeState {
     data class Required(val dateData: DateData) : ScheduledDataIntervalChangeState
 }
 
-class DateDataValidator() {
-
-    fun validate(dateData: DateData): DateData {
-        val getUpdatedDataData: (DateUnit) -> DateData = { dateUnit ->
-            if (dateUnit.isEmpty()) {
-                dateData.copyWithEmptyUnit(unit = dateUnit)
-            } else {
-                val updatedValue = dateUnit.getValueByRange()
-                dateData.copyByUnit(unit = dateUnit, value = updatedValue)
-            }
-        }
-
-        return when {
-            dateData.year.value !in DateRange.Year -> getUpdatedDataData(dateData.year)
-            dateData.month.value !in DateRange.Month -> getUpdatedDataData(dateData.month)
-            dateData.week.value !in DateRange.Week -> getUpdatedDataData(dateData.week)
-            dateData.day.value !in DateRange.Day -> getUpdatedDataData(dateData.day)
-            dateData.hour.value !in DateRange.Hour -> getUpdatedDataData(dateData.hour)
-            dateData.minute.value !in DateRange.Minute -> getUpdatedDataData(dateData.minute)
-            else -> dateData
-        }
-    }
+class DateDataValidator {
 
     fun validateForSaving(dateData: DateData): DateData {
         val getUpdatedDataData: (DateUnit) -> DateData = { dateUnit ->
-            if (dateUnit.isEmpty()) {
-                dateData.copyByUnit(unit = dateUnit, value = 0)
-//                dateData.copyWithEmptyUnit(unit = dateUnit)
-            } else {
-                val updatedValue = dateUnit.getValueByRange()
-                dateData.copyByUnit(unit = dateUnit, value = updatedValue)
-            }
+            val updatedValue = dateUnit.getValueByRange()
+            dateData.copyByUnit(unit = dateUnit, value = updatedValue)
         }
 
         return when {
@@ -89,14 +63,6 @@ class DateDataValidator() {
             dateData.minute.value !in DateRange.Minute -> getUpdatedDataData(dateData.minute)
             else -> dateData
         }
-    }
-
-    fun clearValue(value: String): Int {
-        return clearedValueAsString(value = value).toIntOrNull() ?: 0
-    }
-
-    fun clearedValueAsString(value: String): String {
-        return value.replace(Regex("[^0-9]"), "")
     }
 }
 
@@ -108,5 +74,51 @@ fun DateUnit.getValueByRange(): Int {
         is DateUnit.Month -> DateRange.Month.getValueWithinRange(value = value)
         is DateUnit.Week -> DateRange.Week.getValueWithinRange(value = value)
         is DateUnit.Year -> DateRange.Year.getValueWithinRange(value = value)
+    }
+}
+
+class ButtonActionHandler {
+
+    fun handle(
+        dateData: DateData,
+        dataUnit: DateUnit,
+        buttonAction: DraggableButtonAction,
+    ): DateData {
+        val updatedValue = dataUnit.getValueByRange(buttonAction = buttonAction)
+        return dateData.copyByUnit(unit = dataUnit, value = updatedValue)
+    }
+
+    private fun DateUnit.getValueByRange(buttonAction: DraggableButtonAction): Int {
+        return when (this) {
+            is DateUnit.Year -> DateRange.Year.getValueWithinRange(
+                currentValue = value,
+                buttonAction = buttonAction
+            )
+
+            is DateUnit.Month -> DateRange.Month.getValueWithinRange(
+                currentValue = value,
+                buttonAction = buttonAction
+            )
+
+            is DateUnit.Week -> DateRange.Week.getValueWithinRange(
+                currentValue = value,
+                buttonAction = buttonAction
+            )
+
+            is DateUnit.Day -> DateRange.Day.getValueWithinRange(
+                currentValue = value,
+                buttonAction = buttonAction
+            )
+
+            is DateUnit.Hour -> DateRange.Hour.getValueWithinRange(
+                currentValue = value,
+                buttonAction = buttonAction
+            )
+
+            is DateUnit.Minute -> DateRange.Minute.getValueWithinRange(
+                currentValue = value,
+                buttonAction = buttonAction
+            )
+        }
     }
 }

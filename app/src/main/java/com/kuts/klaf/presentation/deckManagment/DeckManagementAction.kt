@@ -2,7 +2,6 @@ package com.kuts.klaf.presentation.deckManagment
 
 sealed interface DeckManagementAction {
 
-//    data class ScheduledDateIntervalChangeRequested(val dateData: DateData)
     data object ScheduledDateIntervalChangeRequested : DeckManagementAction
 
     data object DismissScheduledDateIntervalDialog : DeckManagementAction
@@ -11,7 +10,7 @@ sealed interface DeckManagementAction {
 
     data class ScheduledDateIntervalChanged(
         val dateUnit: DateUnit,
-        val value: String
+        val buttonAction: DraggableButtonAction,
     ) : DeckManagementAction
 
 }

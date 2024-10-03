@@ -16,4 +16,21 @@ enum class DateRange(val range: IntRange) {
     fun getValueWithinRange(value: Int): Int {
         return if (value < range.first) return range.first else range.last
     }
+
+    fun getValueWithinRange(
+        currentValue: Int,
+        buttonAction: DraggableButtonAction
+    ): Int = when (buttonAction) {
+        DraggableButtonAction.Decrease -> {
+            if (currentValue <= range.first) range.last else currentValue - 1
+        }
+
+        DraggableButtonAction.Increase -> {
+            if (currentValue >= range.last) range.first else currentValue + 1
+        }
+
+        DraggableButtonAction.Reset -> {
+            range.first
+        }
+    }
 }

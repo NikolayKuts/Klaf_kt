@@ -66,8 +66,8 @@ class DeckManagementViewModel @AssistedInject constructor(
                 creationDate = it.creationDate.copy(
                     value = deck.creationDate.asFormattedDate(pattern = DateFormat.FULL)
                 ),
-                repetitionIterationDates = it.repetitionIterationDates.map { it.toString() },
-                scheduledIterationDates = it.scheduledIterationDates.map { it.toString() },
+                repetitionIterationDates = it.repetitionIterationDates,
+                scheduledIterationDates = it.scheduledIterationDates,
                 scheduledDateInterval = it.scheduledDateInterval.copy(value = deck.scheduledDateInterval.calculateDetailedScheduledInterval()),
                 repetitionQuantity = it.repetitionQuantity.copy(value = deck.repetitionQuantity.toString()),
                 cardQuantity = it.cardQuantity.copy(value = deck.cardQuantity.toString()),
@@ -101,78 +101,58 @@ class DeckManagementViewModel @AssistedInject constructor(
             }
 
             DeckManagementAction.ScheduledDateIntervalChangeConfirmed -> {
-                val scheduledDateIntervalChangeState = deckManagementState.value.scheduledDateIntervalChangeState
+                val scheduledDateIntervalChangeState =
+                    deckManagementState.value.scheduledDateIntervalChangeState
 
                 if (scheduledDateIntervalChangeState is ScheduledDataIntervalChangeState.Required) {
-                    val dateDataToSave = scheduledDateIntervalChangeState.dateData
-                    val validatedDateData = DateDataValidator().validateForSaving(dateData = dateDataToSave)
+                    val validatedDateData = DateDataValidator().validateForSaving(
+                        dateData = scheduledDateIntervalChangeState.dateData
+                    )
 
-                    viewModelScope.launchWithState() {
+                    if (validatedDateData == deckManagementState.value.scheduledDateInterval.value) {
+                        // TODO: send event message
+//                        eventMessage.tryEmitAsNeutral()
+//                        return
+                    }
+
+                    viewModelScope.launchWithState(Dispatchers.IO) {
                         val interval = validatedDateData.calculateDetailedScheduledIntervalAsLong()
+
                         updateDeck(updatedDeck = deck.value!!.copy(scheduledDateInterval = interval))
                         deckManagementState.update { managementState ->
                             managementState.copy(
                                 scheduledDateIntervalChangeState = ScheduledDataIntervalChangeState.NotRequired
                             )
                         }
-                    }.onException() { a, throwable ->
+                    }.onException { _, throwable ->
                         logE("Exception: ${throwable.stackTraceToString()}")
                     }
 
                 }
-
-
             }
 
             is DeckManagementAction.ScheduledDateIntervalChanged -> {
-                deckManagementState.update { managementState ->
-                    val dateDataValidator = DateDataValidator()
-                    val sourceDateDate = managementState.scheduledDateInterval.value
-                    val clearedValueAsString =
-                        dateDataValidator.clearedValueAsString(value = action.value)
+                val scheduledDateIntervalChangeState =
+                    deckManagementState.value.scheduledDateIntervalChangeState
 
-                    val validDateData = if (clearedValueAsString.isEmpty()) {
-                        val updatedDateDate = sourceDateDate.copyWithEmptyUnit(
-                            unit = action.dateUnit,
+                if (scheduledDateIntervalChangeState is ScheduledDataIntervalChangeState.Required) {
+                    deckManagementState.update { managementState ->
+                        val sourceDateDate = scheduledDateIntervalChangeState.dateData
+
+                        val updatedDateData = ButtonActionHandler().handle(
+                            dateData = sourceDateDate,
+                            dataUnit = action.dateUnit,
+                            buttonAction = action.buttonAction
                         )
+                        val updatedScheduledDateIntervalChangeState =
+                            ScheduledDataIntervalChangeState.Required(dateData = updatedDateData)
 
-                        logD("EMPTY")
-                        logD("updatedDateDate: $updatedDateDate")
-
-                        DateDataValidator().validate(
-//                            sourceDate = sourceDateDate,
-                            dateData = updatedDateDate
-                        )
-                    } else {
-                        val valueAsInt = dateDataValidator.clearValue(value = action.value)
-                        val updatedDateDate = sourceDateDate.copyByUnit(
-                            unit = action.dateUnit,
-                            value = valueAsInt
-                        )
-
-                        logD("NOT EMPTY")
-                        logD("valueAsInt: $valueAsInt")
-                        logD("updatedDateDate: $updatedDateDate")
-
-                        DateDataValidator().validate(
-//                            sourceDate = sourceDateDate,
-                            dateData = updatedDateDate
+                        managementState.copy(
+                            scheduledDateIntervalChangeState = updatedScheduledDateIntervalChangeState
                         )
                     }
-
-
-//                    logD("valueAsLong: $valueAsInt")
-//                    logD("updatedDateDate: $updatedDateDate")
-//                    logD("validDateData: $validDateData")
-
-                    managementState.copy(
-                        scheduledDateIntervalChangeState = ScheduledDataIntervalChangeState.Required(
-                            dateData = validDateData
-                        )
-                    )
                 }
             }
         }
     }
-
 }
