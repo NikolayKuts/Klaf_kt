@@ -153,9 +153,6 @@ fun DeckRepetitionInfo.calculateDetailedLastIterationRange(context: Context): St
     return this.previousScheduledDate.calculateDetailedScheduledRange(context = context)
 }
 
-
-
-
 fun Long?.calculateDetailedScheduledRange(context: Context): String {
     if (this == null || this <= 0) return UNASSIGNED_DATE_SYMBOL
     val currentTime = System.currentTimeMillis()
@@ -179,21 +176,19 @@ fun Long?.calculateDetailedScheduledRange(context: Context): String {
 }
 
 fun Long.calculateDetailedScheduledInterval(): DateData {
-//    if (this == null || this <= 0) return UNASSIGNED_DATE_SYMBOL
-//    val currentTime = System.currentTimeMillis()
-    val range = this // - currentTime
+    val interval = this
+
     return DateData(
-        DateUnit.Year(value = range.calculateYearQuantity().toInt()),
-        DateUnit.Month(value = range.calculateMonthQuantity().toInt()),
-        DateUnit.Week(value = range.calculateWeekQuantity().toInt()),
-        DateUnit.Day(value = range.calculateDayQuantity().toInt()),
-        DateUnit.Hour(value = range.calculateHoursQuantity().toInt()),
-        DateUnit.Minute(value = range.calculateMinuteQuantity().toInt()),
+        DateUnit.Year(value = interval.calculateYearQuantity().toInt()),
+        DateUnit.Month(value = interval.calculateMonthQuantity().toInt()),
+        DateUnit.Week(value = interval.calculateWeekQuantity().toInt()),
+        DateUnit.Day(value = interval.calculateDayQuantity().toInt()),
+        DateUnit.Hour(value = interval.calculateHoursQuantity().toInt()),
+        DateUnit.Minute(value = interval.calculateMinuteQuantity().toInt()),
     )
 }
 
 fun DateData.calculateDetailedScheduledIntervalAsLong(): Long {
-    // Константы для преобразования временных единиц в миллисекунды
     val millisInMinute = 60 * 1000L
     val millisInHour = 60 * millisInMinute
     val millisInDay = 24 * millisInHour
@@ -201,7 +196,6 @@ fun DateData.calculateDetailedScheduledIntervalAsLong(): Long {
     val millisInMonth = 30 * millisInDay
     val millisInYear = 365 * millisInDay
 
-    // Рассчитываем длительность в миллисекундах, учитывая каждое поле
     val yearMillis = year.value * millisInYear
     val monthMillis = month.value * millisInMonth
     val weekMillis = week.value * millisInWeek
@@ -209,7 +203,6 @@ fun DateData.calculateDetailedScheduledIntervalAsLong(): Long {
     val hourMillis = hour.value * millisInHour
     val minuteMillis = minute.value * millisInMinute
 
-    // Возвращаем суммарную длительность
     return yearMillis + monthMillis + weekMillis + dayMillis + hourMillis + minuteMillis
 }
 
@@ -249,18 +242,6 @@ private fun Context.getDetailedYearsMonthsWeeks(years: Int, months: Int, weeks: 
     return range.getFormatted()
 }
 
-//private fun getDetailedYearsMonthsWeeks(
-//    years: DateUnit.Year,
-//    months: DateUnit.Month,
-//    weeks: DateUnit.Week,
-//): String {
-//    val range =
-//        "${getYearsOrEmpty(years.value)} ${getMonthsOrEmpty(months.value)} ${getWeeksOrEmpty(weeks.value)}".trim()
-//
-//    if (range.isEmpty()) return ""
-//    return range.getFormatted()
-//}
-
 fun DateData.asString(context: Context): String {
     val years = context.getYearsOrEmpty(year.value)
     val months = context.getMonthsOrEmpty(month.value)
@@ -274,7 +255,6 @@ fun DateData.asString(context: Context): String {
             if (it.isNotEmpty()) append("$it ")
         }
     }
-//    return "$years $months $week $days $hours $minutes"
 }
 
 private fun Context.getYearsMonthsWeeks(years: Int, months: Int, weeks: Int): String {
@@ -323,26 +303,25 @@ private fun String.getFormatted(): String {
 }
 
 private fun Context.getYearsOrEmpty(years: Int): String {
-    return if (years < 1L) "" else getString(R.string.year_pointer, years)
+    return if (years == 0) "" else getString(R.string.year_pointer, years)
 }
 
 private fun Context.getMonthsOrEmpty(months: Int): String {
-    return if (months < 1L) "" else getString(R.string.month_pointer, months)
+    return if (months == 0) "" else getString(R.string.month_pointer, months)
 }
 
 private fun Context.getWeeksOrEmpty(weeks: Int): String {
-    return if (weeks < 1L) "" else getString(R.string.week_pointer, weeks)
+    return if (weeks == 0) "" else getString(R.string.week_pointer, weeks)
 }
 
 private fun Context.getDaysOrEmpty(days: Int): String {
-    return if (days < 1L) "" else getString(R.string.day_pointer, days)
+    return if (days == 0) "" else getString(R.string.day_pointer, days)
 }
 
 private fun Context.getHoursOrEmpty(hours: Int): String {
-    return if (hours < 1L) "" else getString(R.string.hour_pointer, hours)
+    return if (hours == 0) "" else getString(R.string.hour_pointer, hours)
 }
 
 private fun Context.getMinutesOrEmpty(minutes: Int): String {
-//    return if (minutes == 0L) "" else getString(R.string.minute_pointer, minutes)
-    return if (minutes < 1L) "" else getString(R.string.minute_pointer, minutes)
+    return if (minutes == 0) "" else getString(R.string.minute_pointer, minutes)
 }
