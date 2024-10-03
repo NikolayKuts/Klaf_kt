@@ -163,4 +163,5 @@
     <string name="ipa_is_too_long">Input length limit exceeded for \'IPA\'</string>
     <string name="word_info_retrieving_common_warning_message">Retrieving word info is failed</string>
     <string name="deck_navigation_dialog_deck_management">Deck management</string>
+    <string name="foreign_word_already_exists">This foreign word already exists in deck \"%1$s\"</string>
 </resources>

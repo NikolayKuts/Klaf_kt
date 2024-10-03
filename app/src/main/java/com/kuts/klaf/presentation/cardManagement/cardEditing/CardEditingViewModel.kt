@@ -8,6 +8,7 @@ import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.entities.Card
 import com.kuts.domain.ipa.toLetterInfos
 import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.FetchCardUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
@@ -32,6 +33,7 @@ class CardEditingViewModel @AssistedInject constructor(
     @Assisted(CARD_ARGUMENT_NAME) cardId: Int,
     private val fetchCard: FetchCardUseCase,
     private val updateCard: UpdateCardUseCase,
+    private val checkIfWordExists: CheckIfCardExistsUseCase,
     audioPlayer: CardAudioPlayer,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
@@ -63,10 +65,11 @@ class CardEditingViewModel @AssistedInject constructor(
         val deckId = deck.replayCache.first()?.id ?: return
         val nativeWord = cardManagementState.value.nativeWordFieldValue.text
         val foreignWord = cardManagementState.value.foreignWordFieldValue.text
-        val trimmedTextFieldValueIpaHoldersState = cardManagementState.value.textFieldValueIpaHolders
-            .map { textFieldValueIpaHolder ->
+        val trimmedTextFieldValueIpaHoldersState = cardManagementState.value
+            .textFieldValueIpaHolders.map { textFieldValueIpaHolder ->
                 val trimmedText = textFieldValueIpaHolder.ipaTextFieldValue.text.trim()
-                val trimmedTextFieldValue = textFieldValueIpaHolder.ipaTextFieldValue.copy(text = trimmedText)
+                val trimmedTextFieldValue =
+                    textFieldValueIpaHolder.ipaTextFieldValue.copy(text = trimmedText)
 
                 textFieldValueIpaHolder.copy(ipaTextFieldValue = trimmedTextFieldValue)
             }
@@ -92,9 +95,23 @@ class CardEditingViewModel @AssistedInject constructor(
 
                 else -> {
                     viewModelScope.launchWithState {
-                        updateCard(newCard = updatedCard)
-                        eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_changed)
-                        cardManagementState.value = CardManagementState.Finished
+                        val decksWithSameForeignWord = checkIfWordExists.invoke(
+                            foreignWord = foreignWord
+                        )
+
+                        if (decksWithSameForeignWord.isEmpty()) {
+                            updateCard(newCard = updatedCard)
+                            eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_changed)
+                            cardManagementState.value = CardManagementState.Finished
+                        } else {
+                            val deckNamesAsString =
+                                decksWithSameForeignWord.joinToString(", ") { it.name }
+
+                            eventMessage.tryEmitAsNegative(
+                                resId = R.string.foreign_word_already_exists,
+                                args = arrayOf(deckNamesAsString),
+                            )
+                        }
                     }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
                         eventMessage.tryEmitAsNegative(resId = R.string.problem_with_updating_card)
                     }
@@ -114,7 +131,8 @@ class CardEditingViewModel @AssistedInject constructor(
 
                     if (card != null) {
                         audioPlayer.preparePronunciation(word = card.foreignWord)
-                        foreignWordFieldValueState.value = TextFieldValue(text = card.foreignWord)
+                        foreignWordFieldValueState.value =
+                            TextFieldValue(text = card.foreignWord)
                         letterInfosState.value = card.toLetterInfos()
                         textFieldValueIpaHoldersState.value = card.ipa.map {
                             it.toTextFieldValueIpaHolder()

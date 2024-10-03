@@ -5,6 +5,7 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
 import com.kuts.domain.entities.Card
+import com.kuts.domain.entities.Deck
 import com.kuts.domain.repositories.CardRepository
 import com.kuts.klaf.data.firestore.entities.FirestoreCard
 import com.kuts.klaf.data.firestore.rootCollection
@@ -75,5 +76,9 @@ class CardRepositoryFirestoreImp @Inject constructor(
         return firestore.rootCollection(email = userEmail)
             .document(CARD_DOCUMENT_NAME)
             .collection(CARD_SUB_COLLECTION_NAME)
+    }
+
+    override suspend fun checkIfCardExists(foreignWord: String): List<Deck> {
+        TODO("Not yet implemented")
     }
 }

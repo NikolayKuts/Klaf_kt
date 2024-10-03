@@ -2,6 +2,7 @@ package com.kuts.klaf.data.room.repositoryImplementations
 
 import com.kuts.domain.common.simplifiedItemMap
 import com.kuts.domain.entities.Card
+import com.kuts.domain.entities.Deck
 import com.kuts.domain.repositories.CardRepository
 import com.kuts.klaf.data.room.databases.KlafRoomDatabase
 import com.kuts.klaf.data.room.entities.RoomCard
@@ -55,5 +56,17 @@ class CardRepositoryRoomImp @Inject constructor(
 
     override suspend fun removeCardsOfDeck(deckId: Int) {
         roomDatabase.cardDao().deleteCardsByDeckId(deckId = deckId)
+    }
+
+    override suspend fun checkIfCardExists(foreignWord: String): List<Deck> {
+        val cards = roomDatabase.cardDao().getCardsByForeignWord(foreignWord = foreignWord)
+
+        return if (cards.isEmpty()) {
+            emptyList()
+        } else {
+            cards.mapNotNull { roomCard ->
+                roomDatabase.deckDao().getDeckById(deckId = roomCard.deckId)?.toDomainEntity()
+            }
+        }
     }
 }

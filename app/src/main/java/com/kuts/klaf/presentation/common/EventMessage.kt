@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 
 class EventMessage(
     @StringRes val resId: Int,
+    vararg val args: Any = emptyArray(),
     val type: Type = Type.Neutral,
     val duration: Duration = Duration.Medium,
 ) {

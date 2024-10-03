@@ -41,4 +41,7 @@ interface CardDao {
 
     @Query("SELECT COUNT(*) FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
     fun getCardQuantityInDeck(deckId: Int): Int
+
+    @Query("SELECT * FROM $CARD_TABLE_NAME WHERE foreignWord = :foreignWord")
+    fun getCardsByForeignWord(foreignWord: String): List<RoomCard>
 }
