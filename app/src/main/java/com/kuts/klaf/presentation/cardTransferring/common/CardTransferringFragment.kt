@@ -9,7 +9,11 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.kuts.klaf.R
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardAddingScreen
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardDeletingDialog
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardEditingScreen
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardMovingDialog
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToPrevious
 import com.kuts.klaf.presentation.common.BaseFragment
 import com.kuts.klaf.presentation.common.collectWhenStarted
 import com.kuts.klaf.presentation.theme.MainTheme
@@ -69,13 +73,16 @@ class CardTransferringFragment : BaseFragment(R.layout.common_compose_layout) {
                 is ToCardEditingScreen -> {
                     navigateToCardEditingScreen(cardId = event.cardId, deckId = event.deckId)
                 }
+
                 ToCardMovingDialog -> navigateToCardMovingDialog()
                 is ToCardAddingScreen -> {
                     navigateToCardAdditionScreen(sourceDeckId = event.sourceDeckId)
                 }
+
                 is ToCardDeletingDialog -> {
                     navigateToCardDeletingDialog(cardQuantity = event.cardQuantity)
                 }
+
                 ToPrevious -> navController.popBackStack()
             }
         }

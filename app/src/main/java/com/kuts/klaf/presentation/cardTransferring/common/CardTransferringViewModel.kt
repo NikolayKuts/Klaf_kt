@@ -6,17 +6,41 @@ import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCras
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.repositories.CrashlyticsRepository
-import com.kuts.domain.useCases.*
+import com.kuts.domain.useCases.DeleteCardsFromDeckUseCase
+import com.kuts.domain.useCases.FetchCardsUseCase
+import com.kuts.domain.useCases.FetchDeckByIdUseCase
+import com.kuts.domain.useCases.FetchDeckSourceUseCase
+import com.kuts.domain.useCases.TransferCardsToDeckUseCase
 import com.kuts.klaf.R
 import com.kuts.klaf.data.networking.CardAudioPlayer
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.*
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.*
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardAddingFragment
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardDeletionDialog
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardEditingFragment
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardMovingDialog
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardTransferringScreen
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardAddingScreen
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardDeletingDialog
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardEditingScreen
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardMovingDialog
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToPrevious
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import com.kuts.klaf.presentation.common.tryEmitAsPositive
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class CardTransferringViewModel @AssistedInject constructor(
@@ -55,6 +79,8 @@ class CardTransferringViewModel @AssistedInject constructor(
             initialValue = emptyList()
         )
 
+    override val listHeaderState = MutableStateFlow(value = ListHeaderState())
+
     private val selectedCards = cardHolders.map { holders ->
         holders.filter { it.isSelected }
             .map { holder -> holder.card }
@@ -66,9 +92,64 @@ class CardTransferringViewModel @AssistedInject constructor(
 
     init {
         observeCardSource()
+        subscribeToCardHoldersUpdated()
     }
 
-    override fun changeSelectionState(position: Int) {
+    override fun sendAction(action: CardTransferringAction) {
+        when (action) {
+            is CardTransferringAction.ChangeSelectionState -> {
+                changeCardSelectionState(position = action.position)
+            }
+
+            CardTransferringAction.ChangeAllCardSelection -> {
+                changeAllCardSelection()
+            }
+
+            CardTransferringAction.DeleteCards -> {
+                deleteCards()
+            }
+
+            is CardTransferringAction.MoveCards -> {
+                moveCards(targetDeck = action.targetDeck)
+            }
+
+            is CardTransferringAction.NavigateTo -> {
+                navigateTo(destination = action.destination)
+            }
+
+            is CardTransferringAction.PronounceWord -> {
+                pronounceWord(wordIndex = action.wordIndex)
+            }
+
+            CardTransferringAction.ForeignWordVisibilityIconClick -> {
+                handleForeignWordVisibilityIconClick()
+            }
+
+            CardTransferringAction.NativeWordVisibilityIconClick -> {
+                handleNativeWordVisibilityIconClick()
+            }
+        }
+    }
+
+    private fun observeCardSource() {
+        fetchCards(deckId = sourceDeckId)
+            .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+                eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
+            }.onEach { cards ->
+                cardHolders.value = cards.map { card -> SelectableCardHolder(card = card) }
+            }.launchIn(viewModelScope)
+    }
+
+    private fun subscribeToCardHoldersUpdated() {
+        cardHolders.onEach { holders ->
+            listHeaderState.update { state ->
+                state.copy(isChecked = holders.all { it.isSelected })
+            }
+        }.flowOn(Dispatchers.IO)
+            .launchIn(viewModelScope)
+    }
+
+    private fun changeCardSelectionState(position: Int) {
         cardHolders.update { holders ->
             val holder = holders[position]
 
@@ -77,7 +158,7 @@ class CardTransferringViewModel @AssistedInject constructor(
         }
     }
 
-    override fun changeAllCardSelection() {
+    private fun changeAllCardSelection() {
         val isAllSelected = cardHolders.value.all { it.isSelected }
 
         cardHolders.update { holders ->
@@ -85,7 +166,7 @@ class CardTransferringViewModel @AssistedInject constructor(
         }
     }
 
-    override fun navigateTo(destination: CardTransferringNavigationDestination) {
+    private fun navigateTo(destination: CardTransferringNavigationDestination) {
         when (destination) {
             CardAddingFragment -> sendCardAddingScreenEvent()
             CardDeletionDialog -> sendCardDeletingDialogEvent()
@@ -93,11 +174,12 @@ class CardTransferringViewModel @AssistedInject constructor(
             is CardEditingFragment -> {
                 sendCardEditingScreenEvent(selectedCardIndex = destination.selectedCardIndexIndex)
             }
+
             CardTransferringScreen -> emitEvent(event = ToPrevious)
         }
     }
 
-    override fun deleteCards() {
+    private fun deleteCards() {
         selectedCards.value
             .map { card -> card.id }
             .also { cardIds ->
@@ -114,7 +196,7 @@ class CardTransferringViewModel @AssistedInject constructor(
             }
     }
 
-    override fun moveCards(targetDeck: Deck) {
+    private fun moveCards(targetDeck: Deck) {
         viewModelScope.launchWithState {
             sourceDeck.replayCache.first()?.let { sourceDeck ->
                 moveCardsToDeck(
@@ -131,17 +213,20 @@ class CardTransferringViewModel @AssistedInject constructor(
         }
     }
 
-    override fun pronounceWord(wordIndex: Int) {
+    private fun pronounceWord(wordIndex: Int) {
         audioPlayer.preparePronunciationAndPlay(word = cardHolders.value[wordIndex].card.foreignWord)
     }
 
-    private fun observeCardSource() {
-        fetchCards(deckId = sourceDeckId)
-            .catchWithCrashlyticsReport(crashlytics = crashlytics) {
-                eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
-            }.onEach { cards ->
-                cardHolders.value = cards.map { card -> SelectableCardHolder(card = card) }
-            }.launchIn(viewModelScope)
+    private fun handleForeignWordVisibilityIconClick() {
+        listHeaderState.update { state ->
+            state.copy(foreignWordsVisible = !state.foreignWordsVisible)
+        }
+    }
+
+    private fun handleNativeWordVisibilityIconClick() {
+        listHeaderState.update { state ->
+            state.copy(nativeWordsVisible = !state.nativeWordsVisible)
+        }
     }
 
     private fun Flow<List<Deck>>.filterNotCurrentAndInterimDecks(): Flow<List<Deck>> {

@@ -6,8 +6,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.navGraphViewModels
+import com.kuts.domain.entities.Deck
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.cardTransferring.common.BaseCardTransferringViewModel
+import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringAction
 import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardTransferringScreen
 import com.kuts.klaf.presentation.common.TransparentDialogFragment
 import com.kuts.klaf.presentation.theme.MainTheme
@@ -29,7 +31,7 @@ class DeckChoosingDialogFragment : TransparentDialogFragment(
 
                 DeckChoosingDialogView(
                     decks = viewModel.decks.collectAsState().value,
-                    onConfirmClick = viewModel::moveCards,
+                    onConfirmClick = ::sendMoveCardAction,
                     onCloseClick = ::closeDialog,
                     eventMessage = eventMessage
                 )
@@ -38,6 +40,12 @@ class DeckChoosingDialogFragment : TransparentDialogFragment(
     }
 
     private fun closeDialog() {
-        viewModel.navigateTo(destination = CardTransferringScreen)
+        viewModel.sendAction(
+            action = CardTransferringAction.NavigateTo(destination = CardTransferringScreen)
+        )
+    }
+
+    private fun sendMoveCardAction(targetDeck: Deck) {
+        viewModel.sendAction(action = CardTransferringAction.MoveCards(targetDeck = targetDeck))
     }
 }

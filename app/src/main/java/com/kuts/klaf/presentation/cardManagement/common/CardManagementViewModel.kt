@@ -12,7 +12,6 @@ import com.kuts.domain.common.generateLetterInfos
 import com.kuts.domain.common.ifTrue
 import com.kuts.domain.common.updatedAt
 import com.kuts.domain.entities.Deck
-import com.kuts.domain.ipa.IpaHolder
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.ipa.toRowIpaItemHolders
 import com.kuts.domain.repositories.CrashlyticsRepository
@@ -74,7 +73,8 @@ abstract class CardManagementViewModel(
         MutableStateFlow<CardManagementState>(value = CardManagementState.InProgress())
     protected val nativeWordFieldValueState = MutableStateFlow(value = TextFieldValue())
     protected val foreignWordFieldValueState = MutableStateFlow(value = TextFieldValue())
-    protected val ipaHoldersState = MutableStateFlow<List<IpaHolder>>(value = emptyList())
+    protected val textFieldValueIpaHoldersState =
+        MutableStateFlow<List<TextFieldValueIpaHolder>>(value = emptyList())
     protected val letterInfosState = MutableStateFlow<List<LetterInfo>>(value = emptyList())
 
     init {
@@ -112,7 +112,7 @@ abstract class CardManagementViewModel(
             }
 
             is CardManagementEvent.UpdateIpa -> {
-                updateIpa(letterGroupIndex = event.letterGroupIndex, ipa = event.ipa)
+                updateIpa(letterGroupIndex = event.letterGroupIndex, ipaTextFieldValue = event.ipa)
             }
 
             is CardManagementEvent.UpdateNativeWord -> {
@@ -148,14 +148,14 @@ abstract class CardManagementViewModel(
         combine(
             letterInfosState,
             nativeWordFieldValueState,
-            ipaHoldersState,
+            textFieldValueIpaHoldersState,
             foreignWordFieldValueState,
-        ) { letterInfos, nativeWordFieldValue, ipaHolders, foreignWordFieldValue ->
+        ) { letterInfos, nativeWordFieldValue, textFieldValueIpaHolders, foreignWordFieldValue ->
             CardManagementState.InProgress(
                 letterInfos = letterInfos,
                 nativeWord = nativeWordFieldValue,
                 foreignWord = foreignWordFieldValue,
-                ipaHolders = ipaHolders
+                ipaHolders = textFieldValueIpaHolders
             )
         }.onEach { addingState -> cardManagementState.value = addingState }
             .flowOn(Dispatchers.IO)
@@ -230,7 +230,8 @@ abstract class CardManagementViewModel(
             )
         }
 
-        ipaHoldersState.value = letterInfosState.value.toRowIpaItemHolders()
+        textFieldValueIpaHoldersState.value = letterInfosState.value.toRowIpaItemHolders()
+            .map { ipaHolder -> ipaHolder.toTextFieldValueIpaHolder() }
     }
 
     private fun updateDataOnForeignWordChanged(wordFieldValue: TextFieldValue) {
@@ -243,7 +244,7 @@ abstract class CardManagementViewModel(
             isForeignWordChanged.ifTrue {
                 letterInfosState.value = word.generateLetterInfos()
                 nativeWordFieldValueState.value = TextFieldValue()
-                ipaHoldersState.value = emptyList()
+                textFieldValueIpaHoldersState.value = emptyList()
 
                 autocompleteState.launchUpdateWithState(
                     scope = viewModelScope,
@@ -272,7 +273,7 @@ abstract class CardManagementViewModel(
         }
         nativeWordFieldValueState.update { it.copy(text = "") }
         letterInfosState.value = word.generateLetterInfos()
-        ipaHoldersState.value = emptyList()
+        textFieldValueIpaHoldersState.value = emptyList()
         autocompleteState.value = AutocompleteState()
     }
 
@@ -318,11 +319,11 @@ abstract class CardManagementViewModel(
         nativeWordFieldValueState.value = TextFieldValue()
     }
 
-    private fun updateIpa(letterGroupIndex: Int, ipa: String) {
-        if (ipa.length < MAX_IPA_LENGTH) {
-            ipaHoldersState.update { ipaHolders ->
-                ipaHolders.updatedAt(index = letterGroupIndex) { oldValue ->
-                    oldValue.copy(ipa = ipa)
+    private fun updateIpa(letterGroupIndex: Int, ipaTextFieldValue: TextFieldValue) {
+        if (ipaTextFieldValue.text.length < MAX_IPA_LENGTH) {
+            textFieldValueIpaHoldersState.update { textFieldValueIpaHolders ->
+                textFieldValueIpaHolders.updatedAt(index = letterGroupIndex) { oldValue ->
+                    oldValue.copy(ipaTextFieldValue = ipaTextFieldValue)
                 }
             }
         } else {
