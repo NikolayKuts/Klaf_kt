@@ -54,7 +54,6 @@ import com.kuts.klaf.presentation.deckRepetitionInfo.RepetitionInfoEvent
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -65,6 +64,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.LinkedList
 
 class DeckRepetitionViewModel @AssistedInject constructor(
@@ -99,7 +100,14 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         )
 
     override val mainButtonState = MutableStateFlow(value = ButtonState.UNPRESSED)
-    override val screenState = MutableStateFlow<RepetitionScreenState>(StartState)
+
+    override val screenState = MutableSharedFlow<RepetitionScreenState>(
+        extraBufferCapacity = 4,
+        replay = 1,
+    ).apply {
+        viewModelScope.launch { emit(StartState) }
+    }
+
     override val cardDeletingState = MutableStateFlow<LoadingState<Unit>>(LoadingState.Non)
 
     private val cardsSource: SharedFlow<List<Card>> = fetchCards(deckId)
@@ -161,13 +169,17 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     override fun startRepeating() {
-        if (repetitionCards.value.isEmpty()) {
-            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
-        } else if (screenState.value is StartState || screenState.value is FinishState) {
-            startRepetitionCard = currentCard.replayCache.first()
-            screenState.value = RepetitionState
-            timer.runCounting()
-            mainButtonState.value = ButtonState.UNPRESSED
+        val currentScreenState = screenState.replayCache.firstOrNull()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            if (repetitionCards.value.isEmpty()) {
+                eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
+            } else if (currentScreenState is StartState || currentScreenState is FinishState) {
+                startRepetitionCard = currentCard.replayCache.first()
+                screenState.emit(RepetitionState)
+                timer.runCounting()
+                mainButtonState.value = ButtonState.UNPRESSED
+            }
         }
     }
 
@@ -260,7 +272,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     override fun resetScreenState() {
-        screenState.value = StartState
+        viewModelScope.launch { screenState.emit(StartState) }
     }
 
     private fun manageCardSide() {
@@ -275,11 +287,13 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         cardsSource.catchWithCrashlyticsReport(crashlytics = crashlytics) {
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
         }.onEach { receivedCards ->
+            val currentScreenState = screenState.replayCache.firstOrNull() ?: return@onEach
+
             if (
-                (screenState.value !is StartState)
+                (currentScreenState !is StartState)
                 && (receivedCards.size != repetitionCards.value.size)
             ) {
-                screenState.value = StartState
+                screenState.emit(StartState)
                 timer.stopCounting()
             }
 
@@ -379,14 +393,15 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         val repeatedDeck = deck.replayCache.firstOrNull()
             ?: throw Exception("The deck for updating is null")
 
-        isWaitingForFinish = false
-        clearRepetitionProgress()
-        timer.stopCounting()
-        repetitionCards.update { it.shuffled() }
+        viewModelScope.launchWithState(Dispatchers.IO) {
+            screenState.emit(FinishState(repetitionInfoEvent = RepetitionInfoEvent.Non))
+            isWaitingForFinish = false
+            clearRepetitionProgress()
+            timer.stopCounting()
+            repetitionCards.update { it.shuffled() }
 
-        val updatedDeck = getUpdatedDesk(deckForUpdating = repeatedDeck)
+            val updatedDeck = getUpdatedDesk(deckForUpdating = repeatedDeck)
 
-        viewModelScope.launchWithState {
             val (
                 currentIterationDuration: Long,
                 currentIterationSuccessMark: DeckRepetitionSuccessMark,
@@ -411,24 +426,29 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 )
             )
 
-            manageSchedulingAndNotificationState(
+            val infoEvent = manageSchedulingAndNotificationState(
                 repeatedDeck = repeatedDeck,
                 updatedDeck = updatedDeck,
-                onFinished = { infoEvent ->
-                    screenState.value = FinishState(repetitionInfoEvent = infoEvent)
-                }
             )
+
+            screenState.emit(FinishState(repetitionInfoEvent = infoEvent))
+            resetScreenState()
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_updating_deck)
         }
     }
 
     private fun getUpdatedDesk(deckForUpdating: Deck): Deck {
+        val initialisedScheduledIterationDates = deckForUpdating.scheduledIterationDates.ifEmpty {
+            listOf(getCurrentDateAsLong())
+        }
+
         return if (deckForUpdating.repetitionQuantity.isEven()) {
             deckForUpdating.copy(
                 repetitionQuantity = deckForUpdating.repetitionQuantity + 1,
                 lastFirstRepetitionDuration = timer.savedTotalTime,
                 lastSecondRepetitionDuration = 0,
+                scheduledIterationDates = initialisedScheduledIterationDates,
             )
         } else {
             val updatedIterationDates = deckForUpdating.repetitionIterationDates
@@ -440,7 +460,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 deckForUpdating.lastFirstRepetitionDuration + updatedLastSecondRepetitionDuration
 
             val updatedScheduledDate =
-                deckForUpdating.scheduledIterationDates.addIntoNewInstance(
+                initialisedScheduledIterationDates.addIntoNewInstance(
                     newElement = deckForUpdating.calculateNextScheduledRepeatDate(
                         currentRepetitionIterationDuration = updatedLastRepetitionIterationDuration
                     )
@@ -469,18 +489,16 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     private suspend fun manageSchedulingAndNotificationState(
         repeatedDeck: Deck,
         updatedDeck: Deck,
-        onFinished: (event: RepetitionInfoEvent) -> Unit,
-    ) {
-        val currentTime = System.currentTimeMillis()
-        val scheduledDate = updatedDeck.scheduledDate ?: return
-        val isIterationFinished = scheduledDate > currentTime
-                && updatedDeck.repetitionQuantity >= MINIMUM_NUMBER_OF_FIRST_REPETITIONS
-                && updatedDeck.repetitionQuantity.isEven()
+    ): RepetitionInfoEvent = try {
+        withContext(Dispatchers.IO) {
+            val currentTime = System.currentTimeMillis()
+            val scheduledDate = updatedDeck.scheduledDate ?: currentTime
 
-        if (isIterationFinished) {
-            viewModelScope.launchWithState(context = Dispatchers.IO) {
-                delay(1000)
+            val isIterationFinished = scheduledDate > currentTime
+                    && updatedDeck.repetitionQuantity >= MINIMUM_NUMBER_OF_FIRST_REPETITIONS
+                    && updatedDeck.repetitionQuantity.isEven()
 
+            if (isIterationFinished) {
                 val workOperation = workManager.scheduleDeckRepetition(
                     deckName = repeatedDeck.name,
                     deckId = repeatedDeck.id,
@@ -488,14 +506,13 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 )
 
                 workOperation.await()
-                onFinished(RepetitionInfoEvent.ScheduledSuccessfully)
-            }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-                onFinished(RepetitionInfoEvent.SchedulingFailed)
+                deckRepetitionNotifier.removeNotificationFromNotificationBar(deckId = repeatedDeck.id)
+                RepetitionInfoEvent.ScheduledSuccessfully
+            } else {
+                RepetitionInfoEvent.OneRepetitionToFinish
             }
-
-            deckRepetitionNotifier.removeNotificationFromNotificationBar(deckId = repeatedDeck.id)
-        } else {
-            onFinished(RepetitionInfoEvent.OneRepetitionToFinish)
         }
+    } catch (e: Exception) {
+        RepetitionInfoEvent.SchedulingFailed
     }
 }

@@ -65,7 +65,7 @@ fun DeckRepetitionScreen(
     val deckRepetitionState by viewModel.cardState.collectAsState(initial = null)
     val deck by viewModel.deck.collectAsState(initial = null)
     val mainButtonState by viewModel.mainButtonState.collectAsState()
-    val screenState by viewModel.screenState.collectAsState()
+    val screenState by viewModel.screenState.collectAsState(RepetitionScreenState.StartState)
 
     val repetitionState = deckRepetitionState ?: return
     val receivedDeck = deck ?: return

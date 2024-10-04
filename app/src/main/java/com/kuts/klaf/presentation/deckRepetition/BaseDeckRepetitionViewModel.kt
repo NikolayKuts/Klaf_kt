@@ -17,7 +17,7 @@ abstract class BaseDeckRepetitionViewModel : ViewModel(), EventMessageSource {
     abstract val timer: RepetitionTimer
     abstract val audioPlayer: CardAudioPlayer
     abstract val deck: SharedFlow<Deck?>
-    abstract val screenState: StateFlow<RepetitionScreenState>
+    abstract val screenState: SharedFlow<RepetitionScreenState>
     abstract val cardState: SharedFlow<DeckRepetitionState>
     abstract val mainButtonState: StateFlow<ButtonState>
     abstract val cardDeletingState: StateFlow<LoadingState<Unit>>
