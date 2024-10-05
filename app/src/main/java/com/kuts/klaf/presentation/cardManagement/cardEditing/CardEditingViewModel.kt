@@ -94,27 +94,11 @@ class CardEditingViewModel @AssistedInject constructor(
                 }
 
                 else -> {
-                    viewModelScope.launchWithState {
-                        val decksWithSameForeignWord = checkIfWordExists.invoke(
-                            foreignWord = foreignWord
-                        )
-
-                        if (decksWithSameForeignWord.isEmpty()) {
-                            updateCard(newCard = updatedCard)
-                            eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_changed)
-                            cardManagementState.value = CardManagementState.Finished
-                        } else {
-                            val deckNamesAsString =
-                                decksWithSameForeignWord.joinToString(", ") { it.name }
-
-                            eventMessage.tryEmitAsNegative(
-                                resId = R.string.foreign_word_already_exists,
-                                args = arrayOf(deckNamesAsString),
-                            )
-                        }
-                    }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-                        eventMessage.tryEmitAsNegative(resId = R.string.problem_with_updating_card)
-                    }
+                    manageUpdatingCard(
+                        originalCard = originalCard,
+                        updatedCard = updatedCard,
+                        foreignWord = foreignWord
+                    )
                 }
             }
         }
@@ -144,5 +128,41 @@ class CardEditingViewModel @AssistedInject constructor(
             logW(throwable.stackTraceToString())
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_card)
         }
+    }
+
+    private fun manageUpdatingCard(
+        originalCard: Card,
+        updatedCard: Card,
+        foreignWord: String,
+    ) {
+        viewModelScope.launchWithState {
+            if (updatedCard.foreignWord == originalCard.foreignWord) {
+                performUpdatingCard(updatedCard = updatedCard)
+            } else {
+                val decksWithSameForeignWord = checkIfWordExists.invoke(
+                    foreignWord = foreignWord
+                )
+
+                if (decksWithSameForeignWord.isEmpty()) {
+                    performUpdatingCard(updatedCard = updatedCard)
+                } else {
+                    val deckNamesAsString =
+                        decksWithSameForeignWord.joinToString(", ") { it.name }
+
+                    eventMessage.tryEmitAsNegative(
+                        resId = R.string.foreign_word_already_exists,
+                        args = arrayOf(deckNamesAsString),
+                    )
+                }
+            }
+        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_updating_card)
+        }
+    }
+
+    private suspend fun performUpdatingCard(updatedCard: Card) {
+        updateCard.invoke(newCard = updatedCard)
+        eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_changed)
+        cardManagementState.value = CardManagementState.Finished
     }
 }
