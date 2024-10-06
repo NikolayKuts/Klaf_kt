@@ -7,7 +7,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
@@ -40,6 +39,8 @@ import com.kuts.klaf.R
 import com.kuts.klaf.data.common.getScheduledDateStateByByCalculatedRange
 import com.kuts.klaf.presentation.common.*
 import com.kuts.klaf.presentation.theme.MainTheme
+import kotlinx.coroutines.delay
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun DeckListScreen(
@@ -178,7 +179,6 @@ private fun BoxScope.DecksContentView(
     )
 }
 
-@Suppress("OPT_IN_IS_NOT_ENABLED")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun LazyItemScope.DeckItemView(
@@ -190,7 +190,8 @@ private fun LazyItemScope.DeckItemView(
     var animationFloat by rememberAsMutableStateOf(value = 0F)
     val animationFloatState by animateFloatAsState(
         targetValue = animationFloat,
-        animationSpec = tween(durationMillis = 150 + position * 5)
+        animationSpec = tween(durationMillis = 150 + position * 5),
+        label = "DeckItemView",
     )
 
     LaunchedEffect(key1 = null) { animationFloat = 1F }
@@ -242,8 +243,20 @@ private fun RowScope.DeckNameView(deckName: String, position: Int) {
 
 @Composable
 private fun ScheduledDateView(deck: Deck) {
-    val scheduledDateState =
-        deck.getScheduledDateStateByByCalculatedRange(context = LocalContext.current)
+    val context = LocalContext.current
+    val getScheduledDateState: (deck: Deck) -> ScheduledDateState = {
+        it.getScheduledDateStateByByCalculatedRange(context = context)
+    }
+    var scheduledDateState by remember(deck) {
+        mutableStateOf(value = getScheduledDateState(deck))
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        while (true) {
+            delay(TimeUnit.MINUTES.toMillis(1))
+            scheduledDateState = getScheduledDateState(deck)
+        }
+    }
 
     Text(
         text = scheduledDateState.range,
