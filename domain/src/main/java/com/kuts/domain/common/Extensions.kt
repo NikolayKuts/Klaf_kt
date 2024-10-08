@@ -4,13 +4,21 @@ import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.repositories.CrashlyticsRepository
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Calendar
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -145,32 +153,17 @@ fun <T> Flow<T>.launchIn(
 }
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-fun <Input, Output> Flow<Input>.debouncedLaunch(
-    scope: CoroutineScope,
+fun <Input, Output> Flow<Input>.flatDebounce(
     timeoutMillis: Long = 300,
-    context: CoroutineContext = Dispatchers.IO,
     execute: suspend (Input) -> Flow<Output>,
-    onEach: suspend (Output) -> Unit
-): Job = this.debounce(timeoutMillis)
-    .distinctUntilChanged()
-    .flatMapLatest { input -> execute(input) }
-    .onEach { value -> onEach(value) }
-    .flowOn(context = context)
-    .launchIn(scope = scope)
-
-@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-fun <Input, Output> Flow<Input>.debouncedLaunch(
-    scope: CoroutineScope,
-    timeoutMillis: Long = 300,
-    context: CoroutineContext = Dispatchers.IO,
-    execute: suspend (Input) -> Output,
     onEach: suspend (Input, Output) -> Unit
-): Job = this.debounce(timeoutMillis)
+): Flow<Input> = this.debounce(timeoutMillis)
     .distinctUntilChanged()
-    .mapLatest { input -> input to execute(input) }
+    .flatMapLatest { input ->
+        execute(input).map { value -> input to value }
+    }
     .onEach { inputOutputPair -> onEach(inputOutputPair.first, inputOutputPair.second) }
-    .flowOn(context = context)
-    .launchIn(scope = scope)
+    .mapLatest { it.first }
 
 fun Float.invertedCoerceIn(min: Float, max: Float): Float {
     return max - coerceIn(min, max)

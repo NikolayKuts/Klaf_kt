@@ -7,7 +7,6 @@ import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCras
 import com.kuts.domain.common.DebouncedMutableStateFlow
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.catchWithCrashlyticsReport
-import com.kuts.domain.common.debouncedLaunch
 import com.kuts.domain.common.generateLetterInfos
 import com.kuts.domain.common.ifTrue
 import com.kuts.domain.common.updatedAt
@@ -15,6 +14,7 @@ import com.kuts.domain.entities.Deck
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.ipa.toRowIpaItemHolders
 import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
@@ -26,16 +26,19 @@ import com.kuts.klaf.presentation.cardManagement.cardAddition.NativeWordSuggesti
 import com.kuts.klaf.presentation.cardManagement.cardAddition.NativeWordSuggestionsState
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
-import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -50,6 +53,7 @@ abstract class CardManagementViewModel(
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     private val fetchWordInfo: FetchWordInfoUseCase,
     protected val crashlytics: CrashlyticsRepository,
+    protected val checkIfWordExists: CheckIfCardExistsUseCase,
     fetchDeckById: FetchDeckByIdUseCase,
 ) : BaseCardManagementViewModel(audioPlayer = audioPlayer) {
 
@@ -81,6 +85,8 @@ abstract class CardManagementViewModel(
         combineAndObserveCardManagementChanges()
         observeForeignWordChanges()
     }
+
+    protected abstract suspend fun onForeignWordChanged(word: String)
 
     override fun sendEvent(event: CardManagementEvent) {
         when (event) {
@@ -162,59 +168,63 @@ abstract class CardManagementViewModel(
             .launchIn(viewModelScope)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     private fun observeForeignWordChanges() {
         foreignWordFieldValueState.map { fieldValue -> fieldValue.text.trim() }
             .distinctUntilChanged()
-            .debouncedLaunch(
-                scope = viewModelScope,
-                execute = { foreignWord ->
-                    logD { message("Observed foreignWord: $foreignWord") }
+            .debounce(1500L)
+            .onEach { onForeignWordChanged(word = it) }
+            .flowOn(Dispatchers.IO)
+            .launchIn(viewModelScope)
 
+        foreignWordFieldValueState.map { fieldValue -> fieldValue.text.trim() }
+            .distinctUntilChanged()
+            .debounce(300)
+            .flatMapLatest { foreignWord ->
+                audioPlayer.preparePronunciation(word = foreignWord)
 
-                    audioPlayer.preparePronunciation(word = foreignWord)
-
-                    if (foreignWord.isNotEmpty()) {
-                        fetchWordInfo(word = foreignWord)
-                    } else {
-                        flow { emit(LoadingState.Non) }
+                if (foreignWord.isNotEmpty()) {
+                    fetchWordInfo.invoke(word = foreignWord)
+                } else {
+                    flow { emit(LoadingState.Non) }
+                }
+            }.onEach { wordInfoState ->
+                when (wordInfoState) {
+                    LoadingState.Non -> {
+                        transcriptionState.value = ""
+                        nativeWordSuggestionsState.value = NativeWordSuggestionsState()
                     }
-                },
-                onEach = { wordInfoState ->
-                    when (wordInfoState) {
-                        LoadingState.Non -> {
-                            transcriptionState.value = ""
-                            nativeWordSuggestionsState.value = NativeWordSuggestionsState()
-                        }
 
-                        is LoadingState.Error -> {
-                            handleWordInfoError(loadingState = wordInfoState)
-                        }
+                    is LoadingState.Error -> {
+                        handleWordInfoError(loadingState = wordInfoState)
+                    }
 
-                        LoadingState.Loading -> {
-                            transcriptionState.value = ""
-                            nativeWordSuggestionsState.update {
-                                it.copy(loadingState = LoadingState.Loading)
+                    LoadingState.Loading -> {
+                        transcriptionState.value = ""
+                        nativeWordSuggestionsState.update {
+                            it.copy(loadingState = LoadingState.Loading)
+                        }
+                    }
+
+                    is LoadingState.Success -> {
+                        transcriptionState.value =
+                            getWrappedTranscription(value = wordInfoState.data.transcription)
+
+                        val suggestionItems =
+                            wordInfoState.data.translations.map { suggestion ->
+                                NativeWordSuggestionItem(word = suggestion, isSelected = false)
                             }
-                        }
 
-                        is LoadingState.Success -> {
-                            transcriptionState.value =
-                                getWrappedTranscription(value = wordInfoState.data.transcription)
-
-                            val suggestionItems =
-                                wordInfoState.data.translations.map { suggestion ->
-                                    NativeWordSuggestionItem(word = suggestion, isSelected = false)
-                                }
-
-                            nativeWordSuggestionsState.value = NativeWordSuggestionsState(
-                                suggestions = suggestionItems,
-                                isActive = false,
-                                loadingState = LoadingState.Success(data = Unit)
-                            )
-                        }
+                        nativeWordSuggestionsState.value = NativeWordSuggestionsState(
+                            suggestions = suggestionItems,
+                            isActive = false,
+                            loadingState = LoadingState.Success(data = Unit)
+                        )
                     }
-                },
-            )
+                }
+
+            }.flowOn(Dispatchers.IO)
+            .launchIn(viewModelScope)
     }
 
     private fun changeLetterSelectionWithIpaTemplate(index: Int, letterInfo: LetterInfo) {
@@ -366,5 +376,18 @@ abstract class CardManagementViewModel(
 
     private fun getWrappedTranscription(value: String): String {
         return if (value.isEmpty()) "" else "[$value]"
+    }
+
+    protected suspend fun checkIfForeignWordExists(word: String) {
+        val decksWithSameForeignWord = checkIfWordExists.invoke(foreignWord = word)
+
+        if (decksWithSameForeignWord.isNotEmpty()) {
+            val deckNamesAsString = decksWithSameForeignWord.joinToString(", ") { it.name }
+
+            eventMessage.tryEmitAsNegative(
+                resId = R.string.foreign_word_already_exists,
+                args = arrayOf(word, deckNamesAsString),
+            )
+        }
     }
 }

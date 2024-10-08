@@ -20,6 +20,7 @@ import com.kuts.klaf.presentation.cardManagement.common.CardManagementViewModel
 import com.kuts.klaf.presentation.cardManagement.common.toDomainEntity
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import com.kuts.klaf.presentation.common.tryEmitAsPositive
+import com.lib.lokdroid.core.logD
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +29,7 @@ class CardAdditionViewModel @AssistedInject constructor(
     @Assisted deckId: Int,
     @Assisted smartSelectedWord: String?,
     private val addNewCardIntoDeck: AddNewCardIntoDeckUseCase,
-    private val checkIfWordExists: CheckIfCardExistsUseCase,
+    checkIfWordExists: CheckIfCardExistsUseCase,
     audioPlayer: CardAudioPlayer,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
@@ -41,10 +42,19 @@ class CardAdditionViewModel @AssistedInject constructor(
     fetchWordInfo = fetchWordInfo,
     crashlytics = crashlytics,
     fetchDeckById = fetchDeckById,
+    checkIfWordExists = checkIfWordExists
 ) {
 
     init {
         handleAddingStateBySelectedWord(word = smartSelectedWord)
+    }
+
+    override suspend fun onForeignWordChanged(word: String) {
+        logD("onForeignWordChanged() called. foreignWord -> $word")
+
+        if (word.isNotEmpty()) {
+            checkIfForeignWordExists(word = word)
+        }
     }
 
     override fun onCardManagementConfirmed() {

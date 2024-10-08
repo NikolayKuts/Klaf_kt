@@ -22,6 +22,7 @@ import com.kuts.klaf.presentation.cardManagement.common.toDomainEntity
 import com.kuts.klaf.presentation.cardManagement.common.toTextFieldValueIpaHolder
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import com.kuts.klaf.presentation.common.tryEmitAsPositive
+import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logW
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -33,7 +34,7 @@ class CardEditingViewModel @AssistedInject constructor(
     @Assisted(CARD_ARGUMENT_NAME) cardId: Int,
     private val fetchCard: FetchCardUseCase,
     private val updateCard: UpdateCardUseCase,
-    private val checkIfWordExists: CheckIfCardExistsUseCase,
+    checkIfWordExists: CheckIfCardExistsUseCase,
     audioPlayer: CardAudioPlayer,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
@@ -46,6 +47,7 @@ class CardEditingViewModel @AssistedInject constructor(
     fetchWordInfo = fetchWordInfo,
     crashlytics = crashlytics,
     fetchDeckById = fetchDeckById,
+    checkIfWordExists = checkIfWordExists,
 ) {
 
     companion object {
@@ -58,6 +60,16 @@ class CardEditingViewModel @AssistedInject constructor(
 
     init {
         fetchCardAndConfigureStates(cardId = cardId)
+    }
+
+    override suspend fun onForeignWordChanged(word: String) {
+        val originalForeignWord = originalCardState.value?.foreignWord
+
+        logD("onForeignWordChanged() called. foreignWord -> $word, originalForeignWord -> $originalForeignWord")
+
+        if (word.isNotEmpty() && originalForeignWord != word) {
+            checkIfForeignWordExists(word = word)
+        }
     }
 
     override fun onCardManagementConfirmed() {
