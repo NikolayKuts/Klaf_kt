@@ -22,7 +22,7 @@ android {
 
         /** Version **/
         versionName = "1.5"
-        versionCode = 12
+        versionCode = 13
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
