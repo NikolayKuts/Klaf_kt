@@ -66,6 +66,9 @@ compseAccompanist = "0.19.0"
 # LoKdroid #
 lokdroid = "0.0.3-alpha"
 
+# KSP #
+ksp = "1.9.22-1.0.17"
+
 [libraries] # ======================================================================================
 # Core #
 core-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
@@ -150,6 +153,13 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 # LoKdroid #
 lokdroid = { group = "io.github.nikolaykuts", name = "lokdroid", version.ref = "lokdroid" }
 
+# plugin dependencies
+agp = { group = "com.android.tools.build", name = "gradle", version.ref = "agp"}
+kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+
+[bundles]
+ktor = ["ktor-client-okhttp", "ktor-client-core", "ktor-client-cio", "ktor-client-content-negotiation", "ktor-serialization-kotlinx-json"]
+
 [plugins] # ========================================================================================
 android-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerializationPlugin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
@@ -158,4 +168,7 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 navigation-safeargs-kotlin = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigationSafeArgsKotlinPlugin" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firevaseCrashlyticsPlugin" }
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hiltAndroid" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+telegramAppDistribution = { id = "telegram-app-distribution-plugin" }
+kotlin-parcelize = { id = "kotlin-parcelize" }
 

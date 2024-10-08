@@ -59,7 +59,7 @@ class YandexWordInfoProvider @Inject constructor() : WordInfoRepository {
     override suspend fun fetchWordInfo(word: String): Flow<LoadingState<WordInfo>> = flow {
         emit(value = LoadingState.Loading)
 
-        val apiKey = SecretConstants.YANDEX_WORD_INFO_API_KEY
+        val apiKey = SecretConstants.YandexApi.YANDEX_WORD_INFO_API_KEY
         val url = buildUrl(apiKey = apiKey, word = word)
         val yandexWordInfoAsString = client.get(url).body<String>()
         val wordInfo = client.get(url).body<YandexWordInfo>().toDomainEntity()

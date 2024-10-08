@@ -3,13 +3,14 @@ import com.example.klaf.di.dependencies.*
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("kotlin-kapt")
+    alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
-    id("kotlin-parcelize")
+    alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.navigation.safeargs.kotlin)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.android.serialization)
+    alias(libs.plugins.telegramAppDistribution)
 }
 
 android {
@@ -25,15 +26,16 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        kapt {
-            arguments { arg("room.schemaLocation", "$projectDir/schemas") }
-        }
+        ksp { arg("room.schemaLocation", "$projectDir/schemas") }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 
@@ -88,10 +90,7 @@ dependencies {
     /** Room **/
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    kapt(libs.room.compiler)
-
-    // When using Kotlin.
-//    ksp("androidx.hilt:hilt-compiler:1.1.0")
+    ksp(libs.room.compiler)
 
     /** Lifecycle **/
     implementation(libs.lifecycle.viewmodel.ktx)
@@ -100,8 +99,8 @@ dependencies {
 
     /** Hilt **/
     implementation(libs.hilt.android)
-    kapt(libs.hilt.dagger.compiler)
-    kapt(libs.hilt.android.compiler)
+    ksp(libs.hilt.dagger.compiler)
+    ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.work)
 
     /** Firebase **/
