@@ -14,6 +14,7 @@ import com.kuts.klaf.R
 import com.kuts.klaf.data.common.DateFormat.FULL_WITH_DIVIDER
 import com.kuts.klaf.presentation.deckManagment.DateData
 import com.kuts.klaf.presentation.deckManagment.DateUnit
+import com.lib.lokdroid.core.logD
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -100,10 +101,16 @@ private fun Deck.calculateDecreasedInterval(currentIterationDuration: Long): Lon
 
 private fun Long.toMillis(): Long = TimeUnit.MINUTES.toMillis(this)
 
-fun Deck.isRepetitionSucceeded(currentRepetitionDuration: Long): Boolean {
-    val lastRepetitionDuration: Long = this.lastRepetitionIterationDuration
-    return currentRepetitionDuration <=
-            lastRepetitionDuration + lastRepetitionDuration * ADDITIONAL_ALLOWABLE_DURATION_FACTOR
+fun Deck.isRepetitionIterationSucceeded(currentRepetitionDuration: Long): Boolean {
+    logD("isRepetitionSucceeded() called")
+    logD("lastRepetitionIterationDuration -> $lastRepetitionIterationDuration")
+    logD("currentRepetitionDuration -> $currentRepetitionDuration")
+
+    val maxRepetitionIterationDuration =
+        lastRepetitionIterationDuration + lastRepetitionIterationDuration * ADDITIONAL_ALLOWABLE_DURATION_FACTOR
+    logD("maxRepetitionIterationDuration -> $maxRepetitionIterationDuration")
+
+    return currentRepetitionDuration <= maxRepetitionIterationDuration
 }
 
 private fun getDayIncreaseFactorByDayQuantity(quantity: Long): Float {

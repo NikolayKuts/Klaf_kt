@@ -20,7 +20,7 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
 
     private var totalSeconds: Long = 0
 
-    var savedTotalTime: Long = 0
+    var savedTotalTimeInSeconds: Long = 0
         private set
 
     private val time = MutableStateFlow(value = INITIAL_TIME_VALUE.timeAsString)
@@ -74,7 +74,7 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
     fun stopCounting() {
         job?.cancel()
         timerCountingState.value = STOPPED
-        savedTotalTime = totalSeconds
+        savedTotalTimeInSeconds = totalSeconds
         totalSeconds = 0
         time.value = totalSeconds.timeAsString
     }

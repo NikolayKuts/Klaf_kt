@@ -163,7 +163,7 @@ class CardEditingViewModel @AssistedInject constructor(
 
                     eventMessage.tryEmitAsNegative(
                         resId = R.string.foreign_word_already_exists,
-                        args = arrayOf(deckNamesAsString),
+                        args = arrayOf(foreignWord, deckNamesAsString),
                     )
                 }
             }

@@ -38,7 +38,7 @@ import com.kuts.klaf.R
 import com.kuts.klaf.data.common.DeckRepetitionReminder.Companion.scheduleDeckRepetition
 import com.kuts.klaf.data.common.calculateNextScheduledRepeatDate
 import com.kuts.klaf.data.common.getNewInterval
-import com.kuts.klaf.data.common.isRepetitionSucceeded
+import com.kuts.klaf.data.common.isRepetitionIterationSucceeded
 import com.kuts.klaf.data.common.lastIterationSuccessMark
 import com.kuts.klaf.data.common.notifications.DeckRepetitionNotifier
 import com.kuts.klaf.data.networking.CardAudioPlayer
@@ -51,6 +51,7 @@ import com.kuts.klaf.presentation.deckRepetition.RepetitionScreenState.FinishSta
 import com.kuts.klaf.presentation.deckRepetition.RepetitionScreenState.RepetitionState
 import com.kuts.klaf.presentation.deckRepetition.RepetitionScreenState.StartState
 import com.kuts.klaf.presentation.deckRepetitionInfo.RepetitionInfoEvent
+import com.lib.lokdroid.core.logD
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -169,6 +170,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     override fun startRepeating() {
+        logD("startRepeating() called")
+
         val currentScreenState = screenState.replayCache.firstOrNull()
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -393,6 +396,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         val repeatedDeck = deck.replayCache.firstOrNull()
             ?: throw Exception("The deck for updating is null")
 
+        logD("finishRepetition() called")
+
         viewModelScope.launchWithState(Dispatchers.IO) {
             screenState.emit(FinishState(repetitionInfoEvent = RepetitionInfoEvent.Non))
             isWaitingForFinish = false
@@ -401,6 +406,10 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             repetitionCards.update { it.shuffled() }
 
             val updatedDeck = getUpdatedDesk(deckForUpdating = repeatedDeck)
+            logD("is repetition Even (repeated) -> ${repeatedDeck.repetitionQuantity.isEven()}")
+            logD("is repetition Even (updated) -> ${updatedDeck.repetitionQuantity.isEven()}")
+            logD("repeatedDeck -> $repeatedDeck")
+            logD("updatedDeck -> $updatedDeck")
 
             val (
                 currentIterationDuration: Long,
@@ -411,20 +420,25 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 UNASSIGNED_LONG_VALUE to DeckRepetitionSuccessMark.UNASSIGNED
             }
 
-            updateDeck(updatedDeck = updatedDeck)
-            saveDeckRepetitionInfo(
-                deckRepetitionInfo = DeckRepetitionInfo(
-                    deckId = deckId,
-                    currentDuration = currentIterationDuration,
-                    previousDuration = repeatedDeck.lastRepetitionIterationDuration,
-                    scheduledDate = updatedDeck.scheduledDate ?: UNASSIGNED_LONG_VALUE,
-                    previousScheduledDate = repeatedDeck.scheduledDateOrUnassignedValue,
-                    lastIterationDate = repeatedDeck.lastRepetitionIterationDate,
-                    repetitionQuantity = updatedDeck.repetitionQuantity,
-                    currentIterationSuccessMark = currentIterationSuccessMark,
-                    previousIterationSuccessMark = repeatedDeck.lastIterationSuccessMark
-                )
+            updateDeck.invoke(updatedDeck = updatedDeck)
+            logD("Deck updated successfully")
+            logD("currentIterationSuccessMark for DeckRepetitionInfo -> $currentIterationSuccessMark")
+
+            val deckRepetitionInfo = DeckRepetitionInfo(
+                deckId = deckId,
+                currentDuration = currentIterationDuration,
+                previousDuration = repeatedDeck.lastRepetitionIterationDuration,
+                scheduledDate = updatedDeck.scheduledDate ?: UNASSIGNED_LONG_VALUE,
+                previousScheduledDate = repeatedDeck.scheduledDateOrUnassignedValue,
+                lastIterationDate = repeatedDeck.lastRepetitionIterationDate,
+                repetitionQuantity = updatedDeck.repetitionQuantity,
+                currentIterationSuccessMark = currentIterationSuccessMark,
+                previousIterationSuccessMark = repeatedDeck.lastIterationSuccessMark
             )
+            logD("deckRepetitionInfo -> $deckRepetitionInfo")
+
+            saveDeckRepetitionInfo.invoke(deckRepetitionInfo = deckRepetitionInfo)
+            logD("Deck repetition info saved successfully")
 
             val infoEvent = manageSchedulingAndNotificationState(
                 repeatedDeck = repeatedDeck,
@@ -439,14 +453,18 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     private fun getUpdatedDesk(deckForUpdating: Deck): Deck {
+        logD("getUpdatedDesk() called")
+
         val initialisedScheduledIterationDates = deckForUpdating.scheduledIterationDates.ifEmpty {
             listOf(getCurrentDateAsLong())
         }
 
+        val increasedRepetitionQuantity = deckForUpdating.repetitionQuantity + 1
+
         return if (deckForUpdating.repetitionQuantity.isEven()) {
             deckForUpdating.copy(
-                repetitionQuantity = deckForUpdating.repetitionQuantity + 1,
-                lastFirstRepetitionDuration = timer.savedTotalTime,
+                repetitionQuantity = increasedRepetitionQuantity,
+                lastFirstRepetitionDuration = timer.savedTotalTimeInSeconds,
                 lastSecondRepetitionDuration = 0,
                 scheduledIterationDates = initialisedScheduledIterationDates,
             )
@@ -454,7 +472,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             val updatedIterationDates = deckForUpdating.repetitionIterationDates
                 .addIntoNewInstance(newElement = getCurrentDateAsLong())
 
-            val updatedLastSecondRepetitionDuration = timer.savedTotalTime
+            val updatedLastSecondRepetitionDuration = timer.savedTotalTimeInSeconds
 
             val updatedLastRepetitionIterationDuration =
                 deckForUpdating.lastFirstRepetitionDuration + updatedLastSecondRepetitionDuration
@@ -470,15 +488,17 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 currentIterationDuration = updatedLastRepetitionIterationDuration
             )
 
-            val updatedIsLastIterationSucceeded = deckForUpdating.isRepetitionSucceeded(
-                currentRepetitionDuration = timer.savedTotalTime
+            val updatedIsLastIterationSucceeded = deckForUpdating.isRepetitionIterationSucceeded(
+                currentRepetitionDuration = updatedLastRepetitionIterationDuration
             )
+
+            logD("updatedIsLastIterationSucceeded -> $updatedIsLastIterationSucceeded")
 
             deckForUpdating.copy(
                 repetitionIterationDates = updatedIterationDates,
                 scheduledIterationDates = updatedScheduledDate,
                 scheduledDateInterval = updatedScheduledDateInterval,
-                repetitionQuantity = deckForUpdating.repetitionQuantity + 1,
+                repetitionQuantity = increasedRepetitionQuantity,
                 lastSecondRepetitionDuration = updatedLastSecondRepetitionDuration,
                 lastRepetitionIterationDuration = updatedLastRepetitionIterationDuration,
                 isLastIterationSucceeded = updatedIsLastIterationSucceeded,
