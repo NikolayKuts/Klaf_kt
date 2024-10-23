@@ -64,7 +64,7 @@ compseThemeAdapter = "1.2.1"
 compseAccompanist = "0.19.0"
 
 # LoKdroid #
-lokdroid = "0.0.3-alpha"
+lokdroid = "0.0.4-alpha"
 
 # KSP #
 ksp = "1.9.22-1.0.17"
