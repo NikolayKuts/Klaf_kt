@@ -1,5 +1,7 @@
 package com.kuts.klaf.presentation.deckRepetition
 
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -16,6 +18,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -24,6 +27,7 @@ import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
@@ -31,12 +35,15 @@ import androidx.constraintlayout.compose.Dimension
 import com.kuts.domain.common.CardRepetitionOrder
 import com.kuts.domain.common.CardSide
 import com.kuts.domain.common.DeckRepetitionState
+import com.kuts.domain.common.ifTrue
 import com.kuts.domain.enums.DifficultyRecallingLevel.*
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.ipa.toIpaPrompts
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.*
 import com.kuts.klaf.presentation.theme.MainTheme
+import kotlinx.coroutines.android.awaitFrame
+import kotlinx.coroutines.launch
 
 private const val DECK_INFO_ID = "deck_info"
 private const val ORDER_POINTERS_ID = "repetition_order"
@@ -72,6 +79,9 @@ fun DeckRepetitionScreen(
 
     val density = LocalDensity.current
     val minContentHeightPx = density.run { 400.dp.toPx() }
+
+    var shouldInterceptBack by remember { mutableStateOf(true) }
+    var showExitDialog by remember { mutableStateOf(false) }
 
     ScrollableBox { parentHeightPx ->
         val contentHeight = when {
@@ -117,6 +127,25 @@ fun DeckRepetitionScreen(
                 },
                 onCommonButtonClick = { viewModel.changeButtonsStateOnCommonButtonClick() }
             )
+        }
+    }
+
+    showExitDialog.ifTrue {
+        ExitDialog(
+            onDismiss = { showExitDialog = false },
+            onConfirm = { shouldInterceptBack = false }
+        )
+    }
+
+    BackHandler(enabled = shouldInterceptBack && screenState == RepetitionScreenState.RepetitionState) {
+        showExitDialog = showExitDialog.not()
+    }
+
+    LaunchedEffect(key1 = showExitDialog) {
+        if (showExitDialog) {
+            viewModel.pauseTimerCounting()
+        } else {
+            viewModel.resumeTimerCounting()
         }
     }
 }
@@ -291,18 +320,21 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
                     word = card.nativeWord
                     ipaPrompt = emptyList()
                 }
+
                 CardSide.BACK -> {
                     word = card.foreignWord
                     ipaPrompt = card.toIpaPrompts()
                 }
             }
         }
+
         CardRepetitionOrder.FOREIGN_TO_NATIVE -> {
             when (deckRepetitionState.side) {
                 CardSide.FRONT -> {
                     word = card.foreignWord
                     ipaPrompt = card.toIpaPrompts()
                 }
+
                 CardSide.BACK -> {
                     word = card.nativeWord
                     ipaPrompt = emptyList()
@@ -543,6 +575,7 @@ fun CardButton(cardSide: CardSide, onClick: () -> Unit) {
             rotationValue = 180F
             backgroundColor = MainTheme.colors.deckRepetitionScreen.frontSideCardButton
         }
+
         CardSide.BACK -> {
             rotationValue = 0F
             backgroundColor = MainTheme.colors.deckRepetitionScreen.backSideCardButton
@@ -576,4 +609,45 @@ fun CardButton(cardSide: CardSide, onClick: () -> Unit) {
             contentDescription = null,
         )
     }
+}
+
+@Composable
+private fun ExitDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    val coroutineScope = rememberCoroutineScope()
+
+    FullBackgroundDialog(
+        onBackgroundClick = { onDismiss() },
+        topContent = ContentHolder(size = DIALOG_APP_LABEL_SIZE.dp) { DialogAppLabel() },
+        mainContent = {
+            Text(
+                text = stringResource(
+                    id = R.string.deck_repeating_exit_dialog_question
+                ),
+                textAlign = TextAlign.Center
+            )
+        },
+        bottomContent = {
+            RoundButton(
+                background = MainTheme.colors.common.positiveDialogButton,
+                iconId = R.drawable.ic_confirmation_24,
+                onClick = {
+                    coroutineScope.launch {
+                        onConfirm()
+                        awaitFrame()
+                        onBackPressedDispatcher?.onBackPressed()
+                    }
+                }
+            )
+
+            RoundButton(
+                background = MainTheme.colors.common.neutralDialogButton,
+                iconId = R.drawable.ic_close_24,
+                onClick = onDismiss
+            )
+        }
+    )
 }

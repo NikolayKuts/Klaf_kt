@@ -235,14 +235,6 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         }
     }
 
-    override fun resumeTimerCounting() {
-        timer.resumeCounting()
-    }
-
-    override fun pauseTimerCounting() {
-        timer.pauseCounting()
-    }
-
     override fun deleteCard(cardId: Int, deckId: Int) {
         viewModelScope.launchWithState {
             cardDeletingState.value = LoadingState.Loading
@@ -259,14 +251,26 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         when (mainButtonState.value) {
             ButtonState.PRESSED -> {
                 mainButtonState.value = ButtonState.UNPRESSED
-                timer.resumeCounting()
+                resumeTimerCounting()
             }
 
             ButtonState.UNPRESSED -> {
                 mainButtonState.value = ButtonState.PRESSED
-                timer.pauseCounting()
+                pauseTimerCounting()
             }
         }
+    }
+
+    override fun resumeTimerCounting() {
+        val currentScreenState = screenState.replayCache.firstOrNull()
+
+        if (mainButtonState.value == ButtonState.UNPRESSED && currentScreenState == RepetitionState) {
+            timer.resumeCounting()
+        }
+    }
+
+    override fun pauseTimerCounting() {
+        timer.pauseCounting()
     }
 
     override fun onCleared() {
