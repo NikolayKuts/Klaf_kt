@@ -69,6 +69,9 @@ lokdroid = "0.0.4-alpha"
 # KSP #
 ksp = "1.9.22-1.0.17"
 
+# SplashScreen API #
+coreSplashscreen = "1.2.0-alpha01"
+
 [libraries] # ======================================================================================
 # Core #
 core-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
@@ -150,8 +153,12 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+
 # LoKdroid #
 lokdroid = { group = "io.github.nikolaykuts", name = "lokdroid", version.ref = "lokdroid" }
+
+# SplashScreen API #
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 
 # plugin dependencies
 agp = { group = "com.android.tools.build", name = "gradle", version.ref = "agp"}

@@ -145,4 +145,7 @@ dependencies {
 
     /** LoKdroid **/
     implementation(libs.lokdroid)
+
+    /** SplashScreen API **/
+    implementation(libs.androidx.core.splashscreen)
 }
