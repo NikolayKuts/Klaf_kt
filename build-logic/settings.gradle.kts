@@ -1,6 +1,4 @@
 pluginManagement {
-    includeBuild("build-logic")
-
     repositories {
         google()
         mavenCentral()
@@ -15,8 +13,10 @@ dependencyResolutionManagement {
         mavenCentral()
         mavenLocal()
     }
-}
 
-rootProject.name = "Klaf"
-include(":app")
-include(":domain")
+    versionCatalogs {
+        create("libs") {
+            from(files("../gradle/libs.versions.toml"))
+        }
+    }
+}

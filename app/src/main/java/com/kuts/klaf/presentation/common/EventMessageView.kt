@@ -38,7 +38,7 @@ fun EventMessageView(
         Positive -> MainTheme.colors.eventMessageColors.positive
     }
 
-    val infiniteTransition = rememberInfiniteTransition()
+    val infiniteTransition = rememberInfiniteTransition(label = "infiniteTransition")
 
     val elevation by infiniteTransition.animateValue(
         initialValue = initialElevation,
@@ -48,6 +48,7 @@ fun EventMessageView(
             animation = tween(durationMillis = animationDuration, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse,
         ),
+        label = "elevation",
     )
 
     val color by infiniteTransition.animateColor(
@@ -57,6 +58,7 @@ fun EventMessageView(
             animation = tween(durationMillis = animationDuration, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse,
         ),
+        label = "color",
     )
 
     val scale by infiniteTransition.animateFloat(
@@ -66,6 +68,7 @@ fun EventMessageView(
             animation = tween(durationMillis = animationDuration, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse,
         ),
+        label = "scale",
     )
 
     val additionOffset = 100
@@ -91,7 +94,7 @@ fun EventMessageView(
         ) {
             Text(
                 modifier = Modifier.padding(16.dp),
-                text = stringResource(id = message.resId),
+                text = stringResource(id = message.resId, *message.args),
                 style = MainTheme.typographies.materialTypographies.body1
             )
         }

@@ -8,6 +8,7 @@ import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.entities.Card
 import com.kuts.domain.ipa.toLetterInfos
 import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.FetchCardUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
@@ -21,6 +22,7 @@ import com.kuts.klaf.presentation.cardManagement.common.toDomainEntity
 import com.kuts.klaf.presentation.cardManagement.common.toTextFieldValueIpaHolder
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import com.kuts.klaf.presentation.common.tryEmitAsPositive
+import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logW
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -32,6 +34,7 @@ class CardEditingViewModel @AssistedInject constructor(
     @Assisted(CARD_ARGUMENT_NAME) cardId: Int,
     private val fetchCard: FetchCardUseCase,
     private val updateCard: UpdateCardUseCase,
+    checkIfWordExists: CheckIfCardExistsUseCase,
     audioPlayer: CardAudioPlayer,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
@@ -44,6 +47,7 @@ class CardEditingViewModel @AssistedInject constructor(
     fetchWordInfo = fetchWordInfo,
     crashlytics = crashlytics,
     fetchDeckById = fetchDeckById,
+    checkIfWordExists = checkIfWordExists,
 ) {
 
     companion object {
@@ -58,15 +62,26 @@ class CardEditingViewModel @AssistedInject constructor(
         fetchCardAndConfigureStates(cardId = cardId)
     }
 
+    override suspend fun onForeignWordChanged(word: String) {
+        val originalForeignWord = originalCardState.value?.foreignWord
+
+        logD("onForeignWordChanged() called. foreignWord -> $word, originalForeignWord -> $originalForeignWord")
+
+        if (word.isNotEmpty() && originalForeignWord != word) {
+            checkIfForeignWordExists(word = word)
+        }
+    }
+
     override fun onCardManagementConfirmed() {
         val originalCard = originalCardState.value ?: return
         val deckId = deck.replayCache.first()?.id ?: return
         val nativeWord = cardManagementState.value.nativeWordFieldValue.text
         val foreignWord = cardManagementState.value.foreignWordFieldValue.text
-        val trimmedTextFieldValueIpaHoldersState = cardManagementState.value.textFieldValueIpaHolders
-            .map { textFieldValueIpaHolder ->
+        val trimmedTextFieldValueIpaHoldersState = cardManagementState.value
+            .textFieldValueIpaHolders.map { textFieldValueIpaHolder ->
                 val trimmedText = textFieldValueIpaHolder.ipaTextFieldValue.text.trim()
-                val trimmedTextFieldValue = textFieldValueIpaHolder.ipaTextFieldValue.copy(text = trimmedText)
+                val trimmedTextFieldValue =
+                    textFieldValueIpaHolder.ipaTextFieldValue.copy(text = trimmedText)
 
                 textFieldValueIpaHolder.copy(ipaTextFieldValue = trimmedTextFieldValue)
             }
@@ -91,13 +106,11 @@ class CardEditingViewModel @AssistedInject constructor(
                 }
 
                 else -> {
-                    viewModelScope.launchWithState {
-                        updateCard(newCard = updatedCard)
-                        eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_changed)
-                        cardManagementState.value = CardManagementState.Finished
-                    }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
-                        eventMessage.tryEmitAsNegative(resId = R.string.problem_with_updating_card)
-                    }
+                    manageUpdatingCard(
+                        originalCard = originalCard,
+                        updatedCard = updatedCard,
+                        foreignWord = foreignWord
+                    )
                 }
             }
         }
@@ -114,7 +127,8 @@ class CardEditingViewModel @AssistedInject constructor(
 
                     if (card != null) {
                         audioPlayer.preparePronunciation(word = card.foreignWord)
-                        foreignWordFieldValueState.value = TextFieldValue(text = card.foreignWord)
+                        foreignWordFieldValueState.value =
+                            TextFieldValue(text = card.foreignWord)
                         letterInfosState.value = card.toLetterInfos()
                         textFieldValueIpaHoldersState.value = card.ipa.map {
                             it.toTextFieldValueIpaHolder()
@@ -126,5 +140,41 @@ class CardEditingViewModel @AssistedInject constructor(
             logW(throwable.stackTraceToString())
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_card)
         }
+    }
+
+    private fun manageUpdatingCard(
+        originalCard: Card,
+        updatedCard: Card,
+        foreignWord: String,
+    ) {
+        viewModelScope.launchWithState {
+            if (updatedCard.foreignWord == originalCard.foreignWord) {
+                performUpdatingCard(updatedCard = updatedCard)
+            } else {
+                val decksWithSameForeignWord = checkIfWordExists.invoke(
+                    foreignWord = foreignWord
+                )
+
+                if (decksWithSameForeignWord.isEmpty()) {
+                    performUpdatingCard(updatedCard = updatedCard)
+                } else {
+                    val deckNamesAsString =
+                        decksWithSameForeignWord.joinToString(", ") { it.name }
+
+                    eventMessage.tryEmitAsNegative(
+                        resId = R.string.foreign_word_already_exists,
+                        args = arrayOf(foreignWord, deckNamesAsString),
+                    )
+                }
+            }
+        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_updating_card)
+        }
+    }
+
+    private suspend fun performUpdatingCard(updatedCard: Card) {
+        updateCard.invoke(newCard = updatedCard)
+        eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_changed)
+        cardManagementState.value = CardManagementState.Finished
     }
 }

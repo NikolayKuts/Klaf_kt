@@ -112,10 +112,16 @@ fun ConstraintSetScope.constrainRefFor(
 
 fun MutableSharedFlow<EventMessage>.tryEmitAsNegative(
     @StringRes resId: Int,
-    duration: EventMessage.Duration = EventMessage.Duration.Medium,
+    vararg args: Any = emptyArray(),
+    duration: EventMessage.Duration = EventMessage.Duration.Long,
 ) {
     this.tryEmit(
-        value = EventMessage(resId = resId, type = EventMessage.Type.Negative, duration = duration))
+        value = EventMessage(
+            resId = resId,
+            args = args,
+            type = EventMessage.Type.Negative,
+            duration = duration
+        ))
 }
 
 fun MutableSharedFlow<EventMessage>.tryEmitAsPositive(

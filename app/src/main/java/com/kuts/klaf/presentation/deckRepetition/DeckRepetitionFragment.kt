@@ -12,6 +12,7 @@ import com.kuts.klaf.presentation.common.BaseFragment
 import com.kuts.klaf.presentation.common.collectWhenStarted
 import com.kuts.klaf.presentation.deckRepetitionInfo.RepetitionInfoEvent
 import com.kuts.klaf.presentation.theme.MainTheme
+import com.lib.lokdroid.core.logD
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -78,10 +79,13 @@ class DeckRepetitionFragment : BaseFragment(layoutId = R.layout.common_compose_l
     }
 
     private fun observeScreenState() {
-        viewModel.screenState.collectWhenStarted(lifecycleOwner = this) {
-            if (it is RepetitionScreenState.FinishState) {
-                viewModel.resetScreenState()
-                navigateToDeckRepetitionInfoDialogFragment(infoEvent = it.repetitionInfoEvent)
+        viewModel.screenState.collectWhenStarted(lifecycleOwner = this) { state ->
+            logD("observeScreenState(). state: $state")
+            if (
+                state is RepetitionScreenState.FinishState
+                && state.repetitionInfoEvent != RepetitionInfoEvent.Non
+            ) {
+                navigateToDeckRepetitionInfoDialogFragment(infoEvent = state.repetitionInfoEvent)
             }
         }
     }

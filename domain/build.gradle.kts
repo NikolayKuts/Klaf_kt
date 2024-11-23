@@ -23,3 +23,7 @@ dependencies {
     /** Kotlin Serialization **/
     implementation(libs.kotlin.serilization)
 }
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions { jvmTarget = "17" }
+}

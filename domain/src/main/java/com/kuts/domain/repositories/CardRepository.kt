@@ -1,6 +1,7 @@
 package com.kuts.domain.repositories
 
 import com.kuts.domain.entities.Card
+import com.kuts.domain.entities.Deck
 import kotlinx.coroutines.flow.Flow
 
 interface CardRepository {
@@ -20,4 +21,6 @@ interface CardRepository {
     suspend fun deleteCard(cardId: Int)
 
     suspend fun removeCardsOfDeck(deckId: Int)
+
+    suspend fun checkIfCardExists(foreignWord: String): List<Deck>
 }

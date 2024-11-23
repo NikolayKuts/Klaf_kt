@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.lib.lokdroid.core.LoKdroid
+import com.lib.lokdroid.data.default_implementation.FormaterBuilder
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -20,6 +21,13 @@ class App : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        LoKdroid.initialize()
+        LoKdroid.initialize(
+            formatter = FormaterBuilder().withPointer()
+                .space()
+                .withLineReference()
+                .space()
+                .message()
+                .build()
+        )
     }
 }

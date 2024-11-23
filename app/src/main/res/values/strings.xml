@@ -64,6 +64,14 @@
     <string name="day_pointer">%dd</string>
     <string name="hour_pointer">%dh</string>
     <string name="minute_pointer">%dmin</string>
+
+    <string name="year">year</string>
+    <string name="month">month</string>
+    <string name="week">week</string>
+    <string name="day">day</string>
+    <string name="hour">hour</string>
+    <string name="minute">minute</string>
+
     <string name="time_pointer_now">now</string>
     <string name="repetition_quantity_pointer">r</string>
     <string name="card_quantity_pointer">c</string>
@@ -154,4 +162,7 @@
     <string name="foreign_word_is_too_long">Input length limit exceeded for \'foreign\'</string>
     <string name="ipa_is_too_long">Input length limit exceeded for \'IPA\'</string>
     <string name="word_info_retrieving_common_warning_message">Retrieving word info is failed</string>
+    <string name="deck_navigation_dialog_deck_management">Deck management</string>
+    <string name="foreign_word_already_exists">This foreign word \"%1$s\" already exists in deck \"%2$s\"</string>
+    <string name="custom">%1$s></string>"
 </resources>

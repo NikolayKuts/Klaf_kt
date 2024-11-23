@@ -149,6 +149,9 @@
             android:id="@+id/action_deckNavigationDialog_to_deckRepetitionInfoDialogFragment"
             app:destination="@id/deckRepetitionInfoDialogFragment"
             app:popUpTo="@id/deckListFragment" />
+        <action
+            android:id="@+id/action_deckNavigationDialog_to_deckManagementFragment"
+            app:destination="@id/deckManagementFragment" />
     </dialog>
     <dialog
         android:id="@+id/deckDeletingDialogFragment"
@@ -267,5 +270,13 @@
             android:name="drawerAction"
             app:argType="com.kuts.klaf.presentation.deckList.drawer.DrawerAction" />
     </dialog>
+    <fragment
+        android:id="@+id/deckManagementFragment"
+        android:name="com.kuts.klaf.presentation.deckManagment.DeckManagementFragment"
+        android:label="DeckManagementFragment" >
+        <argument
+            android:name="deckId"
+            app:argType="integer" />
+    </fragment>
 
 </navigation>

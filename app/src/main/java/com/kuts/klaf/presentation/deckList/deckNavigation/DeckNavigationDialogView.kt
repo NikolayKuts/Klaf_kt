@@ -23,6 +23,7 @@ fun DeckNavigationDialogView(
     onAddCardsClick: () -> Unit,
     onTransferCardsClick: () -> Unit,
     onRepetitionInfoClick: () -> Unit,
+    onDeckManagementClick: () -> Unit,
     onCloseDialogClick: () -> Unit,
 ) {
     ScrollableBox(
@@ -62,6 +63,11 @@ fun DeckNavigationDialogView(
                     DialogItem(
                         textId = R.string.deck_navigation_dialog_item_info,
                         onClick = onRepetitionInfoClick
+                    )
+                    SeparationLine()
+                    DialogItem(
+                        textId = R.string.deck_navigation_dialog_deck_management,
+                        onClick = onDeckManagementClick
                     )
                 }
             },

@@ -4,7 +4,7 @@ sealed class LoadingState<out T> {
 
     data object Non : LoadingState<Nothing>()
 
-    class Success<T>(val data: T) : LoadingState<T>()
+    data class Success<T>(val data: T) : LoadingState<T>()
 
     data object Loading : LoadingState<Nothing>()
 
