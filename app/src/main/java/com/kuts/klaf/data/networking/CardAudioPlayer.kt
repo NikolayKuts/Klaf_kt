@@ -2,6 +2,7 @@ package com.kuts.klaf.data.networking
 
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.net.Uri
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
@@ -144,6 +145,10 @@ class CardAudioPlayer @Inject constructor(
 
             delay(500)
             reset()
+
+            val builtAudioUrl = word.buildAudioUri()
+            logD("builtAudioUrl: $builtAudioUrl")
+
             setDataSource(word.buildAudioUri())
 
             prepareAsync()
@@ -180,7 +185,9 @@ class CardAudioPlayer @Inject constructor(
     }
 
     private fun String.buildAudioUri(): String {
-        return AUDIO_URI_TEMPLATE.format(this.trim().lowercase())
+        val encodedText = Uri.encode(this.trim().lowercase())
+
+        return AUDIO_URI_TEMPLATE.format(encodedText)
     }
 
     private fun resetPreparingJob() {
