@@ -145,8 +145,10 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     )
 
     private var startRepetitionCard: Card? = null
-    private val goodeCards = mutableSetOf<Card>()
-    private val hardCards = mutableSetOf<Card>()
+    private var lastRepetitionCard: Card? = null
+    private var isAllCardsRepeated: Boolean = false
+    private val goodeCardsIds = mutableSetOf<Int>()
+    private val hardCardsIds = mutableSetOf<Int>()
     private var isWaitingForFinish = false
     private val savedProgressCards: MutableList<Card> = LinkedList()
 
@@ -179,6 +181,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
             } else if (currentScreenState is StartState || currentScreenState is FinishState) {
                 startRepetitionCard = currentCard.replayCache.first()
+                lastRepetitionCard = repetitionCards.value.last()
                 screenState.emit(RepetitionState)
                 timer.runCounting()
                 mainButtonState.value = ButtonState.UNPRESSED
@@ -204,26 +207,35 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
         } else if (cardForMoving != null) {
             var actualLevel: DifficultyRecallingLevel = level
+            logD {
+                message("cardForMoving: $cardForMoving")
+                message("goodeCardsIds: $goodeCardsIds")
+                message("hardCardsIds: $hardCardsIds")
+            }
 
             when (level) {
                 EASY -> {
-                    if (cardForMoving in goodeCards) {
-                        goodeCards.remove(cardForMoving)
-                    } else if (cardForMoving in hardCards) {
-                        hardCards.remove(cardForMoving)
-                        goodeCards.add(cardForMoving)
+                    if (cardForMoving.id in goodeCardsIds) {
+                        goodeCardsIds.remove(cardForMoving.id)
+                    } else if (cardForMoving.id in hardCardsIds) {
+                        hardCardsIds.remove(cardForMoving.id)
+                        goodeCardsIds.add(cardForMoving.id)
                         actualLevel = GOOD
                     }
                 }
 
-                GOOD -> goodeCards.add(cardForMoving)
-                HARD -> hardCards.add(cardForMoving)
+                GOOD -> goodeCardsIds.add(cardForMoving.id)
+                HARD -> hardCardsIds.add(cardForMoving.id)
             }
 
             timer.runCounting()
-            repetitionCards.value =
-                getUpdatedCardList(cardForMoving = cardForMoving, level = actualLevel)
+            repetitionCards.value = getUpdatedCardList(
+                cardForMoving = cardForMoving,
+                level = actualLevel
+            )
+
             checkRepetitionStartPosition()
+            manageAllCardRepeatedState()
 
             if (actualLevel == EASY && mustRepetitionBeFinished()) {
                 finishRepetition()
@@ -321,9 +333,10 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     private fun mustRepetitionBeFinished(): Boolean {
-        return goodeCards.isEmpty()
-                && hardCards.isEmpty()
-                && (isWaitingForFinish)
+        return goodeCardsIds.isEmpty()
+                && hardCardsIds.isEmpty()
+                && isWaitingForFinish
+                && isAllCardsRepeated
     }
 
     private fun getUpdatedCardList(
@@ -331,7 +344,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         level: DifficultyRecallingLevel,
     ): List<Card> {
         return repetitionCards.value.toMutableList().apply {
-            removeFirst()
+            removeAt(0)
             add(
                 index = calculateNewPositionForMovingCard(level = level, updatedCards = this),
                 element = cardForMoving
@@ -360,6 +373,12 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             && startRepetitionCard.isNotNull()
         ) {
             isWaitingForFinish = true
+        }
+    }
+
+    private fun manageAllCardRepeatedState() {
+        if (repetitionCards.value.firstOrNull()?.id == lastRepetitionCard?.id) {
+            isAllCardsRepeated = true
         }
     }
 
