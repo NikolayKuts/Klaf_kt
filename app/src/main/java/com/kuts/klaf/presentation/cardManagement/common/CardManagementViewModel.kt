@@ -3,6 +3,7 @@ package com.kuts.klaf.presentation.cardManagement.common
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
+import com.cambridge.dictionary.client.CambridgeClient
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.DebouncedMutableStateFlow
 import com.kuts.domain.common.LoadingState
@@ -46,16 +47,21 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 abstract class CardManagementViewModel(
     deckId: Int,
     audioPlayer: CardAudioPlayer,
+    cambridgeClient: CambridgeClient,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     private val fetchWordInfo: FetchWordInfoUseCase,
     protected val crashlytics: CrashlyticsRepository,
     protected val checkIfWordExists: CheckIfCardExistsUseCase,
     fetchDeckById: FetchDeckByIdUseCase,
-) : BaseCardManagementViewModel(audioPlayer = audioPlayer) {
+) : BaseCardManagementViewModel(
+    audioPlayer = audioPlayer,
+    cambridgeClient = cambridgeClient
+) {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
@@ -81,12 +87,27 @@ abstract class CardManagementViewModel(
         MutableStateFlow<List<TextFieldValueIpaHolder>>(value = emptyList())
     protected val letterInfosState = MutableStateFlow<List<LetterInfo>>(value = emptyList())
 
+    override val cambridgeDataState = MutableStateFlow<CambridgeDataState>(
+        value = CambridgeDataState.Empty
+    )
+
     init {
         combineAndObserveCardManagementChanges()
         observeForeignWordChanges()
     }
 
-    protected abstract suspend fun onForeignWordChanged(word: String)
+    protected open suspend fun onForeignWordChanged(word: String) {
+        if (word.isEmpty()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            val wordData = cambridgeClient.fetchWordData(word = word)
+
+            if (wordData == null) {
+                cambridgeDataState.value = CambridgeDataState.Empty
+            } else {
+                cambridgeDataState.value = CambridgeDataState.Fetched(word = wordData)
+            }
+        }
+    }
 
     override fun sendEvent(event: CardManagementEvent) {
         when (event) {
@@ -379,7 +400,7 @@ abstract class CardManagementViewModel(
     }
 
     protected suspend fun checkIfForeignWordExists(word: String) {
-        val decksWithSameForeignWord = checkIfWordExists.invoke(foreignWord = word)
+        val decksWithSameForeignWord = checkIfWordExists.invoke(foreignWord = word.lowercase())
 
         if (decksWithSameForeignWord.isNotEmpty()) {
             val deckNamesAsString = decksWithSameForeignWord.joinToString(", ") { it.name }

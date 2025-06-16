@@ -6,17 +6,21 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
 import androidx.work.WorkManager
-import com.kuts.klaf.data.dataStore.DECK_REPETITION_INFO_FILE_NAME
-import com.kuts.domain.entities.DeckRepetitionInfos
-import com.kuts.domain.repositories.CrashlyticsRepository
-import com.kuts.klaf.data.dataStore.DeckRepetitionInfosSerializer
-import com.kuts.klaf.data.networking.CardAudioPlayer
-import com.kuts.klaf.data.room.databases.KlafRoomDatabase
+import com.cambridge.dictionary.client.CambridgeClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.kuts.domain.entities.DeckRepetitionInfos
+import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.klaf.data.common.DeckReviewScheduler
+import com.kuts.klaf.data.common.DeckReviewingReminder
+import com.kuts.klaf.data.dataStore.DECK_REPETITION_INFO_FILE_NAME
+import com.kuts.klaf.data.dataStore.DeckRepetitionInfosSerializer
+import com.kuts.klaf.data.networking.CardAudioPlayer
+import com.kuts.klaf.data.room.databases.KlafRoomDatabase
+import com.lib.lokdroid.core.LoKdroid
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -40,6 +44,11 @@ class DataModule {
     @Provides
     fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
         return WorkManager.getInstance(context)
+    }
+
+    @Provides
+    fun provideDeckReviewScheduler(@ApplicationContext context: Context): DeckReviewScheduler {
+        return DeckReviewingReminder(context = context)
     }
 
     @Provides
@@ -78,4 +87,12 @@ class DataModule {
     fun provideConnectivityManager(@ApplicationContext context: Context): ConnectivityManager {
         return context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     }
+
+    @Singleton
+    @Provides
+    fun provideCambridgeClient(): CambridgeClient = CambridgeClient
+
+    @Singleton
+    @Provides
+    fun provideLoKDroid(): LoKdroid = LoKdroid
 }

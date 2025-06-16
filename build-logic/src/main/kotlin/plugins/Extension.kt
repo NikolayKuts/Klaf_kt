@@ -17,3 +17,12 @@ fun Project.loadLocalProperties(): Map<String, String> {
 
     return properties.entries.associate { it.key.toString() to it.value.toString() }
 }
+
+fun loadLocalProperties(rootDir: File): Properties {
+    return Properties().apply {
+        val localPropsFile = rootDir.resolve("local.properties")
+        if (localPropsFile.exists()) {
+            load(localPropsFile.inputStream())
+        }
+    }
+}

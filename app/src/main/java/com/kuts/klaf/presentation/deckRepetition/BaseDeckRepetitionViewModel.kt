@@ -21,6 +21,7 @@ abstract class BaseDeckRepetitionViewModel : ViewModel(), EventMessageSource {
     abstract val cardState: SharedFlow<DeckRepetitionState>
     abstract val mainButtonState: StateFlow<ButtonState>
     abstract val cardDeletingState: StateFlow<LoadingState<Unit>>
+    abstract val deckReviewState: StateFlow<DeckReviewState>
 
     abstract fun pronounceWord()
     abstract fun startRepeating()

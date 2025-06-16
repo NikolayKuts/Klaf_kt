@@ -1,5 +1,11 @@
 package com.kuts.klaf.presentation.deckList.common
 
+import android.app.Activity.CLIPBOARD_SERVICE
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.compose.material.DrawerValue
@@ -16,12 +22,14 @@ import androidx.navigation.navGraphViewModels
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.entities.Deck
 import com.kuts.klaf.R
+import com.kuts.klaf.common.SecretConstants
 import com.kuts.klaf.presentation.authentication.AuthenticationFragment.Companion.setAuthenticationFragmentResultListener
 import com.kuts.klaf.presentation.common.BaseFragment
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.NavigationDestination
 import com.kuts.klaf.presentation.common.TransparentSurface
 import com.kuts.klaf.presentation.common.collectWhenStarted
+import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToChatGptWithDeckContentPrompt
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToCardTransferringScreen
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDataSynchronizationDialog
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDeckCreationDialog
@@ -182,6 +190,10 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
                     navigateToDrawerActionDialog(action = event.action)
                 }
 
+                is ToChatGptWithDeckContentPrompt -> {
+                    handleToChatGptWithDeckContentPromptEvent(event = event)
+                }
+
                 null -> {}
             }
         }
@@ -256,5 +268,31 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
         viewModel.handleNavigation(
             event = ToDrawerActionDialog(action = action)
         )
+    }
+
+    private fun handleToChatGptWithDeckContentPromptEvent(event: ToChatGptWithDeckContentPrompt) {
+        val chatGptStoryCrafterPrompt = getString(
+            R.string.chat_gpt_story_crafter_prompt,
+            event.foreignWords
+        )
+
+        context?.copyToClipboard(text = chatGptStoryCrafterPrompt)
+        sharedViewModel.notify(event.event)
+        navigateToChatGpt()
+    }
+
+    private fun navigateToChatGpt() {
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse(SecretConstants.ChatGpt.STORY_CRAFTER_URL)
+        ).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+        context?.startActivity(intent)
+    }
+
+    private fun Context.copyToClipboard(text: String) {
+        val clipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("prompt", text)
+
+        clipboard.setPrimaryClip(clip)
     }
 }

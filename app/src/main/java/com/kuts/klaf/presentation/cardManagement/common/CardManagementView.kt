@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.TextFieldValue
@@ -50,6 +51,8 @@ fun CardManagementView(
     textFieldValueIpaHolders: List<TextFieldValueIpaHolder>,
     autocompleteState: AutocompleteState,
     pronunciationLoadingState: LoadingState<Unit>,
+    cambridgeDataAvailable: Boolean,
+    onBottomSheetAction: () -> Unit,
     closeAutocompletePopupMenu: () -> Unit,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
     onForeignWordTextFieldClick: () -> Unit,
@@ -141,6 +144,20 @@ fun CardManagementView(
                             onConfirmClick()
                         }
                     )
+
+                    if (cambridgeDataAvailable) {
+                        RoundButton(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(
+                                    end = confirmationButtonPadding,
+                                    bottom = confirmationButtonPadding,
+                                ),
+                            background = Color(0xff59bdc0),
+                            iconId = R.drawable.ic_arrow_drop_down_24,
+                            onClick = onBottomSheetAction
+                        )
+                    }
                 },
             )
         }

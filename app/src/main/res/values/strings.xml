@@ -43,6 +43,7 @@
     <string name="deck_deleting_title">Would you like to delete the deck</string>
     <string name="deck_navigation_dialog_item_delete_deck">Delete deck</string>
     <string name="deck_navigation_dialog_item_rename_deck">Rename deck</string>
+    <string name="deck_navigation_dialog_item_copy_craft_story">Craft story</string>
     <string name="deck_name_label">Deck name</string>
     <string name="deck_creation_dialog_title">Create a deck</string>
     <string name="warning_deck_name_empty">Deck name must not be empty</string>
@@ -166,5 +167,8 @@
     <string name="foreign_word_already_exists">This foreign word \"%1$s\" already exists in deck \"%2$s\"</string>
     <string name="custom">%1$s</string>
     <string name="deck_repeating_exit_dialog_question">Do you really want to exit repeating?</string>
-    "
+    <string name="deck_">Do you really want to exit repeating?</string>
+    <string name="deck_na">Do you really want to exit repeating?</string>
+    <string name="chat_gpt_story_crafter_prompt">Make up an interesting short story in English for B2 level learners, using all the words below: %1$s. The words from the list should be in UPPERCASE and bolded. The story must not contain more than 250 words. Give a name to store as well</string>
+    <string name="chat_gpt_story_crafter_prompt_is_created_and_copied">Prompt is created and copied</string>
 </resources>

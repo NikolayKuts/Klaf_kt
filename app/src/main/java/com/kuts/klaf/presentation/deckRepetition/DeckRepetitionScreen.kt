@@ -4,10 +4,23 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,10 +28,17 @@ import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -36,11 +56,23 @@ import com.kuts.domain.common.CardRepetitionOrder
 import com.kuts.domain.common.CardSide
 import com.kuts.domain.common.DeckRepetitionState
 import com.kuts.domain.common.ifTrue
-import com.kuts.domain.enums.DifficultyRecallingLevel.*
+import com.kuts.domain.enums.DifficultyRecallingLevel.EASY
+import com.kuts.domain.enums.DifficultyRecallingLevel.GOOD
+import com.kuts.domain.enums.DifficultyRecallingLevel.HARD
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.ipa.toIpaPrompts
 import com.kuts.klaf.R
-import com.kuts.klaf.presentation.common.*
+import com.kuts.klaf.presentation.common.ButtonState
+import com.kuts.klaf.presentation.common.ContentHolder
+import com.kuts.klaf.presentation.common.DIALOG_APP_LABEL_SIZE
+import com.kuts.klaf.presentation.common.DialogAppLabel
+import com.kuts.klaf.presentation.common.FullBackgroundDialog
+import com.kuts.klaf.presentation.common.Pointer
+import com.kuts.klaf.presentation.common.RoundButton
+import com.kuts.klaf.presentation.common.ScrollableBox
+import com.kuts.klaf.presentation.common.TimerCountingState
+import com.kuts.klaf.presentation.common.rememberAsMutableStateOf
+import com.kuts.klaf.presentation.common.timeAsString
 import com.kuts.klaf.presentation.theme.MainTheme
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
@@ -83,10 +115,24 @@ fun DeckRepetitionScreen(
     var shouldInterceptBack by remember { mutableStateOf(true) }
     var showExitDialog by remember { mutableStateOf(false) }
 
+    val deckReviewState by viewModel.deckReviewState.collectAsState()
+
     ScrollableBox { parentHeightPx ->
         val contentHeight = when {
             parentHeightPx < minContentHeightPx -> minContentHeightPx
             else -> parentHeightPx
+        }
+
+        Row {
+            Text(text = "reviewed: ${deckReviewState.reviewedCardsCount}")
+
+            Spacer(Modifier.width(10.dp))
+
+            Text(text = "max time: ${deckReviewState.maxTime.timeAsString}")
+
+            Spacer(Modifier.width(10.dp))
+
+            Text(text = "left: ${deckReviewState.leftTime.timeAsString}")
         }
 
         ConstraintLayout(

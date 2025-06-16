@@ -1,0 +1,29 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Левая карточка (серая, повернута -15 градусов) -->
+    <group android:pivotX="50" android:pivotY="50" android:rotation="-15">
+        <path
+            android:fillColor="#999999"
+            android:pathData="M25,15 h50 a4,4 0 0 1 4,4 v62 a4,4 0 0 1 -4,4 h-50 a4,4 0 0 1 -4,-4 v-62 a4,4 0 0 1 4,-4 z"/>
+    </group>
+
+    <!-- Центральная карточка (светло-серая, без поворота) -->
+    <group android:pivotX="50" android:pivotY="50" android:rotation="0">
+        <path
+            android:fillColor="#CCCCCC"
+            android:pathData="M25,15 h50 a4,4 0 0 1 4,4 v62 a4,4 0 0 1 -4,4 h-50 a4,4 0 0 1 -4,-4 v-62 a4,4 0 0 1 4,-4 z"/>
+    </group>
+
+    <!-- Правая карточка (белая с чёрной обводкой, повернута +15 градусов) -->
+    <group android:pivotX="50" android:pivotY="50" android:rotation="15">
+        <path
+            android:fillColor="#FFFFFF"
+            android:strokeColor="#000000"
+            android:strokeWidth="2"
+            android:pathData="M25,15 h50 a4,4 0 0 1 4,4 v62 a4,4 0 0 1 -4,4 h-50 a4,4 0 0 1 -4,-4 v-62 a4,4 0 0 1 4,-4 z"/>
+    </group>
+</vector>

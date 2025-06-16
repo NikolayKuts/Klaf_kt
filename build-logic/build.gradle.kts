@@ -8,6 +8,11 @@ gradlePlugin {
             id = "telegram-app-distribution-plugin"
             implementationClass = "plugins.telegramAppDistribution.UploadPlugin"
         }
+
+        register("extensions-plugin") {
+            id = "extensions-plugin"
+            implementationClass = "plugins.MyUtilitiesPlugin"
+        }
     }
 }
 

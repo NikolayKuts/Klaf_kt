@@ -21,7 +21,6 @@ import com.kuts.klaf.data.common.DataSynchronizationWorker.Companion.performData
 import com.kuts.klaf.data.common.DeckRepetitionReminderChecker.Companion.scheduleDeckRepetitionChecking
 import com.kuts.klaf.data.common.NetworkConnectivity
 import com.kuts.klaf.data.common.notifications.NotificationChannelInitializer
-import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp
 import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.*
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.NavigationDestination
@@ -43,6 +42,7 @@ class DeckListViewModel @AssistedInject constructor(
     private val createDeck: CreateDeckUseCase,
     private val renameDeck: RenameDeckUseCase,
     private val removeDeck: RemoveDeckUseCase,
+    private val fetchCardsUseCase: FetchCardsUseCase,
     private val workManager: WorkManager,
     private val auth: FirebaseAuth,
     private val crashlytics: CrashlyticsRepository,
@@ -107,9 +107,11 @@ class DeckListViewModel @AssistedInject constructor(
                 deckNames.contains(deckName) -> {
                     eventMessage.tryEmitAsNegative(resId = R.string.such_deck_is_already_exist)
                 }
+
                 trimmedDeckName.isEmpty() -> {
                     eventMessage.tryEmitAsNegative(resId = R.string.warning_deck_name_empty)
                 }
+
                 else -> {
                     viewModelScope.launchWithState {
                         createDeck(
@@ -136,12 +138,15 @@ class DeckListViewModel @AssistedInject constructor(
                 updatedName.isEmpty() -> {
                     eventMessage.tryEmitAsNegative(resId = R.string.type_deck_name)
                 }
+
                 updatedName == deck.name -> {
                     eventMessage.tryEmitAsNegative(resId = R.string.deck_name_is_not_changed)
                 }
+
                 decks.any { it.name == newName } -> {
                     eventMessage.tryEmitAsNegative(resId = R.string.such_deck_is_already_exist)
                 }
+
                 else -> {
                     viewModelScope.launchWithState {
                         renameDeck(oldDeck = deck, name = updatedName)
@@ -200,12 +205,14 @@ class DeckListViewModel @AssistedInject constructor(
                     ifDeckIsNotInterim = { ToDeckRepetitionScreen(deck = event.deck) }
                 )
             }
+
             is ToDeckNavigationDialog -> {
                 getEventByDeckId(
                     deckId = event.deck.id,
                     ifDeckIsNotInterim = { ToDeckNavigationDialog(deck = event.deck) }
                 )
             }
+
             else -> event
         }
 
@@ -239,9 +246,11 @@ class DeckListViewModel @AssistedInject constructor(
                     emitNavigationEvent(value = ToPrevious)
                     eventMessage.tryEmitAsPositive(resId = R.string.log_out_success_message)
                 }
+
                 is LoadingState.Error -> {
                     eventMessage.tryEmitAsNegative(resId = R.string.log_out_failure_message)
                 }
+
                 LoadingState.Loading -> {}
                 LoadingState.Non -> {}
             }
@@ -258,13 +267,31 @@ class DeckListViewModel @AssistedInject constructor(
                         emitNavigationEvent(value = ToPrevious)
                         eventMessage.tryEmitAsPositive(resId = R.string.delete_account_success_message)
                     }
+
                     is LoadingState.Error -> {
                         handleAccountDeletingError(throwable = loadingState.value)
                     }
+
                     LoadingState.Loading -> {}
                     LoadingState.Non -> {}
                 }
             }.launchIn(scope = viewModelScope)
+    }
+
+    override fun generateGptPromptWithDeckContent(deckId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val cards = fetchCardsUseCase.invoke(deckId = deckId).firstOrNull() ?: return@launch
+            val foreignWords = cards.joinToString { it.foreignWord }
+
+            val message = EventMessage(
+                resId = R.string.chat_gpt_story_crafter_prompt_is_created_and_copied,
+                duration = EventMessage.Duration.Short
+            )
+
+            navigationEvent.emit(
+                ToChatGptWithDeckContentPrompt(foreignWords = foreignWords, event = message)
+            )
+        }
     }
 
     private fun observeDataSynchronizationStateWorker() {
@@ -280,9 +307,11 @@ class DeckListViewModel @AssistedInject constructor(
                         is Failed -> {
                             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_data_synchronization)
                         }
+
                         is SuccessfullyFinished -> {
                             eventMessage.tryEmitAsPositive(resId = R.string.data_synchronization_dialog_data_synchronized)
                         }
+
                         else -> {}
                     }
                 }
@@ -296,7 +325,8 @@ class DeckListViewModel @AssistedInject constructor(
                 drawerState.emit(
                     DrawerViewState(
                         signedIn = it.email.isNotNull(),
-                        userEmail = it.email),
+                        userEmail = it.email
+                    ),
                 )
             }
             .launchIn(scope = viewModelScope)

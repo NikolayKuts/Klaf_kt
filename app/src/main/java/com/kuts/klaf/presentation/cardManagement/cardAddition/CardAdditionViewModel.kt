@@ -2,6 +2,7 @@ package com.kuts.klaf.presentation.cardManagement.cardAddition
 
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
+import com.cambridge.dictionary.client.CambridgeClient
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.entities.Card
@@ -31,6 +32,7 @@ class CardAdditionViewModel @AssistedInject constructor(
     private val addNewCardIntoDeck: AddNewCardIntoDeckUseCase,
     checkIfWordExists: CheckIfCardExistsUseCase,
     audioPlayer: CardAudioPlayer,
+    cambridgeClient: CambridgeClient,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
     crashlytics: CrashlyticsRepository,
@@ -38,6 +40,7 @@ class CardAdditionViewModel @AssistedInject constructor(
 ) : CardManagementViewModel(
     deckId = deckId,
     audioPlayer = audioPlayer,
+    cambridgeClient = cambridgeClient,
     fetchWordAutocomplete = fetchWordAutocomplete,
     fetchWordInfo = fetchWordInfo,
     crashlytics = crashlytics,
@@ -50,6 +53,7 @@ class CardAdditionViewModel @AssistedInject constructor(
     }
 
     override suspend fun onForeignWordChanged(word: String) {
+        super.onForeignWordChanged(word = word)
         logD("onForeignWordChanged() called. foreignWord -> $word")
 
         if (word.isNotEmpty()) {
@@ -100,10 +104,10 @@ class CardAdditionViewModel @AssistedInject constructor(
     }
 
     private fun handleAddingStateBySelectedWord(word: String?) {
-        val checkedWord = word ?: ""
+        val checkedWord = word?.trim()?.lowercase() ?: ""
 
         foreignWordFieldValueState.value = TextFieldValue(text = checkedWord)
-        letterInfosState.value = word?.toRowInfos() ?: emptyList()
+        letterInfosState.value = checkedWord.toRowInfos()
     }
 
     private fun finishAddingState() {
