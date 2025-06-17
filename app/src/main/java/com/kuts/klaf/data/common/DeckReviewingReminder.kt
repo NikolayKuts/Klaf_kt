@@ -46,7 +46,7 @@ class DeckReviewingReminder(private val context: Context) : DeckReviewScheduler 
         deckId: Int,
         atTime: Long,
     ) {
-        logD("DeckReviewingReminder.schedule() called")
+        logD("DeckReviewingReminder.schedule() called. Deck id: $deckId, name: $deckName")
 
         val alarmManager = context.getSystemService(AlarmManager::class.java)
 
@@ -83,9 +83,9 @@ class DeckReviewingReminder(private val context: Context) : DeckReviewScheduler 
         lateinit var deckRepetitionNotifier: DeckRepetitionNotifier
 
         override fun onReceive(context: Context, intent: Intent) {
-            logD("DeckReviewReceiver.onReceive")
-
             executeIfIntentValid(intent = intent) { deckId, deckName ->
+                logD("onReceive() called. Deck id: $deckId, name: $deckName")
+
                 deckRepetitionNotifier.showNotification(
                     deckName = deckName,
                     deckId = deckId
