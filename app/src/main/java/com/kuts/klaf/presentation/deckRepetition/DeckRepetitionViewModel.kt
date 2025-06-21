@@ -1,5 +1,6 @@
 package com.kuts.klaf.presentation.deckRepetition
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.kuts.domain.common.CardRepetitionOrder.FOREIGN_TO_NATIVE
 import com.kuts.domain.common.CardRepetitionOrder.NATIVE_TO_FOREIGN
@@ -12,6 +13,7 @@ import com.kuts.domain.common.DeckRepetitionSuccessMark
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.MINIMUM_NUMBER_OF_FIRST_REPETITIONS
 import com.kuts.domain.common.UNASSIGNED_LONG_VALUE
+import com.kuts.domain.common.UnitSurrogate
 import com.kuts.domain.common.addIntoNewInstance
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.common.getCurrentDateAsLong
@@ -50,6 +52,7 @@ import com.kuts.klaf.presentation.common.tryEmitAsPositive
 import com.kuts.klaf.presentation.deckRepetition.RepetitionScreenState.FinishState
 import com.kuts.klaf.presentation.deckRepetition.RepetitionScreenState.RepetitionState
 import com.kuts.klaf.presentation.deckRepetition.RepetitionScreenState.StartState
+import com.kuts.klaf.presentation.deckRepetition.savedStateHandle.deckReviewDelegates
 import com.kuts.klaf.presentation.deckRepetitionInfo.RepetitionInfoEvent
 import com.lib.lokdroid.core.logD
 import dagger.assisted.Assisted
@@ -73,6 +76,7 @@ import java.util.LinkedList
 
 class DeckRepetitionViewModel @AssistedInject constructor(
     @Assisted private val deckId: Int,
+    @Assisted private val handle: SavedStateHandle,
     fetchCards: FetchCardsUseCase,
     fetchDeckById: FetchDeckByIdUseCase,
     override val timer: RepetitionTimer,
@@ -91,6 +95,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         private const val GOOD_WORD_POSITION_SHIFT = 10
     }
 
+    private val handleDelegates = handle.deckReviewDelegates
+
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
@@ -102,16 +108,14 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             replay = 1
         )
 
-    override val mainButtonState = MutableStateFlow(value = ButtonState.UNPRESSED)
+    override val mainButtonState: MutableStateFlow<ButtonState> = handleDelegates.mainButtonState
 
-    override val screenState = MutableSharedFlow<RepetitionScreenState>(
-        extraBufferCapacity = 4,
-        replay = 1,
-    ).apply {
-        viewModelScope.launch { emit(StartState) }
+    override val screenState = handleDelegates.screenState.apply {
+        if (replayCache.isEmpty()) {
+            viewModelScope.launch { emit(StartState) }
+        }
     }
-
-    override val cardDeletingState = MutableStateFlow<LoadingState<Unit>>(LoadingState.Non)
+    override val cardDeletingState = handleDelegates.cardDeletingState
 
     private val cardsSource: SharedFlow<List<Card>> = fetchCards(deckId)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) {
@@ -122,17 +126,17 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             replay = 1
         )
 
-    private val repetitionCards = MutableStateFlow<List<Card>>(LinkedList())
+    private val cardsToReview = handleDelegates.repetitionCards
 
-    private val currentCard = repetitionCards.map { cards -> cards.firstOrNull() }
+    private val currentCard = cardsToReview.map { cards -> cards.firstOrNull() }
         .shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
             replay = 1
         )
 
-    private val cardSide = MutableStateFlow(FRONT)
-    private val repetitionOrder = MutableStateFlow(value = NATIVE_TO_FOREIGN)
+    private val cardSide = handleDelegates.cardSide
+    private val repetitionOrder = handleDelegates.repetitionOrder
 
     override val cardState = combine(
         currentCard,
@@ -146,22 +150,16 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         replay = 1
     )
 
-    private val reviewedCardIdsList = MutableStateFlow(value = setOf<Int>())
-    private var savedTime = 0L
+    private val reviewedCardIds = handleDelegates.reviewedCardIds
 
-    override val deckReviewState = MutableStateFlow(
-        value = DeckReviewState(reviewedCardsCount = reviewedCardIdsList.value.size)
-    )
+    override val deckReviewState = handleDelegates.deckReviewState
 
-    private var startRepetitionCard: Card? = null
-    private var lastRepetitionCard: Card? = null
-    private var isAllCardsRepeated: Boolean = false
     private val goodeCardsIds = mutableSetOf<Int>()
     private val hardCardsIds = mutableSetOf<Int>()
-    private var isWaitingForFinish = false
-    private val savedProgressCards: MutableList<Card> = LinkedList()
 
     init {
+        timer.setStartTime(time = handleDelegates.timerTime)
+        manageMainButtonStateBySavedTimerState()
         observeCardSource()
         observeCurrentCard()
         observeReviewedCardIdList()
@@ -189,17 +187,18 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         val currentScreenState = screenState.replayCache.firstOrNull()
 
         viewModelScope.launch(Dispatchers.IO) {
-            if (repetitionCards.value.isEmpty()) {
+            if (cardsToReview.value.isEmpty()) {
                 eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
             } else if (currentScreenState is StartState || currentScreenState is FinishState) {
-                startRepetitionCard = currentCard.replayCache.first()
-                lastRepetitionCard = repetitionCards.value.last()
+                handleDelegates.startRepetitionCard = currentCard.replayCache.first()
+                handleDelegates.lastRepetitionCard = cardsToReview.value.last()
                 screenState.emit(RepetitionState)
                 timer.runCounting()
                 mainButtonState.value = ButtonState.UNPRESSED
 
-                reviewedCardIdsList.update {
-                    startRepetitionCard?.id?.let { setOf(it) } ?: emptySet()
+                reviewedCardIds.update {
+                    handleDelegates.startRepetitionCard?.id?.let { setOf(it) }
+                        ?: emptySet()
                 }
             }
         }
@@ -219,7 +218,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     override fun moveCardByDifficultyRecallingLevel(level: DifficultyRecallingLevel) {
         val cardForMoving = currentCard.replayCache.firstOrNull()
 
-        if (repetitionCards.value.isEmpty()) {
+        if (cardsToReview.value.isEmpty()) {
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
         } else if (cardForMoving != null) {
             var actualLevel: DifficultyRecallingLevel = level
@@ -245,13 +244,13 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             }
 
             timer.runCounting()
-            repetitionCards.value = getUpdatedCardList(
+            cardsToReview.value = getUpdatedCardList(
                 cardForMoving = cardForMoving,
                 level = actualLevel
             )
 
-            reviewedCardIdsList.update { list ->
-                repetitionCards.value.firstOrNull()?.let { list + it.id } ?: list
+            reviewedCardIds.update { list ->
+                cardsToReview.value.firstOrNull()?.let { list + it.id } ?: list
             }
 
             checkRepetitionStartPosition()
@@ -262,7 +261,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             }
 
             manageCardSide()
-            saveRepetitionProgress(cards = repetitionCards.value)
+            saveRepetitionProgress(cards = cardsToReview.value)
             mainButtonState.value = ButtonState.UNPRESSED
         }
     }
@@ -272,8 +271,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
             cardDeletingState.value = LoadingState.Loading
             deleteCardsFromDeck(deckId = deckId, cardIds = intArrayOf(cardId))
             eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_deleted)
-            cardDeletingState.value = LoadingState.Success(data = Unit)
-        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+            cardDeletingState.value = LoadingState.Success(data = UnitSurrogate)
+        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, t ->
             cardDeletingState.value = LoadingState.Non
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_removing_card)
         }
@@ -323,20 +322,27 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     private fun observeCardSource() {
+        var isFirstEmissionAfterRestore = cardsToReview.value.isNotEmpty()
+
         cardsSource.catchWithCrashlyticsReport(crashlytics = crashlytics) {
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
         }.onEach { receivedCards ->
             val currentScreenState = screenState.replayCache.firstOrNull() ?: return@onEach
 
-            if (
-                (currentScreenState !is StartState)
-                && (receivedCards.size != repetitionCards.value.size)
-            ) {
+            if (isFirstEmissionAfterRestore) {
+                isFirstEmissionAfterRestore = false
+                return@onEach
+            }
+
+            val shouldResetToStartState = currentScreenState !is StartState &&
+                        receivedCards.size != cardsToReview.value.size
+
+            if (shouldResetToStartState) {
                 screenState.emit(StartState)
                 timer.stopCounting()
             }
 
-            repetitionCards.value = getCardsByProgress(receivedCards = receivedCards.shuffled())
+            cardsToReview.value = getCardsByProgress(receivedCards = receivedCards.shuffled())
         }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
     }
 
@@ -349,7 +355,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
     }
 
     private fun observeReviewedCardIdList() {
-        reviewedCardIdsList.map { it.size }
+        reviewedCardIds.map { it.size }
             .onEach { deckReviewState.update { state -> state.copy(reviewedCardsCount = it) } }
             .flowOn(Dispatchers.IO)
             .launchIn(scope = viewModelScope)
@@ -361,8 +367,8 @@ class DeckRepetitionViewModel @AssistedInject constructor(
                 if (it != null) {
                     deckReviewState.update { state ->
                         val leftTime = if (it.repetitionQuantity.isOdd()) {
-                            savedTime = it.lastFirstRepetitionDuration
-                            (it.getMaxTime()) - (savedTime)
+                            handleDelegates.savedTime = it.lastFirstRepetitionDuration
+                            (it.getMaxTime()) - (handleDelegates.savedTime)
                         } else {
                             (it.getMaxTime())
                         }
@@ -378,11 +384,12 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
     private fun observeTimerState() {
         viewModelScope.launch(Dispatchers.IO) {
-            timer.timerState.collect { totalSeconds ->
+            timer.timerState.collect { timerState ->
                 deck.firstOrNull()?.let {
+                    handleDelegates.timerTime = timerState.totalSeconds
                     deckReviewState.update { state ->
                         state.copy(
-                            leftTime = (it.getMaxTime()) - (savedTime + totalSeconds.totalSeconds)
+                            leftTime = (it.getMaxTime()) - (handleDelegates.savedTime + timerState.totalSeconds)
                         )
                     }
                 }
@@ -390,22 +397,28 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         }
     }
 
+    private fun manageMainButtonStateBySavedTimerState() {
+        if (handleDelegates.timerTime > 0) {
+            handleDelegates.mainButtonState.value = ButtonState.PRESSED
+        }
+    }
+
     private fun clearRepetitionProgress() {
-        savedProgressCards.clear()
+        handleDelegates.savedProgressCards.clear()
     }
 
     private fun mustRepetitionBeFinished(): Boolean {
         return goodeCardsIds.isEmpty()
                 && hardCardsIds.isEmpty()
-                && isWaitingForFinish
-                && isAllCardsRepeated
+                && handleDelegates.isWaitingForFinish
+                && handleDelegates.isAllCardsRepeated
     }
 
     private fun getUpdatedCardList(
         cardForMoving: Card,
         level: DifficultyRecallingLevel,
     ): List<Card> {
-        return repetitionCards.value.toMutableList().apply {
+        return cardsToReview.value.toMutableList().apply {
             removeAt(0)
             add(
                 index = calculateNewPositionForMovingCard(level = level, updatedCards = this),
@@ -431,31 +444,31 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
     private fun checkRepetitionStartPosition() {
         if (
-            repetitionCards.value.firstOrNull()?.id == startRepetitionCard?.id
-            && startRepetitionCard.isNotNull()
+            cardsToReview.value.firstOrNull()?.id == handleDelegates.startRepetitionCard?.id
+            && handleDelegates.startRepetitionCard.isNotNull()
         ) {
-            isWaitingForFinish = true
+            handleDelegates.isWaitingForFinish = true
         }
     }
 
     private fun manageAllCardRepeatedState() {
-        if (repetitionCards.value.firstOrNull()?.id == lastRepetitionCard?.id) {
-            isAllCardsRepeated = true
+        if (cardsToReview.value.firstOrNull()?.id == handleDelegates.lastRepetitionCard?.id) {
+            handleDelegates.isAllCardsRepeated = true
         }
     }
 
     private fun saveRepetitionProgress(cards: List<Card>) {
-        savedProgressCards.update(cards)
+        handleDelegates.savedProgressCards.update(cards)
     }
 
     private fun getCardsByProgress(receivedCards: List<Card>): List<Card> {
         val result = LinkedList<Card>()
 
         val newAddedCards = mutableListOf<Card>().apply {
-            if (savedProgressCards.size < receivedCards.size) {
+            if (handleDelegates.savedProgressCards.size < receivedCards.size) {
 
                 receivedCards.forEach { receivedCard ->
-                    if (!savedProgressCards.contains(receivedCard)) {
+                    if (!handleDelegates.savedProgressCards.contains(receivedCard)) {
                         add(receivedCard)
                     }
                 }
@@ -465,7 +478,7 @@ class DeckRepetitionViewModel @AssistedInject constructor(
         val temporaryCardList = mutableListOf(*receivedCards.toTypedArray())
             .apply { removeAll(newAddedCards) }
 
-        savedProgressCards.forEach { savedCard ->
+        handleDelegates.savedProgressCards.forEach { savedCard ->
             temporaryCardList.forEach { relevantCard ->
                 if (relevantCard.id == savedCard.id) {
                     result.add(relevantCard)
@@ -485,10 +498,10 @@ class DeckRepetitionViewModel @AssistedInject constructor(
 
         viewModelScope.launchWithState(Dispatchers.IO) {
             screenState.emit(FinishState(repetitionInfoEvent = RepetitionInfoEvent.Non))
-            isWaitingForFinish = false
+            handleDelegates.isWaitingForFinish = false
             clearRepetitionProgress()
             timer.stopCounting()
-            repetitionCards.update { it.shuffled() }
+            cardsToReview.update { it.shuffled() }
 
             val updatedDeck = getUpdatedDesk(deckForUpdating = repeatedDeck)
             logD("is repetition Even (repeated) -> ${repeatedDeck.repetitionQuantity.isEven()}")

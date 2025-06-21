@@ -50,7 +50,7 @@ fun CardManagementView(
     nativeWordFieldValue: TextFieldValue,
     textFieldValueIpaHolders: List<TextFieldValueIpaHolder>,
     autocompleteState: AutocompleteState,
-    pronunciationLoadingState: LoadingState<Unit>,
+    pronunciationLoadingState: LoadingState<Unit, Unit>,
     cambridgeDataAvailable: Boolean,
     onBottomSheetAction: () -> Unit,
     closeAutocompletePopupMenu: () -> Unit,

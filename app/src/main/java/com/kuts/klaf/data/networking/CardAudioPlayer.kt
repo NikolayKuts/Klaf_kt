@@ -32,7 +32,7 @@ class CardAudioPlayer @Inject constructor(
     private var preparingJob: Job? = null,
 ) : DefaultLifecycleObserver {
 
-    private val _loadingState = MutableStateFlow<LoadingState<Unit>>(value = LoadingState.Non)
+    private val _loadingState = MutableStateFlow<LoadingState<Unit, Unit>>(value = LoadingState.Non)
     val loadingState = _loadingState.asStateFlow()
 
     private var onPronunciationPrepared: (() -> Unit)? = null

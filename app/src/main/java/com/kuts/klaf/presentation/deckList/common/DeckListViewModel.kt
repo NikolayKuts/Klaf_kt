@@ -10,6 +10,7 @@ import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCras
 import com.kuts.domain.common.launchIn
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.interactors.AuthenticationInteractor
+import com.kuts.domain.repositories.AuthenticationRepository
 import com.kuts.domain.repositories.CrashlyticsRepository
 import com.kuts.domain.useCases.*
 import com.kuts.klaf.R
@@ -89,7 +90,7 @@ class DeckListViewModel @AssistedInject constructor(
         viewModelScope.launchWithState { createInterimDeck() }
             .onException { _, throwable -> crashlytics.report(exception = throwable) }
         observeDataSynchronizationStateWorker()
-        workManager.scheduleDeckRepetitionChecking()
+//        workManager.scheduleDeckRepetitionChecking()
         observeAuthenticationState()
     }
 
@@ -352,7 +353,7 @@ class DeckListViewModel @AssistedInject constructor(
         navigationEvent.emit(value = actualEvent)
     }
 
-    private fun handleAccountDeletingError(throwable: LoadingError) {
+    private fun handleAccountDeletingError(throwable: AuthenticationRepository.AuthenticationError) {
         val messageId = if (throwable is AccountDeletingError) {
             when (throwable) {
                 AccountDeletingError.CommonError -> R.string.delete_account_failure_message

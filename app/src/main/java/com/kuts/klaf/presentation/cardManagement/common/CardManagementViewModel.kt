@@ -15,6 +15,7 @@ import com.kuts.domain.entities.Deck
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.ipa.toRowIpaItemHolders
 import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.domain.repositories.WordInfoRepository
 import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
@@ -75,7 +76,7 @@ abstract class CardManagementViewModel(
         )
 
     override val autocompleteState = DebouncedMutableStateFlow(value = AutocompleteState())
-    override val pronunciationLoadingState: StateFlow<LoadingState<Unit>> = audioPlayer.loadingState
+    override val pronunciationLoadingState: StateFlow<LoadingState<Unit, Unit>> = audioPlayer.loadingState
     override val nativeWordSuggestionsState = MutableStateFlow(value = NativeWordSuggestionsState())
     override val transcriptionState = MutableStateFlow(value = "")
 
@@ -378,12 +379,12 @@ abstract class CardManagementViewModel(
         }
     }
 
-    private fun handleWordInfoError(loadingState: LoadingState.Error) {
+    private fun handleWordInfoError(loadingState: LoadingState.Error<WordInfoRepository.WordInfoLoadingError>) {
         val errorMessageId = when (val error = loadingState.value) {
-            is YandexWordInfoProvider.WordInfoLoadingError -> {
+            is YandexWordInfoProvider.LoadingError -> {
                 when (error) {
-                    is YandexWordInfoProvider.WordInfoLoadingError.Common,
-                    YandexWordInfoProvider.WordInfoLoadingError.JsonConvert -> {
+                    is YandexWordInfoProvider.LoadingError.Common,
+                    YandexWordInfoProvider.LoadingError.JsonConvert -> {
                         R.string.word_info_retrieving_common_warning_message
                     }
                 }

@@ -1,14 +1,18 @@
 package com.kuts.domain.common
 
-sealed class LoadingState<out T> {
+import kotlinx.serialization.Serializable
 
-    data object Non : LoadingState<Nothing>()
-
-    data class Success<T>(val data: T) : LoadingState<T>()
-
-    data object Loading : LoadingState<Nothing>()
-
-    class Error(val value: LoadingError) : LoadingState<Nothing>()
+@Serializable
+sealed class LoadingState<out T, out E> {
+    @Serializable
+    data object Non : LoadingState<Nothing, Nothing>()
+    @Serializable
+    data class Success<T>(val data: T) : LoadingState<T, Nothing>()
+    @Serializable
+    data object Loading : LoadingState<Nothing, Nothing>()
+    @Serializable
+    data class Error <E>(val value: E) : LoadingState<Nothing, E>()
 }
 
-interface LoadingError
+@Serializable
+object UnitSurrogate

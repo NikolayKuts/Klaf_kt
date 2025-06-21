@@ -19,7 +19,7 @@ abstract class BaseCardManagementViewModel(
 
     abstract val deck: SharedFlow<Deck?>
     abstract val autocompleteState: StateFlow<AutocompleteState>
-    abstract val pronunciationLoadingState: StateFlow<LoadingState<Unit>>
+    abstract val pronunciationLoadingState: StateFlow<LoadingState<Unit, Unit>>
     abstract val nativeWordSuggestionsState: StateFlow<NativeWordSuggestionsState>
     abstract val transcriptionState: StateFlow<String>
     abstract val cardManagementState: StateFlow<CardManagementState>

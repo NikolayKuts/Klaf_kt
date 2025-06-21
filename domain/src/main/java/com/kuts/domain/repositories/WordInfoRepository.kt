@@ -6,5 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface WordInfoRepository {
 
-    suspend fun fetchWordInfo(word: String): Flow<LoadingState<WordInfo>>
+    interface WordInfoLoadingError
+
+    suspend fun fetchWordInfo(word: String): Flow<LoadingState<WordInfo, WordInfoLoadingError>>
 }

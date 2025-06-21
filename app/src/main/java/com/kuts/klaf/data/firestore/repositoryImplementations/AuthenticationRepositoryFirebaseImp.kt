@@ -8,11 +8,11 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.kuts.domain.common.AuthenticationAction
-import com.kuts.domain.common.LoadingError
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.entities.AuthenticationState
 import com.kuts.domain.repositories.AuthenticationRepository
+import com.kuts.domain.repositories.AuthenticationRepository.*
 import com.kuts.domain.repositories.CrashlyticsRepository
 import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError.CommonError
 import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError.EmailAlreadyInUse
@@ -29,7 +29,7 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
     private val crashlytics: CrashlyticsRepository,
 ) : AuthenticationRepository {
 
-    sealed interface SigningInLoadingError : LoadingError {
+    sealed interface SigningInLoadingError : AuthenticationError {
 
         data object NoUserRecord : SigningInLoadingError
 
@@ -40,7 +40,7 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
         data object CommonError : SigningInLoadingError
     }
 
-    sealed interface SigningUpLoadingError : LoadingError {
+    sealed interface SigningUpLoadingError : AuthenticationError {
 
         data object EmailAlreadyInUse : SigningUpLoadingError
 
@@ -49,12 +49,12 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
         data object CommonError : SigningUpLoadingError
     }
 
-    sealed interface SigningOutLoadingError : LoadingError {
+    sealed interface SigningOutLoadingError : AuthenticationError {
 
         data object CommonError : SigningOutLoadingError
     }
 
-    sealed interface AccountDeletingError : LoadingError {
+    sealed interface AccountDeletingError : AuthenticationError {
 
         data object CommonError : AccountDeletingError
 
@@ -76,14 +76,16 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
     override fun signInWithEmailAndPassword(
         email: String,
         password: String,
-    ): Flow<LoadingState<AuthenticationAction>> = flow {
+    ): Flow<LoadingState<AuthenticationAction, AuthenticationError>> = flow {
         emit(LoadingState.Loading)
         auth.signInWithEmailAndPassword(
             email,
             password
         ).await()
         emit(LoadingState.Success(data = AuthenticationAction.SIGN_IN))
-    }.catchWithCrashlyticsReport(crashlytics = crashlytics) { error ->
+    }.catchWithCrashlyticsReport<LoadingState<AuthenticationAction, AuthenticationError>>(
+        crashlytics = crashlytics
+    ) { error ->
         val errorType = when (error) {
             is FirebaseAuthInvalidUserException -> SigningInLoadingError.NoUserRecord
             is FirebaseAuthInvalidCredentialsException -> SigningInLoadingError.InvalidPassword
@@ -97,14 +99,16 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
     override fun signUpWithEmailAndPassword(
         email: String,
         password: String,
-    ): Flow<LoadingState<AuthenticationAction>> = flow {
+    ): Flow<LoadingState<AuthenticationAction, AuthenticationError>> = flow {
         emit(LoadingState.Loading)
         auth.createUserWithEmailAndPassword(
             email,
             password
         ).await()
         emit(LoadingState.Success(data = AuthenticationAction.SIGN_UP))
-    }.catchWithCrashlyticsReport(crashlytics = crashlytics) { error ->
+    }.catchWithCrashlyticsReport<LoadingState<AuthenticationAction, AuthenticationError>>(
+        crashlytics = crashlytics
+    ) { error ->
         val errorType = when (error) {
             is FirebaseAuthUserCollisionException -> EmailAlreadyInUse
             is FirebaseNetworkException -> NetworkError
@@ -114,22 +118,26 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
         emit(value = LoadingState.Error(value = errorType))
     }
 
-    override fun signOut(): Flow<LoadingState<Unit>> = flow {
+    override fun signOut(): Flow<LoadingState<Unit, AuthenticationError>> = flow {
         emit(LoadingState.Loading)
         auth.signOut()
         emit(LoadingState.Success(data = Unit))
-    }.catchWithCrashlyticsReport(crashlytics = crashlytics) {
+    }.catchWithCrashlyticsReport<LoadingState<Unit, AuthenticationError>>(
+        crashlytics = crashlytics
+    ) {
         emit(value = LoadingState.Error(value = SigningOutLoadingError.CommonError))
     }
 
-    override fun deleteProfile(): Flow<LoadingState<Unit>> = flow {
+    override fun deleteProfile(): Flow<LoadingState<Unit, AuthenticationError>> = flow {
         val user = auth.currentUser
             ?: throw RuntimeException("Trying user deleting when current user is null")
 
         emit(value = LoadingState.Loading)
         user.delete().await()
         emit(value = LoadingState.Success(data = Unit))
-    }.catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
+    }.catchWithCrashlyticsReport<LoadingState<Unit, AuthenticationError>>(
+        crashlytics = crashlytics
+    ) { throwable ->
         val error = when (throwable) {
             is FirebaseNetworkException -> AccountDeletingError.NetworkError
             is FirebaseAuthRecentLoginRequiredException -> AccountDeletingError.RecentLoginRequired
@@ -142,7 +150,7 @@ class AuthenticationRepositoryFirebaseImp @Inject constructor(
     override fun reauthenticateWithEmailAndPassword(
         email: String,
         password: String,
-    ): Flow<LoadingState<AuthenticationAction>> = flow {
+    ): Flow<LoadingState<AuthenticationAction, AuthenticationError>> = flow {
         TODO("implement")
 //        auth.currentUser?.reauthenticate(
 //            EmailAuthProvider.getCredential(

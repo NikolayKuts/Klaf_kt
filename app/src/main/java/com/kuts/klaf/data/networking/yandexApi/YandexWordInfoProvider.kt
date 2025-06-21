@@ -1,15 +1,15 @@
 package com.kuts.klaf.data.networking.yandexApi
 
 import android.content.Context
-import com.kuts.domain.common.LoadingError
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.entities.WordInfo
 import com.kuts.domain.repositories.WordInfoRepository
+import com.kuts.domain.repositories.WordInfoRepository.*
 import com.kuts.klaf.R
 import com.kuts.klaf.common.SecretConstants
 import com.kuts.klaf.data.networking.toDomainEntity
-import com.kuts.klaf.data.networking.yandexApi.YandexWordInfoProvider.WordInfoLoadingError.Common
-import com.kuts.klaf.data.networking.yandexApi.YandexWordInfoProvider.WordInfoLoadingError.JsonConvert
+import com.kuts.klaf.data.networking.yandexApi.YandexWordInfoProvider.LoadingError.Common
+import com.kuts.klaf.data.networking.yandexApi.YandexWordInfoProvider.LoadingError.JsonConvert
 import com.kuts.klaf.data.networking.yandexApi.entities.YandexWordInfo
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logW
@@ -46,11 +46,11 @@ class YandexWordInfoProvider @Inject constructor(
         private const val CERTIFICATE_FACTORY_TYPE = "X.509"
     }
 
-    sealed interface WordInfoLoadingError : LoadingError {
+    sealed interface LoadingError : WordInfoLoadingError {
 
-        data object Common : WordInfoLoadingError
+        data object Common : LoadingError
 
-        data object JsonConvert : WordInfoLoadingError
+        data object JsonConvert : LoadingError
     }
 
     private val client = HttpClient(CIO) {
@@ -70,7 +70,9 @@ class YandexWordInfoProvider @Inject constructor(
         }
     }
 
-    override suspend fun fetchWordInfo(word: String): Flow<LoadingState<WordInfo>> = flow {
+    override suspend fun fetchWordInfo(
+        word: String
+    ): Flow<LoadingState<WordInfo, WordInfoLoadingError>> = flow {
         emit(value = LoadingState.Loading)
 
         val apiKey = SecretConstants.YandexApi.YANDEX_WORD_INFO_API_KEY
@@ -83,7 +85,7 @@ class YandexWordInfoProvider @Inject constructor(
             message("fetchWordInfo() called")
             message("wordInfo = $yandexWordInfoAsString")
         }
-    }.catch { throwable ->
+    }.catch<LoadingState<WordInfo, WordInfoLoadingError>> { throwable ->
         when (throwable) {
             is io.ktor.serialization.JsonConvertException -> {
                 emit(value = LoadingState.Error(value = JsonConvert))

@@ -1,22 +1,27 @@
 package com.kuts.klaf.presentation.deckRepetition
 
+import androidx.lifecycle.AbstractSavedStateViewModelFactory
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import dagger.assisted.AssistedFactory
 
 class RepetitionViewModelFactory(
     private val assistedFactory: RepetitionViewModelAssistedFactory,
     private val deckId: Int,
-) : ViewModelProvider.Factory {
+) : AbstractSavedStateViewModelFactory() {
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return assistedFactory.create(deckId = deckId) as T
+    override fun <T : ViewModel> create(
+        key: String,
+        modelClass: Class<T>,
+        handle: SavedStateHandle
+    ): T {
+        return assistedFactory.create(deckId = deckId, handle = handle) as T
     }
 }
 
 @AssistedFactory
 interface RepetitionViewModelAssistedFactory {
 
-    fun create(deckId: Int): DeckRepetitionViewModel
+    fun create(deckId: Int, handle: SavedStateHandle): DeckRepetitionViewModel
 }
