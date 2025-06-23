@@ -99,7 +99,7 @@ fun AuthenticationScreen(
             )
 
             LaunchedEffect(key1 = loadingState) {
-                if (loadingState is LoadingState.Success) {
+                if (loadingState is LoadingState.Success<AuthenticationAction>) {
                     keyboardController?.hide()
                     onAuthenticationFinished(loadingState.data)
                 }

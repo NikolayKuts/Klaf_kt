@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.kuts.domain.common.ifNotNull
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.*
 import com.kuts.klaf.presentation.theme.MainTheme
@@ -17,6 +18,7 @@ import com.kuts.klaf.presentation.theme.MainTheme
 @Composable
 fun DeckNavigationDialogView(
     deckName: String,
+    eventMessage: EventMessage?,
     onDeleteDeckClick: () -> Unit,
     onRenameDeckClick: () -> Unit,
     onBrowseDeckClick: () -> Unit,
@@ -25,10 +27,14 @@ fun DeckNavigationDialogView(
     onRepetitionInfoClick: () -> Unit,
     onDeckManagementClick: () -> Unit,
     onCloseDialogClick: () -> Unit,
+    onCopyDeckContentClick: () -> Unit,
 ) {
     ScrollableBox(
         modifier = Modifier.noRippleClickable { onCloseDialogClick() },
         dialogMode = true,
+        eventContent = {
+            eventMessage.ifNotNull { EventMessageView(message = it) }
+        },
     ) {
         FullBackgroundDialog(
             onBackgroundClick = onCloseDialogClick,
@@ -68,6 +74,11 @@ fun DeckNavigationDialogView(
                     DialogItem(
                         textId = R.string.deck_navigation_dialog_deck_management,
                         onClick = onDeckManagementClick
+                    )
+                    SeparationLine()
+                    DialogItem(
+                        textId = R.string.deck_navigation_dialog_item_copy_craft_story,
+                        onClick = onCopyDeckContentClick
                     )
                 }
             },

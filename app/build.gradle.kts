@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.android.serialization)
     alias(libs.plugins.telegramAppDistribution)
+    id("extensions-plugin")
 }
 
 android {
@@ -72,9 +73,13 @@ dependencies {
     implementation(libs.core.legacy.support)
     implementation(libs.core.fragment.ktx)
     implementation(libs.core.material)
+    implementation(libs.androidx.material3.android)
 
     /** Tests **/
     testImplementation(libs.tests.junit.core)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.jupiter)
     androidTestImplementation(libs.tests.junit.android)
     androidTestImplementation(libs.tests.espresso)
     testImplementation(libs.tests.mockk)
@@ -145,4 +150,11 @@ dependencies {
 
     /** LoKdroid **/
     implementation(libs.lokdroid)
+
+    /** SplashScreen API **/
+    implementation(libs.androidx.core.splashscreen)
+
+    /** CambridgeLib **/
+    implementation(libs.cambridge.dictionary.core)
+    implementation(libs.cambridge.dictionary.client)
 }

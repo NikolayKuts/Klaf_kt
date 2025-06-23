@@ -15,13 +15,14 @@ import com.kuts.klaf.data.common.DateFormat.FULL_WITH_DIVIDER
 import com.kuts.klaf.presentation.deckManagment.DateData
 import com.kuts.klaf.presentation.deckManagment.DateUnit
 import com.lib.lokdroid.core.logD
+import com.lib.lokdroid.core.logE
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-private const val ADDITIONAL_ALLOWABLE_DURATION_FACTOR = 0.07F
+private const val ADDITIONAL_ALLOWABLE_DURATION_FACTOR = 0.068F
 private const val DECREASE_FACTOR = 0.2F
 
 object DateFormat {
@@ -66,22 +67,43 @@ fun Deck.getNewInterval(currentIterationDuration: Long): Long {
     if (repetitionQuantity < 5) return 0
     if (scheduledDateInterval <= 0L) return minScheduledRepetitionInterval
 
-    val additionalDuration =
-        (lastRepetitionIterationDuration * ADDITIONAL_ALLOWABLE_DURATION_FACTOR).toLong()
-    val allowableIterationDuration = lastRepetitionIterationDuration + additionalDuration
-    val shouldIntervalBeIncreased = currentIterationDuration <= allowableIterationDuration
+    val shouldIntervalBeIncreased = this.isRepetitionIterationSucceeded(currentIterationDuration)
 
     return if (shouldIntervalBeIncreased) {
-        calculateIncreasedInterval()
+        calculateIncreasedInterval(currentDuration = currentIterationDuration)
     } else {
-        calculateDecreasedInterval(currentIterationDuration = currentIterationDuration)
+        val result = calculateDecreasedInterval(currentIterationDuration = currentIterationDuration)
+        logE("DecreasedInterval: $result")
+        result
     }
 }
 
-private fun Deck.calculateIncreasedInterval(): Long {
-    val dayIncreaseFactor = getDayIncreaseFactorByDayQuantity(quantity = existenceDayQuantity)
-    val increaseInterval = (scheduledDateInterval * dayIncreaseFactor).toLong()
+private fun Deck.calculateIncreasedInterval(
+    currentDuration: Long
+): Long {
+    val baseFactor = getDayIncreaseFactorByDayQuantity(quantity = existenceDayQuantity)
+    val dynamicFactor = calculateDynamicIncreaseFactor(
+        lastDuration = this.lastRepetitionIterationDuration,
+        currentDuration = currentDuration
+    )
+    val finalFactor = baseFactor * dynamicFactor
+
+    val increaseInterval = (scheduledDateInterval * finalFactor).toLong()
     return scheduledDateInterval + increaseInterval
+}
+
+private fun calculateDynamicIncreaseFactor(
+    lastDuration: Long,
+    currentDuration: Long
+): Float {
+    if (currentDuration <= lastDuration) return 1.0f
+
+    val maxAllowedDuration = lastDuration + (lastDuration * ADDITIONAL_ALLOWABLE_DURATION_FACTOR)
+    if (currentDuration >= maxAllowedDuration) return 0f
+
+    val overTimeRatio =
+        (currentDuration - lastDuration).toFloat() / (maxAllowedDuration - lastDuration)
+    return 1.0f - overTimeRatio
 }
 
 private fun Deck.calculateDecreasedInterval(currentIterationDuration: Long): Long {
@@ -92,7 +114,10 @@ private fun Deck.calculateDecreasedInterval(currentIterationDuration: Long): Lon
     val decreaseInterval = (scheduledDateInterval * actualDecreaseFactor).toLong()
     val decreasedInterval = scheduledDateInterval - decreaseInterval
 
-    return if (decreaseInterval >= scheduledDateInterval) {
+    return if (
+        decreaseInterval >= scheduledDateInterval
+        || decreasedInterval <= minScheduledRepetitionInterval
+    ) {
         minScheduledRepetitionInterval
     } else {
         decreasedInterval
@@ -111,6 +136,12 @@ fun Deck.isRepetitionIterationSucceeded(currentRepetitionDuration: Long): Boolea
     logD("maxRepetitionIterationDuration -> $maxRepetitionIterationDuration")
 
     return currentRepetitionDuration <= maxRepetitionIterationDuration
+}
+
+fun Deck.getMaxTime(): Long {
+    val maxRepetitionIterationDuration =
+        lastRepetitionIterationDuration + lastRepetitionIterationDuration * ADDITIONAL_ALLOWABLE_DURATION_FACTOR
+    return maxRepetitionIterationDuration.toLong()
 }
 
 private fun getDayIncreaseFactorByDayQuantity(quantity: Long): Float {

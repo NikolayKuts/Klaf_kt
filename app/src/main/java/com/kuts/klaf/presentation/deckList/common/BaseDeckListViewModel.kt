@@ -28,4 +28,5 @@ abstract class BaseDeckListViewModel : ViewModel(), EventMessageSource {
     abstract fun reopenApp()
     abstract fun logOut()
     abstract fun deleteAccount()
+    abstract fun generateGptPromptWithDeckContent(deckId: Int)
 }

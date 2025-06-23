@@ -58,7 +58,7 @@ class DeckRepetitionNotifier @Inject constructor(
 
     private fun createDeckRepetitionNotification(deckName: String, deckId: Int): Notification {
         return NotificationCompat.Builder(context, DECK_REPETITION_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_deck_repetition_notification_24)
+            .setSmallIcon(R.drawable.ic_app_labale)
             .setContentTitle(context.getString(R.string.app_name))
             .setContentText(
                 context.getString(R.string.deck_repetition_notification_template, deckName)
@@ -72,7 +72,7 @@ class DeckRepetitionNotifier @Inject constructor(
 
     private fun createSummeryNotification(notificationQuantity: Int): Notification {
         return NotificationCompat.Builder(context, DECK_REPETITION_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_deck_repetition_notification_24)
+            .setSmallIcon(R.drawable.ic_app_labale)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setGroup(DECK_REPETITION_GROUP_KEY)
@@ -86,8 +86,8 @@ class DeckRepetitionNotifier @Inject constructor(
     }
 
     private fun createCommonDeckRepetitionNotification(): Notification {
-        return  NotificationCompat.Builder(context, DECK_REPETITION_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_deck_repetition_notification_24)
+        return NotificationCompat.Builder(context, DECK_REPETITION_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_app_labale)
             .setContentTitle(context.getString(R.string.app_name))
             .setContentText(
                 context.getString(R.string.deck_repetition_common_notification_template)

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">wooordhunt.ru</domain>
+        <trust-anchors>
+            <certificates src="@raw/wooordhunt_cert" />
+        </trust-anchors>
+    </domain-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">4264181-lu28184.twc1.net</domain>
+    </domain-config>
+</network-security-config>

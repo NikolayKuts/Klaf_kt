@@ -3,6 +3,7 @@ package com.kuts.klaf.presentation.cardManagement.common
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
+import com.cambridge.dictionary.client.CambridgeClient
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.DebouncedMutableStateFlow
 import com.kuts.domain.common.LoadingState
@@ -14,6 +15,7 @@ import com.kuts.domain.entities.Deck
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.ipa.toRowIpaItemHolders
 import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.domain.repositories.WordInfoRepository
 import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
@@ -46,16 +48,21 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 abstract class CardManagementViewModel(
     deckId: Int,
     audioPlayer: CardAudioPlayer,
+    cambridgeClient: CambridgeClient,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     private val fetchWordInfo: FetchWordInfoUseCase,
     protected val crashlytics: CrashlyticsRepository,
     protected val checkIfWordExists: CheckIfCardExistsUseCase,
     fetchDeckById: FetchDeckByIdUseCase,
-) : BaseCardManagementViewModel(audioPlayer = audioPlayer) {
+) : BaseCardManagementViewModel(
+    audioPlayer = audioPlayer,
+    cambridgeClient = cambridgeClient
+) {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
@@ -69,7 +76,7 @@ abstract class CardManagementViewModel(
         )
 
     override val autocompleteState = DebouncedMutableStateFlow(value = AutocompleteState())
-    override val pronunciationLoadingState: StateFlow<LoadingState<Unit>> = audioPlayer.loadingState
+    override val pronunciationLoadingState: StateFlow<LoadingState<Unit, Unit>> = audioPlayer.loadingState
     override val nativeWordSuggestionsState = MutableStateFlow(value = NativeWordSuggestionsState())
     override val transcriptionState = MutableStateFlow(value = "")
 
@@ -81,12 +88,27 @@ abstract class CardManagementViewModel(
         MutableStateFlow<List<TextFieldValueIpaHolder>>(value = emptyList())
     protected val letterInfosState = MutableStateFlow<List<LetterInfo>>(value = emptyList())
 
+    override val cambridgeDataState = MutableStateFlow<CambridgeDataState>(
+        value = CambridgeDataState.Empty
+    )
+
     init {
         combineAndObserveCardManagementChanges()
         observeForeignWordChanges()
     }
 
-    protected abstract suspend fun onForeignWordChanged(word: String)
+    protected open suspend fun onForeignWordChanged(word: String) {
+        if (word.isEmpty()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            val wordData = cambridgeClient.fetchWordData(word = word)
+
+            if (wordData == null) {
+                cambridgeDataState.value = CambridgeDataState.Empty
+            } else {
+                cambridgeDataState.value = CambridgeDataState.Fetched(word = wordData)
+            }
+        }
+    }
 
     override fun sendEvent(event: CardManagementEvent) {
         when (event) {
@@ -357,12 +379,12 @@ abstract class CardManagementViewModel(
         }
     }
 
-    private fun handleWordInfoError(loadingState: LoadingState.Error) {
+    private fun handleWordInfoError(loadingState: LoadingState.Error<WordInfoRepository.WordInfoLoadingError>) {
         val errorMessageId = when (val error = loadingState.value) {
-            is YandexWordInfoProvider.WordInfoLoadingError -> {
+            is YandexWordInfoProvider.LoadingError -> {
                 when (error) {
-                    is YandexWordInfoProvider.WordInfoLoadingError.Common,
-                    YandexWordInfoProvider.WordInfoLoadingError.JsonConvert -> {
+                    is YandexWordInfoProvider.LoadingError.Common,
+                    YandexWordInfoProvider.LoadingError.JsonConvert -> {
                         R.string.word_info_retrieving_common_warning_message
                     }
                 }
@@ -379,7 +401,7 @@ abstract class CardManagementViewModel(
     }
 
     protected suspend fun checkIfForeignWordExists(word: String) {
-        val decksWithSameForeignWord = checkIfWordExists.invoke(foreignWord = word)
+        val decksWithSameForeignWord = checkIfWordExists.invoke(foreignWord = word.lowercase())
 
         if (decksWithSameForeignWord.isNotEmpty()) {
             val deckNamesAsString = decksWithSameForeignWord.joinToString(", ") { it.name }

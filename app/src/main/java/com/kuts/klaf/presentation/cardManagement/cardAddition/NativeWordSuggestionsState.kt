@@ -5,5 +5,5 @@ import com.kuts.domain.common.LoadingState
 data class NativeWordSuggestionsState(
     val suggestions: List<NativeWordSuggestionItem> = emptyList(),
     val isActive: Boolean = false,
-    val loadingState: LoadingState<Unit> = LoadingState.Non,
+    val loadingState: LoadingState<Unit, Unit> = LoadingState.Non,
 )

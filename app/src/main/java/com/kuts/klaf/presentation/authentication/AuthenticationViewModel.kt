@@ -1,13 +1,23 @@
 package com.kuts.klaf.presentation.authentication
 
 import androidx.lifecycle.viewModelScope
-import com.kuts.domain.common.*
+import com.kuts.domain.common.AuthenticationAction
+import com.kuts.domain.common.LoadingState
+import com.kuts.domain.common.ifNotNull
+import com.kuts.domain.common.ifTrue
+import com.kuts.domain.common.launchIn
 import com.kuts.domain.interactors.AuthenticationInteractor
+import com.kuts.domain.repositories.AuthenticationRepository.AuthenticationError
 import com.kuts.klaf.R
 import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError
-import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError.*
+import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError.CommonError
+import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError.InvalidPassword
+import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError.NetworkError
+import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError.NoUserRecord
 import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError
-import com.kuts.klaf.presentation.authentication.EmailValidator.EmailValidationResult.*
+import com.kuts.klaf.presentation.authentication.EmailValidator.EmailValidationResult.Empty
+import com.kuts.klaf.presentation.authentication.EmailValidator.EmailValidationResult.Valid
+import com.kuts.klaf.presentation.authentication.EmailValidator.EmailValidationResult.WrongFormat
 import com.kuts.klaf.presentation.authentication.PasswordConfirmationValidator.PasswordConfirmationValidationResult
 import com.kuts.klaf.presentation.authentication.PasswordConfirmationValidator.PasswordConfirmationValidationResult.NotIdentical
 import com.kuts.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult
@@ -38,7 +48,7 @@ class AuthenticationViewModel @Inject constructor(
     )
 
     override val screenLoadingState =
-        MutableStateFlow<LoadingState<AuthenticationAction>>(value = LoadingState.Non)
+        MutableStateFlow<LoadingState<AuthenticationAction, AuthenticationError>>(value = LoadingState.Non)
 
     override fun updateEmail(value: String) {
         typingState.update { state ->
@@ -107,7 +117,7 @@ class AuthenticationViewModel @Inject constructor(
         }
     }
 
-    private fun handleSigningInError(loadingState: LoadingState.Error) {
+    private fun handleSigningInError(loadingState: LoadingState.Error<AuthenticationError>) {
         val errorMessageId = when (val error = loadingState.value) {
             is SigningInLoadingError -> {
                 when (error) {
@@ -117,19 +127,21 @@ class AuthenticationViewModel @Inject constructor(
                         setErrorStateForPasswordHolder()
                         R.string.authentication_warning_invalid_password
                     }
+
                     NoUserRecord -> {
                         setErrorStateForEmailHolder()
                         R.string.authentication_warning_no_user_record
                     }
                 }
             }
+
             else -> R.string.authentication_warning_common_error_message
         }
 
         eventMessage.tryEmitAsNegative(resId = errorMessageId)
     }
 
-    private fun handleSigningUpError(loadingState: LoadingState.Error) {
+    private fun handleSigningUpError(loadingState: LoadingState.Error<AuthenticationError>) {
         val errorMessageId = when (val error = loadingState.value) {
             is SigningUpLoadingError -> {
                 when (error) {
@@ -137,14 +149,17 @@ class AuthenticationViewModel @Inject constructor(
                         setErrorStateForEmailHolder()
                         R.string.authentication_warning_email_already_in_use_error
                     }
+
                     SigningUpLoadingError.NetworkError -> {
                         R.string.authentication_warning_network_error
                     }
+
                     SigningUpLoadingError.CommonError -> {
                         R.string.authentication_warning_common_error_message
                     }
                 }
             }
+
             else -> R.string.authentication_warning_common_error_message
         }
 
@@ -211,6 +226,7 @@ class AuthenticationViewModel @Inject constructor(
             PasswordConfirmationValidationResult.Empty -> {
                 R.string.authentication_warning_type_password_confirmation
             }
+
             NotIdentical -> R.string.authentication_warning_Invalid_password_confirmation
             PasswordConfirmationValidationResult.Valid -> null
         }

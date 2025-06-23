@@ -2,6 +2,7 @@ package com.kuts.klaf.presentation.cardManagement.cardEditing
 
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
+import com.cambridge.dictionary.client.CambridgeClient
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.catchWithCrashlyticsReport
@@ -36,6 +37,7 @@ class CardEditingViewModel @AssistedInject constructor(
     private val updateCard: UpdateCardUseCase,
     checkIfWordExists: CheckIfCardExistsUseCase,
     audioPlayer: CardAudioPlayer,
+    cambridgeClient: CambridgeClient,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
     crashlytics: CrashlyticsRepository,
@@ -43,6 +45,7 @@ class CardEditingViewModel @AssistedInject constructor(
 ) : CardManagementViewModel(
     deckId = deckId,
     audioPlayer = audioPlayer,
+    cambridgeClient = cambridgeClient,
     fetchWordAutocomplete = fetchWordAutocomplete,
     fetchWordInfo = fetchWordInfo,
     crashlytics = crashlytics,
@@ -63,6 +66,7 @@ class CardEditingViewModel @AssistedInject constructor(
     }
 
     override suspend fun onForeignWordChanged(word: String) {
+        super.onForeignWordChanged(word)
         val originalForeignWord = originalCardState.value?.foreignWord
 
         logD("onForeignWordChanged() called. foreignWord -> $word, originalForeignWord -> $originalForeignWord")

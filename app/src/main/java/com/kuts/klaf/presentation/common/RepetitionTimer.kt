@@ -27,11 +27,15 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
     private val timerCountingState = MutableStateFlow(STOPPED)
 
     val timerState = combine(time, timerCountingState) { time, countingState ->
-        RepetitionTimerState(time = time, countingState = countingState)
+        RepetitionTimerState(time = time, totalSeconds = totalSeconds, countingState = countingState)
     }.stateIn(
         scope = scope,
         started = SharingStarted.Lazily,
-        initialValue = RepetitionTimerState(time.value, countingState = timerCountingState.value)
+        initialValue = RepetitionTimerState(
+            time = time.value,
+            totalSeconds = totalSeconds,
+            countingState = timerCountingState.value
+        )
     )
 
     override fun onResume(owner: LifecycleOwner) {
@@ -55,6 +59,11 @@ class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
             job?.cancel()
             timerCountingState.value = PAUSED
         }
+    }
+
+    fun setStartTime(time: Long) {
+        totalSeconds = time
+        this.time.value = totalSeconds.timeAsString
     }
 
     fun runCounting() {

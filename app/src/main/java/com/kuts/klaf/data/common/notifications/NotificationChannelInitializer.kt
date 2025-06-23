@@ -2,8 +2,11 @@ package com.kuts.klaf.data.common.notifications
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Color
+import android.media.AudioAttributes
+import android.net.Uri
 import android.os.Build
 import com.kuts.klaf.R
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -56,6 +59,15 @@ class NotificationChannelInitializer @Inject constructor(
                 lightColor = Color.GREEN
                 enableLights(true)
                 enableVibration(true)
+
+                val soundUri =
+                    Uri.parse("${ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/${R.raw.deck_review_notification_sound}")
+                val audioAttributes = AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .build()
+
+                setSound(soundUri, audioAttributes)
             }
 
             notificationManager.createNotificationChannel(notificationChannel)
