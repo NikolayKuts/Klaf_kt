@@ -23,10 +23,10 @@ abstract class BaseCardManagementViewModel(
     abstract val nativeWordSuggestionsState: StateFlow<NativeWordSuggestionsState>
     abstract val transcriptionState: StateFlow<String>
     abstract val cardManagementState: StateFlow<CardManagementState>
-
     abstract val cambridgeDataState: StateFlow<CambridgeDataState>
+    abstract val ipaKeyboardState: StateFlow<IpaKeyboardState>
 
-    abstract fun sendEvent(event: CardManagementEvent)
+    abstract fun sendAction(action: CardManagementAction)
 }
 
 sealed interface CambridgeDataState {

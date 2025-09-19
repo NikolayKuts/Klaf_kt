@@ -70,7 +70,7 @@ lokdroid = "0.0.4-alpha"
 ksp = "1.9.22-1.0.17"
 
 # Cambridge Lib #
-cambridgeLib = "1.0.3"
+cambridgeLib = "1.0.0"
 
 # SplashScreen API #
 coreSplashscreen = "1.2.0-alpha01"

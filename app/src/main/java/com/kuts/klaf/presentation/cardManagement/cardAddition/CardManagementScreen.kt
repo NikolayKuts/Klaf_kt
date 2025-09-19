@@ -14,7 +14,7 @@ import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.BottomSheetValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material.rememberBottomSheetState
 import androidx.compose.runtime.Composable
@@ -33,7 +33,7 @@ import com.cambridge.dictionary.core.Phrase
 import com.cambridge.dictionary.core.Word
 import com.kuts.klaf.presentation.cardManagement.common.BaseCardManagementViewModel
 import com.kuts.klaf.presentation.cardManagement.common.CambridgeDataState
-import com.kuts.klaf.presentation.cardManagement.common.CardManagementEvent
+import com.kuts.klaf.presentation.cardManagement.common.CardManagementAction
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementView
 import kotlinx.coroutines.launch
 
@@ -57,6 +57,8 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
         bottomSheetState = bottomSheetState
     )
 
+    val ipaKeyboardState by viewModel.ipaKeyboardState.collectAsState()
+
     deck.value?.let { receivedDeck ->
        BottomSheet(
            scaffoldState = scaffoldState,
@@ -73,6 +75,12 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
                 pronunciationLoadingState = pronunciationLoadingState,
                 nativeWordSuggestionsState = nativeWordSuggestionsState,
                 cambridgeDataAvailable = cambridgeDataState is CambridgeDataState.Fetched,
+                ipaKeyboardState = ipaKeyboardState,
+                onIpaTextFieldFocusChanged = { focusList ->
+                    viewModel.sendAction(
+                        action = CardManagementAction.IpaTextFieldFocusChanged(focusList = focusList)
+                    )
+                },
                 onBottomSheetAction = {
                     scope.launch {
                         if (scaffoldState.bottomSheetState.isExpanded) {
@@ -83,63 +91,63 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
                     }
                 },
                 onForeignWordTextFieldClick = {
-                    viewModel.sendEvent(event = CardManagementEvent.CloseNativeWordSuggestionsMenu)
+                    viewModel.sendAction(action = CardManagementAction.CloseNativeWordSuggestionsMenu)
                 },
                 closeAutocompletePopupMenu = {
-                    viewModel.sendEvent(event = CardManagementEvent.CloseAutocompleteMenu)
+                    viewModel.sendAction(action = CardManagementAction.CloseAutocompleteMenu)
                 },
                 closeNativeWordSuggestionsPopupMenu = {
-                    viewModel.sendEvent(event = CardManagementEvent.CloseNativeWordSuggestionsMenu)
+                    viewModel.sendAction(action = CardManagementAction.CloseNativeWordSuggestionsMenu)
                 },
                 onLetterClick = { index, letterInfo ->
-                    viewModel.sendEvent(
-                        event = CardManagementEvent.ChangeLetterSelectionWithIpaTemplate(
+                    viewModel.sendAction(
+                        action = CardManagementAction.ChangeLetterSelectionWithIpaTemplate(
                             index = index,
                             letterInfo = letterInfo
                         )
                     )
                 },
                 onNativeWordFieldValueChange = { wordFieldValue ->
-                    viewModel.sendEvent(event = CardManagementEvent.UpdateNativeWord(wordFieldValue = wordFieldValue))
+                    viewModel.sendAction(action = CardManagementAction.UpdateNativeWord(wordFieldValue = wordFieldValue))
                 },
                 onForeignWordFieldValueChange = { wordFieldValue ->
-                    viewModel.sendEvent(
-                        event = CardManagementEvent.UpdateDataOnForeignWordChanged(wordFieldValue = wordFieldValue)
+                    viewModel.sendAction(
+                        action = CardManagementAction.UpdateDataOnForeignWordChanged(wordFieldValue = wordFieldValue)
                     )
                 },
                 onIpaTextFieldValueChange = { letterGroupIndex, ipa ->
-                    viewModel.sendEvent(
-                        event = CardManagementEvent.UpdateIpa(
+                    viewModel.sendAction(
+                        action = CardManagementAction.UpdateIpa(
                             letterGroupIndex = letterGroupIndex,
                             ipa = ipa
                         )
                     )
                 },
                 onConfirmClick = {
-                    viewModel.sendEvent(event = CardManagementEvent.CardManagementConfirmed)
+                    viewModel.sendAction(action = CardManagementAction.CardManagementConfirmed)
                 },
                 onPronounceIconClick = {
-                    viewModel.sendEvent(event = CardManagementEvent.PronounceForeignWordClicked)
+                    viewModel.sendAction(action = CardManagementAction.PronounceForeignWordClicked)
                 },
                 onAutocompleteItemClick = { autocompleteWord ->
-                    viewModel.sendEvent(
-                        event = CardManagementEvent.UpdateDataOnAutocompleteSelected(
+                    viewModel.sendAction(
+                        action = CardManagementAction.UpdateDataOnAutocompleteSelected(
                             word = autocompleteWord
                         )
                     )
                 },
                 transcription = transcription,
                 onNativeWordFieldArrowIconClick = {
-                    viewModel.sendEvent(event = CardManagementEvent.NativeWordFeildIconClicked)
+                    viewModel.sendAction(action = CardManagementAction.NativeWordFieldIconClicked)
                 },
                 onNativeWordSuggestionItemClick = { chosenWordIndex ->
-                    viewModel.sendEvent(event = CardManagementEvent.NativeWordSelected(wordIndex = chosenWordIndex))
+                    viewModel.sendAction(action = CardManagementAction.NativeWordSelected(wordIndex = chosenWordIndex))
                 },
                 onConfirmSuggestionsSelection = {
-                    viewModel.sendEvent(event = CardManagementEvent.ConfirmSuggestionsSelection)
+                    viewModel.sendAction(action = CardManagementAction.ConfirmSuggestionsSelection)
                 },
                 onClearNativeWordSuggestionsSelectionClick = {
-                    viewModel.sendEvent(event = CardManagementEvent.ClearNativeWordSuggestionsSelectionClicked)
+                    viewModel.sendAction(action = CardManagementAction.ClearNativeWordSuggestionsSelectionClicked)
                 }
             )
         }

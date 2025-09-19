@@ -6,4 +6,5 @@ data class TextFieldValueIpaHolder(
     val letterGroup: String,
     val ipaTextFieldValue: TextFieldValue,
     val groupIndex: Int,
+    val isFocused: Boolean,
 )
