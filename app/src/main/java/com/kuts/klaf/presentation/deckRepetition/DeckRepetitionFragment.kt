@@ -24,7 +24,7 @@ class DeckRepetitionFragment : BaseFragment(layoutId = R.layout.common_compose_l
 
     @Inject
     lateinit var assistedFactory: RepetitionViewModelAssistedFactory
-    private val viewModel: BaseDeckRepetitionViewModel by navGraphViewModels(
+    private val viewModel: BaseDeckReviewViewModel by navGraphViewModels(
         navGraphId = R.id.deckRepetitionFragment
     ) {
         RepetitionViewModelFactory(assistedFactory = assistedFactory, deckId = args.deckId)

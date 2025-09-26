@@ -274,7 +274,7 @@ private fun RepetitionQuantityView(deck: Deck) {
     Text(
         text = buildAnnotatedString {
             withStyle(style = MainTheme.typographies.deckItemRepetitionQuantity) {
-                append(deck.repetitionQuantity.toString())
+                append(deck.reviewCount.toString())
             }
             withStyle(style = MainTheme.typographies.deckItemPointer) {
                 append(stringResource(R.string.repetition_quantity_pointer))

@@ -202,7 +202,7 @@ class CardTransferringViewModel @AssistedInject constructor(
                 moveCardsToDeck(
                     sourceDeck = sourceDeck,
                     targetDeck = targetDeck,
-                    cards = selectedCards.value.toTypedArray()
+                    cardsToMove = selectedCards.value.toTypedArray()
                 )
 
                 navigationEvent.emit(value = ToPrevious)

@@ -96,7 +96,7 @@ private const val ADD_BUTTON_ID = "add_button"
 
 @Composable
 fun DeckRepetitionScreen(
-    viewModel: BaseDeckRepetitionViewModel,
+    viewModel: BaseDeckReviewViewModel,
     onDeleteCardClick: (cardId: Int) -> Unit,
     onAddCardClick: () -> Unit,
     onEditCardClick: (cardId: Int) -> Unit,
@@ -338,7 +338,7 @@ private fun OrderPointers(
 }
 
 @Composable
-private fun Timer(viewModel: BaseDeckRepetitionViewModel) {
+private fun Timer(viewModel: BaseDeckReviewViewModel) {
     val timerState by viewModel.timer.timerState.collectAsState()
     val timerColor = when (timerState.countingState) {
         TimerCountingState.RUN -> MainTheme.colors.deckRepetitionScreen.timerActive

@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.kuts.domain.common.UNASSIGNED_INT_VALUE
-import com.kuts.klaf.data.common.notifications.DeckRepetitionNotifier
+import com.kuts.klaf.data.common.notifications.DeckReviewNotifier
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 class DeckRepetitionReminder @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted private val parameters: WorkerParameters,
-    private val deckRepetitionNotifier: DeckRepetitionNotifier,
+    private val deckReviewNotifier: DeckReviewNotifier,
 ) : CoroutineWorker(
     appContext = appContext,
     params = parameters
@@ -54,7 +54,7 @@ class DeckRepetitionReminder @AssistedInject constructor(
     }
 
     override suspend fun doWork(): Result {
-        deckRepetitionNotifier.showNotification(
+        deckReviewNotifier.showNotification(
             deckName = parameters.inputData.getString(DECK_NAME) ?: "",
             deckId = parameters.inputData.getInt(DECK_ID, UNASSIGNED_INT_VALUE)
         )

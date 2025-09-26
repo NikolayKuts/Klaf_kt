@@ -6,15 +6,15 @@ import java.util.concurrent.TimeUnit
 data class Deck(
     val name: String,
     val creationDate: Long,
-    val repetitionIterationDates: List<Long> = emptyList(),
-    val scheduledIterationDates: List<Long> = emptyList(),
+    val reviewPassDates: List<Long> = emptyList(),
+    val scheduledReviewDates: List<Long> = emptyList(),
     val scheduledDateInterval: Long = 0,
-    val repetitionQuantity: Int = 0,
+    val reviewCount: Int = 0,
     val cardQuantity: Int = 0,
-    val lastFirstRepetitionDuration: Long = 0,
-    val lastSecondRepetitionDuration: Long = 0,
-    val lastRepetitionIterationDuration: Long = 0,
-    val isLastIterationSucceeded: Boolean = true,
+    val lastFirstReviewDuration: Long = 0,
+    val lastSecondReviewDuration: Long = 0,
+    val lastReviewPassDuration: Long = 0,
+    val isLastPassSucceeded: Boolean = true,
     val id: Int = 0,
 ) {
 
@@ -26,8 +26,8 @@ data class Deck(
         const val MIN_SCHEDULED_REPETITION_INTERVAL_MINUTES = 15L
     }
 
-    val lastRepetitionIterationDate: Long? get() = repetitionIterationDates.lastOrNull()
-    val scheduledDate: Long? get() = scheduledIterationDates.lastOrNull()
+    val lastRepetitionIterationDate: Long? get() = reviewPassDates.lastOrNull()
+    val scheduledDate: Long? get() = scheduledReviewDates.lastOrNull()
     val scheduledDateOrUnassignedValue: Long get() = scheduledDate ?: UNASSIGNED_LONG_VALUE
     val existenceDayQuantity: Long get() {
         return TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - creationDate) + 1

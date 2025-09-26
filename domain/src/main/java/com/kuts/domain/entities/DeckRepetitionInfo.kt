@@ -1,6 +1,6 @@
 package com.kuts.domain.entities
 
-import com.kuts.domain.common.DeckRepetitionSuccessMark
+import com.kuts.domain.common.DeckReviewPassSuccessMark
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -12,6 +12,6 @@ data class DeckRepetitionInfo(
     val previousScheduledDate: Long,
     val lastIterationDate: Long?,
     val repetitionQuantity: Int,
-    val currentIterationSuccessMark: DeckRepetitionSuccessMark,
-    val previousIterationSuccessMark: DeckRepetitionSuccessMark,
+    val currentIterationSuccessMark: DeckReviewPassSuccessMark,
+    val previousIterationSuccessMark: DeckReviewPassSuccessMark,
 )

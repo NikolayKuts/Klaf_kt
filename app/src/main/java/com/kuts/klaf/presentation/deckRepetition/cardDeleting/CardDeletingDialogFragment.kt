@@ -13,7 +13,7 @@ import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.CardDeletingDialogView
 import com.kuts.klaf.presentation.common.TransparentDialogFragment
 import com.kuts.klaf.presentation.common.collectWhenStarted
-import com.kuts.klaf.presentation.deckRepetition.BaseDeckRepetitionViewModel
+import com.kuts.klaf.presentation.deckRepetition.BaseDeckReviewViewModel
 import com.kuts.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -24,7 +24,7 @@ class CardDeletingDialogFragment : TransparentDialogFragment(
 
     private val args by navArgs<CardDeletingDialogFragmentArgs>()
 
-    private val viewModel by navGraphViewModels<BaseDeckRepetitionViewModel>(R.id.deckRepetitionFragment)
+    private val viewModel by navGraphViewModels<BaseDeckReviewViewModel>(R.id.deckRepetitionFragment)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

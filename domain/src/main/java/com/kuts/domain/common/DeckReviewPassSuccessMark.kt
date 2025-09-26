@@ -3,4 +3,4 @@ package com.kuts.domain.common
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class DeckRepetitionSuccessMark { UNASSIGNED, SUCCESS, FAILURE }
+enum class DeckReviewPassSuccessMark { UNASSIGNED, SUCCESS, FAILURE }

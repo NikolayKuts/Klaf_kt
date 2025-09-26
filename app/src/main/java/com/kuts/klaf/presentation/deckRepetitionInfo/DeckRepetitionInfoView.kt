@@ -20,7 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.*
-import com.kuts.domain.common.DeckRepetitionSuccessMark.*
+import com.kuts.domain.common.DeckReviewPassSuccessMark.*
 import com.kuts.domain.entities.DeckRepetitionInfo
 import com.kuts.klaf.R
 import com.kuts.klaf.data.common.calculateDetailedPreviousScheduledRange
@@ -159,7 +159,7 @@ private fun DualInfoItem(
     title: String,
     currentValue: String,
     previousValue: String,
-    currentMark: DeckRepetitionSuccessMark,
+    currentMark: DeckReviewPassSuccessMark,
 ) {
     DualInfoItemWithValueBackground(
         title = title,
@@ -296,7 +296,7 @@ fun Modifier.valuePadding(): Modifier {
 }
 
 @Composable
-private fun getValueBackgroundColorBySuccessMark(mark: DeckRepetitionSuccessMark): Color {
+private fun getValueBackgroundColorBySuccessMark(mark: DeckReviewPassSuccessMark): Color {
     return when (mark) {
         SUCCESS -> MainTheme.colors.deckRepetitionInfoScreen.successMark
         FAILURE -> MainTheme.colors.deckRepetitionInfoScreen.failureMark

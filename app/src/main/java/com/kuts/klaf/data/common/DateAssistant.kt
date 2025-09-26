@@ -54,7 +54,7 @@ fun Long.asFormattedDate(pattern: String = FULL_WITH_DIVIDER): String {
 }
 
 fun Deck.calculateNextScheduledRepeatDate(currentRepetitionIterationDuration: Long): Long {
-    return if (repetitionQuantity >= 5) {
+    return if (reviewCount >= 5) {
         getCurrentDateAsLong() + getNewInterval(currentRepetitionIterationDuration)
     } else {
         getCurrentDateAsLong()
@@ -64,7 +64,7 @@ fun Deck.calculateNextScheduledRepeatDate(currentRepetitionIterationDuration: Lo
 fun Deck.getNewInterval(currentIterationDuration: Long): Long {
     val minScheduledRepetitionInterval = MIN_SCHEDULED_REPETITION_INTERVAL_MINUTES.toMillis()
 
-    if (repetitionQuantity < 5) return 0
+    if (reviewCount < 5) return 0
     if (scheduledDateInterval <= 0L) return minScheduledRepetitionInterval
 
     val shouldIntervalBeIncreased = this.isRepetitionIterationSucceeded(currentIterationDuration)
@@ -83,7 +83,7 @@ private fun Deck.calculateIncreasedInterval(
 ): Long {
     val baseFactor = getDayIncreaseFactorByDayQuantity(quantity = existenceDayQuantity)
     val dynamicFactor = calculateDynamicIncreaseFactor(
-        lastDuration = this.lastRepetitionIterationDuration,
+        lastDuration = this.lastReviewPassDuration,
         currentDuration = currentDuration
     )
     val finalFactor = baseFactor * dynamicFactor
@@ -109,7 +109,7 @@ private fun calculateDynamicIncreaseFactor(
 private fun Deck.calculateDecreasedInterval(currentIterationDuration: Long): Long {
     val minScheduledRepetitionInterval = MIN_SCHEDULED_REPETITION_INTERVAL_MINUTES.toMillis()
     val multiplicationFactor =
-        (currentIterationDuration.toFloat() / lastRepetitionIterationDuration)
+        (currentIterationDuration.toFloat() / lastReviewPassDuration)
     val actualDecreaseFactor = DECREASE_FACTOR * multiplicationFactor
     val decreaseInterval = (scheduledDateInterval * actualDecreaseFactor).toLong()
     val decreasedInterval = scheduledDateInterval - decreaseInterval
@@ -128,11 +128,11 @@ private fun Long.toMillis(): Long = TimeUnit.MINUTES.toMillis(this)
 
 fun Deck.isRepetitionIterationSucceeded(currentRepetitionDuration: Long): Boolean {
     logD("isRepetitionSucceeded() called")
-    logD("lastRepetitionIterationDuration -> $lastRepetitionIterationDuration")
+    logD("lastRepetitionIterationDuration -> $lastReviewPassDuration")
     logD("currentRepetitionDuration -> $currentRepetitionDuration")
 
     val maxRepetitionIterationDuration =
-        lastRepetitionIterationDuration + lastRepetitionIterationDuration * ADDITIONAL_ALLOWABLE_DURATION_FACTOR
+        lastReviewPassDuration + lastReviewPassDuration * ADDITIONAL_ALLOWABLE_DURATION_FACTOR
     logD("maxRepetitionIterationDuration -> $maxRepetitionIterationDuration")
 
     return currentRepetitionDuration <= maxRepetitionIterationDuration
@@ -140,7 +140,7 @@ fun Deck.isRepetitionIterationSucceeded(currentRepetitionDuration: Long): Boolea
 
 fun Deck.getMaxTime(): Long {
     val maxRepetitionIterationDuration =
-        lastRepetitionIterationDuration + lastRepetitionIterationDuration * ADDITIONAL_ALLOWABLE_DURATION_FACTOR
+        lastReviewPassDuration + lastReviewPassDuration * ADDITIONAL_ALLOWABLE_DURATION_FACTOR
     return maxRepetitionIterationDuration.toLong()
 }
 
