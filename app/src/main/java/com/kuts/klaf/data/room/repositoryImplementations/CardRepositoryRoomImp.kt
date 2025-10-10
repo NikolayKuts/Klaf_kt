@@ -32,6 +32,13 @@ class CardRepositoryRoomImp @Inject constructor(
         roomDatabase.cardDao().insetCard(card = card.toRoomEntity())
     }
 
+    override suspend fun insertCardAtPath(
+        card: Card,
+        rootEmailPath: String
+    ) {
+        TODO("Not yet implemented")
+    }
+
     override fun fetchObservableCardById(cardId: Int): Flow<Card?> {
         return roomDatabase.cardDao()
             .getObservableCardById(cardId = cardId)

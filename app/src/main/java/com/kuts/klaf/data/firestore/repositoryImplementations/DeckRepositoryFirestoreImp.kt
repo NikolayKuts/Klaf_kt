@@ -49,6 +49,14 @@ class DeckRepositoryFirestoreImp @Inject constructor(
             .await()
     }
 
+    override suspend fun insertDeckAtPath(deck: Deck, rootEmailPath: String) {
+        firestore.rootCollection(email = rootEmailPath)
+            .subCollection()
+            .document(deck.id.toString())
+            .set(deck.toFirestoreEntity())
+            .await()
+    }
+
     override suspend fun removeDeck(deckId: Int) {
         getDeckSubCollection()
             .document(deckId.toString())
@@ -69,7 +77,11 @@ class DeckRepositoryFirestoreImp @Inject constructor(
             ?: throw RuntimeException("There is no authorized user")
 
         return firestore.rootCollection(email = userEmail)
-            .document(DECK_DOCUMENT_NAME)
+            .subCollection()
+    }
+
+    private fun CollectionReference.subCollection(): CollectionReference {
+        return document(DECK_DOCUMENT_NAME)
             .collection(DECK_SUB_COLLECTION_NAME)
     }
 }

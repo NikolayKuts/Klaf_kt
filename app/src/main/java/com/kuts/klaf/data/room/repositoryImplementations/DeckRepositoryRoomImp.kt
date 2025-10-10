@@ -39,6 +39,13 @@ class DeckRepositoryRoomImp @Inject constructor(
         roomDatabase.deckDao().insertDeck(deck = deck.toRoomEntity())
     }
 
+    override suspend fun insertDeckAtPath(
+        deck: Deck,
+        rootEmailPath: String
+    ) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun removeDeck(deckId: Int) {
         roomDatabase.deckDao().deleteDeck(deckId)
     }

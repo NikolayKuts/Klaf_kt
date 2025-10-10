@@ -75,6 +75,7 @@ data class CommonColors(
     val neutralDialogButton: Color,
     val separator: Color,
     val dialogBackground: Color,
+    val progressIndicator: Color,
 ) {
 
     object Theme : Themable<CommonColors> {
@@ -89,6 +90,7 @@ data class CommonColors(
             neutralDialogButton = Color(0xFFB9E5EB),
             separator = Color(0xFF818181),
             dialogBackground = Color.White,
+            progressIndicator = Color(0xffbc8282),
         )
 
         override val dark: CommonColors = CommonColors(
@@ -101,6 +103,7 @@ data class CommonColors(
             neutralDialogButton = Color(0xFF6F797C),
             separator = Color(0xFF4D4D4D),
             dialogBackground = Color(0xFF202020),
+            progressIndicator = Color(0xFF92CFC3),
         )
     }
 }

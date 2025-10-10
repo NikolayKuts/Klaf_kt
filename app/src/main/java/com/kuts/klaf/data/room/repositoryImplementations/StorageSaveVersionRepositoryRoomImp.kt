@@ -23,6 +23,13 @@ class StorageSaveVersionRepositoryRoomImp @Inject constructor(
             .insertStorageSaveVersion(saveVersion = version.toRoomEntity())
     }
 
+    override suspend fun insertVersionAtPath(
+        version: StorageSaveVersion,
+        rootEmailPath: String
+    ) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun increaseVersion() {
         val oldVersion = fetchVersion()?.version ?: StorageSaveVersion.INITIAL_SAVE_VERSION
 

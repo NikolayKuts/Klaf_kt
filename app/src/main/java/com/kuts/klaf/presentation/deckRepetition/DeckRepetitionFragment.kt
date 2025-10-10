@@ -2,13 +2,13 @@ package com.kuts.klaf.presentation.deckRepetition
 
 import android.os.Bundle
 import android.view.View
-import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.BaseFragment
+import com.kuts.klaf.presentation.common.TransparentSurface
 import com.kuts.klaf.presentation.common.collectWhenStarted
 import com.kuts.klaf.presentation.deckRepetitionInfo.RepetitionInfoEvent
 import com.kuts.klaf.presentation.theme.MainTheme
@@ -42,7 +42,7 @@ class DeckRepetitionFragment : BaseFragment(layoutId = R.layout.common_compose_l
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
-                Surface {
+                TransparentSurface {
                     DeckRepetitionScreen(
                         viewModel = viewModel,
                         onDeleteCardClick = ::navigateToCardRemovingDialogFragment,

@@ -14,9 +14,9 @@ import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.BottomSheetValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material.rememberBottomSheetState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,10 +60,10 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
     val ipaKeyboardState by viewModel.ipaKeyboardState.collectAsState()
 
     deck.value?.let { receivedDeck ->
-       BottomSheet(
-           scaffoldState = scaffoldState,
-           cambridgeDataState = cambridgeDataState,
-       ) {
+        BottomSheet(
+            scaffoldState = scaffoldState,
+            cambridgeDataState = cambridgeDataState,
+        ) {
             CardManagementView(
                 deckName = receivedDeck.name,
                 cardQuantity = receivedDeck.cardQuantity,
@@ -108,7 +108,11 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
                     )
                 },
                 onNativeWordFieldValueChange = { wordFieldValue ->
-                    viewModel.sendAction(action = CardManagementAction.UpdateNativeWord(wordFieldValue = wordFieldValue))
+                    viewModel.sendAction(
+                        action = CardManagementAction.UpdateNativeWord(
+                            wordFieldValue = wordFieldValue
+                        )
+                    )
                 },
                 onForeignWordFieldValueChange = { wordFieldValue ->
                     viewModel.sendAction(

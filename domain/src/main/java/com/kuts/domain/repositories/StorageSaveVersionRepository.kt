@@ -8,5 +8,7 @@ interface StorageSaveVersionRepository {
 
     suspend fun insertVersion(version: StorageSaveVersion)
 
+    suspend fun insertVersionAtPath(version: StorageSaveVersion, rootEmailPath: String)
+
     suspend fun increaseVersion()
 }

@@ -164,7 +164,10 @@ private fun DropDownForeignWordField(
             }
 
             if (loadingState == LoadingState.Loading) {
-                CircularProgressIndicator(modifier = Modifier.size(35.dp))
+                CircularProgressIndicator(
+                    modifier = Modifier.size(35.dp),
+                    color = MainTheme.colors.common.progressIndicator,
+                )
             }
 
             Icon(
@@ -222,7 +225,10 @@ fun DropDownNativeWordField(
             }
 
             if (loadingState == LoadingState.Loading) {
-                CircularProgressIndicator(modifier = Modifier.size(35.dp))
+                CircularProgressIndicator(
+                    modifier = Modifier.size(35.dp),
+                    color = MainTheme.colors.common.progressIndicator,
+                )
             }
             val rotationDegree by animateFloatAsState(if (expanded) 90f else 0f, label = "")
 

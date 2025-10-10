@@ -2,7 +2,7 @@ package com.kuts.klaf.presentation.cardTransferring.common
 
 import android.os.Bundle
 import android.view.View
-import androidx.compose.material.Surface
+import androidx.compose.material3.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -15,6 +15,7 @@ import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNaviga
 import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardMovingDialog
 import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToPrevious
 import com.kuts.klaf.presentation.common.BaseFragment
+import com.kuts.klaf.presentation.common.TransparentSurface
 import com.kuts.klaf.presentation.common.collectWhenStarted
 import com.kuts.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,7 +48,7 @@ class CardTransferringFragment : BaseFragment(R.layout.common_compose_layout) {
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
-                Surface {
+                TransparentSurface {
                     CardTransferringScreen(viewModel = viewModel)
                 }
             }

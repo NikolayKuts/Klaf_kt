@@ -2,7 +2,6 @@ package com.kuts.klaf.presentation.authentication
 
 import android.os.Bundle
 import android.view.View
-import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -15,10 +14,10 @@ import com.kuts.domain.common.AuthenticationAction
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.BaseFragment
 import com.kuts.klaf.presentation.common.NavigationDestination
+import com.kuts.klaf.presentation.common.TransparentSurface
 import com.kuts.klaf.presentation.common.collectWhenStarted
 import com.kuts.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -56,7 +55,7 @@ class AuthenticationFragment : BaseFragment(layoutId = R.layout.common_compose_l
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
-                Surface {
+                TransparentSurface {
                     AuthenticationScreen(
                         action = args.authenticationAction,
                         viewModel = viewModel,

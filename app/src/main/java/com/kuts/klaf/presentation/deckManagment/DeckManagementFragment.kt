@@ -2,7 +2,6 @@ package com.kuts.klaf.presentation.deckManagment
 
 import android.os.Bundle
 import android.view.View
-import androidx.compose.material.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
@@ -10,6 +9,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.BaseFragment
+import com.kuts.klaf.presentation.common.TransparentSurface
 import com.kuts.klaf.presentation.common.collectWhenStarted
 import com.kuts.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,7 +35,7 @@ class DeckManagementFragment : BaseFragment(R.layout.common_compose_layout) {
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
-                Surface {
+                TransparentSurface {
                     DeckManagementScreen(
                         deckManagementState = viewModel.deckManagementState.collectAsState().value,
                         sendAction = viewModel::sendAction

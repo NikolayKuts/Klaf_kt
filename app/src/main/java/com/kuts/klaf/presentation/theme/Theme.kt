@@ -29,7 +29,7 @@ fun MainTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable (
             colors = colors.material,
             typography = typographies.materialTypographies,
             shapes = shapes,
-            content = content
+            content = content,
         )
     }
 }
