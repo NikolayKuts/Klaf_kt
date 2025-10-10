@@ -46,7 +46,7 @@ import java.util.concurrent.TimeUnit
 fun DeckListScreen(
     decks: List<Deck>?,
     shouldSynchronizationIndicatorBeShown: Boolean,
-    contentPadding: PaddingValues,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     onRefresh: () -> Unit,
     onItemClick: (deck: Deck) -> Unit,
     onLongItemClick: (deck: Deck) -> Unit,
