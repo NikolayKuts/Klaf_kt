@@ -8,6 +8,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.TransparentDialogFragment
+import com.kuts.klaf.presentation.common.TransparentSurface
 import com.kuts.klaf.presentation.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent
 import com.kuts.klaf.presentation.theme.MainTheme
@@ -26,13 +27,15 @@ class DrawerActionDialogFragment : TransparentDialogFragment(
             MainTheme {
                 val eventMessageState = sharedViewModel.eventMessage.collectAsState(initial = null)
 
-                DrawerActionView(
-                    action = args.drawerAction,
-                    loadingState  = viewModel.drawerActionLoadingState.collectAsState().value,
-                    onCloseDialog = ::closeDialog,
-                    onConfirmationClick = ::handleActionConfirmation,
-                    eventMessage = eventMessageState.value,
-                )
+                TransparentSurface {
+                    DrawerActionView(
+                        action = args.drawerAction,
+                        loadingState = viewModel.drawerActionLoadingState.collectAsState().value,
+                        onCloseDialog = ::closeDialog,
+                        onConfirmationClick = ::handleActionConfirmation,
+                        eventMessage = eventMessageState.value,
+                    )
+                }
             }
         }
     }
