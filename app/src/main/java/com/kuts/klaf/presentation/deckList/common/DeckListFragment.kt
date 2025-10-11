@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -24,7 +25,6 @@ import com.kuts.klaf.presentation.authentication.AuthenticationFragment.Companio
 import com.kuts.klaf.presentation.common.BaseFragment
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.NavigationDestination
-import com.kuts.klaf.presentation.common.TransparentSurface
 import com.kuts.klaf.presentation.common.collectWhenStarted
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToCardTransferringScreen
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToChatGptWithDeckContentPrompt
@@ -69,7 +69,7 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
-                TransparentSurface {
+                Surface {
                     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
 

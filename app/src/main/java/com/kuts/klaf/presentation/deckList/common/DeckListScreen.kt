@@ -1,19 +1,41 @@
 package com.kuts.klaf.presentation.deckList.common
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -37,7 +59,13 @@ import com.kuts.domain.common.isEven
 import com.kuts.domain.entities.Deck
 import com.kuts.klaf.R
 import com.kuts.klaf.data.common.getScheduledDateStateByByCalculatedRange
-import com.kuts.klaf.presentation.common.*
+import com.kuts.klaf.presentation.common.ContentHolder
+import com.kuts.klaf.presentation.common.FullBackgroundDialog
+import com.kuts.klaf.presentation.common.ROUNDED_ELEMENT_SIZE
+import com.kuts.klaf.presentation.common.RoundButton
+import com.kuts.klaf.presentation.common.RoundedIcon
+import com.kuts.klaf.presentation.common.noRippleClickable
+import com.kuts.klaf.presentation.common.rememberAsMutableStateOf
 import com.kuts.klaf.presentation.theme.MainTheme
 import kotlinx.coroutines.delay
 import java.util.concurrent.TimeUnit
@@ -122,19 +150,19 @@ private fun FetchingDecksWarningView(onRestartApp: () -> Unit) {
 private fun SynchronizationRefreshingIndicator(
     visible: Boolean,
     offsetY: Dp,
+    size: Dp = ROUNDED_ELEMENT_SIZE.dp
 ) {
     if (visible) {
         Card(
             modifier = Modifier
-                .size(ROUNDED_ELEMENT_SIZE.dp)
+                .size(size)
                 .noRippleClickable { }
                 .offset(y = offsetY),
-            shape = RoundedCornerShape(ROUNDED_ELEMENT_SIZE.dp),
-            elevation = 0.dp,
+            shape = RoundedCornerShape(size),
         ) {
             Icon(
                 modifier = Modifier
-                    .size(20.dp)
+                    .size(size)
                     .background(MainTheme.colors.common.dialogBackground)
                     .padding(8.dp),
                 painter = painterResource(id = R.drawable.ic_sync_24),
@@ -207,8 +235,10 @@ private fun LazyItemScope.DeckItemView(
                 onClick = { onItemClick(deck) },
                 onLongClick = { onLongItemClick(deck) }
             ),
-        backgroundColor = getCardBackgroundColorByPosition(position),
-        elevation = 4.dp,
+        colors = CardDefaults.cardColors(
+            containerColor = getCardBackgroundColorByPosition(position)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
         Row(
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
@@ -349,8 +379,10 @@ private fun BoxScope.AnimatableDataSynchronizationIndicator(
         Card(
             modifier = modifier.align(Alignment.TopCenter),
             shape = RoundedCornerShape(size = ROUNDED_ELEMENT_SIZE.dp),
-            contentColor = MainTheme.colors.material.onBackground,
-            elevation = 4.dp
+            colors = CardDefaults.cardColors(
+                containerColor = MainTheme.colors.material.onBackground,
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         ) {
             AnimatedSynchronizationLabel()
         }

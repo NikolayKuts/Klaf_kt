@@ -6,8 +6,9 @@ import androidx.compose.animation.core.*
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Card
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -88,14 +89,16 @@ fun EventMessageView(
         Card(
             modifier = modifier.scale(scale),
             shape = MainTheme.shapes.small,
-            backgroundColor = color,
-            contentColor = MainTheme.colors.material.onBackground,
-            elevation = elevation.dp
+            colors = CardDefaults.cardColors(
+                containerColor = color,
+                contentColor = MainTheme.colors.material.onBackground,
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = elevation.dp)
         ) {
             Text(
                 modifier = Modifier.padding(16.dp),
                 text = stringResource(id = message.resId, *message.args),
-                style = MainTheme.typographies.materialTypographies.body1
+                style = MainTheme.typographies.materialTypographies.bodyLarge
             )
         }
     }

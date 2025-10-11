@@ -2,6 +2,7 @@ package com.kuts.klaf.presentation.cardManagement.cardEditing
 
 import android.os.Bundle
 import android.view.View
+import androidx.compose.material3.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -11,7 +12,6 @@ import com.kuts.klaf.presentation.cardManagement.cardAddition.CardManagementScre
 import com.kuts.klaf.presentation.cardManagement.common.BaseCardManagementViewModel
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementState
 import com.kuts.klaf.presentation.common.BaseFragment
-import com.kuts.klaf.presentation.common.TransparentSurface
 import com.kuts.klaf.presentation.common.collectWhenStarted
 import com.kuts.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -46,7 +46,7 @@ class CardEditingFragment : BaseFragment(layoutId = R.layout.common_compose_layo
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
-                TransparentSurface {
+                Surface {
                     CardManagementScreen(viewModel = viewModel)
                 }
             }

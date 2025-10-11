@@ -72,7 +72,6 @@ dependencies {
     implementation(libs.core.constraintlayout)
     implementation(libs.core.legacy.support)
     implementation(libs.core.fragment.ktx)
-    implementation(libs.core.material)
     implementation(libs.androidx.material3.android)
 
     /** Tests **/

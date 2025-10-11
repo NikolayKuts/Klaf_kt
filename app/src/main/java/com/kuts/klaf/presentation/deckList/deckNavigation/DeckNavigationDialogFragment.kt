@@ -2,6 +2,7 @@ package com.kuts.klaf.presentation.deckList.deckNavigation
 
 import android.os.Bundle
 import android.view.View
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
@@ -25,19 +26,21 @@ class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.common_c
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
-                DeckNavigationDialogView(
-                    deckName = args.deckName,
-                    eventMessage = sharedViewModel.eventMessage.collectAsState(initial = null).value,
-                    onDeleteDeckClick = ::navigateToDeckRemovingDialogFragment,
-                    onRenameDeckClick = ::navigateToDeckRenamingDialogFragment,
-                    onBrowseDeckClick = ::navigateToCardViewerFragment,
-                    onAddCardsClick = ::navigateToCardAdditionFragment,
-                    onTransferCardsClick = ::navigateToCardTransferringFragment,
-                    onRepetitionInfoClick = ::navigateToDeckRepetitionInfoDialogFragment,
-                    onDeckManagementClick = ::navigateToDeckManagementFragment,
-                    onCloseDialogClick = ::closeDialog,
-                    onCopyDeckContentClick = ::generateChatGptStoryCrafterPrompt,
-                )
+                Surface {
+                    DeckNavigationDialogView(
+                        deckName = args.deckName,
+                        eventMessage = sharedViewModel.eventMessage.collectAsState(initial = null).value,
+                        onDeleteDeckClick = ::navigateToDeckRemovingDialogFragment,
+                        onRenameDeckClick = ::navigateToDeckRenamingDialogFragment,
+                        onBrowseDeckClick = ::navigateToCardViewerFragment,
+                        onAddCardsClick = ::navigateToCardAdditionFragment,
+                        onTransferCardsClick = ::navigateToCardTransferringFragment,
+                        onRepetitionInfoClick = ::navigateToDeckRepetitionInfoDialogFragment,
+                        onDeckManagementClick = ::navigateToDeckManagementFragment,
+                        onCloseDialogClick = ::closeDialog,
+                        onCraftStoryClick = ::generateChatGptStoryCrafterPrompt,
+                    )
+                }
             }
         }
     }

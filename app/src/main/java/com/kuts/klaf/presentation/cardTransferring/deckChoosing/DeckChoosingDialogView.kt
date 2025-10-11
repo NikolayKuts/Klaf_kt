@@ -3,9 +3,23 @@ package com.kuts.klaf.presentation.cardTransferring.deckChoosing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -18,7 +32,17 @@ import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.ifNotNull
 import com.kuts.domain.entities.Deck
 import com.kuts.klaf.R
-import com.kuts.klaf.presentation.common.*
+import com.kuts.klaf.presentation.common.ClosingButton
+import com.kuts.klaf.presentation.common.ConfirmationButton
+import com.kuts.klaf.presentation.common.ContentHolder
+import com.kuts.klaf.presentation.common.DIALOG_APP_LABEL_SIZE
+import com.kuts.klaf.presentation.common.DialogAppLabel
+import com.kuts.klaf.presentation.common.EventMessage
+import com.kuts.klaf.presentation.common.EventMessageView
+import com.kuts.klaf.presentation.common.FullBackgroundDialog
+import com.kuts.klaf.presentation.common.ScrollableBox
+import com.kuts.klaf.presentation.common.noRippleClickable
+import com.kuts.klaf.presentation.common.rememberAsMutableStateOf
 import com.kuts.klaf.presentation.theme.MainTheme
 
 @Composable
@@ -126,19 +150,24 @@ private fun DeckChoosingDropdownMenu(
     ) {
         decks.onEachIndexed { index, deck ->
             DropdownMenuItem(
-                onClick = { onItemClick(index) }
-            ) {
-                Column {
-                    Text(
-                        text = deck.name,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MainTheme.typographies.cardTransferringScreenTextStyles.choosingContent
-                    )
+                onClick = { onItemClick(index) },
+                text = {
+                    Column {
+                        Text(
+                            text = deck.name,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MainTheme.typographies.cardTransferringScreenTextStyles.choosingContent
+                        )
 
-                    Divider(modifier = Modifier.fillMaxWidth())
+                        HorizontalDivider(
+                            modifier = Modifier.fillMaxWidth(),
+                            thickness = DividerDefaults.Thickness,
+                            color = DividerDefaults.color
+                        )
+                    }
                 }
-            }
+            )
         }
     }
 }

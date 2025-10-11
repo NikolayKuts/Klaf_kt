@@ -1,13 +1,13 @@
 package com.kuts.klaf.presentation.theme
 
-import androidx.compose.material.Colors
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import com.kuts.klaf.presentation.common.ColorHolder
 
 val LightMainPalettes = MainColors(
-    material = MaterialColors.Theme.light,
+    material = MaterialColorScheme.Theme.light,
     common = CommonColors.Theme.light,
     deckListScreen = DeckListScreenColors.Theme.light,
     cardManagementView = CardManagementViewColors.Theme.light,
@@ -21,7 +21,7 @@ val LightMainPalettes = MainColors(
 )
 
 val DarkMainPalettes = MainColors(
-    material = MaterialColors.Theme.dark,
+    material = MaterialColorScheme.Theme.dark,
     common = CommonColors.Theme.dark,
     deckListScreen = DeckListScreenColors.Theme.dark,
     cardManagementView = CardManagementViewColors.Theme.dark,
@@ -35,7 +35,7 @@ val DarkMainPalettes = MainColors(
 )
 
 data class MainColors(
-    val material: Colors,
+    val material: ColorScheme,
     val common: CommonColors,
     val deckListScreen: DeckListScreenColors,
     val cardManagementView: CardManagementViewColors,
@@ -48,17 +48,17 @@ data class MainColors(
     val eventMessageColors: EventMessageColors,
 )
 
-class MaterialColors {
+class MaterialColorScheme {
 
-    object Theme : Themable<Colors> {
+    object Theme : Themable<ColorScheme> {
 
-        override val light: Colors = lightColors(
+        override val light: ColorScheme = lightColorScheme(
             primary = Color(0xFFBEDB9C),
             onPrimary = Color(0xFF636363),
             onBackground = Color(0xFF474747),
         )
 
-        override val dark: Colors = darkColors(
+        override val dark: ColorScheme = darkColorScheme(
             primary = Color(0xFF5DA3AC),
             onPrimary = Color(0xFFE2E2E2),
         )
@@ -82,7 +82,7 @@ data class CommonColors(
 
         override val light: CommonColors = CommonColors(
             statusBarBackground = Color(0xFF8AA768),
-            focusedLabelColor = MaterialColors.Theme.light.onPrimary,
+            focusedLabelColor = MaterialColorScheme.Theme.light.onPrimary,
             appLabelColorFilter = Color(0xFF374D5E),
             animationAppLabelColorFilter = Color(0xFF4C5C3A),
             positiveDialogButton = Color(0xFFBFE295),
@@ -95,7 +95,7 @@ data class CommonColors(
 
         override val dark: CommonColors = CommonColors(
             statusBarBackground = Color(0xFF464646),
-            focusedLabelColor = MaterialColors.Theme.dark.onPrimary,
+            focusedLabelColor = MaterialColorScheme.Theme.dark.onPrimary,
             appLabelColorFilter = Color(0xFF686868),
             animationAppLabelColorFilter = Color(0xFF4D6C85),
             positiveDialogButton = Color(0xFF809B62),
@@ -355,7 +355,7 @@ data class CardTransferringScreenColors(
             cardAddingButton = Color(0xFFB3CC96),
             deletingButton = Color(0xFFDA9B96),
             chosenDeckBoxBorder = Color(0xFFB3CC96),
-            clickedMoreButton = MaterialColors.Theme.light.primary,
+            clickedMoreButton = MaterialColorScheme.Theme.light.primary,
             unClickedMoreButton = Color(0xFFB8B8B8),
         )
 
@@ -370,7 +370,7 @@ data class CardTransferringScreenColors(
             cardAddingButton = Color(0xFF809C5F),
             deletingButton = Color(0xFFC4716A),
             chosenDeckBoxBorder = Color(0xFF8CA76D),
-            clickedMoreButton = MaterialColors.Theme.dark.primary,
+            clickedMoreButton = MaterialColorScheme.Theme.dark.primary,
             unClickedMoreButton = Color(0xFF636363),
         )
     }

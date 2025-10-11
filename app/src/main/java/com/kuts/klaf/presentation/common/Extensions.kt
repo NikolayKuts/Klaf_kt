@@ -1,11 +1,8 @@
 package com.kuts.klaf.presentation.common
 
-import android.content.Context
 import android.util.Log
-import android.view.View
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
@@ -20,7 +17,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -39,19 +35,6 @@ val Long.timeAsString: String
 
         return TIME_FORMAT_TEMPLATE.format(minutes, seconds)
     }
-
-fun Context.showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
-    val toast = Toast.makeText(this, message, duration)
-    toast.show()
-}
-
-fun Context.showToast(@StringRes messageId: Int, duration: Int = Toast.LENGTH_SHORT) {
-    showToast(message = getString(messageId), duration = duration)
-}
-
-fun View.showSnackBar(@StringRes messageId: Int, duration: Int = Snackbar.LENGTH_SHORT) {
-    Snackbar.make(this, messageId, duration).show()
-}
 
 inline fun <T> Flow<T>.collectWhenStarted(
     lifecycleOwner: LifecycleOwner,

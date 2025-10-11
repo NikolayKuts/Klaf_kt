@@ -2,24 +2,25 @@ package com.kuts.klaf.presentation.cardManagement.cardAddition
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.BottomSheetScaffold
-import androidx.compose.material.BottomSheetScaffoldState
-import androidx.compose.material.BottomSheetValue
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.rememberBottomSheetScaffoldState
-import androidx.compose.material.rememberBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,7 +38,7 @@ import com.kuts.klaf.presentation.cardManagement.common.CardManagementAction
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementView
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
     val deck = viewModel.deck.collectAsState(initial = null)
@@ -52,130 +53,122 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
     val transcription by viewModel.transcriptionState.collectAsState()
     val cambridgeDataState by viewModel.cambridgeDataState.collectAsState()
     val scope = rememberCoroutineScope()
-    val bottomSheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
-    val scaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = bottomSheetState
-    )
-
     val ipaKeyboardState by viewModel.ipaKeyboardState.collectAsState()
+    val scaffoldState = rememberModalBottomSheetState()
+    val showBottomSheet = remember { mutableStateOf(false) }
 
     deck.value?.let { receivedDeck ->
+        CardManagementView(
+            deckName = receivedDeck.name,
+            cardQuantity = receivedDeck.cardQuantity,
+            letterInfos = letterInfos,
+            nativeWordFieldValue = nativeWordFieldValue,
+            foreignWordFieldValue = foreignWordFieldValue,
+            textFieldValueIpaHolders = textFieldValueIpaHolders,
+            autocompleteState = autocompleteState,
+            pronunciationLoadingState = pronunciationLoadingState,
+            nativeWordSuggestionsState = nativeWordSuggestionsState,
+            cambridgeDataAvailable = cambridgeDataState is CambridgeDataState.Fetched,
+            ipaKeyboardState = ipaKeyboardState,
+            onIpaTextFieldFocusChanged = { focusList ->
+                viewModel.sendAction(
+                    action = CardManagementAction.IpaTextFieldFocusChanged(focusList = focusList)
+                )
+            },
+            onBottomSheetAction = {
+                scope.launch { showBottomSheet.value = showBottomSheet.value.not() }
+            },
+            onForeignWordTextFieldClick = {
+                viewModel.sendAction(action = CardManagementAction.CloseNativeWordSuggestionsMenu)
+            },
+            closeAutocompletePopupMenu = {
+                viewModel.sendAction(action = CardManagementAction.CloseAutocompleteMenu)
+            },
+            closeNativeWordSuggestionsPopupMenu = {
+                viewModel.sendAction(action = CardManagementAction.CloseNativeWordSuggestionsMenu)
+            },
+            onLetterClick = { index, letterInfo ->
+                viewModel.sendAction(
+                    action = CardManagementAction.ChangeLetterSelectionWithIpaTemplate(
+                        index = index,
+                        letterInfo = letterInfo
+                    )
+                )
+            },
+            onNativeWordFieldValueChange = { wordFieldValue ->
+                viewModel.sendAction(
+                    action = CardManagementAction.UpdateNativeWord(
+                        wordFieldValue = wordFieldValue
+                    )
+                )
+            },
+            onForeignWordFieldValueChange = { wordFieldValue ->
+                viewModel.sendAction(
+                    action = CardManagementAction.UpdateDataOnForeignWordChanged(wordFieldValue = wordFieldValue)
+                )
+            },
+            onIpaTextFieldValueChange = { letterGroupIndex, ipa ->
+                viewModel.sendAction(
+                    action = CardManagementAction.UpdateIpa(
+                        letterGroupIndex = letterGroupIndex,
+                        ipa = ipa
+                    )
+                )
+            },
+            onConfirmClick = {
+                viewModel.sendAction(action = CardManagementAction.CardManagementConfirmed)
+            },
+            onPronounceIconClick = {
+                viewModel.sendAction(action = CardManagementAction.PronounceForeignWordClicked)
+            },
+            onAutocompleteItemClick = { autocompleteWord ->
+                viewModel.sendAction(
+                    action = CardManagementAction.UpdateDataOnAutocompleteSelected(
+                        word = autocompleteWord
+                    )
+                )
+            },
+            transcription = transcription,
+            onNativeWordFieldArrowIconClick = {
+                viewModel.sendAction(action = CardManagementAction.NativeWordFieldIconClicked)
+            },
+            onNativeWordSuggestionItemClick = { chosenWordIndex ->
+                viewModel.sendAction(action = CardManagementAction.NativeWordSelected(wordIndex = chosenWordIndex))
+            },
+            onConfirmSuggestionsSelection = {
+                viewModel.sendAction(action = CardManagementAction.ConfirmSuggestionsSelection)
+            },
+            onClearNativeWordSuggestionsSelectionClick = {
+                viewModel.sendAction(action = CardManagementAction.ClearNativeWordSuggestionsSelectionClicked)
+            }
+        )
+
         BottomSheet(
             scaffoldState = scaffoldState,
+            showBottomSheetState = showBottomSheet,
             cambridgeDataState = cambridgeDataState,
-        ) {
-            CardManagementView(
-                deckName = receivedDeck.name,
-                cardQuantity = receivedDeck.cardQuantity,
-                letterInfos = letterInfos,
-                nativeWordFieldValue = nativeWordFieldValue,
-                foreignWordFieldValue = foreignWordFieldValue,
-                textFieldValueIpaHolders = textFieldValueIpaHolders,
-                autocompleteState = autocompleteState,
-                pronunciationLoadingState = pronunciationLoadingState,
-                nativeWordSuggestionsState = nativeWordSuggestionsState,
-                cambridgeDataAvailable = cambridgeDataState is CambridgeDataState.Fetched,
-                ipaKeyboardState = ipaKeyboardState,
-                onIpaTextFieldFocusChanged = { focusList ->
-                    viewModel.sendAction(
-                        action = CardManagementAction.IpaTextFieldFocusChanged(focusList = focusList)
-                    )
-                },
-                onBottomSheetAction = {
-                    scope.launch {
-                        if (scaffoldState.bottomSheetState.isExpanded) {
-                            scaffoldState.bottomSheetState.collapse()
-                        } else {
-                            scaffoldState.bottomSheetState.expand()
-                        }
-                    }
-                },
-                onForeignWordTextFieldClick = {
-                    viewModel.sendAction(action = CardManagementAction.CloseNativeWordSuggestionsMenu)
-                },
-                closeAutocompletePopupMenu = {
-                    viewModel.sendAction(action = CardManagementAction.CloseAutocompleteMenu)
-                },
-                closeNativeWordSuggestionsPopupMenu = {
-                    viewModel.sendAction(action = CardManagementAction.CloseNativeWordSuggestionsMenu)
-                },
-                onLetterClick = { index, letterInfo ->
-                    viewModel.sendAction(
-                        action = CardManagementAction.ChangeLetterSelectionWithIpaTemplate(
-                            index = index,
-                            letterInfo = letterInfo
-                        )
-                    )
-                },
-                onNativeWordFieldValueChange = { wordFieldValue ->
-                    viewModel.sendAction(
-                        action = CardManagementAction.UpdateNativeWord(
-                            wordFieldValue = wordFieldValue
-                        )
-                    )
-                },
-                onForeignWordFieldValueChange = { wordFieldValue ->
-                    viewModel.sendAction(
-                        action = CardManagementAction.UpdateDataOnForeignWordChanged(wordFieldValue = wordFieldValue)
-                    )
-                },
-                onIpaTextFieldValueChange = { letterGroupIndex, ipa ->
-                    viewModel.sendAction(
-                        action = CardManagementAction.UpdateIpa(
-                            letterGroupIndex = letterGroupIndex,
-                            ipa = ipa
-                        )
-                    )
-                },
-                onConfirmClick = {
-                    viewModel.sendAction(action = CardManagementAction.CardManagementConfirmed)
-                },
-                onPronounceIconClick = {
-                    viewModel.sendAction(action = CardManagementAction.PronounceForeignWordClicked)
-                },
-                onAutocompleteItemClick = { autocompleteWord ->
-                    viewModel.sendAction(
-                        action = CardManagementAction.UpdateDataOnAutocompleteSelected(
-                            word = autocompleteWord
-                        )
-                    )
-                },
-                transcription = transcription,
-                onNativeWordFieldArrowIconClick = {
-                    viewModel.sendAction(action = CardManagementAction.NativeWordFieldIconClicked)
-                },
-                onNativeWordSuggestionItemClick = { chosenWordIndex ->
-                    viewModel.sendAction(action = CardManagementAction.NativeWordSelected(wordIndex = chosenWordIndex))
-                },
-                onConfirmSuggestionsSelection = {
-                    viewModel.sendAction(action = CardManagementAction.ConfirmSuggestionsSelection)
-                },
-                onClearNativeWordSuggestionsSelectionClick = {
-                    viewModel.sendAction(action = CardManagementAction.ClearNativeWordSuggestionsSelectionClicked)
-                }
-            )
-        }
+        )
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun BottomSheet(
     cambridgeDataState: CambridgeDataState,
-    scaffoldState: BottomSheetScaffoldState,
-    content: @Composable (PaddingValues) -> Unit,
+    scaffoldState: SheetState = rememberModalBottomSheetState(),
+    showBottomSheetState: MutableState<Boolean>,
 ) {
-    BottomSheetScaffold(
-        modifier = Modifier,
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = 0.dp,
-        sheetContent = {
-            (cambridgeDataState as? CambridgeDataState.Fetched)?.let {
-                WordDetailsScreen(word = it.word)
+    if (showBottomSheetState.value) {
+        ModalBottomSheet(
+            onDismissRequest = { showBottomSheetState.value = false },
+            sheetState = scaffoldState,
+            content = {
+                (cambridgeDataState as? CambridgeDataState.Fetched)?.let {
+                    WordDetailsScreen(word = it.word)
+                }
             }
-        },
-        content = content
-    )
+        )
+    }
 }
 
 @Composable
@@ -189,7 +182,7 @@ private fun WordDetailsScreen(word: Word) {
         item {
             Text(
                 text = word.text.uppercase(),
-                style = MaterialTheme.typography.h6,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -208,7 +201,7 @@ private fun PartOfSpeechSection(pos: PartsOfSpeech) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(
             text = pos.text + if (pos.label.isNotBlank()) " (${pos.label})" else "",
-            style = MaterialTheme.typography.body2,
+            style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.SemiBold,
             color = Color(0xFFFDD462)
         )
@@ -217,7 +210,7 @@ private fun PartOfSpeechSection(pos: PartsOfSpeech) {
             Text(
                 modifier = Modifier.padding(start = 8.dp),
                 text = pos.ipas.joinToString(" / ", prefix = "[", postfix = "]"),
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.bodyLarge,
                 color = Color(0xFFAFDA7F)
             )
         }
@@ -232,7 +225,7 @@ private fun PartOfSpeechSection(pos: PartsOfSpeech) {
             Text(
                 text = "Phrases:",
                 fontWeight = FontWeight.Medium,
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.bodyLarge,
                 color = Color(0xFFF6754B)
             )
             pos.phrases.forEach { phrase ->
@@ -254,17 +247,17 @@ private fun MeaningItem(meaning: Meaning) {
         Text(
             text = meaning.explanation,
             fontWeight = FontWeight.Medium,
-            style = MaterialTheme.typography.body2
+            style = MaterialTheme.typography.bodyLarge
         )
         Text(
             text = meaning.translation,
-            style = MaterialTheme.typography.body2,
+            style = MaterialTheme.typography.bodyLarge,
             color = Color(0xFF59BEF3)
         )
         meaning.examples.forEach { example ->
             Text(
                 text = "• $example",
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.bodyLarge,
                 fontStyle = FontStyle.Italic,
                 modifier = Modifier.padding(start = 12.dp)
             )
@@ -284,16 +277,16 @@ private fun PhraseItem(phrase: Phrase) {
         Text(
             text = phrase.text,
             fontWeight = FontWeight.Medium,
-            style = MaterialTheme.typography.body2
+            style = MaterialTheme.typography.bodyLarge
         )
         Text(
             text = phrase.translation,
-            style = MaterialTheme.typography.body2
+            style = MaterialTheme.typography.bodyLarge
         )
         phrase.examples.forEach {
             Text(
                 text = "• $it",
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.bodyLarge,
                 fontStyle = FontStyle.Italic
             )
         }

@@ -6,10 +6,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -252,8 +252,9 @@ private fun AuthenticationTextField(
         label = { Text(text = labelText, fontStyle = FontStyle.Italic) },
         singleLine = true,
         isError = isError,
-        colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = MainTheme.colors.authenticationScreen.textFieldBackground,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = MainTheme.colors.authenticationScreen.textFieldBackground,
+            unfocusedContainerColor = MainTheme.colors.authenticationScreen.textFieldBackground,
             focusedLabelColor = MainTheme.colors.common.focusedLabelColor,
         ),
         keyboardOptions = keyboardOptions,

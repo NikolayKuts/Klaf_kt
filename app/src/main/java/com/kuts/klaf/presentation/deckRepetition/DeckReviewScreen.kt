@@ -24,10 +24,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -95,7 +95,7 @@ private const val ADD_BUTTON_ID = "add_button"
 
 
 @Composable
-fun DeckRepetitionScreen(
+fun DeckReviewScreen(
     viewModel: BaseDeckReviewViewModel,
     onDeleteCardClick: (cardId: Int) -> Unit,
     onAddCardClick: () -> Unit,
@@ -436,7 +436,7 @@ private fun RepetitionButtons(
 
             RepetitionButton(
                 layoutId = START_BUTTON_ID,
-                textId = R.string.start,
+                textResId = R.string.start,
                 onClick = onStartButtonClick
             )
         }
@@ -451,19 +451,19 @@ private fun RepetitionButtons(
 
             RepetitionButton(
                 layoutId = HARD_BUTTON_ID,
-                textId = R.string.hard,
+                textResId = R.string.hard,
                 onClick = onHardButtonClick
             )
 
             RepetitionButton(
                 layoutId = GOOD_BUTTON_ID,
-                textId = R.string.good,
+                textResId = R.string.good,
                 onClick = onGoodButtonClick
             )
 
             RepetitionButton(
                 layoutId = EASY_BUTTON_ID,
-                textId = R.string.easy,
+                textResId = R.string.easy,
                 onClick = onEasyButtonClick
             )
         }
@@ -473,12 +473,16 @@ private fun RepetitionButtons(
 }
 
 @Composable
-private fun RepetitionButton(layoutId: String, @StringRes textId: Int, onClick: () -> Unit) {
+private fun RepetitionButton(
+    layoutId: String,
+    @StringRes textResId: Int,
+    onClick: () -> Unit
+) {
     Button(
         modifier = Modifier.layoutId(layoutId),
-        onClick = onClick
+        onClick = onClick,
     ) {
-        Text(text = stringResource(textId))
+        Text(text = stringResource(textResId))
     }
 }
 
@@ -644,7 +648,6 @@ fun CardButton(cardSide: CardSide, onClick: () -> Unit) {
             .layoutId(TURN_CARD_SIDE_BUTTON_ID)
             .graphicsLayer { rotationY = rotation },
         shape = RoundedCornerShape(8.dp),
-        elevation = 4.dp,
     ) {
         Icon(
             modifier = Modifier

@@ -30,15 +30,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -143,8 +144,10 @@ fun FullBackgroundDialog(
                         bottom = (ROUNDED_ELEMENT_SIZE.dp / 2),
                     )
                     .clip(shape = corners),
-                backgroundColor = MainTheme.colors.common.dialogBackground,
-                contentColor = contentColorFor(MaterialTheme.colors.surface),
+                colors = CardDefaults.cardColors().copy(
+                    containerColor = MainTheme.colors.common.dialogBackground,
+                    contentColor = contentColorFor(MaterialTheme.colorScheme.surface),
+                ),
             ) {
                 Box(
                     modifier = mainContentModifier
@@ -182,8 +185,7 @@ fun FullBackgroundDialog(
 fun TransparentSurface(content: @Composable () -> Unit) {
     Surface(
         color = Color.Transparent,
-        contentColor = contentColorFor(MaterialTheme.colors.surface),
-//        contentColor = Color(0xfffffffff),
+        contentColor = contentColorFor(MaterialTheme.colorScheme.surface),
         content = content,
     )
 }
@@ -239,11 +241,11 @@ fun CustomCheckBox(
     onCheckedChange: (Boolean) -> Unit,
     checkBoxSize: Dp = 20.dp,
     borderWidth: Dp = 1.dp,
-    checkedBoxColor: Color = MaterialTheme.colors.secondary,
+    checkedBoxColor: Color = MaterialTheme.colorScheme.secondary,
     uncheckedBoxColor: Color = checkedBoxColor.copy(alpha = 0f),
-    checkmarkColor: Color = MaterialTheme.colors.surface,
+    checkmarkColor: Color = MaterialTheme.colorScheme.surface,
     checkedBorderColor: Color = checkedBoxColor,
-    uncheckedBorderColor: Color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+    uncheckedBorderColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
     shape: Shape = RoundedCornerShape(size = 4.dp),
     contentDescription: String? = null,
 ) {
@@ -264,7 +266,7 @@ fun CustomCheckBox(
     ) {
         checked.ifTrue {
             Icon(
-                Icons.Default.Check,
+                imageVector = Icons.Default.Check,
                 tint = checkmarkColor,
                 contentDescription = contentDescription,
             )

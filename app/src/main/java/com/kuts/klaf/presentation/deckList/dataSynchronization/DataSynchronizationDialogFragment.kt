@@ -11,6 +11,7 @@ import com.kuts.domain.common.AuthenticationAction
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.TransparentDialogFragment
+import com.kuts.klaf.presentation.common.TransparentSurface
 import com.kuts.klaf.presentation.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent
 import com.kuts.klaf.presentation.theme.MainTheme
@@ -29,18 +30,20 @@ class DataSynchronizationDialogFragment : TransparentDialogFragment(
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
-                val eventMessage by sharedViewModel.eventMessage.collectAsState(initial = null)
+                TransparentSurface {
+                    val eventMessage by sharedViewModel.eventMessage.collectAsState(initial = null)
 
-                DataSynchronizationDialogView(
-                    synchronizationState = viewModel.dataSynchronizationState.collectAsState().value,
-                    onConfirmClick = viewModel::synchronizeData,
-                    onCloseClick = {
-                        viewModel.handleNavigation(event = DeckListNavigationEvent.ToPrevious)
-                    },
-                    onDispose = viewModel::resetSynchronizationState,
-                    eventMassage = eventMessage,
-                    onLaunched = ::notifyAboutAuthenticationActionResult
-                )
+                    DataSynchronizationDialogView(
+                        synchronizationState = viewModel.dataSynchronizationState.collectAsState().value,
+                        onConfirmClick = viewModel::synchronizeData,
+                        onCloseClick = {
+                            viewModel.handleNavigation(event = DeckListNavigationEvent.ToPrevious)
+                        },
+                        onDispose = viewModel::resetSynchronizationState,
+                        eventMassage = eventMessage,
+                        onLaunched = ::notifyAboutAuthenticationActionResult
+                    )
+                }
             }
         }
     }

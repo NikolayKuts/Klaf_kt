@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -115,9 +115,9 @@ fun <T : Wordable> DropDownWordField(
                 onTypedWordFieldValueChange(it)
             },
             label = { Text(text = stringResource(id = labelResId)) },
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = MainTheme.colors.cardManagementView.textFieldBackground,
-                textColor = textColor
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor =  MainTheme.colors.cardManagementView.textFieldBackground,
+                unfocusedContainerColor =  MainTheme.colors.cardManagementView.textFieldBackground,
             ),
             trailingIcon = trailingIcon,
             singleLine = true,

@@ -1,6 +1,6 @@
 package com.kuts.klaf.presentation.theme
 
-import androidx.compose.material.Typography
+import androidx.compose.material3.Typography
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -69,10 +69,10 @@ data class CardManagementViewTextStyles(
 }
 
 private val Typography = Typography(
-    body1 = MainTextStyle,
-    caption = Caption,
-    subtitle1 = Subtitle1,
-    button = Button,
+    bodyLarge = MainTextStyle,
+    bodySmall = Caption,
+    titleMedium = Subtitle1,
+    labelLarge = Button,
 )
 
 private val CommonDeckRepetitionInfoScreenTextStyles = DeckRepetitionInfoScreenTextStyles(
