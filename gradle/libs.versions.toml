@@ -2,7 +2,7 @@
 kotlinCompilerExtension = "1.5.9"
 googleServices = "4.4.2"
 navigationSafeArgsKotlinPlugin = "2.5.0"
-agp = "8.5.2"
+agp = "8.12.0"
 kotlin = "2.2.20"
 firevaseCrashlyticsPlugin = "3.0.2"
 
