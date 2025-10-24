@@ -62,6 +62,7 @@ dependencies {
 
     /** Modules **/
     implementation(project(Modules.Domain))
+    implementation(project(Modules.Shared))
 
     /** Core **/
     implementation(libs.core.kotlin.stdlib)
