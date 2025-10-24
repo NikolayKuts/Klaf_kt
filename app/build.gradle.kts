@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.android.serialization)
     alias(libs.plugins.telegramAppDistribution)
+    alias(libs.plugins.compose.compiler)
     id("extensions-plugin")
 }
 
@@ -54,9 +55,6 @@ android {
         compose = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtension.get()
-    }
     namespace = "com.kuts.klaf"
 }
 
