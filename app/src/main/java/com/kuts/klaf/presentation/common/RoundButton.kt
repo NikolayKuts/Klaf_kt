@@ -50,18 +50,19 @@ fun RoundedIcon(
     background: Color,
     @DrawableRes iconId: Int,
     modifier: Modifier = Modifier,
+    size: Dp = ROUNDED_ELEMENT_SIZE.dp,
     contentDescription: String = "",
     elevation: Dp = 0.dp,
 ) {
     Card(
-        shape = RoundedCornerShape(ROUNDED_ELEMENT_SIZE.dp),
+        shape = RoundedCornerShape(size),
         modifier = modifier
-            .size(ROUNDED_ELEMENT_SIZE.dp),
+            .size(size),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation),
     ) {
         Icon(
             modifier = Modifier
-                .size(20.dp)
+                .size(size)
                 .background(background)
                 .padding(8.dp),
             painter = painterResource(id = iconId),
