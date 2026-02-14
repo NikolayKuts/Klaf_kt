@@ -1,0 +1,121 @@
+package com.kuts.klaf.presentation.cardManagement.cardAddition
+
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.lifecycle.viewModelScope
+import com.cambridge.dictionary.client.CambridgeClient
+import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
+import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.kuts.domain.entities.Card
+import com.kuts.domain.ipa.toRowInfos
+import com.kuts.domain.managers.IAudioPlayerManager
+import com.kuts.domain.repositories.ICrashlyticsRepository
+import com.kuts.domain.useCases.AddNewCardIntoDeckUseCase
+import com.kuts.domain.useCases.CheckIfCardExistsUseCase
+import com.kuts.domain.useCases.FetchDeckByIdUseCase
+import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
+import com.kuts.domain.useCases.FetchWordInfoUseCase
+import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.cardManagement.common.ICardManagementAction
+import com.kuts.klaf.presentation.cardManagement.common.CardManagementState
+import com.kuts.klaf.presentation.cardManagement.common.CardManagementViewModel
+import com.kuts.klaf.presentation.cardManagement.common.toDomainEntity
+import com.kuts.klaf.presentation.common.tryEmitAsNegative
+import com.kuts.klaf.presentation.common.tryEmitAsPositive
+import com.lib.lokdroid.core.logD
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
+
+class CardAdditionViewModel @AssistedInject constructor(
+    @Assisted deckId: Int,
+    @Assisted smartSelectedWord: String?,
+    private val addNewCardIntoDeck: AddNewCardIntoDeckUseCase,
+    checkIfWordExists: CheckIfCardExistsUseCase,
+    audioPlayer: IAudioPlayerManager,
+    cambridgeClient: CambridgeClient,
+    fetchWordAutocomplete: FetchWordAutocompleteUseCase,
+    fetchWordInfo: FetchWordInfoUseCase,
+    crashlytics: ICrashlyticsRepository,
+    fetchDeckById: FetchDeckByIdUseCase,
+) : CardManagementViewModel(
+    deckId = deckId,
+    audioPlayer = audioPlayer,
+    cambridgeClient = cambridgeClient,
+    fetchWordAutocomplete = fetchWordAutocomplete,
+    fetchWordInfo = fetchWordInfo,
+    crashlytics = crashlytics,
+    fetchDeckById = fetchDeckById,
+    checkIfWordExists = checkIfWordExists
+) {
+
+    init {
+        handleAddingStateBySelectedWord(word = smartSelectedWord)
+    }
+
+    override suspend fun onForeignWordChanged(word: String) {
+        super.onForeignWordChanged(word = word)
+        logD("onForeignWordChanged() called. foreignWord -> $word")
+
+        if (word.isNotEmpty()) {
+            checkIfForeignWordExists(word = word)
+        }
+    }
+
+    override fun onCardManagementConfirmed() {
+        val deckId = deck.replayCache.first()?.id ?: return
+        val nativeWord = cardManagementState.value.nativeWordFieldValue.text
+        val foreignWord = cardManagementState.value.foreignWordFieldValue.text
+        val textFieldIpaHoldersState = cardManagementState.value.textFieldValueIpaHolders
+
+        if (nativeWord.isEmpty() || foreignWord.isEmpty()) {
+            eventMessage.tryEmitAsNegative(resId = R.string.native_and_foreign_words_must_be_filled)
+        } else {
+            val ipaHolders = textFieldIpaHoldersState.map { textFieldValueIpaHolder ->
+                textFieldValueIpaHolder.toDomainEntity()
+                    .copy(ipa = textFieldValueIpaHolder.ipaTextFieldValue.text.trim())
+            }
+            val newCard = Card(
+                deckId = deckId,
+                nativeWord = nativeWord,
+                foreignWord = foreignWord,
+                ipa = ipaHolders
+            )
+
+            viewModelScope.launchWithState(Dispatchers.IO) {
+                val decksWithSameForeignWord = checkIfWordExists.invoke(foreignWord = foreignWord)
+
+                if (decksWithSameForeignWord.isEmpty()) {
+                    addNewCardIntoDeck(card = newCard)
+                    finishAddingState()
+                    audioPlayer.preparePronunciation(word = "")
+                    eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_added)
+                } else {
+                    val deckNamesAsString = decksWithSameForeignWord.joinToString(", ") { it.name }
+
+                    eventMessage.tryEmitAsNegative(
+                        resId = R.string.foreign_word_already_exists,
+                        args = arrayOf(foreignWord, deckNamesAsString),
+                    )
+                }
+            }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+                eventMessage.tryEmitAsNegative(resId = R.string.exception_adding_card)
+            }
+        }
+    }
+
+    private fun handleAddingStateBySelectedWord(word: String?) {
+        val checkedWord = word?.trim()?.lowercase() ?: ""
+
+        foreignWordFieldValueState.value = TextFieldValue(text = checkedWord)
+        letterInfosState.value = checkedWord.toRowInfos()
+    }
+
+    private fun finishAddingState() {
+        sendAction(
+            action = ICardManagementAction.UpdateDataOnForeignWordChanged(
+                wordFieldValue = TextFieldValue()
+            )
+        )
+        cardManagementState.value = CardManagementState.Finished
+    }
+}

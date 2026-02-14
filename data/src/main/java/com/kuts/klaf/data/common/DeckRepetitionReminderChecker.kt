@@ -6,9 +6,9 @@ import androidx.work.*
 import com.kuts.domain.common.getCurrentDateAsLong
 import com.kuts.domain.common.ifTrue
 import com.kuts.domain.entities.Deck
+import com.kuts.domain.managers.IDeckReviewNotifierManager
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.FetchAllDecksUseCase
-import com.kuts.klaf.data.common.notifications.DeckReviewNotifier
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 class DeckRepetitionReminderChecker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
-    private val deckReviewNotifier: DeckReviewNotifier,
+    private val deckReviewNotifier: IDeckReviewNotifierManager,
     private val fetchAllDecks: FetchAllDecksUseCase,
     private val crashlytics: ICrashlyticsRepository,
 ) : CoroutineWorker(appContext = context, params = params) {

@@ -1,11 +1,8 @@
 package com.kuts.klaf.data.common
 
 import android.content.Context
-import android.content.ComponentName
 import androidx.hilt.work.HiltWorker
-import androidx.navigation.NavDeepLinkBuilder
 import androidx.work.*
-import com.kuts.klaf.data.R
 import com.kuts.klaf.data.common.notifications.AppRestartNotifier
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -21,7 +18,6 @@ class AppReopeningWorker @AssistedInject constructor(
 
         private const val NOTIFICATION_ID = 43235452
         private const val UNIQUE_RESTART_WORK_NAME = "unique_restart_work_Name"
-        private const val MAIN_ACTIVITY_CLASS_NAME = "com.kuts.klaf.presentation.common.MainActivity"
 
         fun WorkManager.scheduleAppReopening() {
             enqueueUniqueWork(
@@ -40,12 +36,13 @@ class AppReopeningWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         setForeground(getForegroundInfo())
-        NavDeepLinkBuilder(applicationContext)
-            .setComponentName(ComponentName(applicationContext, MAIN_ACTIVITY_CLASS_NAME))
-            .setGraph(R.navigation.nav_graph)
-            .setDestination(R.id.deckListFragment)
-            .createPendingIntent()
-            .send()
+        // Nav graph deep link is intentionally disabled to keep data module UI-agnostic.
+        // NavDeepLinkBuilder(applicationContext)
+        //     .setComponentName(ComponentName(applicationContext, "com.kuts.klaf.MainActivity"))
+        //     .setGraph(R.navigation.data_nav_graph)
+        //     .setDestination(R.id.deckListFragment)
+        //     .createPendingIntent()
+        //     .send()
 
         return Result.success()
     }

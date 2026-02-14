@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.parcelize)
-    alias(libs.plugins.navigation.safeargs.kotlin)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.android.serialization)
@@ -61,6 +60,7 @@ android {
 dependencies {
 
     /** Modules **/
+    implementation(project(Modules.Presentation))
     implementation(project(Modules.Domain))
     implementation(project(Modules.Shared))
     implementation(project(Modules.Data))

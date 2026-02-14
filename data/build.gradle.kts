@@ -25,11 +25,6 @@ android {
         jvmTarget = "17"
     }
 
-    sourceSets {
-        getByName("main") {
-            res.srcDirs("../app/src/main/res")
-        }
-    }
 }
 
 dependencies {
@@ -42,9 +37,6 @@ dependencies {
     implementation(libs.core.fragment.ktx)
     implementation(libs.core.coroutines.core.jvm)
     implementation(libs.core.javax.inject)
-
-    /** Navigation **/
-    implementation(libs.navigation.fragment.ktx)
 
     /** Room **/
     implementation(libs.room.runtime)

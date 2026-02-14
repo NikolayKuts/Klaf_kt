@@ -11,11 +11,9 @@ import com.kuts.domain.repositories.IStorageTransactionRepository
 import com.kuts.domain.repositories.IWordAutocompleteRepository
 import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.managers.IAppMaintenanceManager
-import com.kuts.domain.managers.IDeckReviewNotifierManager
 import com.kuts.klaf.data.common.AppMaintenanceManager
 import com.kuts.klaf.data.common.OldAppKlafDataTransferRepository
 import com.kuts.klaf.data.dataStore.implementations.DataStoreDeckRepetitionInfoRepository
-import com.kuts.klaf.data.common.notifications.DeckReviewNotifier
 import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebase
 import com.kuts.klaf.data.firestore.repositoryImplementations.CardRepositoryFirestore
 import com.kuts.klaf.data.firestore.repositoryImplementations.CrashlyticsRepositoryFirebase
@@ -40,11 +38,6 @@ interface IDomainModule {
     fun bindAppMaintenanceManager(
         manager: AppMaintenanceManager,
     ): IAppMaintenanceManager
-
-    @Binds
-    fun bindDeckReviewNotifierManager(
-        manager: DeckReviewNotifier,
-    ): IDeckReviewNotifierManager
 
     @Binds
     @com.kuts.domain.common.LocalDeckRepository
