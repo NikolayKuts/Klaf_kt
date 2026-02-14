@@ -11,7 +11,7 @@ import androidx.navigation.navGraphViewModels
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.TransparentDialogFragment
 import com.kuts.klaf.presentation.deckList.common.BaseDeckListViewModel
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationEvent
 import com.kuts.klaf.presentation.theme.MainTheme
 
 class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.common_compose_layout) {
@@ -92,7 +92,7 @@ class DeckNavigationDialogFragment : TransparentDialogFragment(R.layout.common_c
     }
 
     private fun closeDialog() {
-        viewModel.handleNavigation(event = DeckListNavigationEvent.ToPrevious)
+        viewModel.handleNavigation(event = IDeckListNavigationEvent.ToPrevious)
     }
 
     private fun generateChatGptStoryCrafterPrompt() {

@@ -33,8 +33,8 @@ import com.cambridge.dictionary.core.PartsOfSpeech
 import com.cambridge.dictionary.core.Phrase
 import com.cambridge.dictionary.core.Word
 import com.kuts.klaf.presentation.cardManagement.common.BaseCardManagementViewModel
-import com.kuts.klaf.presentation.cardManagement.common.CambridgeDataState
-import com.kuts.klaf.presentation.cardManagement.common.CardManagementAction
+import com.kuts.klaf.presentation.cardManagement.common.ICambridgeDataState
+import com.kuts.klaf.presentation.cardManagement.common.ICardManagementAction
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementView
 import kotlinx.coroutines.launch
 
@@ -68,28 +68,28 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
             autocompleteState = autocompleteState,
             pronunciationLoadingState = pronunciationLoadingState,
             nativeWordSuggestionsState = nativeWordSuggestionsState,
-            cambridgeDataAvailable = cambridgeDataState is CambridgeDataState.Fetched,
+            cambridgeDataAvailable = cambridgeDataState is ICambridgeDataState.Fetched,
             ipaKeyboardState = ipaKeyboardState,
             onIpaTextFieldFocusChanged = { focusList ->
                 viewModel.sendAction(
-                    action = CardManagementAction.IpaTextFieldFocusChanged(focusList = focusList)
+                    action = ICardManagementAction.IpaTextFieldFocusChanged(focusList = focusList)
                 )
             },
             onBottomSheetAction = {
                 scope.launch { showBottomSheet.value = showBottomSheet.value.not() }
             },
             onForeignWordTextFieldClick = {
-                viewModel.sendAction(action = CardManagementAction.CloseNativeWordSuggestionsMenu)
+                viewModel.sendAction(action = ICardManagementAction.CloseNativeWordSuggestionsMenu)
             },
             closeAutocompletePopupMenu = {
-                viewModel.sendAction(action = CardManagementAction.CloseAutocompleteMenu)
+                viewModel.sendAction(action = ICardManagementAction.CloseAutocompleteMenu)
             },
             closeNativeWordSuggestionsPopupMenu = {
-                viewModel.sendAction(action = CardManagementAction.CloseNativeWordSuggestionsMenu)
+                viewModel.sendAction(action = ICardManagementAction.CloseNativeWordSuggestionsMenu)
             },
             onLetterClick = { index, letterInfo ->
                 viewModel.sendAction(
-                    action = CardManagementAction.ChangeLetterSelectionWithIpaTemplate(
+                    action = ICardManagementAction.ChangeLetterSelectionWithIpaTemplate(
                         index = index,
                         letterInfo = letterInfo
                     )
@@ -97,49 +97,49 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
             },
             onNativeWordFieldValueChange = { wordFieldValue ->
                 viewModel.sendAction(
-                    action = CardManagementAction.UpdateNativeWord(
+                    action = ICardManagementAction.UpdateNativeWord(
                         wordFieldValue = wordFieldValue
                     )
                 )
             },
             onForeignWordFieldValueChange = { wordFieldValue ->
                 viewModel.sendAction(
-                    action = CardManagementAction.UpdateDataOnForeignWordChanged(wordFieldValue = wordFieldValue)
+                    action = ICardManagementAction.UpdateDataOnForeignWordChanged(wordFieldValue = wordFieldValue)
                 )
             },
             onIpaTextFieldValueChange = { letterGroupIndex, ipa ->
                 viewModel.sendAction(
-                    action = CardManagementAction.UpdateIpa(
+                    action = ICardManagementAction.UpdateIpa(
                         letterGroupIndex = letterGroupIndex,
                         ipa = ipa
                     )
                 )
             },
             onConfirmClick = {
-                viewModel.sendAction(action = CardManagementAction.CardManagementConfirmed)
+                viewModel.sendAction(action = ICardManagementAction.CardManagementConfirmed)
             },
             onPronounceIconClick = {
-                viewModel.sendAction(action = CardManagementAction.PronounceForeignWordClicked)
+                viewModel.sendAction(action = ICardManagementAction.PronounceForeignWordClicked)
             },
             onAutocompleteItemClick = { autocompleteWord ->
                 viewModel.sendAction(
-                    action = CardManagementAction.UpdateDataOnAutocompleteSelected(
+                    action = ICardManagementAction.UpdateDataOnAutocompleteSelected(
                         word = autocompleteWord
                     )
                 )
             },
             transcription = transcription,
             onNativeWordFieldArrowIconClick = {
-                viewModel.sendAction(action = CardManagementAction.NativeWordFieldIconClicked)
+                viewModel.sendAction(action = ICardManagementAction.NativeWordFieldIconClicked)
             },
             onNativeWordSuggestionItemClick = { chosenWordIndex ->
-                viewModel.sendAction(action = CardManagementAction.NativeWordSelected(wordIndex = chosenWordIndex))
+                viewModel.sendAction(action = ICardManagementAction.NativeWordSelected(wordIndex = chosenWordIndex))
             },
             onConfirmSuggestionsSelection = {
-                viewModel.sendAction(action = CardManagementAction.ConfirmSuggestionsSelection)
+                viewModel.sendAction(action = ICardManagementAction.ConfirmSuggestionsSelection)
             },
             onClearNativeWordSuggestionsSelectionClick = {
-                viewModel.sendAction(action = CardManagementAction.ClearNativeWordSuggestionsSelectionClicked)
+                viewModel.sendAction(action = ICardManagementAction.ClearNativeWordSuggestionsSelectionClicked)
             }
         )
 
@@ -154,7 +154,7 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun BottomSheet(
-    cambridgeDataState: CambridgeDataState,
+    cambridgeDataState: ICambridgeDataState,
     scaffoldState: SheetState = rememberModalBottomSheetState(),
     showBottomSheetState: MutableState<Boolean>,
 ) {
@@ -163,7 +163,7 @@ private fun BottomSheet(
             onDismissRequest = { showBottomSheetState.value = false },
             sheetState = scaffoldState,
             content = {
-                (cambridgeDataState as? CambridgeDataState.Fetched)?.let {
+                (cambridgeDataState as? ICambridgeDataState.Fetched)?.let {
                     WordDetailsScreen(word = it.word)
                 }
             }

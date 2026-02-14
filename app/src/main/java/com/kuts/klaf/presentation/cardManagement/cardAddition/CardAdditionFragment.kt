@@ -8,7 +8,6 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import com.kuts.domain.common.ifTrue
 import com.kuts.klaf.R
-import com.kuts.klaf.data.common.MIME_TYPE_TEXT_PLAIN
 import com.kuts.klaf.presentation.cardManagement.common.BaseCardManagementViewModel
 import com.kuts.klaf.presentation.common.BaseFragment
 import com.kuts.klaf.presentation.common.TransparentSurface
@@ -17,13 +16,15 @@ import com.kuts.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+private const val MIME_TYPE_TEXT_PLAIN = "text/plain"
+
 @AndroidEntryPoint
 class CardAdditionFragment : BaseFragment(layoutId = R.layout.common_compose_layout) {
 
     private val args by navArgs<CardAdditionFragmentArgs>()
 
     @Inject
-    lateinit var cardAdditionAssistedFactory: CardAdditionViewModelAssistedFactory
+    lateinit var cardAdditionAssistedFactory: ICardAdditionViewModelAssistedFactory
     private val viewModel: BaseCardManagementViewModel by viewModels {
         CardAdditionViewModelFactory(
             assistedFactory = cardAdditionAssistedFactory,
@@ -35,7 +36,17 @@ class CardAdditionFragment : BaseFragment(layoutId = R.layout.common_compose_lay
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        subscribeAudioPlayerObserver()
+        viewModel.audioPlayer.onCreate()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.audioPlayer.onResume()
+    }
+
+    override fun onStop() {
+        viewModel.audioPlayer.onStop()
+        super.onStop()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -53,9 +64,8 @@ class CardAdditionFragment : BaseFragment(layoutId = R.layout.common_compose_lay
     }
 
     override fun onDestroy() {
+        viewModel.audioPlayer.onDestroy()
         super.onDestroy()
-
-        lifecycle.removeObserver(viewModel.audioPlayer)
     }
 
     private fun observeEventMessage() {
@@ -63,10 +73,6 @@ class CardAdditionFragment : BaseFragment(layoutId = R.layout.common_compose_lay
             lifecycleOwner = viewLifecycleOwner,
             onEach = sharedViewModel::notify
         )
-    }
-
-    private fun subscribeAudioPlayerObserver() {
-        lifecycle.addObserver(viewModel.audioPlayer)
     }
 
     private fun retrieveSmartSelectedWord(): String? = activity?.intent?.run {

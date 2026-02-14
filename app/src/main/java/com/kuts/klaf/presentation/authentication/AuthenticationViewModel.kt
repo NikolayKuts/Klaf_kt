@@ -7,22 +7,22 @@ import com.kuts.domain.common.ifNotNull
 import com.kuts.domain.common.ifTrue
 import com.kuts.domain.common.launchIn
 import com.kuts.domain.interactors.AuthenticationInteractor
-import com.kuts.domain.repositories.AuthenticationRepository.AuthenticationError
+import com.kuts.domain.repositories.IAuthenticationRepository.IAuthenticationError
+import com.kuts.domain.repositories.IAuthenticationRepository.ISigningInError
+import com.kuts.domain.repositories.IAuthenticationRepository.ISigningInError.CommonError
+import com.kuts.domain.repositories.IAuthenticationRepository.ISigningInError.InvalidPassword
+import com.kuts.domain.repositories.IAuthenticationRepository.ISigningInError.NetworkError
+import com.kuts.domain.repositories.IAuthenticationRepository.ISigningInError.NoUserRecord
+import com.kuts.domain.repositories.IAuthenticationRepository.ISigningUpError
 import com.kuts.klaf.R
-import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError
-import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError.CommonError
-import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError.InvalidPassword
-import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError.NetworkError
-import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningInLoadingError.NoUserRecord
-import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.SigningUpLoadingError
-import com.kuts.klaf.presentation.authentication.EmailValidator.EmailValidationResult.Empty
-import com.kuts.klaf.presentation.authentication.EmailValidator.EmailValidationResult.Valid
-import com.kuts.klaf.presentation.authentication.EmailValidator.EmailValidationResult.WrongFormat
-import com.kuts.klaf.presentation.authentication.PasswordConfirmationValidator.PasswordConfirmationValidationResult
-import com.kuts.klaf.presentation.authentication.PasswordConfirmationValidator.PasswordConfirmationValidationResult.NotIdentical
-import com.kuts.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult
-import com.kuts.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult.ToLong
-import com.kuts.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult.ToShort
+import com.kuts.klaf.presentation.authentication.EmailValidator.IEmailValidationResult.Empty
+import com.kuts.klaf.presentation.authentication.EmailValidator.IEmailValidationResult.Valid
+import com.kuts.klaf.presentation.authentication.EmailValidator.IEmailValidationResult.WrongFormat
+import com.kuts.klaf.presentation.authentication.PasswordConfirmationValidator.IPasswordConfirmationValidationResult
+import com.kuts.klaf.presentation.authentication.PasswordConfirmationValidator.IPasswordConfirmationValidationResult.NotIdentical
+import com.kuts.klaf.presentation.authentication.PasswordValidator.IPasswordValidationResult
+import com.kuts.klaf.presentation.authentication.PasswordValidator.IPasswordValidationResult.ToLong
+import com.kuts.klaf.presentation.authentication.PasswordValidator.IPasswordValidationResult.ToShort
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -48,7 +48,7 @@ class AuthenticationViewModel @Inject constructor(
     )
 
     override val screenLoadingState =
-        MutableStateFlow<LoadingState<AuthenticationAction, AuthenticationError>>(value = LoadingState.Non)
+        MutableStateFlow<LoadingState<AuthenticationAction, IAuthenticationError>>(value = LoadingState.Non)
 
     override fun updateEmail(value: String) {
         typingState.update { state ->
@@ -117,9 +117,9 @@ class AuthenticationViewModel @Inject constructor(
         }
     }
 
-    private fun handleSigningInError(loadingState: LoadingState.Error<AuthenticationError>) {
+    private fun handleSigningInError(loadingState: LoadingState.Error<IAuthenticationError>) {
         val errorMessageId = when (val error = loadingState.value) {
-            is SigningInLoadingError -> {
+            is ISigningInError -> {
                 when (error) {
                     CommonError -> R.string.authentication_warning_common_error_message
                     NetworkError -> R.string.authentication_warning_network_error
@@ -141,20 +141,20 @@ class AuthenticationViewModel @Inject constructor(
         eventMessage.tryEmitAsNegative(resId = errorMessageId)
     }
 
-    private fun handleSigningUpError(loadingState: LoadingState.Error<AuthenticationError>) {
+    private fun handleSigningUpError(loadingState: LoadingState.Error<IAuthenticationError>) {
         val errorMessageId = when (val error = loadingState.value) {
-            is SigningUpLoadingError -> {
+            is ISigningUpError -> {
                 when (error) {
-                    SigningUpLoadingError.EmailAlreadyInUse -> {
+                    ISigningUpError.EmailAlreadyInUse -> {
                         setErrorStateForEmailHolder()
                         R.string.authentication_warning_email_already_in_use_error
                     }
 
-                    SigningUpLoadingError.NetworkError -> {
+                    ISigningUpError.NetworkError -> {
                         R.string.authentication_warning_network_error
                     }
 
-                    SigningUpLoadingError.CommonError -> {
+                    ISigningUpError.CommonError -> {
                         R.string.authentication_warning_common_error_message
                     }
                 }
@@ -211,10 +211,10 @@ class AuthenticationViewModel @Inject constructor(
 
     private fun getPasswordValidationMessageId(password: String): Int? {
         return when (PasswordValidator().validate(data = password)) {
-            PasswordValidationResult.Empty -> R.string.authentication_warning_type_password
+            IPasswordValidationResult.Empty -> R.string.authentication_warning_type_password
             ToLong -> R.string.authentication_warning_password_too_long
             ToShort -> R.string.authentication_warning_password_too_short
-            PasswordValidationResult.Valid -> null
+            IPasswordValidationResult.Valid -> null
         }
     }
 
@@ -223,12 +223,12 @@ class AuthenticationViewModel @Inject constructor(
             PasswordConfirmationSate(password = password, confirmation = confirmation)
 
         return when (PasswordConfirmationValidator().validate(data = confirmationState)) {
-            PasswordConfirmationValidationResult.Empty -> {
+            IPasswordConfirmationValidationResult.Empty -> {
                 R.string.authentication_warning_type_password_confirmation
             }
 
             NotIdentical -> R.string.authentication_warning_Invalid_password_confirmation
-            PasswordConfirmationValidationResult.Valid -> null
+            IPasswordConfirmationValidationResult.Valid -> null
         }
     }
 

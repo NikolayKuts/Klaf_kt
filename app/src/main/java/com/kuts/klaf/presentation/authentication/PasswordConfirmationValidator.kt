@@ -1,21 +1,21 @@
 package com.kuts.klaf.presentation.authentication
 
 import com.kuts.klaf.presentation.authentication.PasswordConfirmationValidator.*
-import com.kuts.klaf.presentation.authentication.PasswordConfirmationValidator.PasswordConfirmationValidationResult.*
+import com.kuts.klaf.presentation.authentication.PasswordConfirmationValidator.IPasswordConfirmationValidationResult.*
 
 class PasswordConfirmationValidator :
-    Validator<PasswordConfirmationSate, PasswordConfirmationValidationResult> {
+    IValidator<PasswordConfirmationSate, IPasswordConfirmationValidationResult> {
 
-    sealed interface PasswordConfirmationValidationResult : Validator.ValidationResult {
+    sealed interface IPasswordConfirmationValidationResult : IValidator.IValidationResult {
 
-        object Empty : PasswordConfirmationValidationResult
+        object Empty : IPasswordConfirmationValidationResult
 
-        object NotIdentical : PasswordConfirmationValidationResult
+        object NotIdentical : IPasswordConfirmationValidationResult
 
-        object Valid : PasswordConfirmationValidationResult
+        object Valid : IPasswordConfirmationValidationResult
     }
 
-    override fun validate(data: PasswordConfirmationSate): PasswordConfirmationValidationResult = when {
+    override fun validate(data: PasswordConfirmationSate): IPasswordConfirmationValidationResult = when {
         data.confirmation.isEmpty() -> Empty
         data.password != data.confirmation -> NotIdentical
         else -> Valid

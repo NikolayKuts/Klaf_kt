@@ -50,7 +50,7 @@ data class MainColors(
 
 class MaterialColorScheme {
 
-    object Theme : Themable<ColorScheme> {
+    object Theme : IThemable<ColorScheme> {
 
         override val light: ColorScheme = lightColorScheme(
             primary = Color(0xFFBEDB9C),
@@ -78,7 +78,7 @@ data class CommonColors(
     val progressIndicator: Color,
 ) {
 
-    object Theme : Themable<CommonColors> {
+    object Theme : IThemable<CommonColors> {
 
         override val light: CommonColors = CommonColors(
             statusBarBackground = Color(0xFF8AA768),
@@ -121,7 +121,7 @@ data class DeckListScreenColors(
     val drawerColors: DrawerColors,
 ) {
 
-    object Theme : Themable<DeckListScreenColors> {
+    object Theme : IThemable<DeckListScreenColors> {
 
         override val light = DeckListScreenColors(
             lightDeckItemBackground = Color(0xFFFFFFFF),
@@ -165,7 +165,7 @@ data class CardManagementViewColors(
     val inactivePronunciationIcon: Color,
 ) {
 
-    object Theme : Themable<CardManagementViewColors> {
+    object Theme : IThemable<CardManagementViewColors> {
 
         override val light = CardManagementViewColors(
             checkedLetterCell = Color(0xFFB0D9DF),
@@ -215,7 +215,7 @@ data class DeckRepetitionScreenColors(
     val ipaPromptUnchecked: Color,
 ) {
 
-    object Theme : Themable<DeckRepetitionScreenColors> {
+    object Theme : IThemable<DeckRepetitionScreenColors> {
 
         override val light = DeckRepetitionScreenColors(
             frontSideOrderPointer = Color(0xFF6EA0A7),
@@ -262,7 +262,7 @@ data class DataSynchronizationViewColors(
     val targetWarning: Color,
 ) {
 
-    object Theme : Themable<DataSynchronizationViewColors> {
+    object Theme : IThemable<DataSynchronizationViewColors> {
 
         override val light = DataSynchronizationViewColors(
             targetLabelBackground = Color(0xFFC4ECB0),
@@ -286,7 +286,7 @@ data class CardViewingScreenColors(
     val ordinal: Color,
 ) {
 
-    object Theme : Themable<CardViewingScreenColors> {
+    object Theme : IThemable<CardViewingScreenColors> {
 
         override val light = CardViewingScreenColors(
             foreignWord = Color(0xFFA078AA),
@@ -309,7 +309,7 @@ data class DeckRepetitionInfoScreenColors(
     val failureMark: Color,
 ) {
 
-    object Theme : Themable<DeckRepetitionInfoScreenColors> {
+    object Theme : IThemable<DeckRepetitionInfoScreenColors> {
 
         override val light = DeckRepetitionInfoScreenColors(
             pointerBackground = Color(0x2F868686),
@@ -342,7 +342,7 @@ data class CardTransferringScreenColors(
     val unClickedMoreButton: Color,
 ) {
 
-    object Theme : Themable<CardTransferringScreenColors> {
+    object Theme : IThemable<CardTransferringScreenColors> {
 
         override val light = CardTransferringScreenColors(
             quantityPointerBackground = Color(0x4B707070),
@@ -380,7 +380,7 @@ data class AuthenticationScreenColors(
     val textFieldBackground: Color,
 ) {
 
-    object Theme : Themable<AuthenticationScreenColors> {
+    object Theme : IThemable<AuthenticationScreenColors> {
 
         override val light = AuthenticationScreenColors(
             textFieldBackground = Color(0xFFF7F6F6),
@@ -399,7 +399,7 @@ data class EventMessageColors(
     val positive: ColorHolder,
 ) {
 
-    object Theme : Themable<EventMessageColors> {
+    object Theme : IThemable<EventMessageColors> {
 
         override val light: EventMessageColors = EventMessageColors(
             negative = ColorHolder(
@@ -448,7 +448,7 @@ data class DrawerColors(
     val profileIconNegativeTint: Color,
 ) {
 
-    object Theme : Themable<DrawerColors> {
+    object Theme : IThemable<DrawerColors> {
 
         override val light: DrawerColors = DrawerColors(
             headerBackground = Color(0xFFEBEBEB),

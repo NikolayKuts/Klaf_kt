@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
-import com.kuts.domain.common.Wordable
+import com.kuts.domain.common.IWordable
 import com.kuts.domain.common.ifTrue
 import com.kuts.klaf.presentation.common.rememberAsMutableStateOf
 import com.kuts.klaf.presentation.common.verticalScrollbar
@@ -44,7 +44,7 @@ import com.kuts.klaf.presentation.theme.MainTheme
 import com.lib.lokdroid.core.logD
 
 @Composable
-fun <T : Wordable> DropDownWordField(
+fun <T : IWordable> DropDownWordField(
     expanded: Boolean,
     typedTextFieldValue: TextFieldValue,
     dropdownContent: List<T>,

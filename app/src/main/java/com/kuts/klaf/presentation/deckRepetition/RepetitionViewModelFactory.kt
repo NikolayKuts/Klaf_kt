@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import dagger.assisted.AssistedFactory
 
 class RepetitionViewModelFactory(
-    private val assistedFactory: RepetitionViewModelAssistedFactory,
+    private val assistedFactory: IRepetitionViewModelAssistedFactory,
     private val deckId: Int,
 ) : AbstractSavedStateViewModelFactory() {
 
@@ -21,7 +21,7 @@ class RepetitionViewModelFactory(
 }
 
 @AssistedFactory
-interface RepetitionViewModelAssistedFactory {
+interface IRepetitionViewModelAssistedFactory {
 
     fun create(deckId: Int, handle: SavedStateHandle): DeckReviewViewModel
 }

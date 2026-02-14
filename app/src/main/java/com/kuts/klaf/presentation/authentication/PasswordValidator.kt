@@ -1,19 +1,19 @@
 package com.kuts.klaf.presentation.authentication
 
 import com.kuts.klaf.presentation.authentication.PasswordValidator.*
-import com.kuts.klaf.presentation.authentication.PasswordValidator.PasswordValidationResult.*
+import com.kuts.klaf.presentation.authentication.PasswordValidator.IPasswordValidationResult.*
 
-class PasswordValidator : Validator<String, PasswordValidationResult> {
+class PasswordValidator : IValidator<String, IPasswordValidationResult> {
 
-    sealed interface PasswordValidationResult : Validator.ValidationResult {
+    sealed interface IPasswordValidationResult : IValidator.IValidationResult {
 
-        data object Empty : PasswordValidationResult
+        data object Empty : IPasswordValidationResult
 
-        data object ToShort : PasswordValidationResult
+        data object ToShort : IPasswordValidationResult
 
-        data object ToLong : PasswordValidationResult
+        data object ToLong : IPasswordValidationResult
 
-        data object Valid : PasswordValidationResult
+        data object Valid : IPasswordValidationResult
     }
 
     companion object {
@@ -22,7 +22,7 @@ class PasswordValidator : Validator<String, PasswordValidationResult> {
         const val MIN_LENGTH = 8
     }
 
-    override fun validate(data: String): PasswordValidationResult = when {
+    override fun validate(data: String): IPasswordValidationResult = when {
         data.isEmpty() -> Empty
         data.length >= MAX_LENGTH -> ToLong
         data.length < MIN_LENGTH -> ToShort

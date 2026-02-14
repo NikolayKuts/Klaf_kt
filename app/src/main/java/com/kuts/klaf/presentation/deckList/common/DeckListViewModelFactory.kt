@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import dagger.assisted.AssistedFactory
 
 class DeckListViewModelFactory(
-    private val assistedFactory: DeckListViewModelAssistedFactory,
+    private val assistedFactory: IDeckListViewModelAssistedFactory,
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
@@ -15,7 +15,7 @@ class DeckListViewModelFactory(
 }
 
 @AssistedFactory
-interface DeckListViewModelAssistedFactory {
+interface IDeckListViewModelAssistedFactory {
 
     fun create(): DeckListViewModel
 }

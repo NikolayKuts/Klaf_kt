@@ -12,7 +12,7 @@ import androidx.fragment.app.activityViewModels
 
 open class TransparentDialogFragment(
     @LayoutRes layoutId: Int,
-) : DialogFragment(layoutId), SharedViewModelHolder {
+) : DialogFragment(layoutId), ISharedViewModelHolder {
 
     override val sharedViewModel: BaseMainViewModel by activityViewModels<MainViewModel>()
 

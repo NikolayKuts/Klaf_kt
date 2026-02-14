@@ -26,15 +26,15 @@ import com.kuts.klaf.presentation.common.BaseFragment
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.NavigationDestination
 import com.kuts.klaf.presentation.common.collectWhenStarted
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToCardTransferringScreen
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToChatGptWithDeckContentPrompt
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDataSynchronizationDialog
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDeckCreationDialog
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDeckNavigationDialog
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDeckRepetitionScreen
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDrawerActionDialog
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToPrevious
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToSigningTypeChoosingDialog
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationEvent.ToCardTransferringScreen
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationEvent.ToChatGptWithDeckContentPrompt
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationEvent.ToDataSynchronizationDialog
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationEvent.ToDeckCreationDialog
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationEvent.ToDeckNavigationDialog
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationEvent.ToDeckRepetitionScreen
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationEvent.ToDrawerActionDialog
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationEvent.ToPrevious
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationEvent.ToSigningTypeChoosingDialog
 import com.kuts.klaf.presentation.deckList.dataSynchronization.DataSynchronizationDialogFragmentDirections
 import com.kuts.klaf.presentation.deckList.drawer.Drawer
 import com.kuts.klaf.presentation.deckList.drawer.DrawerAction
@@ -50,7 +50,7 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
     private val navController by lazy { findNavController() }
 
     @Inject
-    lateinit var assistedFactory: DeckListViewModelAssistedFactory
+    lateinit var assistedFactory: IDeckListViewModelAssistedFactory
     private val viewModel: BaseDeckListViewModel by navGraphViewModels(R.id.deckListFragment) {
         DeckListViewModelFactory(assistedFactory = assistedFactory)
     }

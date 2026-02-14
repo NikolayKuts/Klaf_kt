@@ -1,7 +1,7 @@
 package com.kuts.domain.common
 
 import com.kuts.domain.ipa.LetterInfo
-import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.domain.repositories.ICrashlyticsRepository
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -138,7 +138,7 @@ fun String.skipOnNewLineCharacter(): String = if ("\n" in this) {
 }
 
 fun <T> Flow<T>.catchWithCrashlyticsReport(
-    crashlytics: CrashlyticsRepository,
+    crashlytics: ICrashlyticsRepository,
     action: suspend FlowCollector<T>.(Throwable) -> Unit,
 ): Flow<T> = this.catch {
     crashlytics.report(exception = it)

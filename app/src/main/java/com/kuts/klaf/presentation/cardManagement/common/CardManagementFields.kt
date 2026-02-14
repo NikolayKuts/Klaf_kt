@@ -49,7 +49,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.LoadingState
-import com.kuts.domain.common.Wordable
+import com.kuts.domain.common.IWordable
 import com.kuts.domain.common.skipOnNewLineCharacter
 import com.kuts.domain.entities.AutocompleteWord
 import com.kuts.klaf.R
@@ -210,7 +210,7 @@ fun DropDownNativeWordField(
         expanded = expanded,
         typedTextFieldValue = typedTextFieldValue,
         dropdownContent = nativeWordSuggestionsState.suggestions.map { wordSuggestion ->
-            Wordable { wordSuggestion.word }
+            IWordable { wordSuggestion.word }
         },
         textColor = MainTheme.colors.cardManagementView.nativeWord,
         labelResId = R.string.label_native_word,

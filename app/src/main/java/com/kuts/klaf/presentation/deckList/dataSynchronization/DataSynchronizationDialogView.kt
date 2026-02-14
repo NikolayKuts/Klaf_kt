@@ -25,14 +25,14 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.kuts.domain.common.IDataSynchronizationState
+import com.kuts.domain.common.IDataSynchronizationState.Failed
+import com.kuts.domain.common.IDataSynchronizationState.Initial
+import com.kuts.domain.common.IDataSynchronizationState.SuccessfullyFinished
+import com.kuts.domain.common.IDataSynchronizationState.Synchronizing
+import com.kuts.domain.common.IDataSynchronizationState.Uncertain
 import com.kuts.domain.common.ifNotNull
 import com.kuts.klaf.R
-import com.kuts.klaf.data.common.DataSynchronizationState
-import com.kuts.klaf.data.common.DataSynchronizationState.Failed
-import com.kuts.klaf.data.common.DataSynchronizationState.Initial
-import com.kuts.klaf.data.common.DataSynchronizationState.SuccessfullyFinished
-import com.kuts.klaf.data.common.DataSynchronizationState.Synchronizing
-import com.kuts.klaf.data.common.DataSynchronizationState.Uncertain
 import com.kuts.klaf.presentation.common.ClosingButton
 import com.kuts.klaf.presentation.common.ContentHolder
 import com.kuts.klaf.presentation.common.EventMessage
@@ -50,7 +50,7 @@ import com.kuts.klaf.presentation.theme.MainTheme
 
 @Composable
 fun DataSynchronizationDialogView(
-    synchronizationState: DataSynchronizationState,
+    synchronizationState: IDataSynchronizationState,
     onConfirmClick: () -> Unit,
     onCloseClick: () -> Unit,
     onDispose: () -> Unit,

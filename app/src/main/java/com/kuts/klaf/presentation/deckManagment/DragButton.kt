@@ -103,7 +103,7 @@ private fun Preview() {
 @Composable
 fun DragButton(
     value: String,
-    onDragButtonAction: (DraggableButtonAction) -> Unit,
+    onDragButtonAction: (IDraggableButtonAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var buttonSize by remember { mutableStateOf(IntSize.Zero) }
@@ -149,7 +149,7 @@ private fun ButtonContainer(
     containerSize: IntSize,
     thumbOffsetX: Float,
     thumbOffsetY: Float,
-    onAction: (DraggableButtonAction) -> Unit,
+    onAction: (IDraggableButtonAction) -> Unit,
     modifier: Modifier = Modifier,
     clearButtonVisible: Boolean = false,
 ) {
@@ -195,7 +195,7 @@ private fun ButtonContainer(
         IconControlButton(
             icon = ImageVector.vectorResource(id = R.drawable.ic_remove),
             contentDescription = "Decrease count",
-            onClick = { onAction(DraggableButtonAction.Decrease) },
+            onClick = { onAction(IDraggableButtonAction.Decrease) },
             enabled = !clearButtonVisible,
             tintColor = Color.White.copy(
                 alpha = if (clearButtonVisible) {
@@ -217,7 +217,7 @@ private fun ButtonContainer(
             IconControlButton(
                 icon = Icons.Outlined.Clear,
                 contentDescription = "Clear count",
-                onClick = { onAction(DraggableButtonAction.Reset) },
+                onClick = { onAction(IDraggableButtonAction.Reset) },
                 enabled = false,
                 tintColor = Color.White.copy(
                     alpha = (thumbOffsetY.absoluteValue / verticalHighlightLimitPx).coerceIn(
@@ -233,7 +233,7 @@ private fun ButtonContainer(
         IconControlButton(
             icon = Icons.Outlined.Add,
             contentDescription = "Increase count",
-            onClick = { onAction(DraggableButtonAction.Increase) },
+            onClick = { onAction(IDraggableButtonAction.Increase) },
             enabled = !clearButtonVisible,
             tintColor = Color.White.copy(
                 alpha = if (clearButtonVisible) {
@@ -281,10 +281,10 @@ private fun IconControlButton(
     }
 }
 
-sealed interface DraggableButtonAction {
-    data object Increase : DraggableButtonAction
-    data object Decrease : DraggableButtonAction
-    data object Reset : DraggableButtonAction
+sealed interface IDraggableButtonAction {
+    data object Increase : IDraggableButtonAction
+    data object Decrease : IDraggableButtonAction
+    data object Reset : IDraggableButtonAction
 }
 
 @Composable
@@ -293,7 +293,7 @@ private fun DraggableButton(
     value: String,
     thumbOffsetX: Animatable<Float, AnimationVector1D>,
     thumbOffsetY: Animatable<Float, AnimationVector1D>,
-    onAction: (DraggableButtonAction) -> Unit,
+    onAction: (IDraggableButtonAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val dragLimitHorizontalPx = { containerSize().width / 3F }
@@ -337,7 +337,7 @@ private fun DraggableButton(
                 if (thumbOffsetX.value.absoluteValue <= startDragThreshold &&
                     thumbOffsetY.value.absoluteValue <= startDragThreshold
                 ) {
-                    onAction(DraggableButtonAction.Increase)
+                    onAction(IDraggableButtonAction.Increase)
                 }
             }
             .alpha(verticalAlpha)
@@ -420,7 +420,7 @@ private fun manageQuickChangingValues(
     scope: CoroutineScope,
     thumbOffsetX: Animatable<Float, AnimationVector1D>,
     dragLimitHorizontalPx: () -> Float,
-    onAction: (DraggableButtonAction) -> Unit,
+    onAction: (IDraggableButtonAction) -> Unit,
     onLaunch: ((Job) -> Unit),
 ) {
     if (dragDirection == DragDirection.NONE) {
@@ -434,9 +434,9 @@ private fun manageQuickChangingValues(
 
             while (condition) {
                 if (thumbOffsetX.value.sign > 0) {
-                    onAction(DraggableButtonAction.Increase)
+                    onAction(IDraggableButtonAction.Increase)
                 } else {
-                    onAction(DraggableButtonAction.Decrease)
+                    onAction(IDraggableButtonAction.Decrease)
                 }
 
                 delay(COUNTER_DELAY_FAST_MS)
@@ -502,19 +502,19 @@ private fun handleButtonRelease(
     thumbOffsetY: Animatable<Float, AnimationVector1D>,
     dragLimitHorizontalPx: () -> Float,
     dragLimitVerticalPx: () -> Float,
-    onAction: (DraggableButtonAction) -> Unit,
+    onAction: (IDraggableButtonAction) -> Unit,
 
     ) {
     if (thumbOffsetX.value.absoluteValue >= (dragLimitHorizontalPx() * DRAG_LIMIT_HORIZONTAL_THRESHOLD_FACTOR)) {
         val action = if (thumbOffsetX.value.sign > 0) {
-            DraggableButtonAction.Increase
+            IDraggableButtonAction.Increase
         } else {
-            DraggableButtonAction.Decrease
+            IDraggableButtonAction.Decrease
         }
 
         onAction(action)
     } else if (thumbOffsetY.value.absoluteValue >= (dragLimitVerticalPx() * DRAG_LIMIT_VERTICAL_THRESHOLD_FACTOR)) {
-        onAction(DraggableButtonAction.Reset)
+        onAction(IDraggableButtonAction.Reset)
     }
 }
 

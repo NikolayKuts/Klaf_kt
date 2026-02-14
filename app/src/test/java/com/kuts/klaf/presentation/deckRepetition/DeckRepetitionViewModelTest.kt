@@ -5,7 +5,7 @@
 //import com.kuts.domain.entities.Card
 //import com.kuts.domain.entities.Deck
 //import com.kuts.domain.enums.DifficultyRecallingLevel
-//import com.kuts.domain.repositories.CrashlyticsRepository
+//import com.kuts.domain.repositories.ICrashlyticsRepository
 //import com.kuts.domain.useCases.DeleteCardsFromDeckUseCase
 //import com.kuts.domain.useCases.FetchCardsUseCase
 //import com.kuts.domain.useCases.FetchDeckByIdUseCase
@@ -14,7 +14,7 @@
 //import com.kuts.klaf.R
 //import com.kuts.klaf.common.MainDispatcherRule
 //import com.kuts.klaf.common.launchEventMassageIdEqualsTest
-//import com.kuts.klaf.data.common.DeckReviewScheduler
+//import com.kuts.klaf.data.common.IDeckReviewScheduler
 //import com.kuts.klaf.data.common.notifications.DeckRepetitionNotifier
 //import com.kuts.klaf.data.networking.CardAudioPlayer
 //import com.kuts.klaf.presentation.common.RepetitionTimer
@@ -170,8 +170,8 @@
 //        workManager: WorkManager = mockk(relaxed = true),
 //        saveDeckRepetitionInfo: SaveDeckRepetitionInfoUseCase = mockk(relaxed = true),
 //        deckRepetitionNotifier: DeckRepetitionNotifier = mockk(relaxed = true),
-//        crashlyticsRepository: CrashlyticsRepository = mockk(relaxed = true),
-//        deckReviewScheduler: DeckReviewScheduler = mockk(relaxed = true),
+//        crashlyticsRepository: ICrashlyticsRepository = mockk(relaxed = true),
+//        deckReviewScheduler: IDeckReviewScheduler = mockk(relaxed = true),
 //    ): BaseDeckRepetitionViewModel = DeckRepetitionViewModel(
 //        deckId = deckId,
 //        fetchCards = fetchCards,

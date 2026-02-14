@@ -58,12 +58,12 @@ import com.kuts.domain.common.ScheduledDateState
 import com.kuts.domain.common.isEven
 import com.kuts.domain.entities.Deck
 import com.kuts.klaf.R
-import com.kuts.klaf.data.common.getScheduledDateStateByByCalculatedRange
 import com.kuts.klaf.presentation.common.ContentHolder
 import com.kuts.klaf.presentation.common.FullBackgroundDialog
 import com.kuts.klaf.presentation.common.ROUNDED_ELEMENT_SIZE
 import com.kuts.klaf.presentation.common.RoundButton
 import com.kuts.klaf.presentation.common.RoundedIcon
+import com.kuts.klaf.presentation.common.getScheduledDateStateByByCalculatedRange
 import com.kuts.klaf.presentation.common.noRippleClickable
 import com.kuts.klaf.presentation.common.rememberAsMutableStateOf
 import com.kuts.klaf.presentation.theme.MainTheme

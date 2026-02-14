@@ -2,18 +2,17 @@ package com.kuts.klaf.presentation.cardTransferring.common
 
 import android.os.Bundle
 import android.view.View
-import androidx.compose.material3.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.navigation.navGraphViewModels
 import com.kuts.klaf.R
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardAddingScreen
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardDeletingDialog
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardEditingScreen
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardMovingDialog
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToPrevious
+import com.kuts.klaf.presentation.cardTransferring.common.ICardTransferringNavigationEvent.ToCardAddingScreen
+import com.kuts.klaf.presentation.cardTransferring.common.ICardTransferringNavigationEvent.ToCardDeletingDialog
+import com.kuts.klaf.presentation.cardTransferring.common.ICardTransferringNavigationEvent.ToCardEditingScreen
+import com.kuts.klaf.presentation.cardTransferring.common.ICardTransferringNavigationEvent.ToCardMovingDialog
+import com.kuts.klaf.presentation.cardTransferring.common.ICardTransferringNavigationEvent.ToPrevious
 import com.kuts.klaf.presentation.common.BaseFragment
 import com.kuts.klaf.presentation.common.TransparentSurface
 import com.kuts.klaf.presentation.common.collectWhenStarted
@@ -28,7 +27,7 @@ class CardTransferringFragment : BaseFragment(R.layout.common_compose_layout) {
     private val navController by lazy { findNavController() }
 
     @Inject
-    lateinit var assistedFactory: CardTransferringViewModelAssistedFactory
+    lateinit var assistedFactory: ICardTransferringViewModelAssistedFactory
     private val viewModel: BaseCardTransferringViewModel by navGraphViewModels(
         navGraphId = R.id.cardTransferringFragment,
         factoryProducer = ::provideViewModelFactory
@@ -38,7 +37,17 @@ class CardTransferringFragment : BaseFragment(R.layout.common_compose_layout) {
         super.onCreate(savedInstanceState)
 
         observeNavigationChanges()
-        subscribeAudioPlayerObserver()
+        viewModel.audioPlayer.onCreate()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.audioPlayer.onResume()
+    }
+
+    override fun onStop() {
+        viewModel.audioPlayer.onStop()
+        super.onStop()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -56,9 +65,8 @@ class CardTransferringFragment : BaseFragment(R.layout.common_compose_layout) {
     }
 
     override fun onDestroy() {
+        viewModel.audioPlayer.onDestroy()
         super.onDestroy()
-
-        lifecycle.removeObserver(viewModel.audioPlayer)
     }
 
     private fun provideViewModelFactory(): ViewModelProvider.Factory {
@@ -94,10 +102,6 @@ class CardTransferringFragment : BaseFragment(R.layout.common_compose_layout) {
             lifecycleOwner = viewLifecycleOwner,
             onEach = sharedViewModel::notify,
         )
-    }
-
-    private fun subscribeAudioPlayerObserver() {
-        lifecycle.addObserver(viewModel.audioPlayer)
     }
 
     private fun navigateToCardMovingDialog() {

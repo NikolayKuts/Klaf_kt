@@ -23,7 +23,7 @@ class CardEditingFragment : BaseFragment(layoutId = R.layout.common_compose_layo
     private val args by navArgs<CardEditingFragmentArgs>()
 
     @Inject
-    lateinit var cardEditingAssistedViewModelFactory: CardEditingAssistedViewModelFactory
+    lateinit var cardEditingAssistedViewModelFactory: ICardEditingAssistedViewModelFactory
     private val viewModel: BaseCardManagementViewModel by viewModels {
         CardEditingViewModelFactory(
             assistedFactory = cardEditingAssistedViewModelFactory,
@@ -35,7 +35,17 @@ class CardEditingFragment : BaseFragment(layoutId = R.layout.common_compose_layo
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        subscribeAudioPlayerObserver()
+        viewModel.audioPlayer.onCreate()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.audioPlayer.onResume()
+    }
+
+    override fun onStop() {
+        viewModel.audioPlayer.onStop()
+        super.onStop()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -54,9 +64,8 @@ class CardEditingFragment : BaseFragment(layoutId = R.layout.common_compose_layo
     }
 
     override fun onDestroy() {
+        viewModel.audioPlayer.onDestroy()
         super.onDestroy()
-
-        unsubscribeAudioPlayerObserver()
     }
 
     private fun observeEventMessage() {
@@ -77,11 +86,4 @@ class CardEditingFragment : BaseFragment(layoutId = R.layout.common_compose_layo
         }
     }
 
-    private fun subscribeAudioPlayerObserver() {
-        lifecycle.addObserver(viewModel.audioPlayer)
-    }
-
-    private fun unsubscribeAudioPlayerObserver() {
-        lifecycle.removeObserver(viewModel.audioPlayer)
-    }
 }

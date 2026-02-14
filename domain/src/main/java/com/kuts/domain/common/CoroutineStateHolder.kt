@@ -1,6 +1,6 @@
 package com.kuts.domain.common
 
-import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.domain.repositories.ICrashlyticsRepository
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -52,7 +52,7 @@ class CoroutineStateHolder private constructor() {
         }
 
         fun CoroutineStateHolder.onExceptionWithCrashlyticsReport(
-            crashlytics: CrashlyticsRepository,
+            crashlytics: ICrashlyticsRepository,
             block: (CoroutineContext, Throwable) -> Unit,
         ): Job = onException { context, throwable ->
             crashlytics.report(exception = throwable)

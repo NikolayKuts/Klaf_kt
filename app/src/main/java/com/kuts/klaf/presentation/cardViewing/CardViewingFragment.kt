@@ -19,7 +19,7 @@ class CardViewingFragment : BaseFragment(layoutId = R.layout.common_compose_layo
     private val args by navArgs<CardViewingFragmentArgs>()
 
     @Inject
-    lateinit var assistedFactory: CardViewingViewModelFactory.CardViewingViewModelAssistedFactory
+    lateinit var assistedFactory: CardViewingViewModelFactory.ICardViewingViewModelAssistedFactory
     private val viewModel: CardViewingViewModel by viewModels {
         CardViewingViewModelFactory(assistedFactory = assistedFactory, deckId = args.deckId)
     }

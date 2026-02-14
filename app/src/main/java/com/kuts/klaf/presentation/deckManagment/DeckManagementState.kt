@@ -1,5 +1,8 @@
 package com.kuts.klaf.presentation.deckManagment
 
+import com.kuts.domain.common.DateData
+import com.kuts.domain.common.DateUnit
+
 data class DeckManagementState(
     val name: StatePair<String> = StatePair(pointer = "name", value = ""),
     val creationDate: StatePair<String> = StatePair(pointer = "creationDate", value = ""),
@@ -31,7 +34,7 @@ data class DeckManagementState(
         value = ""
     ),
     val id: StatePair<String> = StatePair(pointer = "id", value = ""),
-    val scheduledDateIntervalChangeState: ScheduledDataIntervalChangeState = ScheduledDataIntervalChangeState.NotRequired,
+    val scheduledDateIntervalChangeState: IScheduledDataIntervalChangeState = IScheduledDataIntervalChangeState.NotRequired,
 )
 
 data class StatePair<T>(
@@ -39,11 +42,11 @@ data class StatePair<T>(
     val value: T,
 )
 
-sealed interface ScheduledDataIntervalChangeState {
+sealed interface IScheduledDataIntervalChangeState {
 
-    data object NotRequired : ScheduledDataIntervalChangeState
+    data object NotRequired : IScheduledDataIntervalChangeState
 
-    data class Required(val dateData: DateData) : ScheduledDataIntervalChangeState
+    data class Required(val dateData: DateData) : IScheduledDataIntervalChangeState
 }
 
 class DateDataValidator {
@@ -82,13 +85,13 @@ class ButtonActionHandler {
     fun handle(
         dateData: DateData,
         dataUnit: DateUnit,
-        buttonAction: DraggableButtonAction,
+        buttonAction: IDraggableButtonAction,
     ): DateData {
         val updatedValue = dataUnit.getValueByRange(buttonAction = buttonAction)
         return dateData.copyByUnit(unit = dataUnit, value = updatedValue)
     }
 
-    private fun DateUnit.getValueByRange(buttonAction: DraggableButtonAction): Int {
+    private fun DateUnit.getValueByRange(buttonAction: IDraggableButtonAction): Int {
         return when (this) {
             is DateUnit.Year -> DateRange.Year.getValueWithinRange(
                 currentValue = value,

@@ -7,15 +7,15 @@ import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.entities.Card
 import com.kuts.domain.ipa.toRowInfos
-import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.domain.managers.IAudioPlayerManager
+import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.AddNewCardIntoDeckUseCase
 import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.klaf.R
-import com.kuts.klaf.data.networking.CardAudioPlayer
-import com.kuts.klaf.presentation.cardManagement.common.CardManagementAction
+import com.kuts.klaf.presentation.cardManagement.common.ICardManagementAction
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementState
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementViewModel
 import com.kuts.klaf.presentation.cardManagement.common.toDomainEntity
@@ -31,11 +31,11 @@ class CardAdditionViewModel @AssistedInject constructor(
     @Assisted smartSelectedWord: String?,
     private val addNewCardIntoDeck: AddNewCardIntoDeckUseCase,
     checkIfWordExists: CheckIfCardExistsUseCase,
-    audioPlayer: CardAudioPlayer,
+    audioPlayer: IAudioPlayerManager,
     cambridgeClient: CambridgeClient,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
-    crashlytics: CrashlyticsRepository,
+    crashlytics: ICrashlyticsRepository,
     fetchDeckById: FetchDeckByIdUseCase,
 ) : CardManagementViewModel(
     deckId = deckId,
@@ -112,7 +112,7 @@ class CardAdditionViewModel @AssistedInject constructor(
 
     private fun finishAddingState() {
         sendAction(
-            action = CardManagementAction.UpdateDataOnForeignWordChanged(
+            action = ICardManagementAction.UpdateDataOnForeignWordChanged(
                 wordFieldValue = TextFieldValue()
             )
         )

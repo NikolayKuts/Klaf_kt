@@ -2,20 +2,20 @@ package com.kuts.klaf.presentation.authentication
 
 import android.util.Patterns
 import com.kuts.klaf.presentation.authentication.EmailValidator.*
-import com.kuts.klaf.presentation.authentication.EmailValidator.EmailValidationResult.*
+import com.kuts.klaf.presentation.authentication.EmailValidator.IEmailValidationResult.*
 
-class EmailValidator : Validator<String, EmailValidationResult> {
+class EmailValidator : IValidator<String, IEmailValidationResult> {
 
-    sealed interface EmailValidationResult : Validator.ValidationResult {
+    sealed interface IEmailValidationResult : IValidator.IValidationResult {
 
-        object Valid : EmailValidationResult
+        object Valid : IEmailValidationResult
 
-        object Empty : EmailValidationResult
+        object Empty : IEmailValidationResult
 
-        object WrongFormat : EmailValidationResult
+        object WrongFormat : IEmailValidationResult
     }
 
-    override fun validate(data: String): EmailValidationResult = when {
+    override fun validate(data: String): IEmailValidationResult = when {
         data.isEmpty() -> Empty
         !Patterns.EMAIL_ADDRESS.matcher(data).matches() -> WrongFormat
         else -> Valid

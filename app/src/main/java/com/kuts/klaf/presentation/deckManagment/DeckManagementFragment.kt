@@ -22,7 +22,7 @@ class DeckManagementFragment : BaseFragment(R.layout.common_compose_layout) {
     private val navController by lazy { findNavController() }
 
     @Inject
-    lateinit var assistedFactory: DeckManagementAssistedViewModelFactory
+    lateinit var assistedFactory: IDeckManagementAssistedViewModelFactory
     private val viewModel: BaseDeckManagementViewModel by viewModels<DeckManagementViewModel> {
         DeckManagementViewModelFactory(assistedFactory = assistedFactory, deckId = args.deckId)
     }
@@ -59,9 +59,9 @@ class DeckManagementFragment : BaseFragment(R.layout.common_compose_layout) {
 //        )
 //    }
 
-//    private fun handleDeckManagementEvent(event: DeckManagementEvent) {
+//    private fun handleDeckManagementEvent(event: IDeckManagementEvent) {
 //        when (event) {
-//           is DeckManagementEvent.ShowScheduledDateIntervalChangeDialog -> {
+//           is IDeckManagementEvent.ShowScheduledDateIntervalChangeDialog -> {
 //
 //           }
 //        }

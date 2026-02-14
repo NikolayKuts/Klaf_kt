@@ -5,7 +5,7 @@
 //import com.google.firebase.auth.FirebaseAuth
 //import com.kuts.domain.entities.Deck
 //import com.kuts.domain.interactors.AuthenticationInteractor
-//import com.kuts.domain.repositories.CrashlyticsRepository
+//import com.kuts.domain.repositories.ICrashlyticsRepository
 //import com.kuts.domain.useCases.CreateDeckUseCase
 //import com.kuts.domain.useCases.CreateInterimDeckUseCase
 //import com.kuts.domain.useCases.FetchCardsUseCase
@@ -287,7 +287,7 @@
 //        notificationChannelInitializer: NotificationChannelInitializer = mockk(relaxed = true),
 //        workManager: WorkManager = mockk(relaxed = true),
 //        auth: FirebaseAuth = mockk(relaxed = true),
-//        crashlyticsRepository: CrashlyticsRepository = mockk(relaxed = true),
+//        crashlyticsRepository: ICrashlyticsRepository = mockk(relaxed = true),
 //        networkConnectivity: NetworkConnectivity = mockk(relaxed = true) ,
 //        authenticationInteractor: AuthenticationInteractor = mockk(relaxed = true),
 //        fetchCardsUseCase: FetchCardsUseCase = mockk(relaxed = true)

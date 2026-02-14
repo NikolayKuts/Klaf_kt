@@ -14,15 +14,15 @@ import com.kuts.domain.common.updatedAt
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.ipa.toRowIpaItemHolders
-import com.kuts.domain.repositories.CrashlyticsRepository
-import com.kuts.domain.repositories.WordInfoRepository
+import com.kuts.domain.managers.IAudioPlayerManager
+import com.kuts.domain.repositories.ICrashlyticsRepository
+import com.kuts.domain.repositories.IWordInfoRepository
+import com.kuts.domain.repositories.IWordInfoRepository.IWordInfoLoadingError
 import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.klaf.R
-import com.kuts.klaf.data.networking.CardAudioPlayer
-import com.kuts.klaf.data.networking.yandexApi.YandexWordInfoProvider
 import com.kuts.klaf.presentation.cardManagement.cardAddition.AutocompleteState
 import com.kuts.klaf.presentation.cardManagement.cardAddition.NativeWordSuggestionItem
 import com.kuts.klaf.presentation.cardManagement.cardAddition.NativeWordSuggestionsState
@@ -52,11 +52,11 @@ import kotlinx.coroutines.launch
 
 abstract class CardManagementViewModel(
     deckId: Int,
-    audioPlayer: CardAudioPlayer,
+    audioPlayer: IAudioPlayerManager,
     cambridgeClient: CambridgeClient,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     private val fetchWordInfo: FetchWordInfoUseCase,
-    protected val crashlytics: CrashlyticsRepository,
+    protected val crashlytics: ICrashlyticsRepository,
     protected val checkIfWordExists: CheckIfCardExistsUseCase,
     fetchDeckById: FetchDeckByIdUseCase,
 ) : BaseCardManagementViewModel(
@@ -98,8 +98,8 @@ abstract class CardManagementViewModel(
         MutableStateFlow<List<TextFieldValueIpaHolder>>(value = emptyList())
     protected val letterInfosState = MutableStateFlow<List<LetterInfo>>(value = emptyList())
 
-    override val cambridgeDataState = MutableStateFlow<CambridgeDataState>(
-        value = CambridgeDataState.Empty
+    override val cambridgeDataState = MutableStateFlow<ICambridgeDataState>(
+        value = ICambridgeDataState.Empty
     )
 
     override val ipaKeyboardState = MutableStateFlow(value = IpaKeyboardState(keys = ipaKeys))
@@ -116,72 +116,72 @@ abstract class CardManagementViewModel(
             val wordData = cambridgeClient.fetchWordData(word = word)
 
             if (wordData == null) {
-                cambridgeDataState.value = CambridgeDataState.Empty
+                cambridgeDataState.value = ICambridgeDataState.Empty
             } else {
-                cambridgeDataState.value = CambridgeDataState.Fetched(word = wordData)
+                cambridgeDataState.value = ICambridgeDataState.Fetched(word = wordData)
             }
         }
     }
 
-    override fun sendAction(action: CardManagementAction) {
+    override fun sendAction(action: ICardManagementAction) {
         when (action) {
-            is CardManagementAction.ChangeLetterSelectionWithIpaTemplate -> {
+            is ICardManagementAction.ChangeLetterSelectionWithIpaTemplate -> {
                 changeLetterSelectionWithIpaTemplate(
                     index = action.index,
                     letterInfo = action.letterInfo
                 )
             }
 
-            is CardManagementAction.UpdateDataOnForeignWordChanged -> {
+            is ICardManagementAction.UpdateDataOnForeignWordChanged -> {
                 updateDataOnForeignWordChanged(wordFieldValue = action.wordFieldValue)
             }
 
-            is CardManagementAction.UpdateDataOnAutocompleteSelected -> {
+            is ICardManagementAction.UpdateDataOnAutocompleteSelected -> {
                 updateDataOnAutocompleteSelected(word = action.word)
             }
 
-            is CardManagementAction.NativeWordSelected -> {
+            is ICardManagementAction.NativeWordSelected -> {
                 updateDataOnNativeWordSelected(wordIndex = action.wordIndex)
             }
 
-            CardManagementAction.ConfirmSuggestionsSelection -> {
+            ICardManagementAction.ConfirmSuggestionsSelection -> {
                 handleNativeWordSuggestionsSelectionConfirmation()
             }
 
-            CardManagementAction.ClearNativeWordSuggestionsSelectionClicked -> {
+            ICardManagementAction.ClearNativeWordSuggestionsSelectionClicked -> {
                 handleClearNativeWordSuggestionsSelectionClicked()
             }
 
-            is CardManagementAction.UpdateIpa -> {
+            is ICardManagementAction.UpdateIpa -> {
                 updateIpa(letterGroupIndex = action.letterGroupIndex, ipaTextFieldValue = action.ipa)
             }
 
-            is CardManagementAction.UpdateNativeWord -> {
+            is ICardManagementAction.UpdateNativeWord -> {
                 updateNativeWord(wordFieldValue = action.wordFieldValue)
             }
 
-            is CardManagementAction.CardManagementConfirmed -> {
+            is ICardManagementAction.CardManagementConfirmed -> {
                 onCardManagementConfirmed()
             }
 
-            is CardManagementAction.IpaTextFieldFocusChanged -> {
+            is ICardManagementAction.IpaTextFieldFocusChanged -> {
                 handleIpaTextFieldFocusChanged(action = action)
             }
 
-            CardManagementAction.PronounceForeignWordClicked -> {
+            ICardManagementAction.PronounceForeignWordClicked -> {
                 audioPlayer.play()
             }
 
-            CardManagementAction.NativeWordFieldIconClicked -> {
+            ICardManagementAction.NativeWordFieldIconClicked -> {
                 autocompleteState.update { it.copy(isActive = false) }
                 nativeWordSuggestionsState.update { it.copy(isActive = !it.isActive) }
             }
 
-            CardManagementAction.CloseAutocompleteMenu -> {
+            ICardManagementAction.CloseAutocompleteMenu -> {
                 autocompleteState.update { it.copy(isActive = false) }
             }
 
-            CardManagementAction.CloseNativeWordSuggestionsMenu -> {
+            ICardManagementAction.CloseNativeWordSuggestionsMenu -> {
                 nativeWordSuggestionsState.update { it.copy(isActive = false) }
             }
         }
@@ -190,7 +190,7 @@ abstract class CardManagementViewModel(
     abstract fun onCardManagementConfirmed()
 
     private fun handleIpaTextFieldFocusChanged(
-        action: CardManagementAction.IpaTextFieldFocusChanged
+        action: ICardManagementAction.IpaTextFieldFocusChanged
     ) {
         textFieldValueIpaHoldersState.update {
             it.toMutableList().apply {
@@ -431,18 +431,12 @@ abstract class CardManagementViewModel(
         }
     }
 
-    private fun handleWordInfoError(loadingState: LoadingState.Error<WordInfoRepository.WordInfoLoadingError>) {
-        val errorMessageId = when (val error = loadingState.value) {
-            is YandexWordInfoProvider.LoadingError -> {
-                when (error) {
-                    is YandexWordInfoProvider.LoadingError.Common,
-                    YandexWordInfoProvider.LoadingError.JsonConvert -> {
-                        R.string.word_info_retrieving_common_warning_message
-                    }
-                }
+    private fun handleWordInfoError(loadingState: LoadingState.Error<IWordInfoRepository.IWordInfoLoadingError>) {
+        val errorMessageId = when (loadingState.value) {
+            IWordInfoLoadingError.Common,
+            IWordInfoLoadingError.JsonConvert -> {
+                R.string.word_info_retrieving_common_warning_message
             }
-
-            else -> R.string.word_info_retrieving_common_warning_message
         }
 
         eventMessage.tryEmitAsNegative(resId = errorMessageId)

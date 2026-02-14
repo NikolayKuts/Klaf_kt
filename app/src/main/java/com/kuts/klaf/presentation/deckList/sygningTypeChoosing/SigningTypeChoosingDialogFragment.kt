@@ -10,7 +10,7 @@ import com.kuts.domain.common.AuthenticationAction
 import com.kuts.klaf.R
 import com.kuts.klaf.presentation.common.TransparentDialogFragment
 import com.kuts.klaf.presentation.deckList.common.BaseDeckListViewModel
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationEvent
 import com.kuts.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -32,7 +32,7 @@ class SigningTypeChoosingDialogFragment : TransparentDialogFragment(
                     fromSourceDestination = args.fromSourceDestination,
                     onSigningActionButtonClick = ::navigateByAuthenticationAction,
                     onCloseButtonClick = {
-                        viewModel.handleNavigation(event = DeckListNavigationEvent.ToPrevious)
+                        viewModel.handleNavigation(event = IDeckListNavigationEvent.ToPrevious)
                     }
                 )
             }

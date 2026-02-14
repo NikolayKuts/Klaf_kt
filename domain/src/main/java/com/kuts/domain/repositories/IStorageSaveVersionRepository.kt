@@ -1,0 +1,14 @@
+package com.kuts.domain.repositories
+
+import com.kuts.domain.entities.StorageSaveVersion
+
+interface IStorageSaveVersionRepository {
+
+    suspend fun fetchVersion(): StorageSaveVersion?
+
+    suspend fun insertVersion(version: StorageSaveVersion)
+
+    suspend fun insertVersionAtPath(version: StorageSaveVersion, rootEmailPath: String)
+
+    suspend fun increaseVersion()
+}

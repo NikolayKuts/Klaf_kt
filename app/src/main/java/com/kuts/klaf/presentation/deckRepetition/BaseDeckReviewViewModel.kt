@@ -6,17 +6,17 @@ import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.UnitSurrogate
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.enums.DifficultyRecallingLevel
-import com.kuts.klaf.data.networking.CardAudioPlayer
+import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.klaf.presentation.common.ButtonState
-import com.kuts.klaf.presentation.common.EventMessageSource
+import com.kuts.klaf.presentation.common.IEventMessageSource
 import com.kuts.klaf.presentation.common.RepetitionTimer
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
-abstract class BaseDeckReviewViewModel : ViewModel(), EventMessageSource {
+abstract class BaseDeckReviewViewModel : ViewModel(), IEventMessageSource {
 
     abstract val timer: RepetitionTimer
-    abstract val audioPlayer: CardAudioPlayer
+    abstract val audioPlayer: IAudioPlayerManager
     abstract val deck: SharedFlow<Deck?>
     abstract val screenState: SharedFlow<RepetitionScreenState>
     abstract val cardState: SharedFlow<DeckRepetitionState>

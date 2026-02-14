@@ -13,7 +13,7 @@ import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.TransparentDialogFragment
 import com.kuts.klaf.presentation.common.TransparentSurface
 import com.kuts.klaf.presentation.deckList.common.BaseDeckListViewModel
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationEvent
 import com.kuts.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -37,7 +37,7 @@ class DataSynchronizationDialogFragment : TransparentDialogFragment(
                         synchronizationState = viewModel.dataSynchronizationState.collectAsState().value,
                         onConfirmClick = viewModel::synchronizeData,
                         onCloseClick = {
-                            viewModel.handleNavigation(event = DeckListNavigationEvent.ToPrevious)
+                            viewModel.handleNavigation(event = IDeckListNavigationEvent.ToPrevious)
                         },
                         onDispose = viewModel::resetSynchronizationState,
                         eventMassage = eventMessage,

@@ -4,7 +4,7 @@ import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 
-open class BaseFragment(@LayoutRes layoutId: Int) : Fragment(layoutId), SharedViewModelHolder {
+open class BaseFragment(@LayoutRes layoutId: Int) : Fragment(layoutId), ISharedViewModelHolder {
 
     override val sharedViewModel: BaseMainViewModel by activityViewModels<MainViewModel>()
 }

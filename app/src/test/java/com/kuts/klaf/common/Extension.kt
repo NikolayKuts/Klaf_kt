@@ -2,7 +2,7 @@
 //
 //import androidx.annotation.StringRes
 //import app.cash.turbine.test
-//import com.kuts.klaf.presentation.common.EventMessageSource
+//import com.kuts.klaf.presentation.common.IEventMessageSource
 //import kotlinx.coroutines.ExperimentalCoroutinesApi
 //import kotlinx.coroutines.Job
 //import kotlinx.coroutines.launch
@@ -11,7 +11,7 @@
 //
 //@ExperimentalCoroutinesApi
 //fun TestScope.launchEventMassageIdEqualsTest(
-//    eventMessageSource: EventMessageSource,
+//    eventMessageSource: IEventMessageSource,
 //    @StringRes expectedMassageId: Int,
 //): Job {
 //    return launch {
@@ -19,7 +19,7 @@
 //    }
 //}
 //
-//suspend fun EventMessageSource.testEventMassageIdEquals(
+//suspend fun IEventMessageSource.testEventMassageIdEquals(
 //    @StringRes expectedMassageId: Int,
 //) {
 //    this.eventMessage.test {

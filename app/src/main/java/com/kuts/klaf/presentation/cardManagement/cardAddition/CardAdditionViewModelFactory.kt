@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import dagger.assisted.AssistedFactory
 
 class CardAdditionViewModelFactory(
-    private val assistedFactory: CardAdditionViewModelAssistedFactory,
+    private val assistedFactory: ICardAdditionViewModelAssistedFactory,
     private val deckId: Int,
     private val smartSelectedWord: String?,
 ) : ViewModelProvider.Factory {
@@ -20,7 +20,7 @@ class CardAdditionViewModelFactory(
 }
 
 @AssistedFactory
-interface CardAdditionViewModelAssistedFactory {
+interface ICardAdditionViewModelAssistedFactory {
 
     fun create(deckId: Int, smartSelectedWord: String?): CardAdditionViewModel
 }

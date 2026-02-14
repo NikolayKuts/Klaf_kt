@@ -105,13 +105,13 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
                 ListHeaderItem(
                     listHeaderState = listHeaderState,
                     onCheckBoxClick = {
-                        viewModel.sendAction(CardTransferringAction.ChangeAllCardSelection)
+                        viewModel.sendAction(ICardTransferringAction.ChangeAllCardSelection)
                     },
                     onForeignWordVisibilityIconClick = {
-                        viewModel.sendAction(action = CardTransferringAction.ForeignWordVisibilityIconClick)
+                        viewModel.sendAction(action = ICardTransferringAction.ForeignWordVisibilityIconClick)
                     },
                     onNativeWordVisibilityIconClick = {
-                        viewModel.sendAction(action = CardTransferringAction.NativeWordVisibilityIconClick)
+                        viewModel.sendAction(action = ICardTransferringAction.NativeWordVisibilityIconClick)
                     },
                 )
 
@@ -125,16 +125,16 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
                     isNativeWordsVisible = listHeaderState.nativeWordsVisible,
                     onScroll = { moreButtonClickedState = false },
                     onSelectedChanged = { index ->
-                        viewModel.sendAction(CardTransferringAction.ChangeSelectionState(position = index))
+                        viewModel.sendAction(ICardTransferringAction.ChangeSelectionState(position = index))
                         moreButtonClickedState = false
                     },
                     onItemClick = { index ->
-                        viewModel.sendAction(CardTransferringAction.PronounceWord(wordIndex = index))
+                        viewModel.sendAction(ICardTransferringAction.PronounceWord(wordIndex = index))
                     },
                     onLongItemClick = { index ->
                         viewModel.sendAction(
-                            CardTransferringAction.NavigateTo(
-                                destination = CardTransferringNavigationDestination.CardEditingScreen(selectedCardIndexIndex = index),
+                            ICardTransferringAction.NavigateTo(
+                                destination = ICardTransferringNavigationDestination.CardEditingScreen(selectedCardIndexIndex = index),
                             )
                         )
                     }
@@ -150,22 +150,22 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
                     clickState = moreButtonClickedState,
                     onMoveCardsClick = {
                         viewModel.sendAction(
-                            CardTransferringAction.NavigateTo(
-                                destination = CardTransferringNavigationDestination.CardMovingDialog
+                            ICardTransferringAction.NavigateTo(
+                                destination = ICardTransferringNavigationDestination.CardMovingDialog
                             )
                         )
                     },
                     onAddCardsClick = {
                         viewModel.sendAction(
-                            CardTransferringAction.NavigateTo(
-                                destination = CardTransferringNavigationDestination.CardAddingScreen
+                            ICardTransferringAction.NavigateTo(
+                                destination = ICardTransferringNavigationDestination.CardAddingScreen
                             )
                         )
                     },
                     onDeleteCardsClick = {
                         viewModel.sendAction(
-                            CardTransferringAction.NavigateTo(
-                                destination = CardTransferringNavigationDestination.CardDeletionDialog
+                            ICardTransferringAction.NavigateTo(
+                                destination = ICardTransferringNavigationDestination.CardDeletionDialog
                             )
                         )
                     },

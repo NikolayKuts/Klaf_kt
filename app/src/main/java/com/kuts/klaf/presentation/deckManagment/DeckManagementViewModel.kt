@@ -3,16 +3,16 @@ package com.kuts.klaf.presentation.deckManagment
 import androidx.lifecycle.viewModelScope
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
+import com.kuts.domain.common.DateFormatPattern
+import com.kuts.domain.common.asFormattedDate
+import com.kuts.domain.common.calculateDetailedScheduledInterval
+import com.kuts.domain.common.calculateDetailedScheduledIntervalAsLong
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.entities.Deck
-import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.UpdateDeckUseCase
 import com.kuts.klaf.R
-import com.kuts.klaf.data.common.DateFormat
-import com.kuts.klaf.data.common.asFormattedDate
-import com.kuts.klaf.data.common.calculateDetailedScheduledInterval
-import com.kuts.klaf.data.common.calculateDetailedScheduledIntervalAsLong
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import com.lib.lokdroid.core.logD
@@ -31,12 +31,12 @@ class DeckManagementViewModel @AssistedInject constructor(
     @Assisted private val deckId: Int,
     private val fetchDeckById: FetchDeckByIdUseCase,
     private val updateDeck: UpdateDeckUseCase,
-    private val crashlytics: CrashlyticsRepository,
+    private val crashlytics: ICrashlyticsRepository,
 ) : BaseDeckManagementViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
-    override val event = MutableStateFlow<DeckManagementEvent>(value = DeckManagementEvent.None)
+    override val event = MutableStateFlow<IDeckManagementEvent>(value = IDeckManagementEvent.None)
 
     override val deckManagementState = MutableStateFlow(DeckManagementState())
 
@@ -64,7 +64,7 @@ class DeckManagementViewModel @AssistedInject constructor(
             it.copy(
                 name = it.name.copy(value = deck.name),
                 creationDate = it.creationDate.copy(
-                    value = deck.creationDate.asFormattedDate(pattern = DateFormat.FULL)
+                    value = deck.creationDate.asFormattedDate(pattern = DateFormatPattern.FULL)
                 ),
                 repetitionIterationDates = it.repetitionIterationDates,
                 scheduledIterationDates = it.scheduledIterationDates,
@@ -80,31 +80,31 @@ class DeckManagementViewModel @AssistedInject constructor(
         }
     }
 
-    override fun sendAction(action: DeckManagementAction) {
+    override fun sendAction(action: IDeckManagementAction) {
         logD("sendAction() called. Action: $action")
 
         when (action) {
-            is DeckManagementAction.ScheduledDateIntervalChangeRequested -> {
+            is IDeckManagementAction.ScheduledDateIntervalChangeRequested -> {
                 deckManagementState.update { managementState ->
                     managementState.copy(
-                        scheduledDateIntervalChangeState = ScheduledDataIntervalChangeState.Required(
+                        scheduledDateIntervalChangeState = IScheduledDataIntervalChangeState.Required(
                             dateData = managementState.scheduledDateInterval.value
                         )
                     )
                 }
             }
 
-            is DeckManagementAction.DismissScheduledDateIntervalDialog -> {
+            is IDeckManagementAction.DismissScheduledDateIntervalDialog -> {
                 deckManagementState.update { state ->
-                    state.copy(scheduledDateIntervalChangeState = ScheduledDataIntervalChangeState.NotRequired)
+                    state.copy(scheduledDateIntervalChangeState = IScheduledDataIntervalChangeState.NotRequired)
                 }
             }
 
-            DeckManagementAction.ScheduledDateIntervalChangeConfirmed -> {
+            IDeckManagementAction.ScheduledDateIntervalChangeConfirmed -> {
                 val scheduledDateIntervalChangeState =
                     deckManagementState.value.scheduledDateIntervalChangeState
 
-                if (scheduledDateIntervalChangeState is ScheduledDataIntervalChangeState.Required) {
+                if (scheduledDateIntervalChangeState is IScheduledDataIntervalChangeState.Required) {
                     val validatedDateData = DateDataValidator().validateForSaving(
                         dateData = scheduledDateIntervalChangeState.dateData
                     )
@@ -121,7 +121,7 @@ class DeckManagementViewModel @AssistedInject constructor(
                         updateDeck(updatedDeck = deck.value!!.copy(scheduledDateInterval = interval))
                         deckManagementState.update { managementState ->
                             managementState.copy(
-                                scheduledDateIntervalChangeState = ScheduledDataIntervalChangeState.NotRequired
+                                scheduledDateIntervalChangeState = IScheduledDataIntervalChangeState.NotRequired
                             )
                         }
                     }.onException { _, throwable ->
@@ -131,11 +131,11 @@ class DeckManagementViewModel @AssistedInject constructor(
                 }
             }
 
-            is DeckManagementAction.ScheduledDateIntervalChanged -> {
+            is IDeckManagementAction.ScheduledDateIntervalChanged -> {
                 val scheduledDateIntervalChangeState =
                     deckManagementState.value.scheduledDateIntervalChangeState
 
-                if (scheduledDateIntervalChangeState is ScheduledDataIntervalChangeState.Required) {
+                if (scheduledDateIntervalChangeState is IScheduledDataIntervalChangeState.Required) {
                     deckManagementState.update { managementState ->
                         val sourceDateDate = scheduledDateIntervalChangeState.dateData
 
@@ -145,7 +145,7 @@ class DeckManagementViewModel @AssistedInject constructor(
                             buttonAction = action.buttonAction
                         )
                         val updatedScheduledDateIntervalChangeState =
-                            ScheduledDataIntervalChangeState.Required(dateData = updatedDateData)
+                            IScheduledDataIntervalChangeState.Required(dateData = updatedDateData)
 
                         managementState.copy(
                             scheduledDateIntervalChangeState = updatedScheduledDateIntervalChangeState

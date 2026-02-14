@@ -24,7 +24,10 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.kuts.klaf.data.common.asString
+import com.kuts.domain.common.DateData
+import com.kuts.domain.common.DateUnit
+import com.kuts.klaf.presentation.common.asString
+import com.kuts.klaf.presentation.common.toLabelRes
 import com.kuts.klaf.presentation.common.ClosingButton
 import com.kuts.klaf.presentation.common.ConfirmationButton
 import com.kuts.klaf.presentation.common.ContentHolder
@@ -37,7 +40,7 @@ import com.kuts.klaf.presentation.theme.MainTheme
 @Composable
 fun DeckManagementScreen(
     deckManagementState: DeckManagementState,
-    sendAction: (DeckManagementAction) -> Unit,
+    sendAction: (IDeckManagementAction) -> Unit,
 ) {
     with(deckManagementState) {
         ScrollableBox {
@@ -54,7 +57,7 @@ fun DeckManagementScreen(
                         value = scheduledDateInterval.value.asString(LocalContext.current)
                     ),
                     onLongClick = {
-                        sendAction(DeckManagementAction.ScheduledDateIntervalChangeRequested)
+                        sendAction(IDeckManagementAction.ScheduledDateIntervalChangeRequested)
                     }
                 )
                 StateItem(pair = repetitionQuantity)
@@ -67,14 +70,14 @@ fun DeckManagementScreen(
 
             val scheduledDateIntervalChangeState =
                 deckManagementState.scheduledDateIntervalChangeState
-            if (scheduledDateIntervalChangeState is ScheduledDataIntervalChangeState.Required) {
+            if (scheduledDateIntervalChangeState is IScheduledDataIntervalChangeState.Required) {
 
                 Dialog(
-                    onDismissRequest = { sendAction(DeckManagementAction.DismissScheduledDateIntervalDialog) }
+                    onDismissRequest = { sendAction(IDeckManagementAction.DismissScheduledDateIntervalDialog) }
                 ) {
                     FullBackgroundDialog(
                         onBackgroundClick = {
-                            sendAction(DeckManagementAction.DismissScheduledDateIntervalDialog)
+                            sendAction(IDeckManagementAction.DismissScheduledDateIntervalDialog)
                         },
                         topContent = ContentHolder(size = DIALOG_APP_LABEL_SIZE.dp) { DialogAppLabel() },
                         mainContent = {
@@ -94,7 +97,7 @@ fun DeckManagementScreen(
                                     dateData = scheduledDateIntervalChangeState.dateData,
                                     onDateDataChange = { dateUnit, action ->
                                         sendAction(
-                                            DeckManagementAction.ScheduledDateIntervalChanged(
+                                            IDeckManagementAction.ScheduledDateIntervalChanged(
                                                 dateUnit = dateUnit,
                                                 buttonAction = action,
                                             )
@@ -107,12 +110,12 @@ fun DeckManagementScreen(
                         bottomContent = {
                             ConfirmationButton(
                                 onClick = {
-                                    sendAction(DeckManagementAction.ScheduledDateIntervalChangeConfirmed)
+                                    sendAction(IDeckManagementAction.ScheduledDateIntervalChangeConfirmed)
                                 }
                             )
                             ClosingButton(
                                 onClick = {
-                                    sendAction(DeckManagementAction.DismissScheduledDateIntervalDialog)
+                                    sendAction(IDeckManagementAction.DismissScheduledDateIntervalDialog)
                                 }
                             )
                         }
@@ -126,7 +129,7 @@ fun DeckManagementScreen(
 @Composable
 private fun DialogContent(
     dateData: DateData,
-    onDateDataChange: (dateUnit: DateUnit, action: DraggableButtonAction) -> Unit
+    onDateDataChange: (dateUnit: DateUnit, action: IDraggableButtonAction) -> Unit
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -136,7 +139,7 @@ private fun DialogContent(
 
             DateItem(
                 dateUnit = dateUnit,
-                datePointer = stringResource(id = dateUnit.nameRes),
+                datePointer = stringResource(id = dateUnit.toLabelRes()),
                 onDragButtonAction = { action ->
                     onDateDataChange(updatedDateUnit, action)
                 }
@@ -149,7 +152,7 @@ private fun DialogContent(
 private fun DateItem(
     dateUnit: DateUnit,
     datePointer: String,
-    onDragButtonAction: (action: DraggableButtonAction) -> Unit,
+    onDragButtonAction: (action: IDraggableButtonAction) -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically

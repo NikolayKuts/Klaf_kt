@@ -41,3 +41,4 @@ rootProject.name = "Klaf"
 include(":app")
 include(":domain")
 include(":shared")
+include(":data")

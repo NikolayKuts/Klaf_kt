@@ -3,19 +3,19 @@ package com.kuts.domain.common
 import javax.inject.Qualifier
 
 @Qualifier
-annotation class LocalDeckRepositoryImp
+annotation class LocalDeckRepository
 
 @Qualifier
-annotation class RemoteDeckRepositoryImp
+annotation class RemoteDeckRepository
 
 @Qualifier
-annotation class LocalCardRepositoryImp
+annotation class LocalCardRepository
 
 @Qualifier
-annotation class RemoteCardRepositoryImp
+annotation class RemoteCardRepository
 
 @Qualifier
-annotation class LocalStorageSaveVersionRepositoryImp
+annotation class LocalStorageSaveVersionRepository
 
 @Qualifier
-annotation class RemoteStorageSaveVersionRepositoryImp
+annotation class RemoteStorageSaveVersionRepository

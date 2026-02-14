@@ -1,35 +1,33 @@
 package com.kuts.klaf.presentation.deckList.common
 
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkManager
 import com.google.firebase.auth.FirebaseAuth
 import com.kuts.domain.common.*
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.kuts.domain.managers.IAppMaintenanceManager
+import com.kuts.domain.common.IDataSynchronizationState
+import com.kuts.domain.common.IDataSynchronizationState.Failed
+import com.kuts.domain.common.IDataSynchronizationState.Initial
+import com.kuts.domain.common.IDataSynchronizationState.SuccessfullyFinished
+import com.kuts.domain.common.IDataSynchronizationState.Synchronizing
+import com.kuts.domain.common.IDataSynchronizationState.Uncertain
 import com.kuts.domain.common.launchIn
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.interactors.AuthenticationInteractor
-import com.kuts.domain.repositories.AuthenticationRepository
-import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.domain.repositories.IAuthenticationRepository
+import com.kuts.domain.repositories.IAuthenticationRepository.IAccountDeletingError
+import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.*
 import com.kuts.klaf.R
-import com.kuts.klaf.data.common.AppReopeningWorker.Companion.scheduleAppReopening
-import com.kuts.klaf.data.common.DataSynchronizationState
-import com.kuts.klaf.data.common.DataSynchronizationState.*
-import com.kuts.klaf.data.common.DataSynchronizationWorker.Companion.getDataSynchronizationProgressState
-import com.kuts.klaf.data.common.DataSynchronizationWorker.Companion.performDataSynchronization
-import com.kuts.klaf.data.common.DeckRepetitionReminderChecker.Companion.scheduleDeckRepetitionChecking
-import com.kuts.klaf.data.common.NetworkConnectivity
-import com.kuts.klaf.data.common.notifications.NotificationChannelInitializer
-import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebaseImp.*
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.NavigationDestination
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import com.kuts.klaf.presentation.common.tryEmitAsPositive
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationDestination.DataSynchronizationDialog
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationDestination.Unspecified
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.*
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationDestination.DataSynchronizationDialog
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationDestination.Unspecified
+import com.kuts.klaf.presentation.deckList.common.IDeckListNavigationEvent.*
 import com.kuts.klaf.presentation.deckList.drawer.DrawerViewState
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -39,22 +37,20 @@ import kotlinx.coroutines.launch
 class DeckListViewModel @AssistedInject constructor(
     fetchDeckSource: FetchDeckSourceUseCase,
     createInterimDeck: CreateInterimDeckUseCase,
-    notificationChannelInitializer: NotificationChannelInitializer,
     private val createDeck: CreateDeckUseCase,
     private val renameDeck: RenameDeckUseCase,
     private val removeDeck: RemoveDeckUseCase,
     private val fetchCardsUseCase: FetchCardsUseCase,
-    private val workManager: WorkManager,
     private val auth: FirebaseAuth,
-    private val crashlytics: CrashlyticsRepository,
-    private val networkConnectivity: NetworkConnectivity,
+    private val crashlytics: ICrashlyticsRepository,
+    private val appMaintenanceManager: IAppMaintenanceManager,
     private val authenticationInteractor: AuthenticationInteractor,
 ) : BaseDeckListViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override val dataSynchronizationState =
-        MutableStateFlow<DataSynchronizationState>(Initial)
+        MutableStateFlow<IDataSynchronizationState>(Initial)
 
     override val deckSource: StateFlow<List<Deck>?> = (fetchDeckSource() as Flow<List<Deck>?>)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { this.emit(value = null) }
@@ -64,11 +60,11 @@ class DeckListViewModel @AssistedInject constructor(
             initialValue = emptyList()
         )
 
-    override val navigationDestination = MutableStateFlow<DeckListNavigationDestination>(
+    override val navigationDestination = MutableStateFlow<IDeckListNavigationDestination>(
         value = Unspecified
     )
 
-    override val navigationEvent = MutableSharedFlow<DeckListNavigationEvent?>()
+    override val navigationEvent = MutableSharedFlow<IDeckListNavigationEvent?>()
 
     override val shouldSynchronizationIndicatorBeShown = combine(
         dataSynchronizationState,
@@ -86,11 +82,11 @@ class DeckListViewModel @AssistedInject constructor(
     override val drawerActionLoadingState = MutableStateFlow(value = false)
 
     init {
-        notificationChannelInitializer.initialize()
+        appMaintenanceManager.initialize()
         viewModelScope.launchWithState { createInterimDeck() }
             .onException { _, throwable -> crashlytics.report(exception = throwable) }
         observeDataSynchronizationStateWorker()
-//        workManager.scheduleDeckRepetitionChecking()
+//        appMaintenanceManager.scheduleDeckRepetitionChecking()
         observeAuthenticationState()
     }
 
@@ -188,8 +184,8 @@ class DeckListViewModel @AssistedInject constructor(
                 emitNavigationEvent(value = ToSigningTypeChoosingDialog(fromSourceDestination = source))
             }
         } else {
-            if (networkConnectivity.isNetworkConnected()) {
-                workManager.performDataSynchronization()
+            if (appMaintenanceManager.isNetworkConnected()) {
+                appMaintenanceManager.performDataSynchronization()
             } else {
                 eventMessage.tryEmitAsNegative(
                     resId = R.string.data_synchronization_network_connection_warning
@@ -198,7 +194,7 @@ class DeckListViewModel @AssistedInject constructor(
         }
     }
 
-    override fun handleNavigation(event: DeckListNavigationEvent) {
+    override fun handleNavigation(event: IDeckListNavigationEvent) {
         val targetEvent = when (event) {
             is ToDeckRepetitionScreen -> {
                 getEventByDeckId(
@@ -229,7 +225,7 @@ class DeckListViewModel @AssistedInject constructor(
     }
 
     override fun reopenApp() {
-        workManager.scheduleAppReopening()
+        appMaintenanceManager.scheduleAppReopening()
     }
 
     override fun resetSynchronizationState() {
@@ -296,7 +292,7 @@ class DeckListViewModel @AssistedInject constructor(
     }
 
     private fun observeDataSynchronizationStateWorker() {
-        workManager.getDataSynchronizationProgressState()
+        appMaintenanceManager.observeDataSynchronizationState()
             .catch { crashlytics.report(exception = it) }
             .filterNot { it is Uncertain }
             .flowOn(context = Dispatchers.IO)
@@ -335,14 +331,14 @@ class DeckListViewModel @AssistedInject constructor(
 
     private fun getEventByDeckId(
         deckId: Int,
-        ifDeckIsNotInterim: () -> DeckListNavigationEvent,
-    ): DeckListNavigationEvent = if (deckId == Deck.INTERIM_DECK_ID) {
+        ifDeckIsNotInterim: () -> IDeckListNavigationEvent,
+    ): IDeckListNavigationEvent = if (deckId == Deck.INTERIM_DECK_ID) {
         ToCardTransferringScreen(deckId = deckId)
     } else {
         ifDeckIsNotInterim()
     }
 
-    private suspend fun emitNavigationEvent(value: DeckListNavigationEvent) {
+    private suspend fun emitNavigationEvent(value: IDeckListNavigationEvent) {
         val actualEvent = when {
             value is ToDataSynchronizationDialog -> value
             value is ToPrevious -> value
@@ -353,12 +349,12 @@ class DeckListViewModel @AssistedInject constructor(
         navigationEvent.emit(value = actualEvent)
     }
 
-    private fun handleAccountDeletingError(throwable: AuthenticationRepository.AuthenticationError) {
-        val messageId = if (throwable is AccountDeletingError) {
+    private fun handleAccountDeletingError(throwable: IAuthenticationRepository.IAuthenticationError) {
+        val messageId = if (throwable is IAccountDeletingError) {
             when (throwable) {
-                AccountDeletingError.CommonError -> R.string.delete_account_failure_message
-                AccountDeletingError.NetworkError -> R.string.authentication_warning_network_error
-                AccountDeletingError.RecentLoginRequired -> TODO()
+                IAccountDeletingError.CommonError -> R.string.delete_account_failure_message
+                IAccountDeletingError.NetworkError -> R.string.authentication_warning_network_error
+                IAccountDeletingError.RecentLoginRequired -> TODO()
             }
         } else {
             R.string.delete_account_failure_message

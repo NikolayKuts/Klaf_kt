@@ -5,9 +5,9 @@ import com.kuts.domain.entities.Card
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.entities.StorageSaveVersion
 import com.kuts.domain.entities.StorageSaveVersion.Companion.INITIAL_SAVE_VERSION
-import com.kuts.domain.repositories.CardRepository
-import com.kuts.domain.repositories.DeckRepository
-import com.kuts.domain.repositories.StorageSaveVersionRepository
+import com.kuts.domain.repositories.ICardRepository
+import com.kuts.domain.repositories.IDeckRepository
+import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.flow.Flow
@@ -15,18 +15,18 @@ import kotlinx.coroutines.flow.channelFlow
 import javax.inject.Inject
 
 class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
-    @LocalDeckRepositoryImp
-    private val localDeckRepository: DeckRepository,
-    @LocalCardRepositoryImp
-    private val localCardRepository: CardRepository,
-    @LocalStorageSaveVersionRepositoryImp
-    private val localStorageSaveVersionRepository: StorageSaveVersionRepository,
-    @RemoteDeckRepositoryImp
-    private val remoteDeckRepository: DeckRepository,
-    @RemoteCardRepositoryImp
-    private val remoteCardRepository: CardRepository,
-    @RemoteStorageSaveVersionRepositoryImp
-    private val remoteStorageSaveVersionRepository: StorageSaveVersionRepository,
+    @LocalDeckRepository
+    private val localDeckRepository: IDeckRepository,
+    @LocalCardRepository
+    private val localCardRepository: ICardRepository,
+    @LocalStorageSaveVersionRepository
+    private val localStorageSaveVersionRepository: IStorageSaveVersionRepository,
+    @RemoteDeckRepository
+    private val remoteDeckRepository: IDeckRepository,
+    @RemoteCardRepository
+    private val remoteCardRepository: ICardRepository,
+    @RemoteStorageSaveVersionRepository
+    private val remoteStorageSaveVersionRepository: IStorageSaveVersionRepository,
     private val dataSynchronizationValidator: DataSynchronizationValidator,
 ) {
 
@@ -120,8 +120,8 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
         newerVersionCards: List<Card>,
         olderSaveVersionDecks: List<Deck>,
         olderSaveVersionCards: List<Card>,
-        olderSaveVersionDeckRepository: DeckRepository,
-        olderSaveVersionCardRepository: CardRepository,
+        olderSaveVersionDeckRepository: IDeckRepository,
+        olderSaveVersionCardRepository: ICardRepository,
         targetStorageSaveVersion: Long?,
     ) {
         val synchronizationJobs = mutableListOf<Job>()
@@ -173,7 +173,7 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
 
     private fun ProducerScope<String>.deleteUnnecessaryDecks(
         notContainedDecks: List<Deck>,
-        olderSaveVersionDeckRepository: DeckRepository,
+        olderSaveVersionDeckRepository: IDeckRepository,
         synchronizationJobs: MutableList<Job>,
     ) {
         notContainedDecks.onEach { deck ->
@@ -186,7 +186,7 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
 
     private fun ProducerScope<String>.insetDecks(
         newerVersionDecks: List<Deck>,
-        olderSaveVersionDeckRepository: DeckRepository,
+        olderSaveVersionDeckRepository: IDeckRepository,
         synchronizationJobs: MutableList<Job>,
     ) {
         newerVersionDecks.onEach { deck ->
@@ -210,7 +210,7 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
         newerVersionCards: List<Card>,
         notContainedDecks: List<Deck>,
         synchronizationJobs: MutableList<Job>,
-        olderSaveVersionCardRepository: CardRepository,
+        olderSaveVersionCardRepository: ICardRepository,
     ) {
         val notContainedDeckIds = notContainedDecks.map { it.id }
 
@@ -226,7 +226,7 @@ class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
 
     private fun ProducerScope<String>.insertCards(
         newerVersionCards: List<Card>,
-        olderSaveVersionCardRepository: CardRepository,
+        olderSaveVersionCardRepository: ICardRepository,
         synchronizationJobs: MutableList<Job>,
     ) {
         newerVersionCards.onEach { card ->

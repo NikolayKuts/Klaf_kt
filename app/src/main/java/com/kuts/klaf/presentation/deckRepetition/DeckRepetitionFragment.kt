@@ -23,7 +23,7 @@ class DeckRepetitionFragment : BaseFragment(layoutId = R.layout.common_compose_l
     private val navController by lazy { findNavController() }
 
     @Inject
-    lateinit var assistedFactory: RepetitionViewModelAssistedFactory
+    lateinit var assistedFactory: IRepetitionViewModelAssistedFactory
     private val viewModel: BaseDeckReviewViewModel by navGraphViewModels(
         navGraphId = R.id.deckRepetitionFragment
     ) {
@@ -34,7 +34,18 @@ class DeckRepetitionFragment : BaseFragment(layoutId = R.layout.common_compose_l
         super.onCreate(savedInstanceState)
 
         observeScreenState()
-        subscribeLifecycleObservers()
+        lifecycle.addObserver(viewModel.timer)
+        viewModel.audioPlayer.onCreate()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.audioPlayer.onResume()
+    }
+
+    override fun onStop() {
+        viewModel.audioPlayer.onStop()
+        super.onStop()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -57,19 +68,9 @@ class DeckRepetitionFragment : BaseFragment(layoutId = R.layout.common_compose_l
     }
 
     override fun onDestroy() {
-        super.onDestroy()
-
-        unsubscribeLifecycleObservers()
-    }
-
-    private fun subscribeLifecycleObservers() {
-        lifecycle.addObserver(viewModel.timer)
-        lifecycle.addObserver(viewModel.audioPlayer)
-    }
-
-    private fun unsubscribeLifecycleObservers() {
+        viewModel.audioPlayer.onDestroy()
         lifecycle.removeObserver(viewModel.timer)
-        lifecycle.removeObserver(viewModel.audioPlayer)
+        super.onDestroy()
     }
 
     private fun observeEventMessage() {

@@ -56,6 +56,9 @@ hiltWork = "1.3.0"
 # Firebase #
 firebaseBom = "33.1.2"
 firebaseCoroutinePlayServices = "1.7.3"
+firebaseFirestoreKtx = "25.0.0"
+firebaseAuthenticationKtx = "23.0.0"
+firebaseCrashlyticsKtx = "19.0.3"
 
 # Compose #
 composeBom = "2024.06.00"
@@ -125,9 +128,9 @@ hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltWo
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-coroutine-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "firebaseCoroutinePlayServices" }
 firebase-analytics-kts = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
-firebase-rirestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
-firebase-authentication = { group = "com.google.firebase", name = "firebase-auth-ktx" }
-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
+firebase-rirestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
+firebase-authentication = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthenticationKtx" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx", version.ref = "firebaseCrashlyticsKtx" }
 
 # Compose #
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
@@ -185,6 +188,7 @@ ktor = ["ktor-client-okhttp", "ktor-client-core", "ktor-client-cio", "ktor-clien
 android-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerializationPlugin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 navigation-safeargs-kotlin = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigationSafeArgsKotlinPlugin" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firevaseCrashlyticsPlugin" }

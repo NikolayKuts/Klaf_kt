@@ -54,7 +54,7 @@ data class CardManagementViewTextStyles(
     val ipaValue: TextStyle
 ) {
 
-    object Theme : Themable<CardManagementViewTextStyles> {
+    object Theme : IThemable<CardManagementViewTextStyles> {
 
         override val light: CardManagementViewTextStyles = CardManagementViewTextStyles(
             foreignWordAutocompleteSpanStyle = LightForeignWordAutocompleteSpanStyle,

@@ -8,7 +8,8 @@ import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCras
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.entities.Card
 import com.kuts.domain.ipa.toLetterInfos
-import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.domain.managers.IAudioPlayerManager
+import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.FetchCardUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
@@ -16,7 +17,6 @@ import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.domain.useCases.UpdateCardUseCase
 import com.kuts.klaf.R
-import com.kuts.klaf.data.networking.CardAudioPlayer
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementState
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementViewModel
 import com.kuts.klaf.presentation.cardManagement.common.toDomainEntity
@@ -36,11 +36,11 @@ class CardEditingViewModel @AssistedInject constructor(
     private val fetchCard: FetchCardUseCase,
     private val updateCard: UpdateCardUseCase,
     checkIfWordExists: CheckIfCardExistsUseCase,
-    audioPlayer: CardAudioPlayer,
+    audioPlayer: IAudioPlayerManager,
     cambridgeClient: CambridgeClient,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
-    crashlytics: CrashlyticsRepository,
+    crashlytics: ICrashlyticsRepository,
     fetchDeckById: FetchDeckByIdUseCase,
 ) : CardManagementViewModel(
     deckId = deckId,

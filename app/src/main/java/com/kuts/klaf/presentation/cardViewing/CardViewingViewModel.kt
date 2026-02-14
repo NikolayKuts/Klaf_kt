@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.entities.Card
 import com.kuts.domain.entities.Deck
-import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.FetchCardsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.klaf.R
@@ -19,7 +19,7 @@ class CardViewingViewModel @AssistedInject constructor(
     @Assisted deckId: Int,
     fetchDeckById: FetchDeckByIdUseCase,
     private val fetchCards: FetchCardsUseCase,
-    private val crashlytics: CrashlyticsRepository,
+    private val crashlytics: ICrashlyticsRepository,
 ) : ViewModel() {
 
     private val _eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)

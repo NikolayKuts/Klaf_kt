@@ -1,19 +1,19 @@
 package com.kuts.klaf.presentation.deckList.common
 
 import androidx.lifecycle.ViewModel
+import com.kuts.domain.common.IDataSynchronizationState
 import com.kuts.domain.entities.Deck
-import com.kuts.klaf.data.common.DataSynchronizationState
-import com.kuts.klaf.presentation.common.EventMessageSource
+import com.kuts.klaf.presentation.common.IEventMessageSource
 import com.kuts.klaf.presentation.deckList.drawer.DrawerViewState
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
-abstract class BaseDeckListViewModel : ViewModel(), EventMessageSource {
+abstract class BaseDeckListViewModel : ViewModel(), IEventMessageSource {
 
-    abstract val dataSynchronizationState: StateFlow<DataSynchronizationState>
+    abstract val dataSynchronizationState: StateFlow<IDataSynchronizationState>
     abstract val deckSource: StateFlow<List<Deck>?>
-    abstract val navigationDestination: StateFlow<DeckListNavigationDestination>
-    abstract val navigationEvent: SharedFlow<DeckListNavigationEvent?>
+    abstract val navigationDestination: StateFlow<IDeckListNavigationDestination>
+    abstract val navigationEvent: SharedFlow<IDeckListNavigationEvent?>
     abstract val shouldSynchronizationIndicatorBeShown: StateFlow<Boolean>
     abstract val drawerState: SharedFlow<DrawerViewState>
     abstract val drawerActionLoadingState: StateFlow<Boolean>
@@ -24,7 +24,7 @@ abstract class BaseDeckListViewModel : ViewModel(), EventMessageSource {
     abstract fun deleteDeck(deckId: Int)
     abstract fun getDeckById(deckId: Int): Deck?
     abstract fun synchronizeData()
-    abstract fun handleNavigation(event: DeckListNavigationEvent)
+    abstract fun handleNavigation(event: IDeckListNavigationEvent)
     abstract fun reopenApp()
     abstract fun logOut()
     abstract fun deleteAccount()

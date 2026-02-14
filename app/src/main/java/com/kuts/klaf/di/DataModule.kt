@@ -12,9 +12,11 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.kuts.domain.managers.IAudioPlayerManager
+import com.kuts.domain.managers.IDeckReviewScheduler as DomainDeckReviewScheduler
 import com.kuts.domain.entities.DeckRepetitionInfos
-import com.kuts.domain.repositories.CrashlyticsRepository
-import com.kuts.klaf.data.common.DeckReviewScheduler
+import com.kuts.domain.repositories.ICrashlyticsRepository
+import com.kuts.klaf.data.common.IDeckReviewScheduler as DataDeckReviewScheduler
 import com.kuts.klaf.data.common.DeckReviewingReminder
 import com.kuts.klaf.data.dataStore.DECK_REPETITION_INFO_FILE_NAME
 import com.kuts.klaf.data.dataStore.DeckRepetitionInfosSerializer
@@ -47,9 +49,20 @@ class DataModule {
     }
 
     @Provides
-    fun provideDeckReviewScheduler(@ApplicationContext context: Context): DeckReviewScheduler {
+    @Singleton
+    fun provideDeckReviewingReminder(@ApplicationContext context: Context): DeckReviewingReminder {
         return DeckReviewingReminder(context = context)
     }
+
+    @Provides
+    fun provideDomainDeckReviewScheduler(
+        reminder: DeckReviewingReminder,
+    ): DomainDeckReviewScheduler = reminder
+
+    @Provides
+    fun provideDataDeckReviewScheduler(
+        reminder: DeckReviewingReminder,
+    ): DataDeckReviewScheduler = reminder
 
     @Provides
     fun provideFirestore(): FirebaseFirestore {
@@ -80,8 +93,8 @@ class DataModule {
 
     @Provides
     fun provideCardAudioPlayer(
-        crashlyticsRepository: CrashlyticsRepository
-    ): CardAudioPlayer = CardAudioPlayer(crashlytics = crashlyticsRepository)
+        crashlyticsRepository: ICrashlyticsRepository
+    ): IAudioPlayerManager = CardAudioPlayer(crashlytics = crashlyticsRepository)
 
     @Provides
     fun provideConnectivityManager(@ApplicationContext context: Context): ConnectivityManager {

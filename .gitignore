@@ -2,6 +2,7 @@
 .gradle
 /local.properties
 /.idea
+.DS_Store
 .DS_Storenavconavconuu
 /captures
 .externalNativeBuild
@@ -25,3 +26,8 @@ buildSrc/build/pluginUnderTestMetadata/plugin-under-test-metadata.properties
 buildSrc/build/tmp/jar/MANIFEST.MF
 
 /app/src/main/java/com/kuts/klaf/common/SecretConstants.kt
+/data/src/main/java/com/kuts/klaf/common/SecretConstants.kt
+
+# Gradle outputs (all modules)
+**/build/
+/.kotlin/

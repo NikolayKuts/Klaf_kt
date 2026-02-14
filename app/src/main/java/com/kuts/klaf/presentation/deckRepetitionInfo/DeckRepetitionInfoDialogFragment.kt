@@ -22,7 +22,7 @@ class DeckRepetitionInfoDialogFragment : TransparentDialogFragment(
     private val args by navArgs<DeckRepetitionInfoDialogFragmentArgs>()
 
     @Inject
-    lateinit var assistedFactory: DeckRepetitionInfoViewModelAssistedFactory
+    lateinit var assistedFactory: IDeckRepetitionInfoViewModelAssistedFactory
     private val viewModel by viewModels<DeckRepetitionInfoViewModel> {
         DeckRepetitionInfoViewModelFactory(
             assistedFactory = assistedFactory,

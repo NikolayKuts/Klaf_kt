@@ -6,7 +6,7 @@ import dagger.assisted.AssistedFactory
 
 class CardTransferringViewModuleFactory(
     private val sourceDeckId: Int,
-    private val assistedFactory: CardTransferringViewModelAssistedFactory,
+    private val assistedFactory: ICardTransferringViewModelAssistedFactory,
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
@@ -16,7 +16,7 @@ class CardTransferringViewModuleFactory(
 }
 
 @AssistedFactory
-interface CardTransferringViewModelAssistedFactory {
+interface ICardTransferringViewModelAssistedFactory {
 
     fun create(sourceDeckId: Int): CardTransferringViewModel
 }

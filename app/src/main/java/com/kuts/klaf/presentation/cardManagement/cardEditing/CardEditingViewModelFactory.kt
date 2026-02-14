@@ -8,7 +8,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 
 class CardEditingViewModelFactory(
-    private val assistedFactory: CardEditingAssistedViewModelFactory,
+    private val assistedFactory: ICardEditingAssistedViewModelFactory,
     private val deckId: Int,
     private val cardId: Int,
 ) : ViewModelProvider.Factory {
@@ -20,7 +20,7 @@ class CardEditingViewModelFactory(
 }
 
 @AssistedFactory
-interface CardEditingAssistedViewModelFactory {
+interface ICardEditingAssistedViewModelFactory {
 
     fun crate(
         @Assisted(DECK_ARGUMENT_NAME) deckId: Int,

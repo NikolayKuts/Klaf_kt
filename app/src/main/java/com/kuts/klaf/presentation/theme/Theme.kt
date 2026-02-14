@@ -29,7 +29,7 @@ fun MainTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable (
     }
 }
 
-interface Themable<T> {
+interface IThemable<T> {
 
     val light: T
     val dark: T

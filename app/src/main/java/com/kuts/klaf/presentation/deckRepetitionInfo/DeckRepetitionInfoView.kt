@@ -23,10 +23,6 @@ import com.kuts.domain.common.*
 import com.kuts.domain.common.DeckReviewPassSuccessMark.*
 import com.kuts.domain.entities.DeckRepetitionInfo
 import com.kuts.klaf.R
-import com.kuts.klaf.data.common.calculateDetailedPreviousScheduledRange
-import com.kuts.klaf.data.common.calculateDetailedScheduledRange
-import com.kuts.klaf.data.common.currentDurationAsTimeOrUnassigned
-import com.kuts.klaf.data.common.markResId
 import com.kuts.klaf.presentation.common.*
 import com.kuts.klaf.presentation.theme.MainTheme
 import kotlin.math.max
@@ -42,8 +38,8 @@ fun DeckRepetitionInfoView(
     val deckRepetitionInfo by viewModel.repetitionInfo.collectAsState()
 
     when (val infoContent = deckRepetitionInfo) {
-        is Emptiable.Empty -> {}
-        is Emptiable.Content -> {
+        is IEmptiable.Empty -> {}
+        is IEmptiable.Content -> {
             ScrollableBox(
                 modifier = Modifier.noRippleClickable { onCloseClick() },
                 dialogMode = true,

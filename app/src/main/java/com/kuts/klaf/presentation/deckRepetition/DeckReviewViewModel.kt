@@ -15,11 +15,16 @@ import com.kuts.domain.common.MINIMUM_NUMBER_OF_FIRST_REPETITIONS
 import com.kuts.domain.common.UNASSIGNED_LONG_VALUE
 import com.kuts.domain.common.UnitSurrogate
 import com.kuts.domain.common.addIntoNewInstance
+import com.kuts.domain.common.calculateNextScheduledRepeatDate
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.common.getCurrentDateAsLong
+import com.kuts.domain.common.getMaxTime
+import com.kuts.domain.common.getNewInterval
 import com.kuts.domain.common.isEven
 import com.kuts.domain.common.isNotNull
 import com.kuts.domain.common.isOdd
+import com.kuts.domain.common.isRepetitionIterationSucceeded
+import com.kuts.domain.common.lastReviewPassSuccessMark
 import com.kuts.domain.common.launchIn
 import com.kuts.domain.common.update
 import com.kuts.domain.entities.Card
@@ -29,21 +34,16 @@ import com.kuts.domain.enums.DifficultyRecallingLevel
 import com.kuts.domain.enums.DifficultyRecallingLevel.EASY
 import com.kuts.domain.enums.DifficultyRecallingLevel.GOOD
 import com.kuts.domain.enums.DifficultyRecallingLevel.HARD
-import com.kuts.domain.repositories.CrashlyticsRepository
+import com.kuts.domain.managers.IAudioPlayerManager
+import com.kuts.domain.managers.IDeckReviewNotifierManager
+import com.kuts.domain.managers.IDeckReviewScheduler
+import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.DeleteCardsFromDeckUseCase
 import com.kuts.domain.useCases.FetchCardsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.SaveDeckReviewInfoUseCase
 import com.kuts.domain.useCases.UpdateDeckUseCase
 import com.kuts.klaf.R
-import com.kuts.klaf.data.common.DeckReviewScheduler
-import com.kuts.klaf.data.common.calculateNextScheduledRepeatDate
-import com.kuts.klaf.data.common.getMaxTime
-import com.kuts.klaf.data.common.getNewInterval
-import com.kuts.klaf.data.common.isRepetitionIterationSucceeded
-import com.kuts.klaf.data.common.lastReviewPassSuccessMark
-import com.kuts.klaf.data.common.notifications.DeckReviewNotifier
-import com.kuts.klaf.data.networking.CardAudioPlayer
 import com.kuts.klaf.presentation.common.ButtonState
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.RepetitionTimer
@@ -80,13 +80,13 @@ class DeckReviewViewModel @AssistedInject constructor(
     fetchCards: FetchCardsUseCase,
     fetchDeckById: FetchDeckByIdUseCase,
     override val timer: RepetitionTimer,
-    override val audioPlayer: CardAudioPlayer,
+    override val audioPlayer: IAudioPlayerManager,
     private val updateDeck: UpdateDeckUseCase,
     private val deleteCardsFromDeck: DeleteCardsFromDeckUseCase,
-    private val deckReviewScheduler: DeckReviewScheduler,
+    private val deckReviewScheduler: IDeckReviewScheduler,
     private val saveDeckReviewInfo: SaveDeckReviewInfoUseCase,
-    private val deckReviewNotifier: DeckReviewNotifier,
-    private val crashlytics: CrashlyticsRepository,
+    private val deckReviewNotifier: IDeckReviewNotifierManager,
+    private val crashlytics: ICrashlyticsRepository,
 ) : BaseDeckReviewViewModel() {
 
     companion object Companion {

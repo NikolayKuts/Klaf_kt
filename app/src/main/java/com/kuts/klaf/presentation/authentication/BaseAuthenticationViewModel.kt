@@ -3,14 +3,14 @@ package com.kuts.klaf.presentation.authentication
 import androidx.lifecycle.ViewModel
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.common.LoadingState
-import com.kuts.domain.repositories.AuthenticationRepository.AuthenticationError
-import com.kuts.klaf.presentation.common.EventMessageSource
+import com.kuts.domain.repositories.IAuthenticationRepository.IAuthenticationError
+import com.kuts.klaf.presentation.common.IEventMessageSource
 import kotlinx.coroutines.flow.StateFlow
 
-abstract class BaseAuthenticationViewModel : ViewModel(), EventMessageSource {
+abstract class BaseAuthenticationViewModel : ViewModel(), IEventMessageSource {
 
     abstract val typingState: StateFlow<AuthenticationTypingState>
-    abstract val screenLoadingState: StateFlow<LoadingState<AuthenticationAction, AuthenticationError>>
+    abstract val screenLoadingState: StateFlow<LoadingState<AuthenticationAction, IAuthenticationError>>
 
     abstract fun updateEmail(value: String)
     abstract fun updatePassword(value: String)
