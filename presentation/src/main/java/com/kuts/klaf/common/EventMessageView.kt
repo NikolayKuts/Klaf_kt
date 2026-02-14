@@ -1,0 +1,111 @@
+package com.kuts.klaf.common
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.*
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.kuts.klaf.common.EventMessage.Type.*
+import com.kuts.klaf.theme.MainTheme
+import kotlinx.coroutines.delay
+
+@Composable
+fun EventMessageView(
+    message: EventMessage,
+    modifier: Modifier = Modifier,
+    animationDuration: Int = 500,
+    transitionDuration: Int = 500,
+    initialElevation: Int = 1,
+    targetElevation: Int = 12,
+) {
+    val visibilityState = remember(key1 = message) { MutableTransitionState(initialState = false) }
+
+    val colorHolder = when (message.type) {
+        Negative -> MainTheme.colors.eventMessageColors.negative
+        Waring -> MainTheme.colors.eventMessageColors.warning
+        Neutral -> MainTheme.colors.eventMessageColors.neutral
+        Positive -> MainTheme.colors.eventMessageColors.positive
+    }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "infiniteTransition")
+
+    val elevation by infiniteTransition.animateValue(
+        initialValue = initialElevation,
+        targetValue = targetElevation,
+        typeConverter = Int.VectorConverter,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = animationDuration, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "elevation",
+    )
+
+    val color by infiniteTransition.animateColor(
+        initialValue = colorHolder.initial,
+        targetValue = colorHolder.target,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = animationDuration, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "color",
+    )
+
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1F,
+        targetValue = 1.01F,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = animationDuration, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "scale",
+    )
+
+    val additionOffset = 100
+
+    AnimatedVisibility(
+        modifier = modifier.padding(32.dp),
+        visibleState = visibilityState,
+        enter = slideInVertically(
+            animationSpec = tween(durationMillis = transitionDuration),
+            initialOffsetY = { fullWidth -> - (fullWidth + additionOffset) },
+        ),
+        exit = slideOutVertically(
+            animationSpec = tween(durationMillis = transitionDuration),
+            targetOffsetY = { fullWidth -> -(fullWidth + additionOffset) },
+        )
+    ) {
+        Card(
+            modifier = modifier.scale(scale),
+            shape = MainTheme.shapes.small,
+            colors = CardDefaults.cardColors(
+                containerColor = color,
+                contentColor = MainTheme.colors.material.onBackground,
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = elevation.dp)
+        ) {
+            Text(
+                modifier = Modifier.padding(16.dp),
+                text = stringResource(id = message.resId, *message.args),
+                style = MainTheme.typographies.materialTypographies.bodyLarge
+            )
+        }
+    }
+
+    LaunchedEffect(key1 = message) {
+        visibilityState.targetState = true
+        delay(message.duration.value)
+        visibilityState.targetState = false
+    }
+}

@@ -16,12 +16,12 @@ import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IDeckReviewScheduler as DomainDeckReviewScheduler
 import com.kuts.domain.entities.DeckRepetitionInfos
 import com.kuts.domain.repositories.ICrashlyticsRepository
-import com.kuts.klaf.data.common.IDeckReviewScheduler as DataDeckReviewScheduler
-import com.kuts.klaf.data.common.DeckReviewingReminder
-import com.kuts.klaf.data.dataStore.DECK_REPETITION_INFO_FILE_NAME
-import com.kuts.klaf.data.dataStore.DeckRepetitionInfosSerializer
-import com.kuts.klaf.data.networking.CardAudioPlayer
-import com.kuts.klaf.data.room.databases.KlafRoomDatabase
+import com.kuts.klaf.common.IDeckReviewScheduler as DataDeckReviewScheduler
+import com.kuts.klaf.common.DeckReviewingReminder
+import com.kuts.klaf.dataStore.DECK_REPETITION_INFO_FILE_NAME
+import com.kuts.klaf.dataStore.DeckRepetitionInfosSerializer
+import com.kuts.klaf.networking.CardAudioPlayer
+import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.lib.lokdroid.core.LoKdroid
 import dagger.Module
 import dagger.Provides

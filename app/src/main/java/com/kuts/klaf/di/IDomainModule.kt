@@ -5,26 +5,24 @@ import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IDeckRepetitionInfoRepository
 import com.kuts.domain.repositories.IDeckRepository
-import com.kuts.domain.repositories.IOldAppKlafDataTransferRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IStorageTransactionRepository
 import com.kuts.domain.repositories.IWordAutocompleteRepository
 import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.managers.IAppMaintenanceManager
-import com.kuts.klaf.data.common.AppMaintenanceManager
-import com.kuts.klaf.data.common.OldAppKlafDataTransferRepository
-import com.kuts.klaf.data.dataStore.implementations.DataStoreDeckRepetitionInfoRepository
-import com.kuts.klaf.data.firestore.repositoryImplementations.AuthenticationRepositoryFirebase
-import com.kuts.klaf.data.firestore.repositoryImplementations.CardRepositoryFirestore
-import com.kuts.klaf.data.firestore.repositoryImplementations.CrashlyticsRepositoryFirebase
-import com.kuts.klaf.data.firestore.repositoryImplementations.DeckRepositoryFirestore
-import com.kuts.klaf.data.firestore.repositoryImplementations.StorageSaveVersionRepositoryFirestore
-import com.kuts.klaf.data.firestore.repositoryImplementations.WordAutocompleteFirestore
-import com.kuts.klaf.data.networking.yandexApi.YandexWordInfoProvider
-import com.kuts.klaf.data.room.repositoryImplementations.CardRepositoryRoom
-import com.kuts.klaf.data.room.repositoryImplementations.DeckRepositoryRoom
-import com.kuts.klaf.data.room.repositoryImplementations.StorageSaveVersionRepositoryRoom
-import com.kuts.klaf.data.room.repositoryImplementations.StorageTransactionRepositoryRoom
+import com.kuts.klaf.common.AppMaintenanceManager
+import com.kuts.klaf.dataStore.implementations.DataStoreDeckRepetitionInfoRepository
+import com.kuts.klaf.firestore.repositoryImplementations.AuthenticationRepositoryFirebase
+import com.kuts.klaf.firestore.repositoryImplementations.CardRepositoryFirestore
+import com.kuts.klaf.firestore.repositoryImplementations.CrashlyticsRepositoryFirebase
+import com.kuts.klaf.firestore.repositoryImplementations.DeckRepositoryFirestore
+import com.kuts.klaf.firestore.repositoryImplementations.StorageSaveVersionRepositoryFirestore
+import com.kuts.klaf.firestore.repositoryImplementations.WordAutocompleteFirestore
+import com.kuts.klaf.networking.yandexApi.YandexWordInfoProvider
+import com.kuts.klaf.room.repositoryImplementations.CardRepositoryRoom
+import com.kuts.klaf.room.repositoryImplementations.DeckRepositoryRoom
+import com.kuts.klaf.room.repositoryImplementations.StorageSaveVersionRepositoryRoom
+import com.kuts.klaf.room.repositoryImplementations.StorageTransactionRepositoryRoom
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -66,11 +64,6 @@ interface IDomainModule {
     fun bindFirestoreStorageSaveVersionRepository(
         repository: StorageSaveVersionRepositoryFirestore
     ): IStorageSaveVersionRepository
-
-    @Binds
-    fun bindOldAppKlafTransferRepository(
-        repository: OldAppKlafDataTransferRepository,
-    ): IOldAppKlafDataTransferRepository
 
     @Binds
     fun bindStorageTransactionRepository(

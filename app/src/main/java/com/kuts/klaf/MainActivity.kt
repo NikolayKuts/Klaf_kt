@@ -8,10 +8,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.kuts.klaf.presentation.common.BaseMainViewModel
-import com.kuts.klaf.presentation.common.EventMessageView
-import com.kuts.klaf.presentation.common.MainViewModel
-import com.kuts.klaf.presentation.theme.MainTheme
+import com.kuts.klaf.common.BaseMainViewModel
+import com.kuts.klaf.common.EventMessageView
+import com.kuts.klaf.common.MainViewModel
+import com.kuts.klaf.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
