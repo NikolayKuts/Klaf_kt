@@ -9,9 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.constraintlayout.compose.ConstrainScope
-import androidx.constraintlayout.compose.ConstrainedLayoutReference
-import androidx.constraintlayout.compose.ConstraintSetScope
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -81,16 +78,6 @@ fun <T> log(
 @Composable
 fun <T> rememberAsMutableStateOf(value: T): MutableState<T> {
     return remember { mutableStateOf(value = value) }
-}
-
-fun ConstraintSetScope.constrainRefFor(
-    id: String,
-    constrainBlock: ConstrainScope.() -> Unit,
-): ConstrainedLayoutReference {
-    val reference = createRefFor(id = id)
-    constrain(ref = reference, constrainBlock = constrainBlock)
-
-    return reference
 }
 
 fun MutableSharedFlow<EventMessage>.tryEmitAsNegative(

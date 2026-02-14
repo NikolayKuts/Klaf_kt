@@ -25,7 +25,6 @@ workManager = "2.9.0"
 androidxCore = "1.13.1"
 androidxAppCompat = "1.7.0"
 androidxLegacySupport = "1.0.0"
-androidxConstraintLayout = "2.1.4"
 androidxFragmentKtx = "1.8.1"
 material = "1.12.0"
 coroutinesCoreJvm = "1.7.3"
@@ -61,7 +60,6 @@ firebaseCoroutinePlayServices = "1.7.3"
 # Compose #
 composeBom = "2024.06.00"
 composeComiler = "1.5.14"
-composeConstraintLayout = "1.0.1"
 compseThemeAdapter = "1.2.1"
 compseAccompanist = "0.19.0"
 
@@ -88,7 +86,6 @@ core-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", v
 core-android-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
 core-app-compat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppCompat" }
 core-legacy-support = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "androidxLegacySupport" }
-core-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidxConstraintLayout" }
 core-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidxFragmentKtx" }
 core-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 core-coroutines-core-jvm = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core-jvm", version.ref = "coroutinesCoreJvm" }
@@ -144,7 +141,6 @@ compose-material = { group = "androidx.compose.material", name = "material" }
 compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-compose-constraintLayout = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "composeConstraintLayout" }
 compose-theme-adapter = { group = "com.google.android.material", name = "compose-theme-adapter", version.ref = "compseThemeAdapter" }
 compose-accompanist = { group = "com.google.accompanist", name = "accompanist-swiperefresh", version.ref = "compseAccompanist" }
 

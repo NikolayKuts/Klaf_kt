@@ -68,7 +68,6 @@ dependencies {
     implementation(libs.core.kotlin.stdlib)
     implementation(libs.core.android.ktx)
     implementation(libs.core.app.compat)
-    implementation(libs.core.constraintlayout)
     implementation(libs.core.legacy.support)
     implementation(libs.core.fragment.ktx)
     implementation(libs.androidx.material3.android)
@@ -126,7 +125,6 @@ dependencies {
     implementation(libs.compose.ui.tooling)
     implementation(libs.compose.activity)
     implementation(libs.compose.ui.tooling.preview)
-    implementation(libs.compose.constraintLayout)
     implementation(libs.compose.theme.adapter)
     implementation(libs.compose.accompanist)
 

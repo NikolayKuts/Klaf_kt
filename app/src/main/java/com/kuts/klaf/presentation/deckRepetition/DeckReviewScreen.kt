@@ -12,10 +12,14 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -37,21 +41,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.ConstraintSet
-import androidx.constraintlayout.compose.Dimension
 import com.kuts.domain.common.CardRepetitionOrder
 import com.kuts.domain.common.CardSide
 import com.kuts.domain.common.DeckRepetitionState
@@ -71,28 +72,10 @@ import com.kuts.klaf.presentation.common.Pointer
 import com.kuts.klaf.presentation.common.RoundButton
 import com.kuts.klaf.presentation.common.ScrollableBox
 import com.kuts.klaf.presentation.common.TimerCountingState
-import com.kuts.klaf.presentation.common.rememberAsMutableStateOf
 import com.kuts.klaf.presentation.common.timeAsString
 import com.kuts.klaf.presentation.theme.MainTheme
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
-
-private const val DECK_INFO_ID = "deck_info"
-private const val ORDER_POINTERS_ID = "repetition_order"
-private const val TIMER_VIEW_ID = "time"
-private const val WORD_VIEW_ID = "word_view"
-private const val IPA_PROMPTS_VIEW_ID = "ipa_prompts"
-private const val START_BUTTON_ID = "start_button"
-private const val TURN_CARD_SIDE_BUTTON_ID = "turn_card_side_button"
-private const val HARD_BUTTON_ID = "hard_button"
-private const val GOOD_BUTTON_ID = "good_button"
-private const val EASY_BUTTON_ID = "easy_button"
-
-private const val MAIN_BUTTON_ID = "main_button"
-private const val DELETE_BUTTON_ID = "delete_button"
-private const val EDIT_BUTTON_ID = "edit_button"
-private const val ADD_BUTTON_ID = "add_button"
-
 
 @Composable
 fun DeckReviewScreen(
@@ -135,34 +118,62 @@ fun DeckReviewScreen(
             Text(text = "left: ${deckReviewState.leftTime.timeAsString}")
         }
 
-        ConstraintLayout(
-            constraintSet = getConstraints(),
+        Box(
             modifier = Modifier
                 .fillParentMaxWidth()
                 .height(density.run { contentHeight.toDp() })
                 .padding(16.dp)
         ) {
-            Text(text = "", modifier = Modifier)
-            DeckInfo(deckName = receivedDeck.name)
-            OrderPointers(
-                order = repetitionState.repetitionOrder,
-                onSwitchIconClick = { viewModel.changeRepetitionOrder() }
-            )
-            Timer(viewModel = viewModel)
-            DeckCard(
-                deckRepetitionState = repetitionState,
-                onWordClick = { viewModel.pronounceWord() }
-            )
-            RepetitionButtons(
-                deckRepetitionState = repetitionState,
-                screenState = screenState,
-                onStartButtonClick = { viewModel.startRepeating() },
-                onEasyButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = EASY) },
-                onGoodButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = GOOD) },
-                onHardButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = HARD) },
-                onCardButtonClick = { viewModel.turnCard() },
-            )
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                DeckInfo(
+                    deckName = receivedDeck.name,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.size(8.dp))
+
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OrderPointers(
+                        order = repetitionState.repetitionOrder,
+                        onSwitchIconClick = { viewModel.changeRepetitionOrder() },
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    )
+                    Timer(
+                        viewModel = viewModel,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                DeckCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(vertical = 8.dp),
+                    deckRepetitionState = repetitionState,
+                    onWordClick = { viewModel.pronounceWord() },
+                )
+
+                RepetitionButtons(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    deckRepetitionState = repetitionState,
+                    screenState = screenState,
+                    onStartButtonClick = { viewModel.startRepeating() },
+                    onEasyButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = EASY) },
+                    onGoodButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = GOOD) },
+                    onHardButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = HARD) },
+                    onCardButtonClick = { viewModel.turnCard() },
+                )
+            }
+
             AdditionalButtons(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 32.dp),
                 additionalButtonsEnabled = mainButtonState == ButtonState.PRESSED,
                 onDeleteClick = {
                     repetitionState.card?.id?.let { cardId -> onDeleteCardClick(cardId) }
@@ -197,106 +208,9 @@ fun DeckReviewScreen(
 }
 
 @Composable
-private fun getConstraints(): ConstraintSet = ConstraintSet {
-    val deckInfoRef = createRefFor(id = DECK_INFO_ID)
-    val orderPointers = createRefFor(id = ORDER_POINTERS_ID)
-    val timerRef = createRefFor(id = TIMER_VIEW_ID)
-    val wordRef = createRefFor(id = WORD_VIEW_ID)
-    val ipaPromptsRef = createRefFor(id = IPA_PROMPTS_VIEW_ID)
-    val repetitionButtonsGuideline = createGuidelineFromBottom(fraction = 0.15F)
-    val startButtonRef = createRefFor(id = START_BUTTON_ID)
-    val easyButtonRef = createRefFor(id = EASY_BUTTON_ID)
-    val turnCardSideButtonRef = createRefFor(id = TURN_CARD_SIDE_BUTTON_ID)
-    val hardButtonRef = createRefFor(id = HARD_BUTTON_ID)
-    val goodButtonRef = createRefFor(id = GOOD_BUTTON_ID)
-    createHorizontalChain(hardButtonRef, goodButtonRef, easyButtonRef)
-    val mainButtonRef = createRefFor(id = MAIN_BUTTON_ID)
-    val deleteButtonRef = createRefFor(id = DELETE_BUTTON_ID)
-    val addButtonRef = createRefFor(id = ADD_BUTTON_ID)
-    val editButtonRef = createRefFor(id = EDIT_BUTTON_ID)
-
-    constrain(ref = deckInfoRef) {
-        top.linkTo(parent.top)
-        start.linkTo(parent.start)
-        end.linkTo(parent.end)
-        width = Dimension.fillToConstraints
-    }
-
-    constrain(ref = orderPointers) {
-        top.linkTo(anchor = deckInfoRef.bottom, margin = 8.dp)
-        start.linkTo(anchor = parent.start)
-    }
-
-    constrain(ref = timerRef) {
-        top.linkTo(anchor = deckInfoRef.bottom, margin = 8.dp)
-        start.linkTo(anchor = parent.start)
-        end.linkTo(anchor = parent.end)
-    }
-
-    constrain(ref = wordRef) {
-        top.linkTo(anchor = timerRef.bottom)
-        start.linkTo(anchor = parent.start)
-        end.linkTo(anchor = parent.end)
-        bottom.linkTo(anchor = startButtonRef.top)
-    }
-
-    constrain(ref = ipaPromptsRef) {
-        top.linkTo(anchor = wordRef.bottom)
-        start.linkTo(anchor = wordRef.start)
-        end.linkTo(anchor = wordRef.end)
-    }
-
-    constrain(ref = startButtonRef) {
-        bottom.linkTo(anchor = repetitionButtonsGuideline)
-        start.linkTo(anchor = parent.start)
-        end.linkTo(anchor = parent.end)
-    }
-
-    constrain(ref = turnCardSideButtonRef) {
-        bottom.linkTo(anchor = repetitionButtonsGuideline)
-        end.linkTo(anchor = easyButtonRef.end)
-    }
-
-    constrain(ref = hardButtonRef) {
-        top.linkTo(anchor = turnCardSideButtonRef.bottom)
-        bottom.linkTo(anchor = parent.bottom)
-    }
-
-    constrain(ref = goodButtonRef) {
-        top.linkTo(anchor = turnCardSideButtonRef.bottom)
-        bottom.linkTo(anchor = parent.bottom)
-    }
-
-    constrain(easyButtonRef) {
-        top.linkTo(anchor = turnCardSideButtonRef.bottom)
-        bottom.linkTo(anchor = parent.bottom)
-    }
-
-    constrain(ref = mainButtonRef) {
-        top.linkTo(anchor = deckInfoRef.bottom, margin = 32.dp)
-        end.linkTo(anchor = parent.end)
-    }
-
-    constrain(ref = deleteButtonRef) {
-        top.linkTo(anchor = mainButtonRef.top)
-        end.linkTo(anchor = mainButtonRef.start, margin = 32.dp)
-    }
-
-    constrain(ref = addButtonRef) {
-        top.linkTo(anchor = mainButtonRef.bottom, margin = 32.dp)
-        end.linkTo(anchor = parent.end)
-    }
-
-    constrain(ref = editButtonRef) {
-        top.linkTo(anchor = deleteButtonRef.bottom, margin = 8.dp)
-        end.linkTo(anchor = addButtonRef.start, margin = 8.dp)
-    }
-}
-
-@Composable
-private fun DeckInfo(deckName: String) {
+private fun DeckInfo(deckName: String, modifier: Modifier = Modifier) {
     Pointer(
-        modifier = Modifier.layoutId(DECK_INFO_ID),
+        modifier = modifier,
         pointerTextId = R.string.pointer_deck,
         valueText = deckName
     )
@@ -306,6 +220,7 @@ private fun DeckInfo(deckName: String) {
 private fun OrderPointers(
     order: CardRepetitionOrder,
     onSwitchIconClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val frontSidePointerText = when (order) {
         CardRepetitionOrder.NATIVE_TO_FOREIGN -> stringResource(id = R.string.pointer_native)
@@ -316,7 +231,7 @@ private fun OrderPointers(
         CardRepetitionOrder.FOREIGN_TO_NATIVE -> stringResource(id = R.string.pointer_native)
     }
 
-    Row(modifier = Modifier.layoutId(ORDER_POINTERS_ID)) {
+    Row(modifier = modifier) {
         Text(
             text = frontSidePointerText,
             style = MainTheme.typographies.frontSideOrderPointer
@@ -338,7 +253,10 @@ private fun OrderPointers(
 }
 
 @Composable
-private fun Timer(viewModel: BaseDeckReviewViewModel) {
+private fun Timer(
+    viewModel: BaseDeckReviewViewModel,
+    modifier: Modifier = Modifier
+) {
     val timerState by viewModel.timer.timerState.collectAsState()
     val timerColor = when (timerState.countingState) {
         TimerCountingState.RUN -> MainTheme.colors.deckRepetitionScreen.timerActive
@@ -346,7 +264,7 @@ private fun Timer(viewModel: BaseDeckReviewViewModel) {
     }
 
     Text(
-        modifier = Modifier.layoutId(TIMER_VIEW_ID),
+        modifier = modifier,
         text = timerState.time,
         color = timerColor,
         style = MainTheme.typographies.timerTextStyle
@@ -354,7 +272,11 @@ private fun Timer(viewModel: BaseDeckReviewViewModel) {
 }
 
 @Composable
-private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -> Unit) {
+private fun DeckCard(
+    deckRepetitionState: DeckRepetitionState,
+    onWordClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val card = deckRepetitionState.card ?: return
     val word: String
     var ipaPrompt = emptyList<LetterInfo>()
@@ -394,26 +316,30 @@ private fun DeckCard(deckRepetitionState: DeckRepetitionState, onWordClick: () -
         CardSide.BACK -> MainTheme.typographies.backSideCardWordTextStyle
     }
 
-    Text(
-        modifier = Modifier
-            .layoutId(WORD_VIEW_ID)
-            .clickable { onWordClick() },
-        text = word,
-        style = wordTextStyle,
-    )
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            modifier = Modifier.clickable { onWordClick() },
+            text = word,
+            style = wordTextStyle,
+        )
 
-    LazyRow(modifier = Modifier.layoutId(IPA_PROMPTS_VIEW_ID)) {
-        itemsIndexed(items = ipaPrompt) { _, letterInfo ->
-            val promptColor = when {
-                letterInfo.isChecked -> MainTheme.colors.deckRepetitionScreen.ipaPromptChecked
-                else -> MainTheme.colors.deckRepetitionScreen.ipaPromptUnchecked
+        LazyRow {
+            itemsIndexed(items = ipaPrompt) { _, letterInfo ->
+                val promptColor = when {
+                    letterInfo.isChecked -> MainTheme.colors.deckRepetitionScreen.ipaPromptChecked
+                    else -> MainTheme.colors.deckRepetitionScreen.ipaPromptUnchecked
+                }
+
+                Text(
+                    text = letterInfo.letter,
+                    color = promptColor,
+                    style = MainTheme.typographies.cardIpaPromptsTextStyle
+                )
             }
-
-            Text(
-                text = letterInfo.letter,
-                color = promptColor,
-                style = MainTheme.typographies.cardIpaPromptsTextStyle
-            )
         }
     }
 }
@@ -427,45 +353,32 @@ private fun RepetitionButtons(
     onGoodButtonClick: () -> Unit,
     onHardButtonClick: () -> Unit,
     onCardButtonClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    var isOnFinishCalled by rememberAsMutableStateOf(value = false)
-
     when (screenState) {
         RepetitionScreenState.StartState -> {
-            isOnFinishCalled = false
-
-            RepetitionButton(
-                layoutId = START_BUTTON_ID,
-                textResId = R.string.start,
-                onClick = onStartButtonClick
-            )
+            Box(modifier = modifier, contentAlignment = Alignment.Center) {
+                RepetitionButton(textResId = R.string.start, onClick = onStartButtonClick)
+            }
         }
 
         RepetitionScreenState.RepetitionState -> {
-            isOnFinishCalled = false
-
-            CardButton(
-                cardSide = deckRepetitionState.side,
-                onClick = onCardButtonClick
-            )
-
-            RepetitionButton(
-                layoutId = HARD_BUTTON_ID,
-                textResId = R.string.hard,
-                onClick = onHardButtonClick
-            )
-
-            RepetitionButton(
-                layoutId = GOOD_BUTTON_ID,
-                textResId = R.string.good,
-                onClick = onGoodButtonClick
-            )
-
-            RepetitionButton(
-                layoutId = EASY_BUTTON_ID,
-                textResId = R.string.easy,
-                onClick = onEasyButtonClick
-            )
+            Column(
+                modifier = modifier,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CardButton(
+                    modifier = Modifier.align(Alignment.End),
+                    cardSide = deckRepetitionState.side,
+                    onClick = onCardButtonClick,
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    RepetitionButton(textResId = R.string.hard, onClick = onHardButtonClick)
+                    RepetitionButton(textResId = R.string.good, onClick = onGoodButtonClick)
+                    RepetitionButton(textResId = R.string.easy, onClick = onEasyButtonClick)
+                }
+            }
         }
 
         is RepetitionScreenState.FinishState -> {}
@@ -474,12 +387,12 @@ private fun RepetitionButtons(
 
 @Composable
 private fun RepetitionButton(
-    layoutId: String,
     @StringRes textResId: Int,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Button(
-        modifier = Modifier.layoutId(layoutId),
+        modifier = modifier,
         onClick = onClick,
     ) {
         Text(text = stringResource(textResId))
@@ -493,19 +406,42 @@ private fun AdditionalButtons(
     onAddClick: () -> Unit,
     onEditClick: () -> Unit,
     onCommonButtonClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    DeleteButton(enabled = additionalButtonsEnabled, onClick = onDeleteClick)
-    AddButton(enabled = additionalButtonsEnabled, onClick = onAddClick)
-    EditButton(enabled = additionalButtonsEnabled, onClick = onEditClick)
-    CommonButton(clicked = additionalButtonsEnabled, onClick = onCommonButtonClick)
+    Box(modifier = modifier) {
+        DeleteButton(
+            modifier = Modifier.align(Alignment.TopEnd),
+            enabled = additionalButtonsEnabled,
+            onClick = onDeleteClick
+        )
+        AddButton(
+            modifier = Modifier.align(Alignment.TopEnd),
+            enabled = additionalButtonsEnabled,
+            onClick = onAddClick
+        )
+        EditButton(
+            modifier = Modifier.align(Alignment.TopEnd),
+            enabled = additionalButtonsEnabled,
+            onClick = onEditClick
+        )
+        CommonButton(
+            modifier = Modifier.align(Alignment.TopEnd),
+            clicked = additionalButtonsEnabled,
+            onClick = onCommonButtonClick
+        )
+    }
 }
 
 @Composable
-private fun DeleteButton(enabled: Boolean, onClick: () -> Unit) {
+private fun DeleteButton(
+    modifier: Modifier = Modifier,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
     AnimatableButtonBox(
-        layoutId = DELETE_BUTTON_ID,
+        modifier = modifier,
         enabled = enabled,
-        xOffset = 60F,
+        xOffset = -60F,
     ) {
         RoundButton(
             background = MainTheme.colors.deckRepetitionScreen.deleteButton,
@@ -517,11 +453,15 @@ private fun DeleteButton(enabled: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun AddButton(enabled: Boolean, onClick: () -> Unit) {
+private fun AddButton(
+    modifier: Modifier = Modifier,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
     AnimatableButtonBox(
-        layoutId = ADD_BUTTON_ID,
+        modifier = modifier,
         enabled = enabled,
-        yOffset = -60F
+        yOffset = 60F
     ) {
         RoundButton(
             background = MainTheme.colors.deckRepetitionScreen.addButton,
@@ -533,17 +473,22 @@ private fun AddButton(enabled: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun EditButton(enabled: Boolean, onClick: () -> Unit) {
+private fun EditButton(
+    modifier: Modifier = Modifier,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
     AnimatableButtonBox(
-        layoutId = EDIT_BUTTON_ID,
+        modifier = modifier,
         enabled = enabled,
-        xOffset = 50F,
-        yOffset = -50F,
+        xOffset = -50F,
+        yOffset = 50F,
     ) {
         RoundButton(
             background = MainTheme.colors.deckRepetitionScreen.editButton,
             iconId = R.drawable.ic_edit_24,
-            onClick = { onClick() },
+            enabled = enabled,
+            onClick = onClick,
             elevation = 4.dp
         )
     }
@@ -551,7 +496,7 @@ private fun EditButton(enabled: Boolean, onClick: () -> Unit) {
 
 @Composable
 private fun AnimatableButtonBox(
-    layoutId: String,
+    modifier: Modifier = Modifier,
     enabled: Boolean,
     xOffset: Float = 0F,
     yOffset: Float = 0F,
@@ -567,8 +512,8 @@ private fun AnimatableButtonBox(
         )
     }
 
-    val xTransitionOffset by animateState(if (enabled) 0F else xOffset)
-    val yTransitionOffset by animateState(if (enabled) 0F else yOffset)
+    val xTransitionOffset by animateState(if (enabled) xOffset else 0F)
+    val yTransitionOffset by animateState(if (enabled) yOffset else 0F)
     val degrees by animateState(if (enabled) 0F else 360F)
     val alpha by animateFloatAsState(
         targetValue = if (enabled) 1F else 0F,
@@ -576,8 +521,7 @@ private fun AnimatableButtonBox(
     )
 
     Box(
-        modifier = Modifier
-            .layoutId(layoutId)
+        modifier = modifier
             .offset(x = xTransitionOffset.dp, y = yTransitionOffset.dp)
             .alpha(alpha)
             .rotate(degrees = degrees),
@@ -589,6 +533,7 @@ private fun AnimatableButtonBox(
 private fun CommonButton(
     clicked: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val scale by animateDpAsState(
         targetValue = if (clicked) 40.dp else 50.dp,
@@ -604,9 +549,7 @@ private fun CommonButton(
     )
 
     RoundButton(
-        modifier = Modifier
-            .layoutId(MAIN_BUTTON_ID)
-            .size(scale),
+        modifier = modifier.size(scale),
         background = color,
         iconId = R.drawable.ic_more_vert_24,
         onClick = onClick,
@@ -615,7 +558,11 @@ private fun CommonButton(
 }
 
 @Composable
-fun CardButton(cardSide: CardSide, onClick: () -> Unit) {
+fun CardButton(
+    cardSide: CardSide,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val rotationValue: Float
     val backgroundColor: Color
     val animationDuration = 100
@@ -643,9 +590,8 @@ fun CardButton(cardSide: CardSide, onClick: () -> Unit) {
     )
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .size(width = 40.dp, height = 56.dp)
-            .layoutId(TURN_CARD_SIDE_BUTTON_ID)
             .graphicsLayer { rotationY = rotation },
         shape = RoundedCornerShape(8.dp),
     ) {

@@ -22,6 +22,7 @@ const val ROUNDED_ELEMENT_SIZE = 50
 fun RoundButton(
     background: Color,
     @DrawableRes iconId: Int,
+    enabled: Boolean = true,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     size: Dp = ROUNDED_ELEMENT_SIZE.dp,
@@ -37,7 +38,7 @@ fun RoundButton(
             modifier = Modifier
                 .size(size)
                 .background(background)
-                .clickable { onClick() }
+                .clickable(enabled = enabled) { onClick() }
                 .padding(8.dp),
             painter = painterResource(id = iconId),
             contentDescription = contentDescription,
