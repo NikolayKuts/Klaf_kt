@@ -55,8 +55,6 @@ import com.kuts.klaf.deckRepetition.RepetitionScreenState.StartState
 import com.kuts.klaf.deckRepetition.savedStateHandle.deckReviewDelegates
 import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent
 import com.lib.lokdroid.core.logD
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -74,9 +72,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.LinkedList
 
-class DeckReviewViewModel @AssistedInject constructor(
-    @Assisted private val deckId: Int,
-    @Assisted private val handle: SavedStateHandle,
+class DeckReviewViewModel(
+    private val deckId: Int,
+    private val handle: SavedStateHandle,
     fetchCards: FetchCardsUseCase,
     fetchDeckById: FetchDeckByIdUseCase,
     override val timer: RepetitionTimer,

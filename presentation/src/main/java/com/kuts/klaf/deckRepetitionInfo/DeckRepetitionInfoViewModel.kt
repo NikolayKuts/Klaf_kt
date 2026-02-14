@@ -9,12 +9,10 @@ import com.kuts.domain.useCases.FetchDeckRepetitionInfoUseCase
 import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
 
-class DeckRepetitionInfoViewModel @AssistedInject constructor(
-    @Assisted private val deckId: Int,
+class DeckRepetitionInfoViewModel(
+    private val deckId: Int,
     fetchDeckRepetitionInfo: FetchDeckRepetitionInfoUseCase,
     crashlytics: ICrashlyticsRepository,
 ) : BaseDeckRepetitionInfoViewModel() {

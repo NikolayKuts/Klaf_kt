@@ -6,9 +6,8 @@ import com.kuts.domain.entities.AuthenticationState
 import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.IAuthenticationRepository.IAuthenticationError
 import kotlinx.coroutines.flow.Flow
-import javax.inject.Inject
 
-class AuthenticationInteractor @Inject constructor(
+class AuthenticationInteractor(
     private val authRepository: IAuthenticationRepository,
 ) {
 

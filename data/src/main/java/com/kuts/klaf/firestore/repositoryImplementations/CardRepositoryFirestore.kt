@@ -13,9 +13,8 @@ import com.kuts.klaf.firestore.toDomainEntity
 import com.kuts.klaf.firestore.toFirestoreEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
-import javax.inject.Inject
 
-class CardRepositoryFirestore @Inject constructor(
+class CardRepositoryFirestore(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth,
 ) : ICardRepository {

@@ -47,11 +47,8 @@ roomCore = "2.6.1"
 # Lifecycle #
 lifecycle = "2.8.3"
 
-# Hilt #
-hiltAndroid = "2.57.2"
-hiltDaggerCompiler = "2.57.2"
-hiltAndroidCompiler = "1.3.0"
-hiltWork = "1.3.0"
+# Koin #
+koin = "3.5.6"
 
 # Firebase #
 firebaseBom = "33.1.2"
@@ -118,11 +115,10 @@ lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-view
 lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
 lifecycle-viewmodel-savedstate = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-savedstate", version.ref = "lifecycle" }
 
-# Hilt #
-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hiltAndroid" }
-hilt-dagger-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hiltDaggerCompiler" }
-hilt-android-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltAndroidCompiler" }
-hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltWork" }
+# Koin #
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-androidx-navigation = { group = "io.insert-koin", name = "koin-androidx-navigation", version.ref = "koin" }
+koin-androidx-workmanager = { group = "io.insert-koin", name = "koin-androidx-workmanager", version.ref = "koin" }
 
 # Firebase #
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
@@ -192,7 +188,6 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 navigation-safeargs-kotlin = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigationSafeArgsKotlinPlugin" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firevaseCrashlyticsPlugin" }
-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hiltAndroid" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 telegramAppDistribution = { id = "telegram-app-distribution-plugin" }
 kotlin-parcelize = { id = "kotlin-parcelize" }

@@ -4,9 +4,8 @@ import com.kuts.domain.entities.AutocompleteWord
 import com.kuts.domain.repositories.IWordAutocompleteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
-class FetchWordAutocompleteUseCase @Inject constructor(
+class FetchWordAutocompleteUseCase(
     private val wordAutocompleteRepository: IWordAutocompleteRepository,
 ) {
 

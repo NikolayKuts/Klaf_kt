@@ -2,8 +2,6 @@ package com.kuts.klaf.common
 
 import android.content.Context
 import android.net.Uri
-import com.kuts.domain.common.LocalCardRepository
-import com.kuts.domain.common.LocalDeckRepository
 import com.kuts.domain.entities.Card
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.repositories.ICardRepository
@@ -11,16 +9,12 @@ import com.kuts.domain.repositories.IDeckRepository
 import com.kuts.domain.repositories.IOldAppKlafDataTransferRepository
 import com.kuts.klaf.room.entities.RoomCard.Companion.CARD_TABLE_NAME
 import com.kuts.klaf.room.entities.RoomDeck.Companion.DECK_TABLE_NAME
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
-class OldAppKlafDataTransferRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
-    @LocalDeckRepository
+class OldAppKlafDataTransferRepository(
+    private val context: Context,
     private val deckRepository: IDeckRepository,
-    @LocalCardRepository
     private val cardRepository: ICardRepository,
 ) : IOldAppKlafDataTransferRepository {
 

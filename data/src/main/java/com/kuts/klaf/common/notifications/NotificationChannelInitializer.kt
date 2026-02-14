@@ -9,11 +9,9 @@ import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
 import com.kuts.klaf.data.R
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 
-class NotificationChannelInitializer @Inject constructor(
-    @ApplicationContext private val context: Context,
+class NotificationChannelInitializer(
+    private val context: Context,
     private val notificationManager: NotificationManager,
 ) {
 

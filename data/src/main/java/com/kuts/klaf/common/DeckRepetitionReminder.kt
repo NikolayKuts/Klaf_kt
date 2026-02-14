@@ -1,18 +1,14 @@
 package com.kuts.klaf.common
 
 import android.content.Context
-import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.kuts.domain.common.UNASSIGNED_INT_VALUE
 import com.kuts.domain.managers.IDeckReviewNotifierManager
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
 
-@HiltWorker
-class DeckRepetitionReminder @AssistedInject constructor(
-    @Assisted private val appContext: Context,
-    @Assisted private val parameters: WorkerParameters,
+class DeckRepetitionReminder(
+    private val appContext: Context,
+    private val parameters: WorkerParameters,
     private val deckReviewNotifier: IDeckReviewNotifierManager,
 ) : CoroutineWorker(
     appContext = appContext,

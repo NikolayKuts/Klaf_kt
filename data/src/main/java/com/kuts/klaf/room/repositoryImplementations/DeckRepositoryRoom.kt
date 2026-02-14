@@ -9,11 +9,8 @@ import com.kuts.klaf.room.toDomainEntity
 import com.kuts.klaf.room.toRoomEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class DeckRepositoryRoom @Inject constructor(
+class DeckRepositoryRoom(
     private val roomDatabase: KlafRoomDatabase,
 ) : IDeckRepository {
 

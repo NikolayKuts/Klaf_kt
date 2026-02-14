@@ -1,19 +1,14 @@
 package com.kuts.domain.useCases
 
-import com.kuts.domain.common.LocalDeckRepository
-import com.kuts.domain.common.LocalStorageSaveVersionRepository
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.repositories.IDeckRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IStorageTransactionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
-class CreateDeckUseCase @Inject constructor(
-    @LocalDeckRepository
+class CreateDeckUseCase(
     private val deckRepository: IDeckRepository,
-    @LocalStorageSaveVersionRepository
     private val localStorageSaveVersionRepository: IStorageSaveVersionRepository,
     private val localStorageTransactionRepository: IStorageTransactionRepository,
 ) {

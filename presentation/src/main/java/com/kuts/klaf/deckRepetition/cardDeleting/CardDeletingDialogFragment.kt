@@ -7,7 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.navigation.navGraphViewModels
 import com.kuts.domain.common.LoadingState
 import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.CardDeletingDialogView
@@ -15,16 +14,17 @@ import com.kuts.klaf.common.TransparentDialogFragment
 import com.kuts.klaf.common.collectWhenStarted
 import com.kuts.klaf.deckRepetition.BaseDeckReviewViewModel
 import com.kuts.klaf.theme.MainTheme
-import dagger.hilt.android.AndroidEntryPoint
+import org.koin.androidx.navigation.koinNavGraphViewModel
 
-@AndroidEntryPoint
 class CardDeletingDialogFragment : TransparentDialogFragment(
     layoutId = R.layout.common_compose_layout
 ) {
 
     private val args by navArgs<CardDeletingDialogFragmentArgs>()
 
-    private val viewModel by navGraphViewModels<BaseDeckReviewViewModel>(R.id.deckRepetitionFragment)
+    private val viewModel by koinNavGraphViewModel<BaseDeckReviewViewModel>(
+        navGraphId = R.id.deckRepetitionFragment
+    )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

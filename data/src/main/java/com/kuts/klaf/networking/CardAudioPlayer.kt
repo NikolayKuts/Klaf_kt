@@ -22,9 +22,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import javax.inject.Inject
 
-class CardAudioPlayer @Inject constructor(
+class CardAudioPlayer(
     private val crashlytics: ICrashlyticsRepository,
     private var mediaPlayer: MediaPlayer? = null,
     private var isPrepared: Boolean = false,

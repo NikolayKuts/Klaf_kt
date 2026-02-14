@@ -11,7 +11,6 @@ import com.kuts.klaf.networking.toDomainEntity
 import com.kuts.klaf.networking.yandexApi.entities.YandexWordInfo
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logW
-import dagger.hilt.android.qualifiers.ApplicationContext
 import io.ktor.client.HttpClient
 import io.ktor.client.call.NoTransformationFoundException
 import io.ktor.client.call.body
@@ -26,13 +25,12 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.Json
 import java.security.KeyStore
 import java.security.cert.CertificateFactory
-import javax.inject.Inject
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 import kotlin.coroutines.cancellation.CancellationException
 
-class YandexWordInfoProvider @Inject constructor(
-    @ApplicationContext context: Context,
+class YandexWordInfoProvider(
+    context: Context,
 ) : IWordInfoRepository {
 
     companion object {

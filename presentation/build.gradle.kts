@@ -3,8 +3,6 @@ import com.example.klaf.di.dependencies.Modules
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.navigation.safeargs.kotlin)
     alias(libs.plugins.android.serialization)
@@ -68,10 +66,9 @@ dependencies {
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.savedstate)
 
-    /** Hilt **/
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.dagger.compiler)
-    ksp(libs.hilt.android.compiler)
+    /** Koin **/
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.navigation)
 
     /** Firebase **/
     implementation(platform(libs.firebase.bom))

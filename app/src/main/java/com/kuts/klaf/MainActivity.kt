@@ -12,9 +12,7 @@ import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.EventMessageView
 import com.kuts.klaf.common.MainViewModel
 import com.kuts.klaf.theme.MainTheme
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private val sharedViewModel: BaseMainViewModel by viewModels<MainViewModel>()

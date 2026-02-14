@@ -3,8 +3,6 @@ import com.example.klaf.di.dependencies.Modules
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.hilt.android)
 }
 
 android {
@@ -28,7 +26,7 @@ android {
 
 dependencies {
     api(project(Modules.Domain))
-    api(project(Modules.Data))
+    implementation(project(Modules.Data))
     api(project(Modules.Presentation))
 
     implementation(libs.core.coroutines.core.jvm)
@@ -44,8 +42,7 @@ dependencies {
     implementation(libs.cambridge.dictionary.client)
     implementation(libs.lokdroid)
 
-    implementation(libs.hilt.android)
-    implementation(libs.hilt.work)
-    ksp(libs.hilt.dagger.compiler)
-    ksp(libs.hilt.android.compiler)
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.navigation)
+    implementation(libs.koin.androidx.workmanager)
 }

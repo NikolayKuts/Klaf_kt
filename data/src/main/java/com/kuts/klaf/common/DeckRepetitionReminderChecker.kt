@@ -1,7 +1,6 @@
 package com.kuts.klaf.common
 
 import android.content.Context
-import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.kuts.domain.common.getCurrentDateAsLong
 import com.kuts.domain.common.ifTrue
@@ -9,14 +8,11 @@ import com.kuts.domain.entities.Deck
 import com.kuts.domain.managers.IDeckReviewNotifierManager
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.FetchAllDecksUseCase
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
 
-@HiltWorker
-class DeckRepetitionReminderChecker @AssistedInject constructor(
-    @Assisted context: Context,
-    @Assisted params: WorkerParameters,
+class DeckRepetitionReminderChecker(
+    context: Context,
+    params: WorkerParameters,
     private val deckReviewNotifier: IDeckReviewNotifierManager,
     private val fetchAllDecks: FetchAllDecksUseCase,
     private val crashlytics: ICrashlyticsRepository,

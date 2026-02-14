@@ -6,9 +6,8 @@ import com.kuts.klaf.room.toDomainEntity
 import com.kuts.klaf.room.toRoomEntity
 import com.kuts.domain.entities.StorageSaveVersion
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
-import javax.inject.Inject
 
-class StorageSaveVersionRepositoryRoom @Inject constructor(
+class StorageSaveVersionRepositoryRoom(
     private val database: KlafRoomDatabase,
 ) : IStorageSaveVersionRepository {
 

@@ -6,14 +6,12 @@ import android.content.Intent
 import androidx.work.WorkManager
 import com.kuts.klaf.common.DeckReviewRescheduler.Companion.launchDeckReviewRescheduling
 import com.lib.lokdroid.core.logD
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-@AndroidEntryPoint
-class BootReceiver : BroadcastReceiver() {
+class BootReceiver : BroadcastReceiver(), KoinComponent {
 
-    @Inject
-    lateinit var workerManager: WorkManager
+    private val workerManager: WorkManager by inject()
 
     override fun onReceive(context: Context, intent: Intent) {
         intent.doWhenBootCompleted {

@@ -2,9 +2,8 @@ package com.kuts.klaf.firestore.repositoryImplementations
 
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import javax.inject.Inject
 
-class CrashlyticsRepositoryFirebase @Inject constructor(
+class CrashlyticsRepositoryFirebase(
     private val firebaseCrashlytics: FirebaseCrashlytics
 ) : ICrashlyticsRepository {
 

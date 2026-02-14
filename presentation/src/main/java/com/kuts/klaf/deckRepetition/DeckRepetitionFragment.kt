@@ -6,28 +6,24 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.navigation.navGraphViewModels
 import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.BaseFragment
 import com.kuts.klaf.common.collectWhenStarted
 import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent
 import com.kuts.klaf.theme.MainTheme
 import com.lib.lokdroid.core.logD
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import org.koin.androidx.navigation.koinNavGraphViewModel
+import org.koin.core.parameter.parametersOf
 
-@AndroidEntryPoint
 class DeckRepetitionFragment : BaseFragment(layoutId = R.layout.common_compose_layout) {
 
     private val args by navArgs<DeckRepetitionFragmentArgs>()
     private val navController by lazy { findNavController() }
 
-    @Inject
-    lateinit var assistedFactory: IRepetitionViewModelAssistedFactory
-    private val viewModel: BaseDeckReviewViewModel by navGraphViewModels(
-        navGraphId = R.id.deckRepetitionFragment
+    private val viewModel: BaseDeckReviewViewModel by koinNavGraphViewModel(
+        navGraphId = R.id.deckRepetitionFragment,
     ) {
-        RepetitionViewModelFactory(assistedFactory = assistedFactory, deckId = args.deckId)
+        parametersOf(args.deckId)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

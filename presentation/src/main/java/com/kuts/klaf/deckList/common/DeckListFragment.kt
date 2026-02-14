@@ -15,7 +15,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.navGraphViewModels
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.entities.Deck
 import com.kuts.klaf.presentation.R
@@ -39,21 +38,17 @@ import com.kuts.klaf.deckList.drawer.Drawer
 import com.kuts.klaf.deckList.drawer.DrawerAction
 import com.kuts.klaf.deckList.drawer.DrawerViewState
 import com.kuts.klaf.theme.MainTheme
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 import androidx.core.net.toUri
+import org.koin.androidx.navigation.koinNavGraphViewModel
 
-@AndroidEntryPoint
 class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout) {
 
     private val navController by lazy { findNavController() }
 
-    @Inject
-    lateinit var assistedFactory: IDeckListViewModelAssistedFactory
-    private val viewModel: BaseDeckListViewModel by navGraphViewModels(R.id.deckListFragment) {
-        DeckListViewModelFactory(assistedFactory = assistedFactory)
-    }
+    private val viewModel: BaseDeckListViewModel by koinNavGraphViewModel(
+        navGraphId = R.id.deckListFragment
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

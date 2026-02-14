@@ -9,9 +9,8 @@ import com.kuts.domain.common.UNASSIGNED_INT_VALUE
 import com.kuts.domain.managers.IDeckReviewNotifierManager
 import com.kuts.domain.managers.IDeckReviewScheduler as DomainDeckReviewScheduler
 import com.lib.lokdroid.core.logD
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
-
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 class DeckReviewingReminder(
     private val context: Context,
@@ -79,11 +78,9 @@ class DeckReviewingReminder(
         putExtra(DECK_NAME_EXTRA_KEY, deckName)
     }
 
-    @AndroidEntryPoint
-    class DeckReviewReceiver : BroadcastReceiver() {
+    class DeckReviewReceiver : BroadcastReceiver(), KoinComponent {
 
-        @Inject
-        lateinit var deckReviewNotifier: IDeckReviewNotifierManager
+        private val deckReviewNotifier: IDeckReviewNotifierManager by inject()
 
         override fun onReceive(context: Context, intent: Intent) {
             executeIfIntentValid(intent = intent) { deckId, deckName ->

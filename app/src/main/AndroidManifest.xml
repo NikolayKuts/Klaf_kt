@@ -40,9 +40,9 @@
             android:authorities="${applicationId}.androidx-startup"
             tools:node="remove" />
 
-        <receiver android:name=".data.common.DeckReviewingReminder$DeckReviewReceiver" />
+        <receiver android:name="com.kuts.klaf.common.DeckReviewingReminder$DeckReviewReceiver" />
 
-        <receiver android:name=".data.common.BootReceiver"
+        <receiver android:name="com.kuts.klaf.common.BootReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>

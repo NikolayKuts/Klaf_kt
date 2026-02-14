@@ -12,20 +12,13 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
-import javax.inject.Inject
 
-class SynchronizeLocalAndRemoteDataUseCase @Inject constructor(
-    @LocalDeckRepository
+class SynchronizeLocalAndRemoteDataUseCase(
     private val localDeckRepository: IDeckRepository,
-    @LocalCardRepository
     private val localCardRepository: ICardRepository,
-    @LocalStorageSaveVersionRepository
     private val localStorageSaveVersionRepository: IStorageSaveVersionRepository,
-    @RemoteDeckRepository
     private val remoteDeckRepository: IDeckRepository,
-    @RemoteCardRepository
     private val remoteCardRepository: ICardRepository,
-    @RemoteStorageSaveVersionRepository
     private val remoteStorageSaveVersionRepository: IStorageSaveVersionRepository,
     private val dataSynchronizationValidator: DataSynchronizationValidator,
 ) {

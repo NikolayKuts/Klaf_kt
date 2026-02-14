@@ -13,9 +13,8 @@ import com.kuts.klaf.firestore.toFirestoreEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
-class StorageSaveVersionRepositoryFirestore @Inject constructor(
+class StorageSaveVersionRepositoryFirestore(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth,
 ) : IStorageSaveVersionRepository {

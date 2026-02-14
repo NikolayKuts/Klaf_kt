@@ -25,14 +25,12 @@ import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logW
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 
-class CardEditingViewModel @AssistedInject constructor(
-    @Assisted(DECK_ARGUMENT_NAME) private val deckId: Int,
-    @Assisted(CARD_ARGUMENT_NAME) cardId: Int,
+class CardEditingViewModel(
+    private val deckId: Int,
+    cardId: Int,
     private val fetchCard: FetchCardUseCase,
     private val updateCard: UpdateCardUseCase,
     checkIfWordExists: CheckIfCardExistsUseCase,
@@ -52,12 +50,6 @@ class CardEditingViewModel @AssistedInject constructor(
     fetchDeckById = fetchDeckById,
     checkIfWordExists = checkIfWordExists,
 ) {
-
-    companion object {
-
-        const val DECK_ARGUMENT_NAME = "deck_id"
-        const val CARD_ARGUMENT_NAME = "card_id"
-    }
 
     private val originalCardState = MutableStateFlow<Card?>(value = null)
 

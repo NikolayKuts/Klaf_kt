@@ -1,23 +1,19 @@
 package com.kuts.klaf.common
 
 import android.content.Context
-import androidx.hilt.work.HiltWorker
 import androidx.lifecycle.asFlow
 import androidx.work.*
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.SynchronizeLocalAndRemoteDataUseCase
 import com.kuts.klaf.common.notifications.DataSynchronizationNotifier
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import java.util.*
 
-@HiltWorker
-class DataSynchronizationWorker @AssistedInject constructor(
-    @Assisted val appContext: Context,
-    @Assisted private val params: WorkerParameters,
+class DataSynchronizationWorker(
+    val appContext: Context,
+    private val params: WorkerParameters,
     private val synchronizeLocalAndRemoteData: SynchronizeLocalAndRemoteDataUseCase,
     private val dataSynchronizationNotifier: DataSynchronizationNotifier,
     private val crashlytics: ICrashlyticsRepository,

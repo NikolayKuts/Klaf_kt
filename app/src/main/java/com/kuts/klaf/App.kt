@@ -1,34 +1,27 @@
 package com.kuts.klaf
 
 import android.app.Application
-import android.os.Build
-import androidx.annotation.RequiresApi
-import androidx.hilt.work.HiltWorkerFactory
-import androidx.work.Configuration
+import com.kuts.klaf.di.appModules
 import com.lib.lokdroid.core.LoKdroid
 import com.lib.lokdroid.data.default_implementation.FormaterBuilder
-import dagger.hilt.android.HiltAndroidApp
-import javax.inject.Inject
+import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.workmanager.koin.workManagerFactory
+import org.koin.core.context.startKoin
 
-@HiltAndroidApp
-class App : Application(), Configuration.Provider {
+class App : Application() {
 
-    @Inject
-    lateinit var workerFactory: HiltWorkerFactory
-
-    @Inject
-    lateinit var loKDroid: LoKdroid
-
-    override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder()
-            .setWorkerFactory(workerFactory)
-            .build()
-
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
 
-        loKDroid.initialize(
+        startKoin {
+            androidContext(this@App)
+            workManagerFactory()
+            modules(appModules)
+        }
+//        setupWorkManagerFactory()
+
+
+        LoKdroid.initialize(
             formatter = FormaterBuilder().withPointer()
                 .space()
                 .withLineReference()

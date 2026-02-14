@@ -23,9 +23,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
-import javax.inject.Inject
 
-class AuthenticationRepositoryFirebase @Inject constructor(
+class AuthenticationRepositoryFirebase(
     private val auth: FirebaseAuth,
     private val crashlytics: ICrashlyticsRepository,
 ) : IAuthenticationRepository {

@@ -3,10 +3,8 @@ package com.kuts.klaf.cardTransferring.common
 import android.os.Bundle
 import android.view.View
 import androidx.compose.ui.platform.ComposeView
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.navigation.navGraphViewModels
 import com.kuts.klaf.presentation.R
 import com.kuts.klaf.cardTransferring.common.ICardTransferringNavigationEvent.ToCardAddingScreen
 import com.kuts.klaf.cardTransferring.common.ICardTransferringNavigationEvent.ToCardDeletingDialog
@@ -17,21 +15,19 @@ import com.kuts.klaf.common.BaseFragment
 import com.kuts.klaf.common.TransparentSurface
 import com.kuts.klaf.common.collectWhenStarted
 import com.kuts.klaf.theme.MainTheme
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import org.koin.androidx.navigation.koinNavGraphViewModel
+import org.koin.core.parameter.parametersOf
 
-@AndroidEntryPoint
 class CardTransferringFragment : BaseFragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<CardTransferringFragmentArgs>()
     private val navController by lazy { findNavController() }
 
-    @Inject
-    lateinit var assistedFactory: ICardTransferringViewModelAssistedFactory
-    private val viewModel: BaseCardTransferringViewModel by navGraphViewModels(
+    private val viewModel: BaseCardTransferringViewModel by koinNavGraphViewModel(
         navGraphId = R.id.cardTransferringFragment,
-        factoryProducer = ::provideViewModelFactory
-    )
+    ) {
+        parametersOf(args.sourceDeckId)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,13 +63,6 @@ class CardTransferringFragment : BaseFragment(R.layout.common_compose_layout) {
     override fun onDestroy() {
         viewModel.audioPlayer.onDestroy()
         super.onDestroy()
-    }
-
-    private fun provideViewModelFactory(): ViewModelProvider.Factory {
-        return CardTransferringViewModuleFactory(
-            sourceDeckId = args.sourceDeckId,
-            assistedFactory = assistedFactory
-        )
     }
 
     private fun observeNavigationChanges() {

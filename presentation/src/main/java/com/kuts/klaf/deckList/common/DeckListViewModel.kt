@@ -29,12 +29,11 @@ import com.kuts.klaf.deckList.common.IDeckListNavigationDestination.DataSynchron
 import com.kuts.klaf.deckList.common.IDeckListNavigationDestination.Unspecified
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent.*
 import com.kuts.klaf.deckList.drawer.DrawerViewState
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class DeckListViewModel @AssistedInject constructor(
+class DeckListViewModel(
     fetchDeckSource: FetchDeckSourceUseCase,
     createInterimDeck: CreateInterimDeckUseCase,
     private val createDeck: CreateDeckUseCase,

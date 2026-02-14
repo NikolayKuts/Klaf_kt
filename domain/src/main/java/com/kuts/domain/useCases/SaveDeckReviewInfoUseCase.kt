@@ -4,9 +4,8 @@ import com.kuts.domain.entities.DeckRepetitionInfo
 import com.kuts.domain.repositories.IDeckRepetitionInfoRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
-class SaveDeckReviewInfoUseCase @Inject constructor(
+class SaveDeckReviewInfoUseCase(
     private val deckRepetitionInfoRepository: IDeckRepetitionInfoRepository,
 ) {
 

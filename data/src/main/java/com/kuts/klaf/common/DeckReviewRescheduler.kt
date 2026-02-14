@@ -1,7 +1,6 @@
 package com.kuts.klaf.common
 
 import android.content.Context
-import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
@@ -11,13 +10,10 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.kuts.domain.useCases.FetchAllDecksUseCase
 import com.lib.lokdroid.core.logD
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 
-@HiltWorker
-class DeckReviewRescheduler @AssistedInject constructor(
-    @Assisted private val appContext: Context,
-    @Assisted private val parameters: WorkerParameters,
+class DeckReviewRescheduler(
+    private val appContext: Context,
+    private val parameters: WorkerParameters,
     private var fetchAllDecksUseCase: FetchAllDecksUseCase,
     private var deckReviewingReminder: IDeckReviewScheduler,
 ) : CoroutineWorker(

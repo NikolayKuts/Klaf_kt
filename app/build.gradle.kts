@@ -3,8 +3,6 @@ import com.example.klaf.di.dependencies.*
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
@@ -26,8 +24,6 @@ android {
         versionCode = 15
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        ksp { arg("room.schemaLocation", "$projectDir/schemas") }
     }
 
     buildTypes {
@@ -88,21 +84,14 @@ dependencies {
     implementation(libs.navigation.ui.ktx)
     implementation(libs.navigation.dynamic.features.fragment)
 
-    /** Room **/
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-    ksp(libs.room.compiler)
-
     /** Lifecycle **/
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.savedstate)
 
-    /** Hilt **/
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.dagger.compiler)
-    ksp(libs.hilt.android.compiler)
-    implementation(libs.hilt.work)
+    /** Koin **/
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.workmanager)
 
     /** Firebase **/
     implementation(platform(libs.firebase.bom))

@@ -5,23 +5,21 @@ import android.view.View
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.navigation.navGraphViewModels
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.TransparentDialogFragment
 import com.kuts.klaf.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent
 import com.kuts.klaf.theme.MainTheme
-import dagger.hilt.android.AndroidEntryPoint
+import org.koin.androidx.navigation.koinNavGraphViewModel
 
-@AndroidEntryPoint
 class SigningTypeChoosingDialogFragment : TransparentDialogFragment(
     layoutId = R.layout.common_compose_layout
 ) {
 
     private val navController by lazy { findNavController() }
     private val args by navArgs<SigningTypeChoosingDialogFragmentArgs>()
-    private val viewModel by navGraphViewModels<BaseDeckListViewModel>(R.id.deckListFragment)
+    private val viewModel by koinNavGraphViewModel<BaseDeckListViewModel>(R.id.deckListFragment)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

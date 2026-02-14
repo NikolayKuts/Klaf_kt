@@ -22,13 +22,11 @@ import com.kuts.klaf.cardManagement.common.toDomainEntity
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
 import com.lib.lokdroid.core.logD
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 
-class CardAdditionViewModel @AssistedInject constructor(
-    @Assisted deckId: Int,
-    @Assisted smartSelectedWord: String?,
+class CardAdditionViewModel(
+    deckId: Int,
+    smartSelectedWord: String?,
     private val addNewCardIntoDeck: AddNewCardIntoDeckUseCase,
     checkIfWordExists: CheckIfCardExistsUseCase,
     audioPlayer: IAudioPlayerManager,

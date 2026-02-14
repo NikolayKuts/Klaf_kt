@@ -4,32 +4,26 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import com.kuts.domain.common.ifTrue
 import com.kuts.klaf.presentation.R
-import com.kuts.klaf.cardManagement.common.BaseCardManagementViewModel
 import com.kuts.klaf.common.BaseFragment
 import com.kuts.klaf.common.TransparentSurface
 import com.kuts.klaf.common.collectWhenStarted
 import com.kuts.klaf.theme.MainTheme
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
 private const val MIME_TYPE_TEXT_PLAIN = "text/plain"
 
-@AndroidEntryPoint
 class CardAdditionFragment : BaseFragment(layoutId = R.layout.common_compose_layout) {
 
     private val args by navArgs<CardAdditionFragmentArgs>()
 
-    @Inject
-    lateinit var cardAdditionAssistedFactory: ICardAdditionViewModelAssistedFactory
-    private val viewModel: BaseCardManagementViewModel by viewModels {
-        CardAdditionViewModelFactory(
-            assistedFactory = cardAdditionAssistedFactory,
-            deckId = args.deckId,
-            smartSelectedWord = retrieveSmartSelectedWord()
+    private val viewModel: CardAdditionViewModel by viewModel {
+        parametersOf(
+            args.deckId,
+            retrieveSmartSelectedWord()
         )
     }
 

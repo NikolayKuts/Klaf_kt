@@ -3,9 +3,8 @@ package com.kuts.domain.useCases
 import com.kuts.domain.entities.DeckRepetitionInfo
 import com.kuts.domain.repositories.IDeckRepetitionInfoRepository
 import kotlinx.coroutines.flow.Flow
-import javax.inject.Inject
 
-class FetchDeckRepetitionInfoUseCase @Inject constructor(
+class FetchDeckRepetitionInfoUseCase(
     private val deckRepetitionInfoRepository: IDeckRepetitionInfoRepository,
 ) {
 

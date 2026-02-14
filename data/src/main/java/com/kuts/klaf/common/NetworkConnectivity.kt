@@ -3,9 +3,8 @@ package com.kuts.klaf.common
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
-import javax.inject.Inject
 
-class NetworkConnectivity @Inject constructor(
+class NetworkConnectivity(
     private val connectivityManager: ConnectivityManager
 ) {
 

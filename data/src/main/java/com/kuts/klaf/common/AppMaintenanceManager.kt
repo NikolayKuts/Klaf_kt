@@ -15,9 +15,7 @@ import com.kuts.klaf.common.DeckRepetitionReminderChecker.Companion.scheduleDeck
 import com.kuts.klaf.common.notifications.NotificationChannelInitializer
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
-
-class AppMaintenanceManager @Inject constructor(
+class AppMaintenanceManager(
     private val workManager: WorkManager,
     private val notificationChannelInitializer: NotificationChannelInitializer,
     private val networkConnectivity: NetworkConnectivity,

@@ -11,11 +11,9 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavDeepLinkBuilder
 import com.kuts.domain.managers.IDeckReviewNotifierManager
 import com.kuts.klaf.presentation.R
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 
-class DeckReviewNotifier @Inject constructor(
-    @ApplicationContext private val context: Context,
+class DeckReviewNotifier(
+    private val context: Context,
     private val notificationManager: NotificationManager
 ) : IDeckReviewNotifierManager {
 

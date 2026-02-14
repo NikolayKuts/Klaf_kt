@@ -6,18 +6,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.navArgs
-import androidx.navigation.navGraphViewModels
 import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.TransparentDialogFragment
 import com.kuts.klaf.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent
 import com.kuts.klaf.theme.MainTheme
+import org.koin.androidx.navigation.koinNavGraphViewModel
 
 class DeckDeletingDialogFragment : TransparentDialogFragment(R.layout.common_compose_layout) {
 
     private val args by navArgs<DeckDeletingDialogFragmentArgs>()
 
-    private val viewModel by navGraphViewModels<BaseDeckListViewModel>(R.id.deckListFragment)
+    private val viewModel by koinNavGraphViewModel<BaseDeckListViewModel>(R.id.deckListFragment)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

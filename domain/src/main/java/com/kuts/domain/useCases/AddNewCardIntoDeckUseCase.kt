@@ -1,8 +1,5 @@
 package com.kuts.domain.useCases
 
-import com.kuts.domain.common.LocalCardRepository
-import com.kuts.domain.common.LocalDeckRepository
-import com.kuts.domain.common.LocalStorageSaveVersionRepository
 import com.kuts.domain.entities.Card
 import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.IDeckRepository
@@ -10,14 +7,9 @@ import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IStorageTransactionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
-
-class AddNewCardIntoDeckUseCase @Inject constructor(
-    @LocalDeckRepository
+class AddNewCardIntoDeckUseCase(
     private val deckRepository: IDeckRepository,
-    @LocalCardRepository
     private val cardRepository: ICardRepository,
-    @LocalStorageSaveVersionRepository
     private val localStorageSaveVersionRepository: IStorageSaveVersionRepository,
     private val localStorageTransactionRepository: IStorageTransactionRepository,
 ) {

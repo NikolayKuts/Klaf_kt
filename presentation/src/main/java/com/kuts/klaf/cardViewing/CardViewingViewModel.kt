@@ -11,12 +11,10 @@ import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.*
 
-class CardViewingViewModel @AssistedInject constructor(
-    @Assisted deckId: Int,
+class CardViewingViewModel(
+    deckId: Int,
     fetchDeckById: FetchDeckByIdUseCase,
     private val fetchCards: FetchCardsUseCase,
     private val crashlytics: ICrashlyticsRepository,

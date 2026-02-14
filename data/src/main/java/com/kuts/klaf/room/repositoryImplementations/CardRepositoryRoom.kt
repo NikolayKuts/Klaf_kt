@@ -10,11 +10,8 @@ import com.kuts.klaf.room.toDomainEntity
 import com.kuts.klaf.room.toRoomEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class CardRepositoryRoom @Inject constructor(
+class CardRepositoryRoom(
     private val roomDatabase: KlafRoomDatabase,
 ) : ICardRepository {
 

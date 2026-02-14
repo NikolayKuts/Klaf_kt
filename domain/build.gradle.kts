@@ -13,7 +13,6 @@ dependencies {
 
     /** Core **/
     implementation(libs.core.coroutines.core.jvm)
-    implementation(libs.core.javax.inject)
 
     /** Tests **/
     testImplementation(libs.tests.junit.core)

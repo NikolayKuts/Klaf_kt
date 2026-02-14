@@ -5,9 +5,8 @@ import androidx.lifecycle.LifecycleOwner
 import com.kuts.klaf.common.TimerCountingState.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import javax.inject.Inject
 
-class RepetitionTimer @Inject constructor() : DefaultLifecycleObserver {
+class RepetitionTimer() : DefaultLifecycleObserver {
 
     companion object {
 

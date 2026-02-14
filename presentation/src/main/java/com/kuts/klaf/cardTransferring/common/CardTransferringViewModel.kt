@@ -16,8 +16,6 @@ import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -33,8 +31,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class CardTransferringViewModel @AssistedInject constructor(
-    @Assisted private val sourceDeckId: Int,
+class CardTransferringViewModel(
+    private val sourceDeckId: Int,
     fetchDeckById: FetchDeckByIdUseCase,
     private val fetchCards: FetchCardsUseCase,
     private val deleteCardsFromDeckUseCase: DeleteCardsFromDeckUseCase,

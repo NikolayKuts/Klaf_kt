@@ -8,9 +8,8 @@ import com.kuts.klaf.firestore.entities.FirestoreAutocompleteWord
 import com.kuts.klaf.firestore.toDomainEntity
 import com.lib.lokdroid.core.logD
 import kotlinx.coroutines.tasks.await
-import javax.inject.Inject
 
-class WordAutocompleteFirestore @Inject constructor(
+class WordAutocompleteFirestore(
     private val firestore: FirebaseFirestore,
 ) : IWordAutocompleteRepository {
 

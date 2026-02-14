@@ -6,9 +6,8 @@ import com.kuts.domain.entities.DeckRepetitionInfos
 import com.kuts.domain.repositories.IDeckRepetitionInfoRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
 
-class DataStoreDeckRepetitionInfoRepository @Inject constructor(
+class DataStoreDeckRepetitionInfoRepository(
     private val dataStore: DataStore<DeckRepetitionInfos>,
 ) : IDeckRepetitionInfoRepository {
 

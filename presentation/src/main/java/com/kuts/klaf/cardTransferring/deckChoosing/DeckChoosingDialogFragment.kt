@@ -5,7 +5,6 @@ import android.view.View
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
-import androidx.navigation.navGraphViewModels
 import com.kuts.domain.entities.Deck
 import com.kuts.klaf.presentation.R
 import com.kuts.klaf.cardTransferring.common.BaseCardTransferringViewModel
@@ -13,12 +12,13 @@ import com.kuts.klaf.cardTransferring.common.ICardTransferringAction
 import com.kuts.klaf.cardTransferring.common.ICardTransferringNavigationDestination.CardTransferringScreen
 import com.kuts.klaf.common.TransparentDialogFragment
 import com.kuts.klaf.theme.MainTheme
+import org.koin.androidx.navigation.koinNavGraphViewModel
 
 class DeckChoosingDialogFragment : TransparentDialogFragment(
     layoutId = R.layout.common_compose_layout
 ) {
 
-    private val viewModel by navGraphViewModels<BaseCardTransferringViewModel>(
+    private val viewModel by koinNavGraphViewModel<BaseCardTransferringViewModel>(
         navGraphId = R.id.cardTransferringFragment
     )
 

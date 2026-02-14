@@ -1,13 +1,10 @@
 package com.kuts.domain.useCases
 
-import com.kuts.domain.common.LocalDeckRepository
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.repositories.IDeckRepository
 import kotlinx.coroutines.flow.Flow
-import javax.inject.Inject
 
-class FetchDeckSourceUseCase @Inject constructor(
-    @LocalDeckRepository
+class FetchDeckSourceUseCase(
     private val deckRepository: IDeckRepository,
 ) {
 

@@ -5,20 +5,22 @@ import android.view.View
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.navArgs
-import androidx.navigation.navGraphViewModels
 import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.TransparentDialogFragment
 import com.kuts.klaf.common.TransparentSurface
 import com.kuts.klaf.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent
 import com.kuts.klaf.theme.MainTheme
+import org.koin.androidx.navigation.koinNavGraphViewModel
 
 class DrawerActionDialogFragment : TransparentDialogFragment(
     layoutId = R.layout.common_compose_layout
 ) {
 
     private val args by navArgs<DrawerActionDialogFragmentArgs>()
-    private val viewModel by navGraphViewModels<BaseDeckListViewModel>(navGraphId = R.id.deckListFragment)
+    private val viewModel by koinNavGraphViewModel<BaseDeckListViewModel>(
+        navGraphId = R.id.deckListFragment
+    )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

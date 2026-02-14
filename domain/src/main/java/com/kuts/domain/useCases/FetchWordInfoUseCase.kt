@@ -5,9 +5,8 @@ import com.kuts.domain.entities.WordInfo
 import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.repositories.IWordInfoRepository.IWordInfoLoadingError
 import kotlinx.coroutines.flow.Flow
-import javax.inject.Inject
 
-class FetchWordInfoUseCase @Inject constructor(
+class FetchWordInfoUseCase(
     private val wordInfoRepository: IWordInfoRepository,
 ) {
 

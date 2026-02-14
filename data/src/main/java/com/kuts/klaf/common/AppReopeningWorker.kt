@@ -1,16 +1,12 @@
 package com.kuts.klaf.common
 
 import android.content.Context
-import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.kuts.klaf.common.notifications.AppRestartNotifier
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 
-@HiltWorker
-class AppReopeningWorker @AssistedInject constructor(
-    @Assisted application: Context,
-    @Assisted workerParams: WorkerParameters,
+class AppReopeningWorker(
+    application: Context,
+    workerParams: WorkerParameters,
     private val appRestartNotifier: AppRestartNotifier,
 ) : CoroutineWorker(application, workerParams) {
 

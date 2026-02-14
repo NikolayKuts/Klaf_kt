@@ -1,10 +1,8 @@
 package com.kuts.domain.common
 
-import com.kuts.domain.common.StorageSaveVersionValidationData
 import com.kuts.domain.common.StorageSaveVersionValidationData.Companion.UNDEFINED_SAVE_VERSION
-import javax.inject.Inject
 
-class DataSynchronizationValidator @Inject constructor() {
+class DataSynchronizationValidator() {
 
     fun areSaveVersionUndefined(validationData: StorageSaveVersionValidationData): Boolean {
         return with(validationData) {

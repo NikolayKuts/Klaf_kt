@@ -1,18 +1,11 @@
 package com.kuts.domain.useCases
 
-import com.kuts.domain.common.LocalCardRepository
-import com.kuts.domain.common.LocalDeckRepository
-import com.kuts.domain.common.LocalStorageSaveVersionRepository
 import com.kuts.domain.repositories.*
 import kotlinx.coroutines.*
-import javax.inject.Inject
 
-class RemoveDeckUseCase @Inject constructor(
-    @LocalDeckRepository
+class RemoveDeckUseCase(
     private val deckRepository: IDeckRepository,
-    @LocalCardRepository
     private val cardRepository: ICardRepository,
-    @LocalStorageSaveVersionRepository
     private val localStorageSaveVersionRepository: IStorageSaveVersionRepository,
     private val localStorageTransactionRepository: IStorageTransactionRepository,
     private val deckRepetitionInfoRepository: IDeckRepetitionInfoRepository,

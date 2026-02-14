@@ -6,7 +6,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.navArgs
-import androidx.navigation.navGraphViewModels
 import com.kuts.klaf.presentation.R
 import com.kuts.klaf.cardTransferring.common.BaseCardTransferringViewModel
 import com.kuts.klaf.cardTransferring.common.ICardTransferringAction
@@ -14,6 +13,7 @@ import com.kuts.klaf.cardTransferring.common.ICardTransferringNavigationDestinat
 import com.kuts.klaf.common.CardDeletingDialogView
 import com.kuts.klaf.common.TransparentDialogFragment
 import com.kuts.klaf.theme.MainTheme
+import org.koin.androidx.navigation.koinNavGraphViewModel
 
 class CardDeletingDialogFragment : TransparentDialogFragment(
     layoutId = R.layout.common_compose_layout,
@@ -21,7 +21,7 @@ class CardDeletingDialogFragment : TransparentDialogFragment(
 
     private val args by navArgs<CardDeletingDialogFragmentArgs>()
 
-    private val viewModel by navGraphViewModels<BaseCardTransferringViewModel>(
+    private val viewModel by koinNavGraphViewModel<BaseCardTransferringViewModel>(
         navGraphId = R.id.cardTransferringFragment
     )
 

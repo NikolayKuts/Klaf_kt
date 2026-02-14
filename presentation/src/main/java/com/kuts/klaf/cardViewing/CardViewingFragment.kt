@@ -3,25 +3,21 @@ package com.kuts.klaf.cardViewing
 import android.os.Bundle
 import android.view.View
 import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.BaseFragment
 import com.kuts.klaf.common.TransparentSurface
 import com.kuts.klaf.common.collectWhenStarted
 import com.kuts.klaf.theme.MainTheme
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
-@AndroidEntryPoint
 class CardViewingFragment : BaseFragment(layoutId = R.layout.common_compose_layout) {
 
     private val args by navArgs<CardViewingFragmentArgs>()
 
-    @Inject
-    lateinit var assistedFactory: CardViewingViewModelFactory.ICardViewingViewModelAssistedFactory
-    private val viewModel: CardViewingViewModel by viewModels {
-        CardViewingViewModelFactory(assistedFactory = assistedFactory, deckId = args.deckId)
+    private val viewModel: CardViewingViewModel by viewModel {
+        parametersOf(args.deckId)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

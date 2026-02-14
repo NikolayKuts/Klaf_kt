@@ -5,11 +5,9 @@ import android.content.Context
 import androidx.core.app.NotificationCompat
 import com.kuts.klaf.data.R
 import com.kuts.klaf.common.notifications.NotificationChannelInitializer.Companion.WORK_LOGIC_NOTIFICATION_CHANNEL_ID
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 
-class DataSynchronizationNotifier @Inject constructor(
-    @ApplicationContext private val context: Context,
+class DataSynchronizationNotifier(
+    private val context: Context,
 ) {
 
     companion object {

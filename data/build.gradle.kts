@@ -1,8 +1,9 @@
+import com.example.klaf.di.dependencies.Modules
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.hilt.android)
     alias(libs.plugins.android.serialization)
 }
 
@@ -13,7 +14,7 @@ android {
     defaultConfig {
         minSdk = libs.versions.androidMinSdk.get().toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        ksp { arg("room.schemaLocation", "$projectDir/schemas") }
+//        ksp { arg("room.schemaLocation", "$projectDir/schemas") }
     }
 
     compileOptions {
@@ -28,15 +29,13 @@ android {
 }
 
 dependencies {
-    // Keep domain contracts visible for KSP/Hilt processing in this module.
-    api(project(":domain"))
+    implementation(project(Modules.Domain))
 
     /** Core **/
     implementation(libs.core.kotlin.stdlib)
     implementation(libs.core.android.ktx)
     implementation(libs.core.fragment.ktx)
     implementation(libs.core.coroutines.core.jvm)
-    implementation(libs.core.javax.inject)
 
     /** Room **/
     implementation(libs.room.runtime)
@@ -46,11 +45,8 @@ dependencies {
     /** Lifecycle **/
     implementation(libs.lifecycle.livedata.ktx)
 
-    /** Hilt **/
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.dagger.compiler)
-    ksp(libs.hilt.android.compiler)
-    implementation(libs.hilt.work)
+    /** Koin **/
+    implementation(libs.koin.android)
 
     /** Firebase **/
     implementation(platform(libs.firebase.bom))

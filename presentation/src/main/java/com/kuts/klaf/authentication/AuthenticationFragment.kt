@@ -7,7 +7,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.kuts.domain.common.AuthenticationAction
@@ -17,11 +16,10 @@ import com.kuts.klaf.common.NavigationDestination
 import com.kuts.klaf.common.TransparentSurface
 import com.kuts.klaf.common.collectWhenStarted
 import com.kuts.klaf.theme.MainTheme
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-@AndroidEntryPoint
 class AuthenticationFragment : BaseFragment(layoutId = R.layout.common_compose_layout) {
 
     companion object {
@@ -46,7 +44,7 @@ class AuthenticationFragment : BaseFragment(layoutId = R.layout.common_compose_l
 
     private val args by navArgs<AuthenticationFragmentArgs>()
 
-    private val viewModel: BaseAuthenticationViewModel by viewModels<AuthenticationViewModel>()
+    private val viewModel: BaseAuthenticationViewModel by viewModel<AuthenticationViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

@@ -25,16 +25,13 @@ import com.kuts.klaf.authentication.PasswordValidator.IPasswordValidationResult.
 import com.kuts.klaf.authentication.PasswordValidator.IPasswordValidationResult.ToShort
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import javax.inject.Inject
 
-@HiltViewModel
-class AuthenticationViewModel @Inject constructor(
+class AuthenticationViewModel(
     private val authenticationInteractor: AuthenticationInteractor,
 ) : BaseAuthenticationViewModel() {
 

@@ -17,8 +17,6 @@ import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,8 +25,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 
-class DeckManagementViewModel @AssistedInject constructor(
-    @Assisted private val deckId: Int,
+class DeckManagementViewModel(
+    private val deckId: Int,
     private val fetchDeckById: FetchDeckByIdUseCase,
     private val updateDeck: UpdateDeckUseCase,
     private val crashlytics: ICrashlyticsRepository,

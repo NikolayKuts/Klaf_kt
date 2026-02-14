@@ -1,13 +1,10 @@
 package com.kuts.domain.useCases
 
-import com.kuts.domain.common.LocalCardRepository
 import com.kuts.domain.entities.Card
 import com.kuts.domain.repositories.ICardRepository
 import kotlinx.coroutines.flow.Flow
-import javax.inject.Inject
 
-class FetchCardsUseCase @Inject constructor(
-    @LocalCardRepository
+class FetchCardsUseCase(
     private val cardRepository: ICardRepository,
 ) {
 
