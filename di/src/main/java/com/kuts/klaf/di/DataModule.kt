@@ -5,7 +5,6 @@ import android.net.ConnectivityManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
-import androidx.work.WorkManager
 import com.cambridge.dictionary.client.CambridgeClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -44,8 +43,8 @@ class DataModule {
     }
 
     @Provides
-    fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
-        return WorkManager.getInstance(context)
+    fun provideWorkManager(@ApplicationContext context: Context): androidx.work.WorkManager {
+        return androidx.work.WorkManager.getInstance(context)
     }
 
     @Provides

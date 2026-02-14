@@ -60,10 +60,8 @@ android {
 dependencies {
 
     /** Modules **/
-    implementation(project(Modules.Presentation))
-    implementation(project(Modules.Domain))
+    implementation(project(Modules.Di))
     implementation(project(Modules.Shared))
-    implementation(project(Modules.Data))
 
     /** Core **/
     implementation(libs.core.kotlin.stdlib)
