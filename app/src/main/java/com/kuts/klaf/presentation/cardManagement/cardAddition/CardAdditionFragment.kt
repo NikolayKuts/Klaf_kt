@@ -3,7 +3,6 @@ package com.kuts.klaf.presentation.cardManagement.cardAddition
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.compose.material.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
@@ -12,6 +11,7 @@ import com.kuts.klaf.R
 import com.kuts.klaf.data.common.MIME_TYPE_TEXT_PLAIN
 import com.kuts.klaf.presentation.cardManagement.common.BaseCardManagementViewModel
 import com.kuts.klaf.presentation.common.BaseFragment
+import com.kuts.klaf.presentation.common.TransparentSurface
 import com.kuts.klaf.presentation.common.collectWhenStarted
 import com.kuts.klaf.presentation.theme.MainTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,7 +45,7 @@ class CardAdditionFragment : BaseFragment(layoutId = R.layout.common_compose_lay
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
-                Surface {
+                TransparentSurface {
                     CardManagementScreen(viewModel = viewModel)
                 }
             }

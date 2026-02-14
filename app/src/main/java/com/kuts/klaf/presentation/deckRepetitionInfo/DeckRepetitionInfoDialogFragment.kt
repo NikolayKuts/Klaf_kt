@@ -37,13 +37,15 @@ class DeckRepetitionInfoDialogFragment : TransparentDialogFragment(
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
-                DeckRepetitionInfoView(
-                    viewModel = viewModel,
-                    deckName = args.deckName,
-                    onCloseClick = ::closeDialog,
-                    eventMessage = sharedViewModel.eventMessage.collectAsState(initial = null).value,
-                    onRendered = ::handleRepetitionInfoEvent,
-                )
+                TransparentSurface {
+                    DeckRepetitionInfoView(
+                        viewModel = viewModel,
+                        deckName = args.deckName,
+                        onCloseClick = ::closeDialog,
+                        eventMessage = sharedViewModel.eventMessage.collectAsState(initial = null).value,
+                        onRendered = ::handleRepetitionInfoEvent,
+                    )
+                }
             }
         }
     }

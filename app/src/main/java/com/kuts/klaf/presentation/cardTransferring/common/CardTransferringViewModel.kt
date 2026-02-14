@@ -13,16 +13,6 @@ import com.kuts.domain.useCases.FetchDeckSourceUseCase
 import com.kuts.domain.useCases.TransferCardsToDeckUseCase
 import com.kuts.klaf.R
 import com.kuts.klaf.data.networking.CardAudioPlayer
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardAddingFragment
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardDeletionDialog
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardEditingFragment
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardMovingDialog
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardTransferringScreen
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardAddingScreen
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardDeletingDialog
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardEditingScreen
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToCardMovingDialog
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationEvent.ToPrevious
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.tryEmitAsNegative
 import com.kuts.klaf.presentation.common.tryEmitAsPositive
@@ -168,14 +158,16 @@ class CardTransferringViewModel @AssistedInject constructor(
 
     private fun navigateTo(destination: CardTransferringNavigationDestination) {
         when (destination) {
-            CardAddingFragment -> sendCardAddingScreenEvent()
-            CardDeletionDialog -> sendCardDeletingDialogEvent()
-            CardMovingDialog -> sendCardMovingDialogEvent()
-            is CardEditingFragment -> {
+            CardTransferringNavigationDestination.CardAddingScreen -> sendCardAddingScreenEvent()
+            CardTransferringNavigationDestination.CardDeletionDialog -> sendCardDeletingDialogEvent()
+            CardTransferringNavigationDestination.CardMovingDialog -> sendCardMovingDialogEvent()
+            is CardTransferringNavigationDestination.CardEditingScreen -> {
                 sendCardEditingScreenEvent(selectedCardIndex = destination.selectedCardIndexIndex)
             }
 
-            CardTransferringScreen -> emitEvent(event = ToPrevious)
+            CardTransferringNavigationDestination.CardTransferringScreen -> {
+                emitEvent(event = CardTransferringNavigationEvent.ToPrevious)
+            }
         }
     }
 
@@ -189,7 +181,7 @@ class CardTransferringViewModel @AssistedInject constructor(
                         deckId = sourceDeckId
                     )
                     eventMessage.tryEmitAsPositive(resId = R.string.message_deletion_completed_successfully)
-                    navigationEvent.emit(value = ToPrevious)
+                    navigationEvent.emit(value = CardTransferringNavigationEvent.ToPrevious)
                 }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
                     eventMessage.tryEmitAsNegative(resId = R.string.problem_with_removing_cards)
                 }
@@ -202,10 +194,10 @@ class CardTransferringViewModel @AssistedInject constructor(
                 moveCardsToDeck(
                     sourceDeck = sourceDeck,
                     targetDeck = targetDeck,
-                    cards = selectedCards.value.toTypedArray()
+                    cardsToMove = selectedCards.value.toTypedArray()
                 )
 
-                navigationEvent.emit(value = ToPrevious)
+                navigationEvent.emit(value = CardTransferringNavigationEvent.ToPrevious)
                 eventMessage.tryEmitAsPositive(resId = (R.string.message_transfer_completed_successfully))
             }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
@@ -236,7 +228,9 @@ class CardTransferringViewModel @AssistedInject constructor(
     }
 
     private fun sendCardAddingScreenEvent() {
-        emitEvent(event = ToCardAddingScreen(sourceDeckId = sourceDeckId))
+        emitEvent(
+            event = CardTransferringNavigationEvent.ToCardAddingScreen(sourceDeckId = sourceDeckId)
+        )
     }
 
     private fun sendCardDeletingDialogEvent() {
@@ -245,7 +239,9 @@ class CardTransferringViewModel @AssistedInject constructor(
         if (cardForDeleting.isEmpty()) {
             eventMessage.tryEmitAsNegative(resId = R.string.message_no_cards_selected)
         } else {
-            emitEvent(event = ToCardDeletingDialog(cardQuantity = cardForDeleting.size))
+            emitEvent(
+                event = CardTransferringNavigationEvent.ToCardDeletingDialog(cardQuantity = cardForDeleting.size)
+            )
         }
     }
 
@@ -253,7 +249,7 @@ class CardTransferringViewModel @AssistedInject constructor(
         if (selectedCards.value.isEmpty()) {
             eventMessage.tryEmitAsNegative(resId = R.string.message_no_cards_selected)
         } else {
-            emitEvent(event = ToCardMovingDialog)
+            emitEvent(event = CardTransferringNavigationEvent.ToCardMovingDialog)
         }
     }
 
@@ -261,7 +257,10 @@ class CardTransferringViewModel @AssistedInject constructor(
         val selectedCard = cardHolders.value[selectedCardIndex].card
 
         emitEvent(
-            event = ToCardEditingScreen(cardId = selectedCard.id, deckId = selectedCard.deckId)
+            event = CardTransferringNavigationEvent.ToCardEditingScreen(
+                cardId = selectedCard.id,
+                deckId = selectedCard.deckId
+            )
         )
     }
 

@@ -11,14 +11,15 @@ plugins {
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.android.serialization)
     alias(libs.plugins.telegramAppDistribution)
+    alias(libs.plugins.compose.compiler)
     id("extensions-plugin")
 }
 
 android {
     defaultConfig {
         applicationId = "com.kuts.klaf"
-        compileSdk = 34
-        minSdk = 25
+        compileSdk = libs.versions.androidCompileSdk.get().toInt()
+        minSdk = libs.versions.androidMinSdk.get().toInt()
         targetSdk = 33
 
         /** Version **/
@@ -54,9 +55,6 @@ android {
         compose = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtension.get()
-    }
     namespace = "com.kuts.klaf"
 }
 
@@ -64,6 +62,7 @@ dependencies {
 
     /** Modules **/
     implementation(project(Modules.Domain))
+    implementation(project(Modules.Shared))
 
     /** Core **/
     implementation(libs.core.kotlin.stdlib)
@@ -72,7 +71,6 @@ dependencies {
     implementation(libs.core.constraintlayout)
     implementation(libs.core.legacy.support)
     implementation(libs.core.fragment.ktx)
-    implementation(libs.core.material)
     implementation(libs.androidx.material3.android)
 
     /** Tests **/

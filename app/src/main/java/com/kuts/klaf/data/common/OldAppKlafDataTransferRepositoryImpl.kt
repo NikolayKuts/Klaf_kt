@@ -58,16 +58,16 @@ class OldAppKlafDataTransferRepositoryImpl @Inject constructor(
                 val deck = Deck(
                     name = cursor.getString(cursor.getColumnIndex(Deck::name.name)),
                     creationDate = cursor.getLong(cursor.getColumnIndex(Deck::creationDate.name)),
-                    repetitionIterationDates = listOf(),
-                    scheduledIterationDates = listOf(scheduledDate),
+                    reviewPassDates = listOf(),
+                    scheduledReviewDates = listOf(scheduledDate),
                     scheduledDateInterval = scheduledDateInterval,
-                    repetitionQuantity = cursor.getInt(cursor.getColumnIndex("repeatQuantity")),
+                    reviewCount = cursor.getInt(cursor.getColumnIndex("repeatQuantity")),
                     cardQuantity = cursor.getInt(cursor.getColumnIndex(Deck::cardQuantity.name)),
-                    lastFirstRepetitionDuration = 0,
-                    lastSecondRepetitionDuration = 0,
-                    lastRepetitionIterationDuration =
+                    lastFirstReviewDuration = 0,
+                    lastSecondReviewDuration = 0,
+                    lastReviewPassDuration =
                     cursor.getInt(cursor.getColumnIndex("lastRepeatDuration")).toLong(),
-                    isLastIterationSucceeded =
+                    isLastPassSucceeded =
                     cursor.getInt(cursor.getColumnIndex("isLastRepetitionSucceeded")) > 0,
                     id = cursor.getInt(cursor.getColumnIndex(Deck::id.name)),
                 )

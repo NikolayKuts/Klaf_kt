@@ -6,7 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.kuts.domain.common.UNASSIGNED_INT_VALUE
-import com.kuts.klaf.data.common.notifications.DeckRepetitionNotifier
+import com.kuts.klaf.data.common.notifications.DeckReviewNotifier
 import com.lib.lokdroid.core.logD
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -80,13 +80,13 @@ class DeckReviewingReminder(private val context: Context) : DeckReviewScheduler 
     class DeckReviewReceiver : BroadcastReceiver() {
 
         @Inject
-        lateinit var deckRepetitionNotifier: DeckRepetitionNotifier
+        lateinit var deckReviewNotifier: DeckReviewNotifier
 
         override fun onReceive(context: Context, intent: Intent) {
             executeIfIntentValid(intent = intent) { deckId, deckName ->
                 logD("onReceive() called. Deck id: $deckId, name: $deckName")
 
-                deckRepetitionNotifier.showNotification(
+                deckReviewNotifier.showNotification(
                     deckName = deckName,
                     deckId = deckId
                 )

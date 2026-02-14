@@ -2,9 +2,11 @@
 kotlinCompilerExtension = "1.5.9"
 googleServices = "4.4.2"
 navigationSafeArgsKotlinPlugin = "2.5.0"
-agp = "8.5.1"
-kotlin = "1.9.22"
+agp = "8.12.0"
+kotlin = "2.2.20"
 firevaseCrashlyticsPlugin = "3.0.2"
+androidMinSdk = "26"
+androidCompileSdk = "36"
 
 # Ktor #
 ktor = "2.3.10"
@@ -47,10 +49,10 @@ roomCore = "2.6.1"
 lifecycle = "2.8.3"
 
 # Hilt #
-hiltAndroid = "2.51.1"
-hiltDaggerCompiler = "2.51.1"
-hiltAndroidCompiler = "1.2.0"
-hiltWork = "1.2.0"
+hiltAndroid = "2.57.2"
+hiltDaggerCompiler = "2.57.2"
+hiltAndroidCompiler = "1.3.0"
+hiltWork = "1.3.0"
 
 # Firebase #
 firebaseBom = "33.1.2"
@@ -67,16 +69,18 @@ compseAccompanist = "0.19.0"
 lokdroid = "0.0.4-alpha"
 
 # KSP #
-ksp = "1.9.22-1.0.17"
+ksp = "2.2.20-2.0.4"
 
 # Cambridge Lib #
-cambridgeLib = "1.0.3"
+cambridgeLib = "1.0.0"
 
 # SplashScreen API #
 coreSplashscreen = "1.2.0-alpha01"
 junitJupiter = "5.8.1"
 jetbrainsKotlinJvm = "1.9.22"
 material3Android = "1.3.2"
+runner = "1.5.2"
+core = "1.5.0"
 
 [libraries] # ======================================================================================
 # Core #
@@ -175,6 +179,8 @@ agp = { group = "com.android.tools.build", name = "gradle", version.ref = "agp"}
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
 androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android", version.ref = "material3Android" }
+androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
+androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
 
 [bundles]
 ktor = ["ktor-client-okhttp", "ktor-client-core", "ktor-client-cio", "ktor-client-content-negotiation", "ktor-serialization-kotlinx-json"]
@@ -191,4 +197,9 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 telegramAppDistribution = { id = "telegram-app-distribution-plugin" }
 kotlin-parcelize = { id = "kotlin-parcelize" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
-
+# Compose
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+# Kmp
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+android-lint = { id = "com.android.lint", version.ref = "agp" }

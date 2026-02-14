@@ -2,7 +2,7 @@ package com.kuts.klaf.presentation.deckRepetition
 
 import android.os.Bundle
 import android.view.View
-import androidx.compose.material.Surface
+import androidx.compose.material3.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -24,7 +24,7 @@ class DeckRepetitionFragment : BaseFragment(layoutId = R.layout.common_compose_l
 
     @Inject
     lateinit var assistedFactory: RepetitionViewModelAssistedFactory
-    private val viewModel: BaseDeckRepetitionViewModel by navGraphViewModels(
+    private val viewModel: BaseDeckReviewViewModel by navGraphViewModels(
         navGraphId = R.id.deckRepetitionFragment
     ) {
         RepetitionViewModelFactory(assistedFactory = assistedFactory, deckId = args.deckId)
@@ -43,7 +43,7 @@ class DeckRepetitionFragment : BaseFragment(layoutId = R.layout.common_compose_l
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
                 Surface {
-                    DeckRepetitionScreen(
+                    DeckReviewScreen(
                         viewModel = viewModel,
                         onDeleteCardClick = ::navigateToCardRemovingDialogFragment,
                         onAddCardClick = ::navigateToCardAdditionFragment,

@@ -16,12 +16,12 @@ import com.kuts.klaf.presentation.deckRepetition.DECK_NAME_NAVIGATION_ARGUMENT_K
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-class DeckRepetitionNotifier @Inject constructor(
+class DeckReviewNotifier @Inject constructor(
     @ApplicationContext private val context: Context,
     private val notificationManager: NotificationManager
 ) {
 
-    companion object {
+    companion object Companion {
 
         private const val DECK_REPETITION_GROUP_KEY = "deck_repetition_group"
         private const val COMMON_NOTIFICATION_ID = 435243543

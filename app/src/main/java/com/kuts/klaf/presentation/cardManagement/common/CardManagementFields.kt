@@ -3,6 +3,8 @@ package com.kuts.klaf.presentation.cardManagement.common
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.FocusInteraction
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -21,12 +23,15 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +63,12 @@ import com.kuts.klaf.presentation.common.noRippleClickable
 import com.kuts.klaf.presentation.common.rememberAsMutableStateOf
 import com.kuts.klaf.presentation.common.verticalScrollbar
 import com.kuts.klaf.presentation.theme.MainTheme
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 
 private const val CARD_MANAGEMENT_CONTAINER_WIDTH = 500
 
@@ -70,6 +81,7 @@ fun CardManagementFields(
     loadingState: LoadingState<Unit, Unit>,
     modifier: Modifier = Modifier,
     confirmationButtonSection: @Composable BoxScope.() -> Unit,
+    onIpaTextFieldFocusChanged: (List<IpaTextFieldFocusState>) -> Unit,
     onForeignWordTextFieldClick: () -> Unit,
     onForeignWordFieldValueChange: (TextFieldValue) -> Unit,
     onNativeWordFieldValueChange: (TextFieldValue) -> Unit,
@@ -119,7 +131,8 @@ fun CardManagementFields(
         IpaSection(
             textFieldValueIpaHolders = textFieldValueIpaHolders,
             onIpaTextFieldValueChange = onIpaTextFieldValueChange,
-            confirmationButtonSection = confirmationButtonSection
+            confirmationButtonSection = confirmationButtonSection,
+            onIpaTextFieldFocusChanged = onIpaTextFieldFocusChanged
         )
     }
 }
@@ -151,7 +164,10 @@ private fun DropDownForeignWordField(
             }
 
             if (loadingState == LoadingState.Loading) {
-                CircularProgressIndicator(modifier = Modifier.size(35.dp))
+                CircularProgressIndicator(
+                    modifier = Modifier.size(35.dp),
+                    color = MainTheme.colors.common.progressIndicator,
+                )
             }
 
             Icon(
@@ -209,7 +225,10 @@ fun DropDownNativeWordField(
             }
 
             if (loadingState == LoadingState.Loading) {
-                CircularProgressIndicator(modifier = Modifier.size(35.dp))
+                CircularProgressIndicator(
+                    modifier = Modifier.size(35.dp),
+                    color = MainTheme.colors.common.progressIndicator,
+                )
             }
             val rotationDegree by animateFloatAsState(if (expanded) 90f else 0f, label = "")
 
@@ -246,7 +265,7 @@ fun DropDownNativeWordField(
                         checkedBoxColor = MainTheme.colors.cardTransferringScreen.selectedCheckBox
                     )
                 }
-                Divider()
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
             }
         },
         bottomDropdownMenuContent = {
@@ -297,6 +316,7 @@ private fun AutocompleteWordItem(
 private fun IpaSection(
     textFieldValueIpaHolders: List<TextFieldValueIpaHolder>,
     onIpaTextFieldValueChange: (letterGroupIndex: Int, ipaTextFieldValue: TextFieldValue) -> Unit,
+    onIpaTextFieldFocusChanged: (List<IpaTextFieldFocusState>) -> Unit,
     confirmationButtonSection: @Composable BoxScope.() -> Unit,
 ) {
     var parentWidthPx by rememberAsMutableStateOf(value = 0F)
@@ -306,6 +326,33 @@ private fun IpaSection(
     val chosenLettersWidthPx = parentWidthPx * 0.6F
     val ipaValueWidthPx = parentWidthPx * 0.5F
     val scrollState = rememberLazyListState()
+    val size = textFieldValueIpaHolders.size
+    val interactors = remember(size) {
+        List(textFieldValueIpaHolders.size) { MutableInteractionSource() }
+    }
+
+    val interactorFocusFlows: List<Flow<IpaTextFieldFocusState>> = remember(interactors) {
+        interactors.mapIndexed { index, source ->
+            source.interactions
+                .filter { it is FocusInteraction.Focus || it is FocusInteraction.Unfocus }
+                .map {
+                    IpaTextFieldFocusState(
+                        index = index,
+                        isFocused = it is FocusInteraction.Focus
+                    )
+                }
+                .distinctUntilChanged()
+                .onStart { emit(IpaTextFieldFocusState(index = index)) }
+        }
+    }
+
+    val focusListFlow: Flow<List<IpaTextFieldFocusState>> = remember(interactorFocusFlows) {
+        combine(interactorFocusFlows) { arrayOfStates -> arrayOfStates.toList() }
+    }
+
+    LaunchedEffect(focusListFlow) {
+        focusListFlow.collect { focusList -> onIpaTextFieldFocusChanged(focusList) }
+    }
 
     Box(modifier = Modifier.fillMaxHeight(fraction = 1f)) {
         LazyColumn(
@@ -345,6 +392,7 @@ private fun IpaSection(
                     )
 
                     BasicTextField(
+                        interactionSource = interactors[letterGroupIndex],
                         modifier = Modifier
                             .widthIn(min = 30.dp, max = density.run { ipaValueWidthPx.toDp() })
                             .width(IntrinsicSize.Min)

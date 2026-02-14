@@ -8,37 +8,36 @@ import com.kuts.domain.entities.AutocompleteWord
 import com.kuts.domain.entities.Card
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.entities.StorageSaveVersion
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 fun FirestoreDeck.toDomainEntity(): Deck = Deck(
     name = name,
     creationDate = creationDate,
-    repetitionIterationDates = repetitionIterationDates,
-    scheduledIterationDates = scheduledIterationDates,
+    reviewPassDates = repetitionIterationDates,
+    scheduledReviewDates = scheduledIterationDates,
     scheduledDateInterval = scheduledDateInterval,
-    repetitionQuantity = repetitionQuantity,
+    reviewCount = repetitionQuantity,
     cardQuantity = cardQuantity,
-    lastFirstRepetitionDuration = lastFirstRepetitionDuration,
-    lastSecondRepetitionDuration = lastSecondRepetitionDuration,
-    lastRepetitionIterationDuration = lastRepetitionIterationDuration,
-    isLastIterationSucceeded = isLastIterationSucceeded,
+    lastFirstReviewDuration = lastFirstRepetitionDuration,
+    lastSecondReviewDuration = lastSecondRepetitionDuration,
+    lastReviewPassDuration = lastRepetitionIterationDuration,
+    isLastPassSucceeded = isLastIterationSucceeded,
     id = id
 )
 
 fun Deck.toFirestoreEntity(): FirestoreDeck = FirestoreDeck(
     name = name,
     creationDate = creationDate,
-    repetitionIterationDates = repetitionIterationDates,
-    scheduledIterationDates = scheduledIterationDates,
+    repetitionIterationDates = reviewPassDates,
+    scheduledIterationDates = scheduledReviewDates,
     scheduledDateInterval = scheduledDateInterval,
-    repetitionQuantity = repetitionQuantity,
+    repetitionQuantity = reviewCount,
     cardQuantity = cardQuantity,
-    lastFirstRepetitionDuration = lastFirstRepetitionDuration,
-    lastSecondRepetitionDuration = lastSecondRepetitionDuration,
-    lastRepetitionIterationDuration = lastRepetitionIterationDuration,
-    isLastIterationSucceeded = isLastIterationSucceeded,
+    lastFirstRepetitionDuration = lastFirstReviewDuration,
+    lastSecondRepetitionDuration = lastSecondReviewDuration,
+    lastRepetitionIterationDuration = lastReviewPassDuration,
+    isLastIterationSucceeded = isLastPassSucceeded,
     id = id
 )
 

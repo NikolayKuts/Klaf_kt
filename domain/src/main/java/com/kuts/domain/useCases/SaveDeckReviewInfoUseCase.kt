@@ -6,7 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class SaveDeckRepetitionInfoUseCase @Inject constructor(
+class SaveDeckReviewInfoUseCase @Inject constructor(
     private val deckRepetitionInfoRepository: DeckRepetitionInfoRepository,
 ) {
 

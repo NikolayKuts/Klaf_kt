@@ -23,5 +23,5 @@ class RepetitionViewModelFactory(
 @AssistedFactory
 interface RepetitionViewModelAssistedFactory {
 
-    fun create(deckId: Int, handle: SavedStateHandle): DeckRepetitionViewModel
+    fun create(deckId: Int, handle: SavedStateHandle): DeckReviewViewModel
 }

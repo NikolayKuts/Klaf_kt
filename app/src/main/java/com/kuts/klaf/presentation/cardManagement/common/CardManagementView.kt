@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -15,10 +16,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -52,6 +55,7 @@ fun CardManagementView(
     autocompleteState: AutocompleteState,
     pronunciationLoadingState: LoadingState<Unit, Unit>,
     cambridgeDataAvailable: Boolean,
+    ipaKeyboardState: IpaKeyboardState,
     onBottomSheetAction: () -> Unit,
     closeAutocompletePopupMenu: () -> Unit,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
@@ -69,6 +73,7 @@ fun CardManagementView(
     onNativeWordSuggestionItemClick: (chosenWordIndex: Int) -> Unit,
     onConfirmSuggestionsSelection: () -> Unit,
     onClearNativeWordSuggestionsSelectionClick: () -> Unit,
+    onIpaTextFieldFocusChanged: (List<IpaTextFieldFocusState>) -> Unit,
 ) {
     ScrollableBox { parentHeightPx ->
         val keyboardController = LocalSoftwareKeyboardController.current
@@ -129,34 +134,47 @@ fun CardManagementView(
                 nativeWordSuggestionsState = nativeWordSuggestionsState,
                 onConfirmSuggestionsSelection = onConfirmSuggestionsSelection,
                 onClearSelectionClick = onClearNativeWordSuggestionsSelectionClick,
+                onIpaTextFieldFocusChanged = onIpaTextFieldFocusChanged,
                 confirmationButtonSection = {
-                    RoundButton(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(
-                                end = confirmationButtonPadding,
-                                bottom = confirmationButtonPadding,
-                            ),
-                        background = MainTheme.colors.common.positiveDialogButton,
-                        iconId = R.drawable.ic_confirmation_24,
-                        onClick = {
-                            keyboardController?.hide()
-                            onConfirmClick()
-                        }
-                    )
+                    Column(modifier = Modifier.align(Alignment.BottomCenter)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            if (cambridgeDataAvailable) {
+                                RoundButton(
+                                    modifier = Modifier
+                                        .padding(
+                                            end = confirmationButtonPadding,
+                                            bottom = confirmationButtonPadding,
+                                        ),
+                                    background = Color(0xff59bdc0),
+                                    iconId = R.drawable.ic_arrow_drop_down_24,
+                                    onClick = onBottomSheetAction
+                                )
+                            }
 
-                    if (cambridgeDataAvailable) {
-                        RoundButton(
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(
-                                    end = confirmationButtonPadding,
-                                    bottom = confirmationButtonPadding,
-                                ),
-                            background = Color(0xff59bdc0),
-                            iconId = R.drawable.ic_arrow_drop_down_24,
-                            onClick = onBottomSheetAction
-                        )
+                            RoundButton(
+                                modifier = Modifier
+                                    .padding(
+                                        end = confirmationButtonPadding,
+                                        bottom = confirmationButtonPadding,
+                                    ),
+                                background = MainTheme.colors.common.positiveDialogButton,
+                                iconId = R.drawable.ic_confirmation_24,
+                                onClick = {
+                                    keyboardController?.hide()
+                                    onConfirmClick()
+                                }
+                            )
+                        }
+
+                        if (ipaKeyboardState.enabled) {
+                            IpaKeyboard(
+                                ipaKeyboardState = ipaKeyboardState,
+                                onIpaTextFieldValueChange = onIpaTextFieldValueChange
+                            )
+                        }
                     }
                 },
             )
@@ -244,5 +262,42 @@ private fun DeckInfo(
             pointerTextId = R.string.pointer_card_quantity,
             valueText = cardQuantity.toString()
         )
+    }
+}
+
+@Composable
+private fun IpaKeyboard(
+    ipaKeyboardState: IpaKeyboardState,
+    onIpaTextFieldValueChange: (letterGroupIndex: Int, ipa: TextFieldValue) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val onClick: (text: String) -> Unit = {
+        val index = ipaKeyboardState.holderIndex
+        val text = ipaKeyboardState.ipaTextFieldValue?.text
+
+        if (index != null && text != null) {
+            val selectionTextRangeEnd = ipaKeyboardState.ipaTextFieldValue.selection.end + it.length
+            val newTextRange = TextRange(selectionTextRangeEnd, selectionTextRangeEnd)
+            onIpaTextFieldValueChange(
+                index,
+                ipaKeyboardState.ipaTextFieldValue.copy(text = text + it, selection = newTextRange)
+            )
+        }
+    }
+
+    LazyRow(
+        modifier = modifier
+    ) {
+        items(ipaKeyboardState.keys) {
+            Text(
+                text = it,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(5.dp))
+                    .clickable { onClick(it) }
+                    .background(Color(0x4a838383))
+                    .padding(5.dp)
+            )
+            Spacer(modifier = Modifier.padding(4.dp))
+        }
     }
 }

@@ -6,8 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,17 +24,18 @@ fun RoundButton(
     @DrawableRes iconId: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    size: Dp = ROUNDED_ELEMENT_SIZE.dp,
     contentDescription: String = "",
     elevation: Dp = 0.dp,
 ) {
     Card(
-        shape = RoundedCornerShape(ROUNDED_ELEMENT_SIZE.dp),
-        modifier = modifier.size(ROUNDED_ELEMENT_SIZE.dp),
-        elevation = elevation,
+        shape = RoundedCornerShape(size),
+        modifier = modifier.size(size),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation),
     ) {
         Icon(
             modifier = Modifier
-                .size(20.dp)
+                .size(size)
                 .background(background)
                 .clickable { onClick() }
                 .padding(8.dp),
@@ -48,18 +50,19 @@ fun RoundedIcon(
     background: Color,
     @DrawableRes iconId: Int,
     modifier: Modifier = Modifier,
+    size: Dp = ROUNDED_ELEMENT_SIZE.dp,
     contentDescription: String = "",
     elevation: Dp = 0.dp,
 ) {
     Card(
-        shape = RoundedCornerShape(ROUNDED_ELEMENT_SIZE.dp),
+        shape = RoundedCornerShape(size),
         modifier = modifier
-            .size(ROUNDED_ELEMENT_SIZE.dp),
-        elevation = elevation,
+            .size(size),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation),
     ) {
         Icon(
             modifier = Modifier
-                .size(20.dp)
+                .size(size)
                 .background(background)
                 .padding(8.dp),
             painter = painterResource(id = iconId),

@@ -1,6 +1,6 @@
 package com.kuts.klaf.presentation.deckList.deckRenaming
 
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle

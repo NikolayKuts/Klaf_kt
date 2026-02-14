@@ -64,6 +64,15 @@ abstract class CardManagementViewModel(
     cambridgeClient = cambridgeClient
 ) {
 
+    companion object {
+
+        private val ipaKeys = listOf(
+            "θ", "ð", "ʃ", "ʒ", "ŋ", "tʃ", "dʒ", "ʔ", "ɹ",
+            "æ", "ʌ", "ɜː", "ə", "ɪ", "ʊ", "ɔː", "ɒ",
+            "aɪ", "eɪ", "aʊ", "ɔɪ", "əʊ", "ɪə", "eə", "ʊə"
+        )
+    }
+
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
@@ -76,7 +85,8 @@ abstract class CardManagementViewModel(
         )
 
     override val autocompleteState = DebouncedMutableStateFlow(value = AutocompleteState())
-    override val pronunciationLoadingState: StateFlow<LoadingState<Unit, Unit>> = audioPlayer.loadingState
+    override val pronunciationLoadingState: StateFlow<LoadingState<Unit, Unit>> =
+        audioPlayer.loadingState
     override val nativeWordSuggestionsState = MutableStateFlow(value = NativeWordSuggestionsState())
     override val transcriptionState = MutableStateFlow(value = "")
 
@@ -92,9 +102,12 @@ abstract class CardManagementViewModel(
         value = CambridgeDataState.Empty
     )
 
+    override val ipaKeyboardState = MutableStateFlow(value = IpaKeyboardState(keys = ipaKeys))
+
     init {
         combineAndObserveCardManagementChanges()
         observeForeignWordChanges()
+        observeTextFieldValueIpaHoldersState()
     }
 
     protected open suspend fun onForeignWordChanged(word: String) {
@@ -110,67 +123,84 @@ abstract class CardManagementViewModel(
         }
     }
 
-    override fun sendEvent(event: CardManagementEvent) {
-        when (event) {
-            is CardManagementEvent.ChangeLetterSelectionWithIpaTemplate -> {
+    override fun sendAction(action: CardManagementAction) {
+        when (action) {
+            is CardManagementAction.ChangeLetterSelectionWithIpaTemplate -> {
                 changeLetterSelectionWithIpaTemplate(
-                    index = event.index,
-                    letterInfo = event.letterInfo
+                    index = action.index,
+                    letterInfo = action.letterInfo
                 )
             }
 
-            is CardManagementEvent.UpdateDataOnForeignWordChanged -> {
-                updateDataOnForeignWordChanged(wordFieldValue = event.wordFieldValue)
+            is CardManagementAction.UpdateDataOnForeignWordChanged -> {
+                updateDataOnForeignWordChanged(wordFieldValue = action.wordFieldValue)
             }
 
-            is CardManagementEvent.UpdateDataOnAutocompleteSelected -> {
-                updateDataOnAutocompleteSelected(word = event.word)
+            is CardManagementAction.UpdateDataOnAutocompleteSelected -> {
+                updateDataOnAutocompleteSelected(word = action.word)
             }
 
-            is CardManagementEvent.NativeWordSelected -> {
-                updateDataOnNativeWordSelected(wordIndex = event.wordIndex)
+            is CardManagementAction.NativeWordSelected -> {
+                updateDataOnNativeWordSelected(wordIndex = action.wordIndex)
             }
 
-            CardManagementEvent.ConfirmSuggestionsSelection -> {
+            CardManagementAction.ConfirmSuggestionsSelection -> {
                 handleNativeWordSuggestionsSelectionConfirmation()
             }
 
-            CardManagementEvent.ClearNativeWordSuggestionsSelectionClicked -> {
+            CardManagementAction.ClearNativeWordSuggestionsSelectionClicked -> {
                 handleClearNativeWordSuggestionsSelectionClicked()
             }
 
-            is CardManagementEvent.UpdateIpa -> {
-                updateIpa(letterGroupIndex = event.letterGroupIndex, ipaTextFieldValue = event.ipa)
+            is CardManagementAction.UpdateIpa -> {
+                updateIpa(letterGroupIndex = action.letterGroupIndex, ipaTextFieldValue = action.ipa)
             }
 
-            is CardManagementEvent.UpdateNativeWord -> {
-                updateNativeWord(wordFieldValue = event.wordFieldValue)
+            is CardManagementAction.UpdateNativeWord -> {
+                updateNativeWord(wordFieldValue = action.wordFieldValue)
             }
 
-            is CardManagementEvent.CardManagementConfirmed -> {
+            is CardManagementAction.CardManagementConfirmed -> {
                 onCardManagementConfirmed()
             }
 
-            CardManagementEvent.PronounceForeignWordClicked -> {
+            is CardManagementAction.IpaTextFieldFocusChanged -> {
+                handleIpaTextFieldFocusChanged(action = action)
+            }
+
+            CardManagementAction.PronounceForeignWordClicked -> {
                 audioPlayer.play()
             }
 
-            CardManagementEvent.NativeWordFeildIconClicked -> {
+            CardManagementAction.NativeWordFieldIconClicked -> {
                 autocompleteState.update { it.copy(isActive = false) }
                 nativeWordSuggestionsState.update { it.copy(isActive = !it.isActive) }
             }
 
-            CardManagementEvent.CloseAutocompleteMenu -> {
+            CardManagementAction.CloseAutocompleteMenu -> {
                 autocompleteState.update { it.copy(isActive = false) }
             }
 
-            CardManagementEvent.CloseNativeWordSuggestionsMenu -> {
+            CardManagementAction.CloseNativeWordSuggestionsMenu -> {
                 nativeWordSuggestionsState.update { it.copy(isActive = false) }
             }
         }
     }
 
     abstract fun onCardManagementConfirmed()
+
+    private fun handleIpaTextFieldFocusChanged(
+        action: CardManagementAction.IpaTextFieldFocusChanged
+    ) {
+        textFieldValueIpaHoldersState.update {
+            it.toMutableList().apply {
+                forEachIndexed { index, _ ->
+                    if (action.focusList.size <= index) return
+                    this[index] = this[index].copy(isFocused = action.focusList[index].isFocused)
+                }
+            }
+        }
+    }
 
     private fun combineAndObserveCardManagementChanges() {
         combine(
@@ -246,6 +276,28 @@ abstract class CardManagementViewModel(
                 }
 
             }.flowOn(Dispatchers.IO)
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeTextFieldValueIpaHoldersState() {
+        textFieldValueIpaHoldersState.onEach { ipaValueHolders ->
+            ipaKeyboardState.update { keyboardState ->
+                val focusedHolder = ipaValueHolders.firstOrNull { holder -> holder.isFocused }
+
+                keyboardState.copy(
+                    enabled = ipaValueHolders.any { it.isFocused }
+                ).let {
+                    if (focusedHolder != null) {
+                        it.copy(
+                            holderIndex = ipaValueHolders.indexOf(focusedHolder),
+                            ipaTextFieldValue = focusedHolder.ipaTextFieldValue
+                        )
+                    } else {
+                        it
+                    }
+                }
+            }
+        }.flowOn(Dispatchers.IO)
             .launchIn(viewModelScope)
     }
 

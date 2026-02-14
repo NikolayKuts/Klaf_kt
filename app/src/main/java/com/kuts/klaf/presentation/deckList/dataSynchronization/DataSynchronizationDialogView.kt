@@ -4,9 +4,21 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -16,8 +28,22 @@ import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.ifNotNull
 import com.kuts.klaf.R
 import com.kuts.klaf.data.common.DataSynchronizationState
-import com.kuts.klaf.data.common.DataSynchronizationState.*
-import com.kuts.klaf.presentation.common.*
+import com.kuts.klaf.data.common.DataSynchronizationState.Failed
+import com.kuts.klaf.data.common.DataSynchronizationState.Initial
+import com.kuts.klaf.data.common.DataSynchronizationState.SuccessfullyFinished
+import com.kuts.klaf.data.common.DataSynchronizationState.Synchronizing
+import com.kuts.klaf.data.common.DataSynchronizationState.Uncertain
+import com.kuts.klaf.presentation.common.ClosingButton
+import com.kuts.klaf.presentation.common.ContentHolder
+import com.kuts.klaf.presentation.common.EventMessage
+import com.kuts.klaf.presentation.common.EventMessageView
+import com.kuts.klaf.presentation.common.FullBackgroundDialog
+import com.kuts.klaf.presentation.common.ROUNDED_ELEMENT_SIZE
+import com.kuts.klaf.presentation.common.RoundButton
+import com.kuts.klaf.presentation.common.RoundedIcon
+import com.kuts.klaf.presentation.common.ScrollableBox
+import com.kuts.klaf.presentation.common.WarningMessage
+import com.kuts.klaf.presentation.common.noRippleClickable
 import com.kuts.klaf.presentation.deckList.common.AnimatedSynchronizationLabel
 import com.kuts.klaf.presentation.deckList.common.SynchronizationLabel
 import com.kuts.klaf.presentation.theme.MainTheme
@@ -46,16 +72,20 @@ fun DataSynchronizationDialogView(
                     onConfirmClick = onConfirmClick
                 )
             }
+
             is Synchronizing -> {
                 SynchronizationStateView(synchronizationData = synchronizationState.synchronizationData)
             }
+
             SuccessfullyFinished -> {
                 FinishStateView(onCloseClick = onCloseClick)
             }
+
             Failed -> {
                 FailureStateView(
                     onResynchronizeClick = onConfirmClick,
-                    onCloseClick = onCloseClick)
+                    onCloseClick = onCloseClick
+                )
             }
         }
         DisposableEffect(key1 = null) {
@@ -73,7 +103,9 @@ private fun InitialStateView(
 ) {
     FullBackgroundDialog(
         onBackgroundClick = onCloseClick,
-        topContent = ContentHolder(size = ROUNDED_ELEMENT_SIZE.dp) { SynchronizationLabel() },
+        topContent = ContentHolder(size = ROUNDED_ELEMENT_SIZE.dp) {
+            SynchronizationLabel()
+        },
         mainContent = {
             Text(
                 style = MainTheme.typographies.dialogTextStyle,

@@ -15,7 +15,7 @@ import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.klaf.R
 import com.kuts.klaf.data.networking.CardAudioPlayer
-import com.kuts.klaf.presentation.cardManagement.common.CardManagementEvent
+import com.kuts.klaf.presentation.cardManagement.common.CardManagementAction
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementState
 import com.kuts.klaf.presentation.cardManagement.common.CardManagementViewModel
 import com.kuts.klaf.presentation.cardManagement.common.toDomainEntity
@@ -111,8 +111,8 @@ class CardAdditionViewModel @AssistedInject constructor(
     }
 
     private fun finishAddingState() {
-        sendEvent(
-            event = CardManagementEvent.UpdateDataOnForeignWordChanged(
+        sendAction(
+            action = CardManagementAction.UpdateDataOnForeignWordChanged(
                 wordFieldValue = TextFieldValue()
             )
         )

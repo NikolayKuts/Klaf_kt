@@ -12,6 +12,8 @@ interface CardRepository {
 
     suspend fun insertCard(card: Card)
 
+    suspend fun insertCardAtPath(card: Card, rootEmailPath: String)
+
     fun fetchObservableCardById(cardId: Int): Flow<Card?>
 
     fun fetchObservableCardsByDeckId(deckId: Int): Flow<List<Card>>

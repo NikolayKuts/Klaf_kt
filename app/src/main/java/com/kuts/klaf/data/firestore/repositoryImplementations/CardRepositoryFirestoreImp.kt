@@ -46,6 +46,15 @@ class CardRepositoryFirestoreImp @Inject constructor(
             .await()
     }
 
+    override suspend fun insertCardAtPath(card: Card, rootEmailPath: String) {
+        firestore.rootCollection(email = rootEmailPath)
+            .document(CARD_DOCUMENT_NAME)
+            .collection(CARD_SUB_COLLECTION_NAME)
+            .document(card.id.toString())
+            .set(card.toFirestoreEntity())
+            .await()
+    }
+
     override fun fetchObservableCardById(cardId: Int): Flow<Card?> {
         TODO("Not yet implemented")
     }

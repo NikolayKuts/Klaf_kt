@@ -13,7 +13,7 @@ import com.kuts.klaf.presentation.common.RepetitionTimer
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
-abstract class BaseDeckRepetitionViewModel : ViewModel(), EventMessageSource {
+abstract class BaseDeckReviewViewModel : ViewModel(), EventMessageSource {
 
     abstract val timer: RepetitionTimer
     abstract val audioPlayer: CardAudioPlayer

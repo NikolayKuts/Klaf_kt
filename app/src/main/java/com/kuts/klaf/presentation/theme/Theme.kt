@@ -1,35 +1,30 @@
 package com.kuts.klaf.presentation.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.text.selection.TextSelectionColors
-import androidx.compose.material.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.graphics.Color
 
 @Composable
 fun MainTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    val colors = if (darkTheme) DarkMainPalettes else LightMainPalettes
+    val mainColors = if (darkTheme) DarkMainPalettes else LightMainPalettes
     val shapes = Shapes
     val typographies = if (darkTheme) DarkMainTypographies else LightMainTypographies
     val dimensions = CommonDimension
 
-    val customTextSelectionColors = TextSelectionColors(
-        handleColor = Color(0xFFEC0D0D), backgroundColor = Color(0xFF154B17)
-    )
-
     CompositionLocalProvider(
-        LocalMainColors provides colors,
+        LocalMainColors provides mainColors,
         LocalCustomTypographies provides typographies,
         LocalCustomShapes provides shapes,
         LocaleCustomDimensions provides dimensions,
     ) {
         MaterialTheme(
-            colors = colors.material,
+            colorScheme = mainColors.material,
             typography = typographies.materialTypographies,
             shapes = shapes,
-            content = content
+            content = content,
         )
     }
 }

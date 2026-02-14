@@ -34,9 +34,9 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -58,10 +58,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.ifTrue
 import com.kuts.klaf.R
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardAddingFragment
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardDeletionDialog
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardEditingFragment
-import com.kuts.klaf.presentation.cardTransferring.common.CardTransferringNavigationDestination.CardMovingDialog
 import com.kuts.klaf.presentation.common.CustomCheckBox
 import com.kuts.klaf.presentation.common.RoundButton
 import com.kuts.klaf.presentation.common.ScrollableBox
@@ -138,7 +134,7 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
                     onLongItemClick = { index ->
                         viewModel.sendAction(
                             CardTransferringAction.NavigateTo(
-                                destination = CardEditingFragment(selectedCardIndexIndex = index),
+                                destination = CardTransferringNavigationDestination.CardEditingScreen(selectedCardIndexIndex = index),
                             )
                         )
                     }
@@ -154,17 +150,23 @@ fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
                     clickState = moreButtonClickedState,
                     onMoveCardsClick = {
                         viewModel.sendAction(
-                            CardTransferringAction.NavigateTo(destination = CardMovingDialog)
+                            CardTransferringAction.NavigateTo(
+                                destination = CardTransferringNavigationDestination.CardMovingDialog
+                            )
                         )
                     },
                     onAddCardsClick = {
                         viewModel.sendAction(
-                            CardTransferringAction.NavigateTo(destination = CardAddingFragment)
+                            CardTransferringAction.NavigateTo(
+                                destination = CardTransferringNavigationDestination.CardAddingScreen
+                            )
                         )
                     },
                     onDeleteCardsClick = {
                         viewModel.sendAction(
-                            CardTransferringAction.NavigateTo(destination = CardDeletionDialog)
+                            CardTransferringAction.NavigateTo(
+                                destination = CardTransferringNavigationDestination.CardDeletionDialog
+                            )
                         )
                     },
                     onMoreButtonClick = { moreButtonClickedState = !moreButtonClickedState }

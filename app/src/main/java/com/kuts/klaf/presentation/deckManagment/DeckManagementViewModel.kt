@@ -69,12 +69,12 @@ class DeckManagementViewModel @AssistedInject constructor(
                 repetitionIterationDates = it.repetitionIterationDates,
                 scheduledIterationDates = it.scheduledIterationDates,
                 scheduledDateInterval = it.scheduledDateInterval.copy(value = deck.scheduledDateInterval.calculateDetailedScheduledInterval()),
-                repetitionQuantity = it.repetitionQuantity.copy(value = deck.repetitionQuantity.toString()),
+                repetitionQuantity = it.repetitionQuantity.copy(value = deck.reviewCount.toString()),
                 cardQuantity = it.cardQuantity.copy(value = deck.cardQuantity.toString()),
-                lastFirstRepetitionDuration = it.lastFirstRepetitionDuration.copy(value = deck.lastFirstRepetitionDuration.toString()),
-                lastSecondRepetitionDuration = it.lastSecondRepetitionDuration.copy(value = deck.lastSecondRepetitionDuration.toString()),
-                lastRepetitionIterationDuration = it.lastRepetitionIterationDuration.copy(value = deck.lastRepetitionIterationDuration.toString()),
-                isLastIterationSucceeded = it.isLastIterationSucceeded.copy(value = deck.isLastIterationSucceeded.toString()),
+                lastFirstRepetitionDuration = it.lastFirstRepetitionDuration.copy(value = deck.lastFirstReviewDuration.toString()),
+                lastSecondRepetitionDuration = it.lastSecondRepetitionDuration.copy(value = deck.lastSecondReviewDuration.toString()),
+                lastRepetitionIterationDuration = it.lastRepetitionIterationDuration.copy(value = deck.lastReviewPassDuration.toString()),
+                isLastIterationSucceeded = it.isLastIterationSucceeded.copy(value = deck.isLastPassSucceeded.toString()),
                 id = it.id.copy(value = deck.id.toString()),
             )
         }

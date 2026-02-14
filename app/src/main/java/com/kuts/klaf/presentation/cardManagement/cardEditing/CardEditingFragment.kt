@@ -2,7 +2,7 @@ package com.kuts.klaf.presentation.cardManagement.cardEditing
 
 import android.os.Bundle
 import android.view.View
-import androidx.compose.material.Surface
+import androidx.compose.material3.Surface
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController

@@ -6,7 +6,8 @@ import com.kuts.domain.ipa.IpaHolder
 fun IpaHolder.toTextFieldValueIpaHolder(): TextFieldValueIpaHolder = TextFieldValueIpaHolder(
     letterGroup = letterGroup,
     ipaTextFieldValue = TextFieldValue(text = ipa),
-    groupIndex = groupIndex
+    groupIndex = groupIndex,
+    isFocused = false,
 )
 
 fun TextFieldValueIpaHolder.toDomainEntity(): IpaHolder = IpaHolder(

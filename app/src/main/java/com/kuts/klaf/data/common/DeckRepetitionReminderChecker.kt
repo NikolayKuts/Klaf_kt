@@ -8,7 +8,7 @@ import com.kuts.domain.common.ifTrue
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.repositories.CrashlyticsRepository
 import com.kuts.domain.useCases.FetchAllDecksUseCase
-import com.kuts.klaf.data.common.notifications.DeckRepetitionNotifier
+import com.kuts.klaf.data.common.notifications.DeckReviewNotifier
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 class DeckRepetitionReminderChecker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
-    private val deckRepetitionNotifier: DeckRepetitionNotifier,
+    private val deckReviewNotifier: DeckReviewNotifier,
     private val fetchAllDecks: FetchAllDecksUseCase,
     private val crashlytics: CrashlyticsRepository,
 ) : CoroutineWorker(appContext = context, params = params) {
@@ -43,7 +43,7 @@ class DeckRepetitionReminderChecker @AssistedInject constructor(
     override suspend fun doWork(): Result = try {
         fetchAllDecks().onEach { deck ->
             deck.shouldBeRepeated().ifTrue {
-                deckRepetitionNotifier.showNotification(deckName = deck.name, deckId = deck.id)
+                deckReviewNotifier.showNotification(deckName = deck.name, deckId = deck.id)
             }
         }
         Result.success()

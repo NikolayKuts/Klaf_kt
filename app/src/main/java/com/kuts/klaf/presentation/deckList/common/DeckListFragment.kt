@@ -8,15 +8,13 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import androidx.compose.material.DrawerValue
-import androidx.compose.material.Scaffold
-import androidx.compose.material.rememberDrawerState
-import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Surface
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.unit.dp
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.kuts.domain.common.AuthenticationAction
@@ -27,10 +25,9 @@ import com.kuts.klaf.presentation.authentication.AuthenticationFragment.Companio
 import com.kuts.klaf.presentation.common.BaseFragment
 import com.kuts.klaf.presentation.common.EventMessage
 import com.kuts.klaf.presentation.common.NavigationDestination
-import com.kuts.klaf.presentation.common.TransparentSurface
 import com.kuts.klaf.presentation.common.collectWhenStarted
-import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToChatGptWithDeckContentPrompt
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToCardTransferringScreen
+import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToChatGptWithDeckContentPrompt
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDataSynchronizationDialog
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDeckCreationDialog
 import com.kuts.klaf.presentation.deckList.common.DeckListNavigationEvent.ToDeckNavigationDialog
@@ -72,20 +69,19 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
 
         view.findViewById<ComposeView>(R.id.compose_view).setContent {
             MainTheme {
-                TransparentSurface {
-                    val scaffoldState = rememberScaffoldState(
-                        drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-                    )
+                Surface {
+                    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
+
                     val closeDrawerAndPerform: (performBlock: () -> Unit) -> Unit = {
                         scope.launch {
-                            scaffoldState.drawerState.close()
+                            drawerState.close()
                             it.invoke()
                         }
                     }
 
-                    Scaffold(
-                        scaffoldState = scaffoldState,
+                    ModalNavigationDrawer(
+                        drawerState = drawerState,
                         drawerContent = {
                             Drawer(
                                 state = viewModel.drawerState.collectAsState(
@@ -109,19 +105,24 @@ class DeckListFragment : BaseFragment(layoutId = R.layout.common_compose_layout)
                                 },
                             )
                         },
-                        drawerElevation = 0.dp,
-                        drawerBackgroundColor = Color.Transparent,
-                    ) { paddingValues ->
+                    ) {
                         DeckListScreen(
                             decks = viewModel.deckSource.collectAsState().value,
                             shouldSynchronizationIndicatorBeShown = viewModel.shouldSynchronizationIndicatorBeShown
                                 .collectAsState().value,
-                            contentPadding = paddingValues,
                             onItemClick = {
-                                viewModel.handleNavigation(event = ToDeckRepetitionScreen(deck = it))
+                                viewModel.handleNavigation(
+                                    event = ToDeckRepetitionScreen(
+                                        deck = it
+                                    )
+                                )
                             },
                             onLongItemClick = {
-                                viewModel.handleNavigation(event = ToDeckNavigationDialog(deck = it))
+                                viewModel.handleNavigation(
+                                    event = ToDeckNavigationDialog(
+                                        deck = it
+                                    )
+                                )
                             },
                             onRefresh = {
                                 viewModel.handleNavigation(event = ToDataSynchronizationDialog)

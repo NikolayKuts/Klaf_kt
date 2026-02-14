@@ -41,6 +41,15 @@ class StorageSaveVersionRepositoryFirestoreImp @Inject constructor(
         }
     }
 
+    override suspend fun insertVersionAtPath(version: StorageSaveVersion, rootEmailPath: String) {
+        withContext(Dispatchers.IO) {
+            firestore.rootCollection(email = rootEmailPath)
+                .document(SAVE_VERSION_DOCUMENT_NAME)
+                .set(version.toFirestoreEntity())
+                .await()
+        }
+    }
+
     override suspend fun increaseVersion() {
         val oldVersion = fetchVersion()?.version ?: StorageSaveVersion.INITIAL_SAVE_VERSION
 
