@@ -11,8 +11,8 @@ kotlin {
     // See: https://kotlinlang.org/docs/multiplatform-discover-project.html#targets
     androidLibrary {
         namespace = "com.app.shared"
-        compileSdk = 36
-        minSdk = 26
+        compileSdk = libs.versions.androidCompileSdk.get().toInt()
+        minSdk = libs.versions.androidMinSdk.get().toInt()
 
         withHostTestBuilder {
         }

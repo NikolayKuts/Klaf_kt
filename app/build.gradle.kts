@@ -18,8 +18,8 @@ plugins {
 android {
     defaultConfig {
         applicationId = "com.kuts.klaf"
-        compileSdk = 34
-        minSdk = 25
+        compileSdk = libs.versions.androidCompileSdk.get().toInt()
+        minSdk = libs.versions.androidMinSdk.get().toInt()
         targetSdk = 33
 
         /** Version **/

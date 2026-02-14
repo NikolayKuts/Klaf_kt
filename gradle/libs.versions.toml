@@ -5,6 +5,8 @@ navigationSafeArgsKotlinPlugin = "2.5.0"
 agp = "8.12.0"
 kotlin = "2.2.20"
 firevaseCrashlyticsPlugin = "3.0.2"
+androidMinSdk = "26"
+androidCompileSdk = "36"
 
 # Ktor #
 ktor = "2.3.10"
@@ -201,4 +203,3 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
-
