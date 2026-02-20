@@ -7,14 +7,14 @@ import android.content.Context
 import android.content.Intent
 import com.kuts.domain.common.UNASSIGNED_INT_VALUE
 import com.kuts.domain.managers.IDeckReviewNotifierManager
-import com.kuts.domain.managers.IDeckReviewScheduler as DomainDeckReviewScheduler
+import com.kuts.domain.managers.IDeckReviewScheduler
 import com.lib.lokdroid.core.logD
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 class DeckReviewingReminder(
     private val context: Context,
-) : IDeckReviewScheduler, DomainDeckReviewScheduler {
+) : IDeckReviewScheduler {
 
     companion object {
 

@@ -5,6 +5,11 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.android.serialization)
+    alias(libs.plugins.room)
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 android {
@@ -14,7 +19,6 @@ android {
     defaultConfig {
         minSdk = libs.versions.androidMinSdk.get().toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-//        ksp { arg("room.schemaLocation", "$projectDir/schemas") }
     }
 
     compileOptions {
@@ -25,7 +29,10 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+}
 
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {
