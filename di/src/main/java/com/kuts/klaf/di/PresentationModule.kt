@@ -24,7 +24,12 @@ import org.koin.dsl.module
 
 internal val presentationModule = module {
     factory { RepetitionTimer() }
-    single { DeckReviewNotifier(context = androidContext(), notificationManager = get()) }
+    single {
+        DeckReviewNotifier(
+            context = androidContext(),
+            notificationManager = get(),
+        )
+    }
     single<IDeckReviewNotifierManager> { get<DeckReviewNotifier>() }
     viewModels()
 }
@@ -57,7 +62,7 @@ private fun Module.viewModels() {
             audioPlayer = get(),
             updateDeck = get(),
             deleteCardsFromDeck = get(),
-            deckReviewScheduler = get<IDeckReviewScheduler>(),
+            deckReviewScheduler = get(),
             saveDeckReviewInfo = get(),
             deckReviewNotifier = get(),
             crashlytics = get(),

@@ -53,8 +53,8 @@ import com.kuts.domain.useCases.TransferCardsToDeckUseCase
 import com.kuts.domain.useCases.TransferDataOfOldAppKlafUseCase
 import com.kuts.domain.useCases.UpdateCardUseCase
 import com.kuts.domain.useCases.UpdateDeckUseCase
-import com.kuts.klaf.common.AppReopeningWorker
 import com.kuts.klaf.common.AppMaintenanceManager
+import com.kuts.klaf.common.AppReopeningWorker
 import com.kuts.klaf.common.DataSynchronizationWorker
 import com.kuts.klaf.common.DeckRepetitionReminder
 import com.kuts.klaf.common.DeckRepetitionReminderChecker
@@ -109,24 +109,45 @@ internal val dataModule = module {
 
 
 private fun Module.repositoryModule() {
-    single<IDeckRepository>(named(LOCAL_DECK_REPOSITORY)) {
+    single<IDeckRepository>(
+        qualifier = named(name = LOCAL_DECK_REPOSITORY),
+    ) {
         DeckRepositoryRoom(roomDatabase = get())
     }
-    single<ICardRepository>(named(LOCAL_CARD_REPOSITORY)) {
+    single<ICardRepository>(
+        qualifier = named(name = LOCAL_CARD_REPOSITORY),
+    ) {
         CardRepositoryRoom(roomDatabase = get())
     }
-    single<IStorageSaveVersionRepository>(named(LOCAL_STORAGE_SAVE_VERSION_REPOSITORY)) {
+    single<IStorageSaveVersionRepository>(
+        qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
+    ) {
         StorageSaveVersionRepositoryRoom(database = get())
     }
 
-    single<IDeckRepository>(named(REMOTE_DECK_REPOSITORY)) {
-        DeckRepositoryFirestore(firestore = get(), auth = get())
+    single<IDeckRepository>(
+        qualifier = named(name = REMOTE_DECK_REPOSITORY),
+    ) {
+        DeckRepositoryFirestore(
+            firestore = get(),
+            auth = get(),
+        )
     }
-    single<ICardRepository>(named(REMOTE_CARD_REPOSITORY)) {
-        CardRepositoryFirestore(firestore = get(), auth = get())
+    single<ICardRepository>(
+        qualifier = named(name = REMOTE_CARD_REPOSITORY),
+    ) {
+        CardRepositoryFirestore(
+            firestore = get(),
+            auth = get(),
+        )
     }
-    single<IStorageSaveVersionRepository>(named(REMOTE_STORAGE_SAVE_VERSION_REPOSITORY)) {
-        StorageSaveVersionRepositoryFirestore(firestore = get(), auth = get())
+    single<IStorageSaveVersionRepository>(
+        qualifier = named(name = REMOTE_STORAGE_SAVE_VERSION_REPOSITORY),
+    ) {
+        StorageSaveVersionRepositoryFirestore(
+            firestore = get(),
+            auth = get(),
+        )
     }
 
     single<IStorageTransactionRepository> { StorageTransactionRepositoryRoom(roomDatabase = get()) }
@@ -134,14 +155,17 @@ private fun Module.repositoryModule() {
     single<IWordAutocompleteRepository> { WordAutocompleteFirestore(firestore = get()) }
     single<ICrashlyticsRepository> { CrashlyticsRepositoryFirebase(firebaseCrashlytics = get()) }
     single<IAuthenticationRepository> {
-        AuthenticationRepositoryFirebase(auth = get(), crashlytics = get())
+        AuthenticationRepositoryFirebase(
+            auth = get(),
+            crashlytics = get(),
+        )
     }
     single<IWordInfoRepository> { YandexWordInfoProvider(context = androidContext()) }
     single<IOldAppKlafDataTransferRepository> {
         OldAppKlafDataTransferRepository(
             context = androidContext(),
-            deckRepository = get(named(LOCAL_DECK_REPOSITORY)),
-            cardRepository = get(named(LOCAL_CARD_REPOSITORY)),
+            deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+            cardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
         )
     }
 }
@@ -152,104 +176,162 @@ private fun Module.useCaseModule() {
 
     factory {
         AddNewCardIntoDeckUseCase(
-            deckRepository = get(named(LOCAL_DECK_REPOSITORY)),
-            cardRepository = get(named(LOCAL_CARD_REPOSITORY)),
-            localStorageSaveVersionRepository = get(named(LOCAL_STORAGE_SAVE_VERSION_REPOSITORY)),
+            deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+            cardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
+            localStorageSaveVersionRepository = get(
+                qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
+            ),
             localStorageTransactionRepository = get(),
         )
     }
     factory {
         BackupDataUseCase(
-            localDeckRepository = get(named(LOCAL_DECK_REPOSITORY)),
-            localCardRepository = get(named(LOCAL_CARD_REPOSITORY)),
-            localStorageSaveVersionRepository = get(named(LOCAL_STORAGE_SAVE_VERSION_REPOSITORY)),
-            remoteDeckRepository = get(named(REMOTE_DECK_REPOSITORY)),
-            remoteCardRepository = get(named(REMOTE_CARD_REPOSITORY)),
-            remoteStorageSaveVersionRepository = get(named(REMOTE_STORAGE_SAVE_VERSION_REPOSITORY)),
+            localDeckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+            localCardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
+            localStorageSaveVersionRepository = get(
+                qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
+            ),
+            remoteDeckRepository = get(qualifier = named(name = REMOTE_DECK_REPOSITORY)),
+            remoteCardRepository = get(qualifier = named(name = REMOTE_CARD_REPOSITORY)),
+            remoteStorageSaveVersionRepository = get(
+                qualifier = named(name = REMOTE_STORAGE_SAVE_VERSION_REPOSITORY),
+            ),
             dataSynchronizationValidator = get(),
         )
     }
-    factory { CheckIfCardExistsUseCase(cardRepository = get(named(LOCAL_CARD_REPOSITORY))) }
+    factory {
+        CheckIfCardExistsUseCase(
+            cardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
+        )
+    }
     factory {
         CreateDeckUseCase(
-            deckRepository = get(named(LOCAL_DECK_REPOSITORY)),
-            localStorageSaveVersionRepository = get(named(LOCAL_STORAGE_SAVE_VERSION_REPOSITORY)),
+            deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+            localStorageSaveVersionRepository = get(
+                qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
+            ),
             localStorageTransactionRepository = get(),
         )
     }
     factory {
         CreateInterimDeckUseCase(
-            deckRepository = get(named(LOCAL_DECK_REPOSITORY)),
-            localStorageSaveVersionRepository = get(named(LOCAL_STORAGE_SAVE_VERSION_REPOSITORY)),
+            deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+            localStorageSaveVersionRepository = get(
+                qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
+            ),
             localStorageTransactionRepository = get(),
         )
     }
     factory {
         DeleteCardsFromDeckUseCase(
-            deckRepository = get(named(LOCAL_DECK_REPOSITORY)),
-            cardRepository = get(named(LOCAL_CARD_REPOSITORY)),
-            localStorageSaveVersionRepository = get(named(LOCAL_STORAGE_SAVE_VERSION_REPOSITORY)),
+            deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+            cardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
+            localStorageSaveVersionRepository = get(
+                qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
+            ),
             localStorageTransactionRepository = get(),
         )
     }
-    factory { FetchAllDecksUseCase(deckRepository = get(named(LOCAL_DECK_REPOSITORY))) }
-    factory { FetchCardUseCase(cardRepository = get(named(LOCAL_CARD_REPOSITORY))) }
-    factory { FetchCardsUseCase(cardRepository = get(named(LOCAL_CARD_REPOSITORY))) }
-    factory { FetchDeckByIdUseCase(deckRepository = get(named(LOCAL_DECK_REPOSITORY))) }
+    factory {
+        FetchAllDecksUseCase(
+            deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+        )
+    }
+    factory {
+        FetchCardUseCase(
+            cardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
+        )
+    }
+    factory {
+        FetchCardsUseCase(
+            cardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
+        )
+    }
+    factory {
+        FetchDeckByIdUseCase(
+            deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+        )
+    }
     factory { FetchDeckRepetitionInfoUseCase(deckRepetitionInfoRepository = get()) }
-    factory { FetchDeckSourceUseCase(deckRepository = get(named(LOCAL_DECK_REPOSITORY))) }
+    factory {
+        FetchDeckSourceUseCase(
+            deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+        )
+    }
     factory { FetchWordAutocompleteUseCase(wordAutocompleteRepository = get()) }
     factory { FetchWordInfoUseCase(wordInfoRepository = get()) }
     factory {
         RemoveDeckUseCase(
-            deckRepository = get(named(LOCAL_DECK_REPOSITORY)),
-            cardRepository = get(named(LOCAL_CARD_REPOSITORY)),
-            localStorageSaveVersionRepository = get(named(LOCAL_STORAGE_SAVE_VERSION_REPOSITORY)),
+            deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+            cardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
+            localStorageSaveVersionRepository = get(
+                qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
+            ),
             localStorageTransactionRepository = get(),
             deckRepetitionInfoRepository = get(),
         )
     }
     factory {
         RenameDeckUseCase(
-            deckRepository = get(named(LOCAL_DECK_REPOSITORY)),
-            localStorageSaveVersionRepository = get(named(LOCAL_STORAGE_SAVE_VERSION_REPOSITORY)),
+            deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+            localStorageSaveVersionRepository = get(
+                qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
+            ),
             localStorageTransactionRepository = get(),
         )
     }
-    factory { SaveCardRemotelyUseCase(cardRepository = get(named(REMOTE_CARD_REPOSITORY))) }
-    factory { SaveDeckRemotelyUseCase(deckRepository = get(named(REMOTE_DECK_REPOSITORY))) }
+    factory {
+        SaveCardRemotelyUseCase(
+            cardRepository = get(qualifier = named(name = REMOTE_CARD_REPOSITORY)),
+        )
+    }
+    factory {
+        SaveDeckRemotelyUseCase(
+            deckRepository = get(qualifier = named(name = REMOTE_DECK_REPOSITORY)),
+        )
+    }
     factory { SaveDeckReviewInfoUseCase(deckRepetitionInfoRepository = get()) }
     factory {
         SynchronizeLocalAndRemoteDataUseCase(
-            localDeckRepository = get(named(LOCAL_DECK_REPOSITORY)),
-            localCardRepository = get(named(LOCAL_CARD_REPOSITORY)),
-            localStorageSaveVersionRepository = get(named(LOCAL_STORAGE_SAVE_VERSION_REPOSITORY)),
-            remoteDeckRepository = get(named(REMOTE_DECK_REPOSITORY)),
-            remoteCardRepository = get(named(REMOTE_CARD_REPOSITORY)),
-            remoteStorageSaveVersionRepository = get(named(REMOTE_STORAGE_SAVE_VERSION_REPOSITORY)),
+            localDeckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+            localCardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
+            localStorageSaveVersionRepository = get(
+                qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
+            ),
+            remoteDeckRepository = get(qualifier = named(name = REMOTE_DECK_REPOSITORY)),
+            remoteCardRepository = get(qualifier = named(name = REMOTE_CARD_REPOSITORY)),
+            remoteStorageSaveVersionRepository = get(
+                qualifier = named(name = REMOTE_STORAGE_SAVE_VERSION_REPOSITORY),
+            ),
             dataSynchronizationValidator = get(),
         )
     }
     factory {
         TransferCardsToDeckUseCase(
-            cardRepository = get(named(LOCAL_CARD_REPOSITORY)),
-            deckRepository = get(named(LOCAL_DECK_REPOSITORY)),
-            localStorageSaveVersionRepository = get(named(LOCAL_STORAGE_SAVE_VERSION_REPOSITORY)),
+            cardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
+            deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+            localStorageSaveVersionRepository = get(
+                qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
+            ),
             localStorageTransactionRepository = get(),
         )
     }
     factory { TransferDataOfOldAppKlafUseCase(oldAppKlafDataTransferRepository = get()) }
     factory {
         UpdateCardUseCase(
-            cardRepository = get(named(LOCAL_CARD_REPOSITORY)),
-            localStorageSaveVersionRepository = get(named(LOCAL_STORAGE_SAVE_VERSION_REPOSITORY)),
+            cardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
+            localStorageSaveVersionRepository = get(
+                qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
+            ),
             localStorageTransactionRepository = get(),
         )
     }
     factory {
         UpdateDeckUseCase(
-            deckRepository = get(named(LOCAL_DECK_REPOSITORY)),
-            localStorageSaveVersionRepository = get(named(LOCAL_STORAGE_SAVE_VERSION_REPOSITORY)),
+            deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+            localStorageSaveVersionRepository = get(
+                qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
+            ),
             localStorageTransactionRepository = get(),
         )
     }
@@ -313,42 +395,42 @@ private fun Module.dataManagerBindings() {
 private fun Module.workerModule() {
     worker {
         AppReopeningWorker(
-            get(),
-            get(),
-            get()
+            application = get(),
+            workerParams = get(),
+            appRestartNotifier = get(),
         )
     }
     worker {
         DeckRepetitionReminder(
-            get(),
-            get(),
-            get()
+            appContext = get(),
+            parameters = get(),
+            deckReviewNotifier = get(),
         )
     }
     worker {
         DeckRepetitionReminderChecker(
-            get(),
-            get(),
-            get(),
-            get(),
-            get()
+            context = get(),
+            params = get(),
+            deckReviewNotifier = get(),
+            fetchAllDecks = get(),
+            crashlytics = get(),
         )
     }
     worker {
         DataSynchronizationWorker(
-            get(),
-            get(),
-            get(),
-            get(),
-            get()
+            appContext = get(),
+            params = get(),
+            synchronizeLocalAndRemoteData = get(),
+            dataSynchronizationNotifier = get(),
+            crashlytics = get(),
         )
     }
     worker {
         DeckReviewRescheduler(
-            get(),
-            get(),
-            get(),
-            get()
+            appContext = get(),
+            parameters = get(),
+            fetchAllDecksUseCase = get(),
+            deckReviewingReminder = get(),
         )
     }
 }
