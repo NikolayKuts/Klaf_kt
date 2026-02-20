@@ -33,6 +33,7 @@ dependencies {
     implementation(libs.work.manager)
     implementation(libs.datastore.android)
     implementation(libs.room.runtime)
+    implementation(libs.ktor.client.core)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.rirestore.ktx)

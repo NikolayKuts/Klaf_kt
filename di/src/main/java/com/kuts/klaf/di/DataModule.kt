@@ -77,6 +77,7 @@ import com.kuts.klaf.firestore.repositoryImplementations.DeckRepositoryFirestore
 import com.kuts.klaf.firestore.repositoryImplementations.StorageSaveVersionRepositoryFirestore
 import com.kuts.klaf.firestore.repositoryImplementations.WordAutocompleteFirestore
 import com.kuts.klaf.networking.CardAudioPlayer
+import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoProvider
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.repositoryImplementations.CardRepositoryRoom
@@ -162,7 +163,13 @@ private fun Module.repositoryModule() {
             crashlytics = get(),
         )
     }
-    single<IWordInfoRepository> { YandexWordInfoProvider(context = androidContext()) }
+    single<IWordInfoRepository> {
+        YandexWordInfoProvider(
+            client = YandexSecureHttpClientFactory(
+                context = androidContext(),
+            ).create(),
+        )
+    }
     single<IOldAppKlafDataTransferRepository> {
         OldAppKlafDataTransferRepository(
             context = androidContext(),
