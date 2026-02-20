@@ -29,6 +29,7 @@ import com.kuts.klaf.deckList.common.IDeckListNavigationDestination.DataSynchron
 import com.kuts.klaf.deckList.common.IDeckListNavigationDestination.Unspecified
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent.*
 import com.kuts.klaf.deckList.drawer.DrawerViewState
+import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -115,7 +116,8 @@ class DeckListViewModel(
                         )
                         eventMessage.tryEmitAsPositive(resId = R.string.deck_has_been_created)
                         emitNavigationEvent(value = ToPrevious)
-                    }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+                    }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, error ->
+                        logE("error: ${error.stackTraceToString()}")
                         eventMessage.tryEmitAsNegative(resId = R.string.problem_with_creating_deck)
                     }
                 }

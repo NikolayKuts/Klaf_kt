@@ -42,7 +42,7 @@ turbine = "0.10.0"
 navigationCore = "2.7.7"
 
 # Room #
-roomCore = "2.6.1"
+roomCore = "2.8.4"
 roomPlugin = "2.8.4"
 
 # Lifecycle #

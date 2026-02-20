@@ -12,6 +12,7 @@ import com.kuts.klaf.firestore.toDomainEntity
 import com.kuts.klaf.firestore.toFirestoreEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
+
 class DeckRepositoryFirestore constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth,

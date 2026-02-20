@@ -14,6 +14,7 @@ import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.kuts.domain.common.DataSynchronizationValidator
+import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.entities.DeckRepetitionInfos
 import com.kuts.domain.interactors.AuthenticationInteractor
 import com.kuts.domain.managers.IAppMaintenanceManager
@@ -55,6 +56,7 @@ import com.kuts.domain.useCases.UpdateCardUseCase
 import com.kuts.domain.useCases.UpdateDeckUseCase
 import com.kuts.klaf.common.AppMaintenanceManager
 import com.kuts.klaf.common.AppReopeningWorker
+import com.kuts.klaf.common.CoroutineContextProvider
 import com.kuts.klaf.common.DataSynchronizationWorker
 import com.kuts.klaf.common.DeckRepetitionReminder
 import com.kuts.klaf.common.DeckRepetitionReminderChecker
@@ -182,6 +184,7 @@ private fun Module.useCaseModule() {
                 qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
             localStorageTransactionRepository = get(),
+            coroutineContextProvider = get(),
         )
     }
     factory {
@@ -197,11 +200,13 @@ private fun Module.useCaseModule() {
                 qualifier = named(name = REMOTE_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
             dataSynchronizationValidator = get(),
+            coroutineContextProvider = get(),
         )
     }
     factory {
         CheckIfCardExistsUseCase(
             cardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
+            coroutineContextProvider = get(),
         )
     }
     factory {
@@ -211,6 +216,7 @@ private fun Module.useCaseModule() {
                 qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
             localStorageTransactionRepository = get(),
+            coroutineContextProvider = get(),
         )
     }
     factory {
@@ -220,6 +226,7 @@ private fun Module.useCaseModule() {
                 qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
             localStorageTransactionRepository = get(),
+            coroutineContextProvider = get(),
         )
     }
     factory {
@@ -230,11 +237,13 @@ private fun Module.useCaseModule() {
                 qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
             localStorageTransactionRepository = get(),
+            coroutineContextProvider = get(),
         )
     }
     factory {
         FetchAllDecksUseCase(
             deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+            coroutineContextProvider = get(),
         )
     }
     factory {
@@ -258,8 +267,18 @@ private fun Module.useCaseModule() {
             deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
         )
     }
-    factory { FetchWordAutocompleteUseCase(wordAutocompleteRepository = get()) }
-    factory { FetchWordInfoUseCase(wordInfoRepository = get()) }
+    factory {
+        FetchWordAutocompleteUseCase(
+            wordAutocompleteRepository = get(),
+            coroutineContextProvider = get(),
+        )
+    }
+    factory {
+        FetchWordInfoUseCase(
+            wordInfoRepository = get(),
+            coroutineContextProvider = get(),
+        )
+    }
     factory {
         RemoveDeckUseCase(
             deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
@@ -269,6 +288,7 @@ private fun Module.useCaseModule() {
             ),
             localStorageTransactionRepository = get(),
             deckRepetitionInfoRepository = get(),
+            coroutineContextProvider = get(),
         )
     }
     factory {
@@ -278,19 +298,27 @@ private fun Module.useCaseModule() {
                 qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
             localStorageTransactionRepository = get(),
+            coroutineContextProvider = get(),
         )
     }
     factory {
         SaveCardRemotelyUseCase(
             cardRepository = get(qualifier = named(name = REMOTE_CARD_REPOSITORY)),
+            coroutineContextProvider = get(),
         )
     }
     factory {
         SaveDeckRemotelyUseCase(
             deckRepository = get(qualifier = named(name = REMOTE_DECK_REPOSITORY)),
+            coroutineContextProvider = get(),
         )
     }
-    factory { SaveDeckReviewInfoUseCase(deckRepetitionInfoRepository = get()) }
+    factory {
+        SaveDeckReviewInfoUseCase(
+            deckRepetitionInfoRepository = get(),
+            coroutineContextProvider = get(),
+        )
+    }
     factory {
         SynchronizeLocalAndRemoteDataUseCase(
             localDeckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
@@ -304,6 +332,7 @@ private fun Module.useCaseModule() {
                 qualifier = named(name = REMOTE_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
             dataSynchronizationValidator = get(),
+            coroutineContextProvider = get(),
         )
     }
     factory {
@@ -314,9 +343,15 @@ private fun Module.useCaseModule() {
                 qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
             localStorageTransactionRepository = get(),
+            coroutineContextProvider = get(),
         )
     }
-    factory { TransferDataOfOldAppKlafUseCase(oldAppKlafDataTransferRepository = get()) }
+    factory {
+        TransferDataOfOldAppKlafUseCase(
+            oldAppKlafDataTransferRepository = get(),
+            coroutineContextProvider = get(),
+        )
+    }
     factory {
         UpdateCardUseCase(
             cardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
@@ -324,6 +359,7 @@ private fun Module.useCaseModule() {
                 qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
             localStorageTransactionRepository = get(),
+            coroutineContextProvider = get(),
         )
     }
     factory {
@@ -333,6 +369,7 @@ private fun Module.useCaseModule() {
                 qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
             localStorageTransactionRepository = get(),
+            coroutineContextProvider = get(),
         )
     }
 }
@@ -341,6 +378,7 @@ private fun Module.useCaseModule() {
 private fun Module.infrastructureModule() {
     single { KlafRoomDatabase.getInstance(context = androidContext()) }
     single { WorkManager.getInstance(androidContext()) }
+    single<ICoroutineContextProvider> { CoroutineContextProvider() }
 
     single<IDeckReviewScheduler> { DeckReviewingReminder(context = androidContext()) }
 
@@ -430,7 +468,7 @@ private fun Module.workerModule() {
             appContext = get(),
             parameters = get(),
             fetchAllDecksUseCase = get(),
-            deckReviewingReminder = get(),
+            deckReviewingReminder = get<IDeckReviewScheduler>(),
         )
     }
 }

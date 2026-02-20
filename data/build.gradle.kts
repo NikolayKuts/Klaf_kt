@@ -8,10 +8,6 @@ plugins {
     alias(libs.plugins.room)
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-}
-
 android {
     namespace = "com.kuts.klaf.data"
     compileSdk = libs.versions.androidCompileSdk.get().toInt()

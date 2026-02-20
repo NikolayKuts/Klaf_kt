@@ -19,9 +19,11 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.serialization.json.Json
 import java.security.KeyStore
 import java.security.cert.CertificateFactory
@@ -87,7 +89,7 @@ class YandexWordInfoProvider(
         if (throwable !is CancellationException) {
             logW("fetchWordInfo caught ERROR: ${throwable.stackTraceToString()}")
         }
-    }
+    }.flowOn(context = Dispatchers.IO)
 
     private fun buildUrl(apiKey: String, word: String): String {
         return "$PATH?key=$apiKey&lang=en-ru&text=$word"
