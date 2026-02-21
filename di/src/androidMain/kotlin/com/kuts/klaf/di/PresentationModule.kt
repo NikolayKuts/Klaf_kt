@@ -1,7 +1,6 @@
 package com.kuts.klaf.di
 
 import com.kuts.domain.managers.IDeckReviewNotifierManager
-import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.klaf.authentication.AuthenticationViewModel
 import com.kuts.klaf.cardManagement.cardAddition.CardAdditionViewModel
 import com.kuts.klaf.cardManagement.cardEditing.CardEditingViewModel
