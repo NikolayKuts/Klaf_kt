@@ -62,7 +62,7 @@ class CardRepositoryFirestore(
         TODO("Not yet implemented")
     }
 
-    override fun fetchCardsByDeckId(deckId: Int): List<Card> {
+    override suspend fun fetchCardsByDeckId(deckId: Int): List<Card> {
         TODO("Not yet implemented")
     }
 

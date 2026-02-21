@@ -15,17 +15,17 @@ interface IDeckDao {
     fun getObservableDecks(): Flow<List<RoomDeck>>
 
     @Query("SELECT * FROM $DECK_TABLE_NAME")
-    fun getAllDecks(): List<RoomDeck>
+    suspend fun getAllDecks(): List<RoomDeck>
 
     @Query("SELECT * FROM $DECK_TABLE_NAME WHERE id = :deckId")
     fun getObservableDeckById(deckId: Int): Flow<RoomDeck?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertDeck(deck: RoomDeck)
+    suspend fun insertDeck(deck: RoomDeck)
 
     @Query("DELETE FROM $DECK_TABLE_NAME WHERE id = :deckId")
-    fun deleteDeck(deckId: Int)
+    suspend fun deleteDeck(deckId: Int)
 
     @Query("SELECT * FROM $DECK_TABLE_NAME WHERE id = :deckId")
-    fun getDeckById(deckId: Int): RoomDeck?
+    suspend fun getDeckById(deckId: Int): RoomDeck?
 }

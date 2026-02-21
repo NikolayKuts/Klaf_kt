@@ -28,6 +28,8 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${libs.versions.coroutinesCoreJvm.get()}")
                 implementation(libs.kotlin.serilization)
                 implementation(libs.ktor.client.core)
+                implementation(libs.room.runtime)
+                implementation(libs.sqlite.bundled)
             }
         }
         androidMain {
@@ -35,9 +37,6 @@ kotlin {
                 implementation(libs.core.android.ktx)
                 implementation(libs.core.fragment.ktx)
                 implementation(libs.core.coroutines.core.jvm)
-
-                implementation(libs.room.runtime)
-                implementation(libs.room.ktx)
 
                 implementation(libs.lifecycle.livedata.ktx)
 
@@ -65,6 +64,7 @@ kotlin {
 }
 
 room {
+    generateKotlin = true
     schemaDirectory("$projectDir/schemas")
 }
 
@@ -84,5 +84,13 @@ android {
 }
 
 dependencies {
-    add("kspAndroid", libs.room.compiler)
+    setOf(
+        "kspCommonMainMetadata",
+        "kspAndroid",
+        "kspIosX64",
+        "kspIosArm64",
+        "kspIosSimulatorArm64",
+    ).forEach { configName ->
+        add(configName, libs.room.compiler)
+    }
 }

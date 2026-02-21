@@ -1,7 +1,7 @@
 package com.kuts.klaf.room.repositoryImplementations
 
-import androidx.room.withTransaction
 import com.kuts.klaf.room.databases.KlafRoomDatabase
+import com.kuts.klaf.room.databases.performInTransaction
 import com.kuts.domain.repositories.IStorageTransactionRepository
 
 class StorageTransactionRepositoryRoom(
@@ -9,6 +9,6 @@ class StorageTransactionRepositoryRoom(
 ) : IStorageTransactionRepository {
 
     override suspend fun <R> performWithTransaction(block: suspend () -> R) {
-        roomDatabase.withTransaction(block = block)
+        roomDatabase.performInTransaction(block = block)
     }
 }

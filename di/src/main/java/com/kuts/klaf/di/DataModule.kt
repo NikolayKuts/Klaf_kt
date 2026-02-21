@@ -80,6 +80,7 @@ import com.kuts.klaf.networking.CardAudioPlayer
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoProvider
 import com.kuts.klaf.room.databases.KlafRoomDatabase
+import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
 import com.kuts.klaf.room.repositoryImplementations.CardRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.DeckRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.StorageSaveVersionRepositoryRoom
@@ -383,7 +384,7 @@ private fun Module.useCaseModule() {
 
 
 private fun Module.infrastructureModule() {
-    single { KlafRoomDatabase.getInstance(context = androidContext()) }
+    single<KlafRoomDatabase> { KlafRoomDatabaseProvider.getInstance(context = androidContext()) }
     single { WorkManager.getInstance(androidContext()) }
     single<ICoroutineContextProvider> { CoroutineContextProvider() }
 

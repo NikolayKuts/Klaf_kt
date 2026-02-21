@@ -44,6 +44,7 @@ navigationCore = "2.7.7"
 # Room #
 roomCore = "2.8.4"
 roomPlugin = "2.8.4"
+sqliteBundled = "2.6.2"
 
 # Lifecycle #
 lifecycle = "2.8.3"
@@ -110,6 +111,7 @@ navigation-dynamic-features-fragment = { group = "androidx.navigation", name = "
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomCore" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomCore" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCore" }
+sqlite-bundled = { group = "androidx.sqlite", name = "sqlite-bundled", version.ref = "sqliteBundled" }
 
 # Lifecycle #
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }

@@ -1,6 +1,5 @@
 package com.kuts.klaf.room.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -16,32 +15,29 @@ interface ICardDao {
     fun getObservableCardsByDeckId(deckId: Int): Flow<List<RoomCard>>
 
     @Query("SELECT * FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
-    fun getCardsByDeckId(deckId: Int): List<RoomCard>
+    suspend fun getCardsByDeckId(deckId: Int): List<RoomCard>
 
     @Query("SELECT * FROM $CARD_TABLE_NAME")
-    fun getAllCards(): List<RoomCard>
+    suspend fun getAllCards(): List<RoomCard>
 
     @Query("SELECT * FROM $CARD_TABLE_NAME WHERE id = :cardId")
     fun getObservableCardById(cardId: Int): Flow<RoomCard?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insetCard(card: RoomCard)
+    suspend fun insetCard(card: RoomCard)
 
     @Query("SELECT COUNT(*) FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
-    fun getObservableCardQuantityByDeckId(deckId: Int): LiveData<Int>
-
-    @Query("SELECT COUNT(*) FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
-    fun getCardQuantityInDeckAsInt(deckId: Int): Int
+    suspend fun getCardQuantityInDeckAsInt(deckId: Int): Int
 
     @Query("DELETE FROM $CARD_TABLE_NAME WHERE id = :cardId")
-    fun deleteCard(cardId: Int)
+    suspend fun deleteCard(cardId: Int)
 
     @Query("DELETE FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
-    fun deleteCardsByDeckId(deckId: Int)
+    suspend fun deleteCardsByDeckId(deckId: Int)
 
     @Query("SELECT COUNT(*) FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
-    fun getCardQuantityInDeck(deckId: Int): Int
+    suspend fun getCardQuantityInDeck(deckId: Int): Int
 
     @Query("SELECT * FROM $CARD_TABLE_NAME WHERE foreignWord = :foreignWord")
-    fun getCardsByForeignWord(foreignWord: String): List<RoomCard>
+    suspend fun getCardsByForeignWord(foreignWord: String): List<RoomCard>
 }

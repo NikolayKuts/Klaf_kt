@@ -10,8 +10,8 @@ import com.kuts.klaf.room.entities.RoomStorageSaveVersion
 interface IStorageSaveVersionDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertStorageSaveVersion(saveVersion: RoomStorageSaveVersion)
+    suspend fun insertStorageSaveVersion(saveVersion: RoomStorageSaveVersion)
 
     @Query("SELECT * FROM ${RoomStorageSaveVersion.TABLE_NAME}")
-    fun getStorageSaveVersion(): RoomStorageSaveVersion?
+    suspend fun getStorageSaveVersion(): RoomStorageSaveVersion?
 }

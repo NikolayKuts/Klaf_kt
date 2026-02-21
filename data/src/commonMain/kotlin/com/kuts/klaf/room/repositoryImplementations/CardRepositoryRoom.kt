@@ -48,7 +48,7 @@ class CardRepositoryRoom(
             .simplifiedItemMap { roomCard: RoomCard -> roomCard.toDomainEntity() }
     }
 
-    override fun fetchCardsByDeckId(deckId: Int): List<Card> {
+    override suspend fun fetchCardsByDeckId(deckId: Int): List<Card> {
         return roomDatabase.cardDao()
             .getCardsByDeckId(deckId = deckId)
             .map { roomCard -> roomCard.toDomainEntity() }

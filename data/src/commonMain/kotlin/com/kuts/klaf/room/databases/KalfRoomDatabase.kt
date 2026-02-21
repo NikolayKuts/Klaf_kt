@@ -1,7 +1,11 @@
 package com.kuts.klaf.room.databases
 
-import android.content.Context
-import androidx.room.*
+import androidx.room.AutoMigration
+import androidx.room.ConstructedBy
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import androidx.room.RoomDatabaseConstructor
+import androidx.room.TypeConverters
 import com.kuts.klaf.room.converters.RoomDateConverter
 import com.kuts.klaf.room.dao.ICardDao
 import com.kuts.klaf.room.dao.IDeckDao
@@ -20,23 +24,17 @@ import com.kuts.klaf.room.entities.RoomStorageSaveVersion
     exportSchema = true,
     autoMigrations = [AutoMigration(from = 1, to = 2)]
 )
+@ConstructedBy(KlafRoomDatabaseConstructor::class)
 @TypeConverters(RoomDateConverter::class)
 abstract class KlafRoomDatabase : RoomDatabase() {
-
-    companion object {
-        private const val DB_NAME = "klaf_kt.db"
-        private var database: KlafRoomDatabase? = null
-        private val LOCK = Any()
-
-        fun getInstance(context: Context): KlafRoomDatabase = synchronized(LOCK) {
-            database ?: Room.databaseBuilder(context, KlafRoomDatabase::class.java, DB_NAME)
-                .addMigrations(Migrations.from3To4)
-                .build()
-                .also { database = it }
-        }
-    }
 
     abstract fun deckDao(): IDeckDao
     abstract fun cardDao(): ICardDao
     abstract fun storageSaveVersionDao(): IStorageSaveVersionDao
+}
+
+@Suppress("KotlinNoActualForExpect")
+expect object KlafRoomDatabaseConstructor : RoomDatabaseConstructor<KlafRoomDatabase> {
+
+    override fun initialize(): KlafRoomDatabase
 }

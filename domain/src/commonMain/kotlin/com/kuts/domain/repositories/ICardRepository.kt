@@ -18,7 +18,7 @@ interface ICardRepository {
 
     fun fetchObservableCardsByDeckId(deckId: Int): Flow<List<Card>>
 
-    fun fetchCardsByDeckId(deckId: Int): List<Card>
+    suspend fun fetchCardsByDeckId(deckId: Int): List<Card>
 
     suspend fun deleteCard(cardId: Int)
 
