@@ -64,7 +64,6 @@ dependencies {
     implementation(libs.core.android.ktx)
     implementation(libs.core.app.compat)
     implementation(libs.core.legacy.support)
-    implementation(libs.core.fragment.ktx)
     implementation(libs.androidx.material3.android)
 
     /** Tests **/
@@ -78,11 +77,6 @@ dependencies {
     testImplementation(libs.tests.coroutine)
     testImplementation(libs.tests.turbine)
     testImplementation(libs.tests.kotlin)
-
-    /** Navigation **/
-    implementation(libs.navigation.fragment.ktx)
-    implementation(libs.navigation.ui.ktx)
-    implementation(libs.navigation.dynamic.features.fragment)
 
     /** Lifecycle **/
     implementation(libs.lifecycle.viewmodel.ktx)
@@ -108,12 +102,10 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.foundation)
     implementation(libs.compose.foundation.layout)
-    implementation(libs.compose.material)
     implementation(libs.compose.runtime.livedata)
     implementation(libs.compose.ui.tooling)
     implementation(libs.compose.activity)
     implementation(libs.compose.ui.tooling.preview)
-    implementation(libs.compose.theme.adapter)
     implementation(libs.compose.accompanist)
 
     /** Work Manager **/

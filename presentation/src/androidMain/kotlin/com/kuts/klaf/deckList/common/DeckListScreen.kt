@@ -228,7 +228,7 @@ private fun LazyItemScope.DeckItemView(
         modifier = Modifier
             .fillMaxWidth()
             .padding(2.dp)
-            .animateItemPlacement()
+            .animateItem()
             .scale(animationFloatState)
             .alpha(animationFloatState)
             .combinedClickable(

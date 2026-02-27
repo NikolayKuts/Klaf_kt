@@ -35,7 +35,6 @@ kotlin {
         androidMain {
             dependencies {
                 implementation(libs.core.android.ktx)
-                implementation(libs.core.fragment.ktx)
                 implementation(libs.core.coroutines.core.jvm)
 
                 implementation(libs.lifecycle.livedata.ktx)

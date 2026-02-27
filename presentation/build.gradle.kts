@@ -4,8 +4,8 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.parcelize)
-    alias(libs.plugins.navigation.safeargs.kotlin)
     alias(libs.plugins.android.serialization)
+    alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
 }
 
@@ -18,27 +18,35 @@ kotlin {
     iosSimulatorArm64()
 
     sourceSets {
-        val androidMain by getting {
+        val commonMain by getting {
             dependencies {
                 implementation(project(Modules.Domain))
+                implementation(libs.core.coroutines.core)
+                implementation(libs.kotlin.serilization)
 
+                implementation(compose.runtime)
+                implementation(compose.ui)
+                implementation(compose.foundation)
+                implementation(compose.material3)
+            }
+        }
+
+        val androidMain by getting {
+            dependencies {
                 implementation(libs.core.android.ktx)
                 implementation(libs.core.app.compat)
                 implementation(libs.core.legacy.support)
-                implementation(libs.core.fragment.ktx)
                 implementation(libs.androidx.material3.android)
                 implementation(libs.core.coroutines.core.jvm)
 
-                implementation(libs.navigation.fragment.ktx)
-                implementation(libs.navigation.ui.ktx)
-                implementation(libs.navigation.dynamic.features.fragment)
+                implementation(libs.navigation.compose)
 
                 implementation(libs.lifecycle.viewmodel.ktx)
                 implementation(libs.lifecycle.livedata.ktx)
                 implementation(libs.lifecycle.viewmodel.savedstate)
 
                 implementation(libs.koin.android)
-                implementation(libs.koin.androidx.navigation)
+                implementation(libs.koin.androidx.compose)
 
                 implementation(libs.firebase.authentication)
 
@@ -48,12 +56,10 @@ kotlin {
                 implementation(libs.compose.ui)
                 implementation(libs.compose.foundation)
                 implementation(libs.compose.foundation.layout)
-                implementation(libs.compose.material)
                 implementation(libs.compose.runtime.livedata)
                 implementation(libs.compose.ui.tooling)
                 implementation(libs.compose.activity)
                 implementation(libs.compose.ui.tooling.preview)
-                implementation(libs.compose.theme.adapter)
                 implementation(libs.compose.accompanist)
 
                 implementation(libs.kotlin.serilization)

@@ -1,9 +1,7 @@
 package com.kuts.klaf.common
 
-import androidx.annotation.StringRes
-
 class EventMessage(
-    @StringRes val resId: Int,
+    val resId: Int,
     vararg val args: Any = emptyArray(),
     val type: Type = Type.Neutral,
     val duration: Duration = Duration.Medium,
@@ -17,7 +15,7 @@ class EventMessage(
         Medium,
         Long;
 
-        val value: kotlin.Long
+        val value: Long
             get() = when (this) {
                 Short -> 2000L
                 Medium -> 2600L

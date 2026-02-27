@@ -1,6 +1,5 @@
 package com.kuts.klaf.cardManagement.common
 
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -234,7 +233,7 @@ private fun LazyItemScope.LetterItem(
 
     Text(
         modifier = Modifier
-            .animateItemPlacement(animationSpec = tween(durationMillis = 700))
+            .animateItem()
             .padding(4.dp)
             .clickable { onClick() }
             .clip(shape = RoundedCornerShape(4.dp))

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -38,7 +37,7 @@ import com.kuts.klaf.cardManagement.common.ICardManagementAction
 import com.kuts.klaf.cardManagement.common.CardManagementView
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
     val deck = viewModel.deck.collectAsState(initial = null)
@@ -151,7 +150,7 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BottomSheet(
     cambridgeDataState: ICambridgeDataState,

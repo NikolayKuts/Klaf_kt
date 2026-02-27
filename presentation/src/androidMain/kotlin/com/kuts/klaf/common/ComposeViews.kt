@@ -30,8 +30,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -266,7 +264,7 @@ fun CustomCheckBox(
     ) {
         checked.ifTrue {
             Icon(
-                imageVector = Icons.Default.Check,
+                painter = painterResource(id = R.drawable.ic_confirmation_24),
                 tint = checkmarkColor,
                 contentDescription = contentDescription,
             )

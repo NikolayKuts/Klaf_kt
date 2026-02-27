@@ -5,10 +5,6 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -73,11 +69,6 @@ fun <T> log(
         if (pointerMessage.isEmpty()) "------------" else "-------- $pointerMessage ------->",
 ) {
     Log.i(tag, "$pointer $message")
-}
-
-@Composable
-fun <T> rememberAsMutableStateOf(value: T): MutableState<T> {
-    return remember { mutableStateOf(value = value) }
 }
 
 fun MutableSharedFlow<EventMessage>.tryEmitAsNegative(

@@ -23,9 +23,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -215,7 +212,7 @@ private fun ButtonContainer(
         // clear button
         if (clearButtonVisible) {
             IconControlButton(
-                icon = Icons.Outlined.Clear,
+                icon = ImageVector.vectorResource(id = R.drawable.ic_close_24),
                 contentDescription = "Clear count",
                 onClick = { onAction(IDraggableButtonAction.Reset) },
                 enabled = false,
@@ -231,7 +228,7 @@ private fun ButtonContainer(
 
         // increase button
         IconControlButton(
-            icon = Icons.Outlined.Add,
+            icon = ImageVector.vectorResource(id = R.drawable.ic_add_24),
             contentDescription = "Increase count",
             onClick = { onAction(IDraggableButtonAction.Increase) },
             enabled = !clearButtonVisible,

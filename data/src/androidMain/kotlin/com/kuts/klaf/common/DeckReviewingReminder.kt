@@ -12,36 +12,33 @@ import com.lib.lokdroid.core.logD
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
+private const val ACTION = "deck_review_scheduling"
+private const val DECK_ID_EXTRA_KEY = "deckId"
+private const val DECK_NAME_EXTRA_KEY = "deckName"
+
+private fun Intent.retrieveDeckIdAndName(): Pair<Int, String?> {
+    val deckId = getIntExtra(DECK_ID_EXTRA_KEY, UNASSIGNED_INT_VALUE)
+    val deckName = getStringExtra(DECK_NAME_EXTRA_KEY)
+
+    return deckId to deckName
+}
+
+private fun executeIfIntentValid(
+    intent: Intent,
+    block: (deckId: Int, deckName: String) -> Unit
+) {
+    if (intent.action == ACTION) {
+        val (deckId, deckName) = intent.retrieveDeckIdAndName()
+
+        if (deckId == UNASSIGNED_INT_VALUE || deckName == null) return
+
+        block(deckId, deckName)
+    }
+}
+
 class DeckReviewingReminder(
     private val context: Context,
 ) : IDeckReviewScheduler {
-
-    companion object {
-
-        private const val ACTION = "deck_review_scheduling"
-        private const val DECK_ID_EXTRA_KEY = "deckId"
-        private const val DECK_NAME_EXTRA_KEY = "deckName"
-
-        private fun Intent.retrieveDeckIdAndName(): Pair<Int, String?> {
-            val deckId = getIntExtra(DECK_ID_EXTRA_KEY, UNASSIGNED_INT_VALUE)
-            val deckName = getStringExtra(DECK_NAME_EXTRA_KEY)
-
-            return deckId to deckName
-        }
-
-        private fun executeIfIntentValid(
-            intent: Intent,
-            block: (deckId: Int, deckName: String) -> Unit
-        ) {
-            if (intent.action == ACTION) {
-                val (deckId, deckName) = intent.retrieveDeckIdAndName()
-
-                if (deckId == UNASSIGNED_INT_VALUE || deckName == null) return
-
-                block(deckId, deckName)
-            }
-        }
-    }
 
     override fun schedule(
         deckName: String,
@@ -77,20 +74,20 @@ class DeckReviewingReminder(
         putExtra(DECK_ID_EXTRA_KEY, deckId)
         putExtra(DECK_NAME_EXTRA_KEY, deckName)
     }
+}
 
-    class DeckReviewReceiver : BroadcastReceiver(), KoinComponent {
+class DeckReviewReceiver : BroadcastReceiver(), KoinComponent {
 
-        private val deckReviewNotifier: IDeckReviewNotifierManager by inject()
+    private val deckReviewNotifier: IDeckReviewNotifierManager by inject()
 
-        override fun onReceive(context: Context, intent: Intent) {
-            executeIfIntentValid(intent = intent) { deckId, deckName ->
-                logD("onReceive() called. Deck id: $deckId, name: $deckName")
+    override fun onReceive(context: Context, intent: Intent) {
+        executeIfIntentValid(intent = intent) { deckId, deckName ->
+            logD("onReceive() called. Deck id: $deckId, name: $deckName")
 
-                deckReviewNotifier.showNotification(
-                    deckName = deckName,
-                    deckId = deckId
-                )
-            }
+            deckReviewNotifier.showNotification(
+                deckName = deckName,
+                deckId = deckId
+            )
         }
     }
 }

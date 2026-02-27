@@ -171,4 +171,5 @@
     <string name="deck_na">Do you really want to exit repeating?</string>
     <string name="chat_gpt_story_crafter_prompt">Make up an interesting short story in English for B2 level learners, using all the words below: %1$s. The words from the list should be in UPPERCASE and bolded. The story must not contain more than 250 words. Give a name to store as well</string>
     <string name="chat_gpt_story_crafter_prompt_is_created_and_copied">Prompt is created and copied</string>
+    <string name="chat_gpt_opening_failed">Could not open ChatGPT link</string>
 </resources>

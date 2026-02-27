@@ -3,13 +3,12 @@ package com.kuts.klaf.common.notifications
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import androidx.core.os.bundleOf
-import androidx.navigation.NavDeepLinkBuilder
 import com.kuts.domain.managers.IDeckReviewNotifierManager
+import com.kuts.klaf.navigation.AppLaunchNavigationExtras
 import com.kuts.klaf.presentation.R
 
 class DeckReviewNotifier(
@@ -24,8 +23,6 @@ class DeckReviewNotifier(
         private const val MIN_NOTIFICATION_FOR_GROUP = 4
         private const val DECK_REPETITION_CHANNEL_ID = "deck_repetition_channel_id"
         private const val MAIN_ACTIVITY_CLASS_NAME = "com.kuts.klaf.MainActivity"
-        private const val DECK_ID_NAVIGATION_ARGUMENT_KEY = "deckId"
-        private const val DECK_NAME_NAVIGATION_ARGUMENT_KEY = "deckName"
     }
 
     override fun showNotification(deckName: String, deckId: Int) {
@@ -66,7 +63,7 @@ class DeckReviewNotifier(
             .setGroupIfSdkLessThan24(groupKey = DECK_REPETITION_GROUP_KEY)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setContentIntent(createPaddingIntent(deckId = deckId, deckName = deckName))
+            .setContentIntent(createDeckRepetitionPendingIntent(deckId = deckId, deckName = deckName))
             .build()
     }
 
@@ -81,7 +78,7 @@ class DeckReviewNotifier(
                 context.getString(R.string.deck_repetition_summery_notification_content_text)
             )
             .setSummeryStyle(notificationQuantity = notificationQuantity)
-            .setContentIntent(createCommonPendingIntent())
+            .setContentIntent(createDeckListPendingIntent())
             .build()
     }
 
@@ -94,7 +91,7 @@ class DeckReviewNotifier(
             )
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setContentIntent(createCommonPendingIntent())
+            .setContentIntent(createDeckListPendingIntent())
             .build()
     }
 
@@ -128,25 +125,43 @@ class DeckReviewNotifier(
         }
     }
 
-    private fun createPaddingIntent(deckId: Int, deckName: String): PendingIntent {
-        return NavDeepLinkBuilder(context)
-            .setComponentName(ComponentName(context, MAIN_ACTIVITY_CLASS_NAME))
-            .setGraph(R.navigation.nav_graph)
-            .setDestination(R.id.deckRepetitionFragment)
-            .setArguments(
-                bundleOf(
-                    DECK_ID_NAVIGATION_ARGUMENT_KEY to deckId,
-                    DECK_NAME_NAVIGATION_ARGUMENT_KEY to deckName,
-                )
+    private fun createDeckRepetitionPendingIntent(
+        deckId: Int,
+        deckName: String
+    ): PendingIntent {
+        val intent = createBaseMainActivityIntent().apply {
+            putExtra(
+                AppLaunchNavigationExtras.DESTINATION_KEY,
+                AppLaunchNavigationExtras.DESTINATION_DECK_REPETITION,
             )
-            .createPendingIntent()
+            putExtra(AppLaunchNavigationExtras.DECK_ID_KEY, deckId)
+            putExtra(AppLaunchNavigationExtras.DECK_NAME_KEY, deckName)
+        }
+
+        return createPendingIntent(requestCode = deckId, intent = intent)
     }
 
-    private fun createCommonPendingIntent(): PendingIntent {
-        return NavDeepLinkBuilder(context)
-            .setComponentName(ComponentName(context, MAIN_ACTIVITY_CLASS_NAME))
-            .setGraph(R.navigation.nav_graph)
-            .setDestination(R.id.deckListFragment)
-            .createPendingIntent()
+    private fun createDeckListPendingIntent(): PendingIntent {
+        val intent = createBaseMainActivityIntent().apply {
+            putExtra(
+                AppLaunchNavigationExtras.DESTINATION_KEY,
+                AppLaunchNavigationExtras.DESTINATION_DECK_LIST,
+            )
+        }
+
+        return createPendingIntent(requestCode = COMMON_NOTIFICATION_ID, intent = intent)
+    }
+
+    private fun createBaseMainActivityIntent(): Intent {
+        return Intent().apply {
+            setClassName(context, MAIN_ACTIVITY_CLASS_NAME)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+    }
+
+    private fun createPendingIntent(requestCode: Int, intent: Intent): PendingIntent {
+        val pendingIntentFlags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+
+        return PendingIntent.getActivity(context, requestCode, intent, pendingIntentFlags)
     }
 }

@@ -2,6 +2,7 @@ package com.kuts.klaf.di
 
 import com.kuts.domain.managers.IDeckReviewNotifierManager
 import com.kuts.klaf.authentication.AuthenticationViewModel
+import com.kuts.klaf.authentication.BaseAuthenticationViewModel
 import com.kuts.klaf.cardManagement.cardAddition.CardAdditionViewModel
 import com.kuts.klaf.cardManagement.cardEditing.CardEditingViewModel
 import com.kuts.klaf.cardTransferring.common.BaseCardTransferringViewModel
@@ -34,7 +35,7 @@ internal val presentationModule = module {
 }
 
 private fun Module.viewModels() {
-    viewModel { AuthenticationViewModel(authenticationInteractor = get()) }
+    viewModel<BaseAuthenticationViewModel> { AuthenticationViewModel(authenticationInteractor = get()) }
 
     viewModel<BaseDeckListViewModel> {
         DeckListViewModel(

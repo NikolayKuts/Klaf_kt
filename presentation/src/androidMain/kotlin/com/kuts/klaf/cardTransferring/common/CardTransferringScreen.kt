@@ -378,7 +378,7 @@ private fun LazyItemScope.CardItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .animateItemPlacement()
+            .animateItem()
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick

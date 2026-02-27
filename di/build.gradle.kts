@@ -44,7 +44,6 @@ kotlin {
                 implementation(libs.lokdroid)
 
                 implementation(libs.koin.android)
-                implementation(libs.koin.androidx.navigation)
                 implementation(libs.koin.androidx.workmanager)
             }
         }
