@@ -36,3 +36,4 @@ buildSrc/build/tmp/jar/MANIFEST.MF
 # Gradle outputs (all modules)
 **/build/
 /.kotlin/
+/codex-alt
