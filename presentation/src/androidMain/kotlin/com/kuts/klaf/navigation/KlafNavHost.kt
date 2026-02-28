@@ -6,10 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import com.kuts.domain.entities.Deck
 import com.kuts.klaf.authentication.AuthenticationActionResult
 import com.kuts.klaf.authentication.AuthenticationDestination
@@ -108,7 +105,7 @@ fun KlafNavHost(
         navController = navController,
         startDestination = AppDestination.DeckList,
     ) {
-        composable<AppDestination.DeckList> { backStackEntry ->
+        buildComposableWithEntry<AppDestination.DeckList> { backStackEntry ->
             DeckListDestination(
                 navController = navController,
                 backStackEntry = backStackEntry,
@@ -117,7 +114,7 @@ fun KlafNavHost(
             )
         }
 
-        dialog<AppDestination.DeckCreationDialog> { backStackEntry ->
+        buidDialogWithEntry<AppDestination.DeckCreationDialog> { backStackEntry ->
             DeckCreationDialogDestination(
                 navController = navController,
                 backStackEntry = backStackEntry,
@@ -125,8 +122,7 @@ fun KlafNavHost(
             )
         }
 
-        dialog<AppDestination.DeckNavigationDialog> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.DeckNavigationDialog>()
+        buildDialog<AppDestination.DeckNavigationDialog> { backStackEntry, route ->
             DeckNavigationDialogDestination(
                 navController = navController,
                 backStackEntry = backStackEntry,
@@ -136,8 +132,7 @@ fun KlafNavHost(
             )
         }
 
-        dialog<AppDestination.DeckRenamingDialog> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.DeckRenamingDialog>()
+        buildDialog<AppDestination.DeckRenamingDialog> { backStackEntry, route ->
             DeckRenamingDialogDestination(
                 navController = navController,
                 backStackEntry = backStackEntry,
@@ -146,8 +141,7 @@ fun KlafNavHost(
             )
         }
 
-        dialog<AppDestination.DeckDeletingDialog> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.DeckDeletingDialog>()
+        buildDialog<AppDestination.DeckDeletingDialog> { backStackEntry, route ->
             DeckDeletingDialogDestination(
                 navController = navController,
                 backStackEntry = backStackEntry,
@@ -157,8 +151,7 @@ fun KlafNavHost(
             )
         }
 
-        composable<AppDestination.DeckRepetition> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.DeckRepetition>()
+        buildComposable<AppDestination.DeckRepetition> { backStackEntry, route ->
             DeckRepetitionDestination(
                 navController = navController,
                 backStackEntry = backStackEntry,
@@ -168,8 +161,7 @@ fun KlafNavHost(
             )
         }
 
-        dialog<AppDestination.DeckRepetitionCardDeletingDialog> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.DeckRepetitionCardDeletingDialog>()
+        buildDialog<AppDestination.DeckRepetitionCardDeletingDialog> { route ->
             DeckRepetitionCardDeletingDialogDestination(
                 navController = navController,
                 sharedViewModel = sharedViewModel,
@@ -178,8 +170,7 @@ fun KlafNavHost(
             )
         }
 
-        dialog<AppDestination.DeckRepetitionInfoDialog> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.DeckRepetitionInfoDialog>()
+        buildDialog<AppDestination.DeckRepetitionInfoDialog> { route ->
             DeckRepetitionInfoDialogDestination(
                 navController = navController,
                 sharedViewModel = sharedViewModel,
@@ -189,8 +180,7 @@ fun KlafNavHost(
             )
         }
 
-        composable<AppDestination.CardAddition> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.CardAddition>()
+        buildComposable<AppDestination.CardAddition> { backStackEntry, route ->
             CardAdditionDestination(
                 backStackEntry = backStackEntry,
                 sharedViewModel = sharedViewModel,
@@ -198,8 +188,7 @@ fun KlafNavHost(
             )
         }
 
-        composable<AppDestination.CardEditing> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.CardEditing>()
+        buildComposable<AppDestination.CardEditing> { backStackEntry, route ->
             CardEditingDestination(
                 navController = navController,
                 backStackEntry = backStackEntry,
@@ -209,16 +198,14 @@ fun KlafNavHost(
             )
         }
 
-        composable<AppDestination.CardViewing> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.CardViewing>()
+        buildComposable<AppDestination.CardViewing> { route ->
             CardViewingDestination(
                 sharedViewModel = sharedViewModel,
                 deckId = route.deckId,
             )
         }
 
-        dialog<AppDestination.DataSynchronizationDialog> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.DataSynchronizationDialog>()
+        buildDialog<AppDestination.DataSynchronizationDialog> { backStackEntry, route ->
             DataSynchronizationDialogDestination(
                 navController = navController,
                 backStackEntry = backStackEntry,
@@ -232,16 +219,14 @@ fun KlafNavHost(
             )
         }
 
-        dialog<AppDestination.SigningTypeChoosingDialog> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.SigningTypeChoosingDialog>()
+        buildDialog<AppDestination.SigningTypeChoosingDialog> { route ->
             SigningTypeChoosingDialogDestination(
                 navController = navController,
                 fromSourceDestination = route.fromSourceDestination,
             )
         }
 
-        composable<AppDestination.Authentication> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.Authentication>()
+        buildComposable<AppDestination.Authentication> { route ->
             AuthenticationDestination(
                 navController = navController,
                 sharedViewModel = sharedViewModel,
@@ -250,8 +235,7 @@ fun KlafNavHost(
             )
         }
 
-        dialog<AppDestination.DrawerActionDialog> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.DrawerActionDialog>()
+        buildDialog<AppDestination.DrawerActionDialog> { backStackEntry, route ->
             DrawerActionDialogDestination(
                 navController = navController,
                 backStackEntry = backStackEntry,
@@ -260,8 +244,7 @@ fun KlafNavHost(
             )
         }
 
-        composable<AppDestination.CardTransferring> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.CardTransferring>()
+        buildComposable<AppDestination.CardTransferring> { backStackEntry, route ->
             CardTransferringDestination(
                 navController = navController,
                 backStackEntry = backStackEntry,
@@ -270,8 +253,7 @@ fun KlafNavHost(
             )
         }
 
-        dialog<AppDestination.CardTransferringDeletingDialog> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.CardTransferringDeletingDialog>()
+        buildDialog<AppDestination.CardTransferringDeletingDialog> { route ->
             CardTransferringDeletingDialogDestination(
                 navController = navController,
                 sharedViewModel = sharedViewModel,
@@ -279,15 +261,14 @@ fun KlafNavHost(
             )
         }
 
-        dialog<AppDestination.CardMovingDialog> {
+        buidDialogWithEntry<AppDestination.CardMovingDialog> {
             CardMovingDialogDestination(
                 navController = navController,
                 sharedViewModel = sharedViewModel,
             )
         }
 
-        composable<AppDestination.DeckManagement> { backStackEntry ->
-            val route = backStackEntry.toRoute<AppDestination.DeckManagement>()
+        buildComposable<AppDestination.DeckManagement> { route ->
             DeckManagementDestination(
                 sharedViewModel = sharedViewModel,
                 deckId = route.deckId,
