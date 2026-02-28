@@ -37,7 +37,7 @@ object WordMeaningInsightsPromptFactory {
            - return "senses": [].
            - do not invent meanings or examples.
         5. If word_valid=true:
-           - return from ${WordMeaningInsightsContract.MIN_SENSES_COUNT} to ${WordMeaningInsightsContract.MAX_SENSES_COUNT} senses.
+           - return ${buildSensesCountRequirement()}.
            - sort senses by real usage frequency (most typical first).
         6. For each sense include:
            - rank
@@ -50,4 +50,15 @@ object WordMeaningInsightsPromptFactory {
         9. language must be "${WordMeaningInsightsContract.LANGUAGE}".
         10. Return JSON only.
     """.trimIndent()
+
+    private fun buildSensesCountRequirement(): String {
+        val minSensesCount = WordMeaningInsightsContract.MIN_SENSES_COUNT
+        val maxSensesCount = WordMeaningInsightsContract.MAX_SENSES_COUNT
+
+        return if (minSensesCount == maxSensesCount) {
+            "exactly $minSensesCount senses"
+        } else {
+            "from $minSensesCount to $maxSensesCount senses"
+        }
+    }
 }

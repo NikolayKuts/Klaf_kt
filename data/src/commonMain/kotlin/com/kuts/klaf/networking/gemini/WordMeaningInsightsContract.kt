@@ -3,8 +3,8 @@ package com.kuts.klaf.networking.gemini
 object WordMeaningInsightsContract {
 
     const val LANGUAGE = "en"
-    const val MIN_SENSES_COUNT = 3
-    const val MAX_SENSES_COUNT = 5
+    const val MIN_SENSES_COUNT = 4
+    const val MAX_SENSES_COUNT = 4
     const val EXAMPLES_PER_SENSE = 3
 
     val systemInstruction = """
@@ -42,7 +42,7 @@ object WordMeaningInsightsContract {
                 "senses": {
                   "type": "array",
                   "minItems": 0,
-                  "maxItems": 5,
+                  "maxItems": $MAX_SENSES_COUNT,
                   "items": {
                     "type": "object",
                     "additionalProperties": false,
@@ -51,7 +51,7 @@ object WordMeaningInsightsContract {
                       "rank": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 5
+                        "maximum": $MAX_SENSES_COUNT
                       },
                       "translation_ru": {
                         "type": "string",
@@ -67,8 +67,8 @@ object WordMeaningInsightsContract {
                       },
                       "examples_en": {
                         "type": "array",
-                        "minItems": 3,
-                        "maxItems": 3,
+                        "minItems": $EXAMPLES_PER_SENSE,
+                        "maxItems": $EXAMPLES_PER_SENSE,
                         "items": {
                           "type": "string",
                           "minLength": 1
@@ -107,7 +107,7 @@ object WordMeaningInsightsContract {
                 "senses": {
                   "type": "ARRAY",
                   "minItems": 0,
-                  "maxItems": 5,
+                  "maxItems": $MAX_SENSES_COUNT,
                   "items": {
                     "type": "OBJECT",
                     "required": ["rank", "translation_ru", "cefr", "context", "examples_en"],
@@ -127,8 +127,8 @@ object WordMeaningInsightsContract {
                       },
                       "examples_en": {
                         "type": "ARRAY",
-                        "minItems": 3,
-                        "maxItems": 3,
+                        "minItems": $EXAMPLES_PER_SENSE,
+                        "maxItems": $EXAMPLES_PER_SENSE,
                         "items": {
                           "type": "STRING"
                         }
