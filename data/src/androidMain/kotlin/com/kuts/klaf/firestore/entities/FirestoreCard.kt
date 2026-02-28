@@ -5,5 +5,6 @@ data class FirestoreCard(
     val nativeWord: String = DEFAULT_STRING_VALUE,
     val foreignWord: String = DEFAULT_STRING_VALUE,
     val ipa: String = DEFAULT_STRING_VALUE,
+    val wordMeaningInsights: FirestoreWordMeaningInsights? = null,
     val id: Int = DEFAULT_INT_VALUE
 )
