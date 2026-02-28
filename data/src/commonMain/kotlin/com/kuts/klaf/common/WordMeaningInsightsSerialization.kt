@@ -9,6 +9,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal data class WordMeaningInsightsPayload(
     val word: String = "",
+    @SerialName("word_valid")
+    val isWordValid: Boolean = true,
+    @SerialName("invalid_reason")
+    val invalidReason: String = "",
     val language: String = "",
     @SerialName("senses")
     val meanings: List<WordMeaningItemPayload> = emptyList(),
@@ -38,6 +42,8 @@ internal fun WordMeaningInsightsPayload.toDomainEntity(): WordMeaningInsights {
 internal fun WordMeaningInsights.toPayload(): WordMeaningInsightsPayload {
     return WordMeaningInsightsPayload(
         word = word,
+        isWordValid = true,
+        invalidReason = "",
         language = language,
         meanings = meanings.map { item -> item.toPayload() },
     )
@@ -62,4 +68,3 @@ private fun WordMeaningItem.toPayload(): WordMeaningItemPayload {
         examples = examples,
     )
 }
-

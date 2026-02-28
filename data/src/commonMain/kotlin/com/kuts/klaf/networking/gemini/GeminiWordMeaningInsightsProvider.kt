@@ -52,7 +52,8 @@ class GeminiWordMeaningInsightsProvider(
             "Gemini API key is not configured."
         }
 
-        val prompt = WordMeaningInsightsPromptFactory.build(word = word)
+        val requestedWord = word.trim()
+        val prompt = WordMeaningInsightsPromptFactory.build(word = requestedWord)
         val model = SecretConstants.GeminiApi.GEMINI_MODEL
 
         val response = executeGenerateContentRequest(
@@ -83,11 +84,14 @@ class GeminiWordMeaningInsightsProvider(
             "Gemini returned empty insights payload. finishReasons=$finishReasons, blockReason=$blockReason, body=$responseBodyText"
         }
 
-        val parsedInsights = json.decodeFromString(
+        val payload = json.decodeFromString(
             deserializer = WordMeaningInsightsPayload.serializer(),
             string = rawJson.unwrapMarkdownCodeFence(),
-        ).toDomainEntity()
-        require(value = parsedInsights.isValid()) {
+        )
+        payload.throwIfInvalidForRequestedWord(requestedWord = requestedWord)
+
+        val parsedInsights = payload.toDomainEntity()
+        require(value = parsedInsights.isValid(expectedWord = requestedWord)) {
             "Gemini returned payload that does not match the expected contract."
         }
 
@@ -123,7 +127,7 @@ class GeminiWordMeaningInsightsProvider(
                             ),
                             generationConfig = GeminiGenerationConfig(
                                 responseMimeType = RESPONSE_MIME_TYPE_JSON,
-                                responseSchema = WordMeaningInsightsContract.responseApiSchema.toJsonObject(),
+                                responseSchema = prompt.responseApiSchema.toJsonObject(),
                                 temperature = TEMPERATURE,
                                 maxOutputTokens = MAX_OUTPUT_TOKENS,
                             ),
@@ -165,8 +169,9 @@ private fun String.unwrapMarkdownCodeFence(): String = trim()
     .removeSuffix("```")
     .trim()
 
-private fun WordMeaningInsights.isValid(): Boolean {
+private fun WordMeaningInsights.isValid(expectedWord: String): Boolean {
     if (word.isBlank()) return false
+    if (word.toWordKey() != expectedWord.toWordKey()) return false
     if (language != WordMeaningInsightsContract.LANGUAGE) return false
     if (meanings.size !in WordMeaningInsightsContract.MIN_SENSES_COUNT..WordMeaningInsightsContract.MAX_SENSES_COUNT) {
         return false
@@ -183,6 +188,24 @@ private fun WordMeaningInsights.isValid(): Boolean {
             && meaning.examples.all { example -> example.isNotBlank() }
         hasValidRank && hasValidTranslation && hasValidContext && hasValidExamples
     }
+}
+
+private fun WordMeaningInsightsPayload.throwIfInvalidForRequestedWord(requestedWord: String) {
+    if (word.toWordKey() != requestedWord.toWordKey()) {
+        throw IllegalArgumentException(
+            "Gemini returned mismatched word. expected=$requestedWord, actual=$word"
+        )
+    }
+
+    if (!isWordValid) {
+        throw IllegalArgumentException(
+            invalidReason.ifBlank { "The provided token is not a valid English word." }
+        )
+    }
+}
+
+private fun String.toWordKey(): String {
+    return trim().lowercase()
 }
 
 private fun Throwable.isDnsResolutionFailure(): Boolean {

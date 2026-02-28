@@ -58,6 +58,13 @@ class CardEditingViewModel(
     fetchDeckById = fetchDeckById,
     checkIfWordExists = checkIfWordExists,
 ) {
+    companion object {
+
+        private const val DEFAULT_INSIGHTS_ERROR_MESSAGE = "Word insights request failed."
+        private const val INVALID_WORD_FORMAT_ERROR_MESSAGE =
+            "The word format is invalid. Please enter a real English word."
+    }
+
     private val json = Json {
         prettyPrint = true
         explicitNulls = false
@@ -152,7 +159,7 @@ class CardEditingViewModel(
     }
 
     fun showInsightsSheet() {
-        if (_insightsUiState.value.hasData) {
+        if (_insightsUiState.value.isExpandable) {
             _insightsUiState.update { state -> state.copy(isSheetVisible = true) }
         }
     }
@@ -162,6 +169,8 @@ class CardEditingViewModel(
     }
 
     private fun fetchCardAndConfigureStates(cardId: Int) {
+        setInsightsLoading()
+
         viewModelScope.launchWithState {
             fetchCard(cardId = cardId)
                 .catchWithCrashlyticsReport(crashlytics = crashlytics) {
@@ -171,7 +180,11 @@ class CardEditingViewModel(
                     originalCardState.value = card
 
                     if (card != null) {
-                        updateInsightsUiState(insights = card.wordMeaningInsights)
+                        if (card.hasValidInsightsForCurrentWord()) {
+                            updateInsightsUiState(insights = card.wordMeaningInsights)
+                        } else {
+                            setInsightsIdle(word = card.foreignWord)
+                        }
                         audioPlayer.preparePronunciation(word = card.foreignWord)
                         foreignWordFieldValueState.value =
                             TextFieldValue(text = card.foreignWord)
@@ -181,29 +194,49 @@ class CardEditingViewModel(
                         }
                         nativeWordFieldValueState.value = TextFieldValue(text = card.nativeWord)
                         requestAndStoreGeminiInsightsIfMissing(card = card)
+                    } else {
+                        setInsightsIdle()
                     }
-                }
+                } ?: setInsightsIdle()
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
             logW(throwable.stackTraceToString())
+            setInsightsIdle()
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_card)
         }
     }
 
     private fun requestAndStoreGeminiInsightsIfMissing(card: Card) {
-        if (card.wordMeaningInsights.hasData()) return
+        if (card.hasValidInsightsForCurrentWord()) return
         val foreignWord = card.foreignWord.trim()
-        if (foreignWord.isEmpty()) return
+        if (foreignWord.isEmpty()) {
+            setInsightsIdle()
+            return
+        }
+        setInsightsLoading(word = foreignWord)
 
         viewModelScope.launchWithState(Dispatchers.IO) {
+            if (!foreignWord.isValidWordFormat()) {
+                setInsightsError(
+                    word = foreignWord,
+                    errorMessage = INVALID_WORD_FORMAT_ERROR_MESSAGE,
+                )
+                return@launchWithState
+            }
+
             val insights = fetchWordMeaningInsights(word = foreignWord)
             val latestCard = fetchCard(cardId = card.id).firstOrNull() ?: return@launchWithState
 
-            if (latestCard.wordMeaningInsights.hasData()) return@launchWithState
+            if (latestCard.hasValidInsightsForCurrentWord()) {
+                originalCardState.value = latestCard
+                updateInsightsUiState(insights = latestCard.wordMeaningInsights)
+                return@launchWithState
+            }
             if (latestCard.foreignWord != foreignWord) {
                 logD(
                     "Gemini insights skipping auto-save because foreign word changed. " +
                         "initial=$foreignWord, latest=${latestCard.foreignWord}"
                 )
+                setInsightsIdle(word = latestCard.foreignWord)
                 return@launchWithState
             }
 
@@ -215,6 +248,7 @@ class CardEditingViewModel(
             logD("Gemini insights were auto-saved for cardId=${card.id}, foreignWord=$foreignWord")
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
             logW(throwable.stackTraceToString())
+            setInsightsError(word = foreignWord, throwable = throwable)
         }
     }
 
@@ -268,13 +302,103 @@ class CardEditingViewModel(
                 )
             }
             .filter { meaning -> meaning.translation.isNotEmpty() }
+        val hasSanitizedMeanings = sanitizedMeanings.isNotEmpty()
+        val sanitizedWord = insights.word.trim()
 
         _insightsUiState.update { state ->
             state.copy(
-                word = insights.word.trim(),
+                word = sanitizedWord,
                 meanings = sanitizedMeanings,
-                isSheetVisible = state.isSheetVisible && sanitizedMeanings.isNotEmpty(),
+                status = if (hasSanitizedMeanings) {
+                    CardEditingInsightsStatus.Success
+                } else {
+                    CardEditingInsightsStatus.Idle
+                },
+                errorMessage = "",
+                isSheetVisible = state.isSheetVisible && hasSanitizedMeanings,
             )
         }
+    }
+
+    private fun setInsightsLoading(word: String = "") {
+        _insightsUiState.update { state ->
+            state.copy(
+                word = word.trim().ifEmpty { state.word },
+                status = CardEditingInsightsStatus.Loading,
+                errorMessage = "",
+                isSheetVisible = false,
+            )
+        }
+    }
+
+    private fun setInsightsIdle(word: String = "") {
+        _insightsUiState.update { state ->
+            state.copy(
+                word = word.trim().ifEmpty { state.word },
+                meanings = emptyList(),
+                status = CardEditingInsightsStatus.Idle,
+                errorMessage = "",
+                isSheetVisible = false,
+            )
+        }
+    }
+
+    private fun setInsightsError(word: String, throwable: Throwable) {
+        setInsightsError(
+            word = word,
+            errorMessage = throwable.toInsightsErrorMessage(),
+        )
+    }
+
+    private fun setInsightsError(word: String, errorMessage: String) {
+        _insightsUiState.update { state ->
+            state.copy(
+                word = word.trim().ifEmpty { state.word },
+                meanings = emptyList(),
+                status = CardEditingInsightsStatus.Error,
+                errorMessage = errorMessage,
+                isSheetVisible = false,
+            )
+        }
+    }
+
+    private fun Throwable.toInsightsErrorMessage(): String {
+        val parsedMessage = message
+            .orEmpty()
+            .lineSequence()
+            .firstOrNull()
+            .orEmpty()
+            .trim()
+
+        return parsedMessage.ifEmpty { DEFAULT_INSIGHTS_ERROR_MESSAGE }
+    }
+
+    private fun Card.hasValidInsightsForCurrentWord(): Boolean {
+        return wordMeaningInsights.isValidForWord(word = foreignWord)
+    }
+
+    private fun WordMeaningInsights.isValidForWord(word: String): Boolean {
+        if (!hasData()) return false
+        return this.word.toWordKey() == word.toWordKey()
+    }
+
+    private fun String.toWordKey(): String {
+        return trim().lowercase()
+    }
+
+    private fun String.isValidWordFormat(): Boolean {
+        val trimmedWord = trim()
+        if (trimmedWord.isEmpty()) return false
+
+        val hasOnlyAllowedCharacters = trimmedWord.all { symbol ->
+            symbol.isLetter() || symbol == '\'' || symbol == '-'
+        }
+        if (!hasOnlyAllowedCharacters) return false
+
+        val lettersOnly = trimmedWord.filter { symbol -> symbol.isLetter() }.lowercase()
+        if (lettersOnly.isEmpty()) return false
+        if (lettersOnly.length >= 4 && lettersOnly.toSet().size == 1) return false
+
+        return true
     }
 }
