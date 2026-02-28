@@ -25,32 +25,47 @@ internal fun DeckNavigationDialogDestination(
     }
     val viewModel: BaseDeckListViewModel = koinViewModel(viewModelStoreOwner = owner)
 
+
     DeckNavigationDialogView(
         deckName = deckName,
         eventMessage = sharedViewModel.eventMessage.collectAsState(initial = null).value,
         onDeleteDeckClick = {
-            navController.navigate(
-                route = AppDestination.DeckDeletingDialog(
+            navController.navigateAndCloseCurrentDialog(
+                backStackEntry = backStackEntry,
+                destination = AppDestination.DeckDeletingDialog(
                     deckId = deckId,
                     deckName = deckName,
                 )
             )
         },
         onRenameDeckClick = {
-            navController.navigate(route = AppDestination.DeckRenamingDialog(deckId = deckId))
+            navController.navigateAndCloseCurrentDialog(
+                backStackEntry = backStackEntry,
+                destination = AppDestination.DeckRenamingDialog(deckId = deckId)
+            )
         },
         onBrowseDeckClick = {
-            navController.navigate(route = AppDestination.CardViewing(deckId = deckId, deckName = deckName))
+            navController.navigateAndCloseCurrentDialog(
+                backStackEntry = backStackEntry,
+                destination = AppDestination.CardViewing(deckId = deckId, deckName = deckName)
+            )
         },
         onAddCardsClick = {
-            navController.navigate(route = AppDestination.CardAddition(deckId = deckId))
+            navController.navigateAndCloseCurrentDialog(
+                backStackEntry = backStackEntry,
+                destination = AppDestination.CardAddition(deckId = deckId)
+            )
         },
         onTransferCardsClick = {
-            navController.navigate(route = AppDestination.CardTransferring(sourceDeckId = deckId))
+            navController.navigateAndCloseCurrentDialog(
+                backStackEntry = backStackEntry,
+                destination = AppDestination.CardTransferring(sourceDeckId = deckId)
+            )
         },
         onRepetitionInfoClick = {
-            navController.navigate(
-                route = AppDestination.DeckRepetitionInfoDialog(
+            navController.navigateAndCloseCurrentDialog(
+                backStackEntry = backStackEntry,
+                destination = AppDestination.DeckRepetitionInfoDialog(
                     deckId = deckId,
                     deckName = deckName,
                     repetitionInfoEvent = Non,
@@ -58,9 +73,24 @@ internal fun DeckNavigationDialogDestination(
             )
         },
         onDeckManagementClick = {
-            navController.navigate(route = AppDestination.DeckManagement(deckId = deckId))
+            navController.navigateAndCloseCurrentDialog(
+                backStackEntry = backStackEntry,
+                destination = AppDestination.DeckManagement(deckId = deckId)
+            )
         },
         onCloseDialogClick = { navController.popBackStack() },
         onCraftStoryClick = { viewModel.generateGptPromptWithDeckContent(deckId = deckId) },
     )
+}
+
+private fun NavHostController.navigateAndCloseCurrentDialog(
+    backStackEntry: NavBackStackEntry,
+    destination: AppDestination
+) {
+    this.currentBackStackEntry
+    navigate(route = destination) {
+        popUpTo(id = backStackEntry.destination.id) {
+            inclusive = true
+        }
+    }
 }
