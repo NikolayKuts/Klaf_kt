@@ -41,7 +41,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun CardManagementScreen(
     viewModel: BaseCardManagementViewModel,
-    showGeminiDebugButton: Boolean = false,
     isCambridgeBottomSheetEnabled: Boolean = true,
 ) {
     val deck = viewModel.deck.collectAsState(initial = null)
@@ -124,10 +123,6 @@ fun CardManagementScreen(
             },
             onPronounceIconClick = {
                 viewModel.sendAction(action = ICardManagementAction.PronounceForeignWordClicked)
-            },
-            showGeminiDebugButton = showGeminiDebugButton,
-            onGeminiDebugClick = {
-                viewModel.sendAction(action = ICardManagementAction.FetchGeminiInsightsClicked)
             },
             onAutocompleteItemClick = { autocompleteWord ->
                 viewModel.sendAction(

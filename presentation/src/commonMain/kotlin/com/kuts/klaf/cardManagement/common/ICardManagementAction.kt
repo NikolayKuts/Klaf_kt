@@ -28,8 +28,6 @@ sealed interface ICardManagementAction {
 
     data object PronounceForeignWordClicked : ICardManagementAction
 
-    data object FetchGeminiInsightsClicked : ICardManagementAction
-
     data object NativeWordFieldIconClicked : ICardManagementAction
 
     data object CloseAutocompleteMenu : ICardManagementAction

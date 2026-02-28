@@ -63,8 +63,6 @@ fun CardManagementView(
     onIpaTextFieldValueChange: (letterGroupIndex: Int, ipa: TextFieldValue) -> Unit,
     onConfirmClick: () -> Unit,
     onPronounceIconClick: () -> Unit,
-    showGeminiDebugButton: Boolean = false,
-    onGeminiDebugClick: () -> Unit = {},
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
     transcription: String,
     closeNativeWordSuggestionsPopupMenu: () -> Unit,
@@ -152,19 +150,6 @@ fun CardManagementView(
                                     background = Color(0xff59bdc0),
                                     iconId = R.drawable.ic_arrow_drop_down_24,
                                     onClick = onBottomSheetAction
-                                )
-                            }
-
-                            if (showGeminiDebugButton) {
-                                RoundButton(
-                                    modifier = Modifier
-                                        .padding(
-                                            end = confirmationButtonPadding,
-                                            bottom = confirmationButtonPadding,
-                                        ),
-                                    background = Color(0xff5068c8),
-                                    iconId = R.drawable.ic_sync_24,
-                                    onClick = onGeminiDebugClick
                                 )
                             }
 

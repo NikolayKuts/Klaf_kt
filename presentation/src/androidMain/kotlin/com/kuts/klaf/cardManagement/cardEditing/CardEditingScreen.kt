@@ -13,18 +13,23 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -48,7 +53,6 @@ internal fun CardEditingScreen(viewModel: CardEditingViewModel) {
     Box(modifier = Modifier.fillMaxSize()) {
         CardManagementScreen(
             viewModel = viewModel,
-            showGeminiDebugButton = true,
             isCambridgeBottomSheetEnabled = false,
         )
 
@@ -71,6 +75,14 @@ internal fun CardEditingScreen(viewModel: CardEditingViewModel) {
                 InsightsBottomSheetContent(
                     word = insightsUiState.word,
                     meanings = insightsUiState.meanings,
+                    refreshedMeanings = insightsUiState.refreshedMeanings,
+                    refreshedErrorMessage = insightsUiState.refreshedErrorMessage,
+                    isRefreshing = insightsUiState.isRefreshing,
+                    isApplyingRefreshed = insightsUiState.isApplyingRefreshed,
+                    canRequestRefreshedInsights = insightsUiState.canRequestRefreshedInsights,
+                    canApplyRefreshedInsights = insightsUiState.canApplyRefreshedInsights,
+                    onRequestRefreshedInsights = viewModel::requestRefreshedInsights,
+                    onApplyRefreshedInsights = viewModel::applyRefreshedInsights,
                 )
             } else {
                 InsightsErrorBottomSheetContent(
@@ -230,7 +242,18 @@ private fun InsightsErrorBottomSheetContent(
 private fun InsightsBottomSheetContent(
     word: String,
     meanings: List<WordMeaningItem>,
+    refreshedMeanings: List<WordMeaningItem>,
+    refreshedErrorMessage: String,
+    isRefreshing: Boolean,
+    isApplyingRefreshed: Boolean,
+    canRequestRefreshedInsights: Boolean,
+    canApplyRefreshedInsights: Boolean,
+    onRequestRefreshedInsights: () -> Unit,
+    onApplyRefreshedInsights: () -> Unit,
 ) {
+    val refreshedSectionShape = RoundedCornerShape(14.dp)
+    val refreshedSectionBorderColor = MaterialTheme.colorScheme.error.copy(alpha = 0.75f)
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -273,18 +296,96 @@ private fun InsightsBottomSheetContent(
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.78f),
         )
 
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(max = 520.dp)
+                .verticalScroll(state = rememberScrollState())
                 .padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            itemsIndexed(meanings) { index, meaning ->
+            Text(
+                text = "Current Saved Variant",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
+            )
+
+            meanings.forEachIndexed { index, meaning ->
                 InsightMeaningSection(
                     index = index,
                     meaning = meaning,
                 )
+            }
+
+            OutlinedButton(
+                modifier = Modifier.fillMaxWidth(),
+                enabled = canRequestRefreshedInsights,
+                onClick = onRequestRefreshedInsights,
+            ) {
+                if (isRefreshing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                    )
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Text(text = "Loading...")
+                } else {
+                    Text(text = "Load New Variant")
+                }
+            }
+
+            if (refreshedErrorMessage.isNotBlank()) {
+                Text(
+                    text = refreshedErrorMessage,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+
+            if (refreshedMeanings.isNotEmpty()) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.error.copy(alpha = 0.6f))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            width = 1.dp,
+                            color = refreshedSectionBorderColor,
+                            shape = refreshedSectionShape,
+                        )
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text(
+                        text = "New Variant Preview",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+
+                    refreshedMeanings.forEachIndexed { index, meaning ->
+                        InsightMeaningSection(
+                            index = index,
+                            meaning = meaning,
+                        )
+                    }
+
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = canApplyRefreshedInsights,
+                        onClick = onApplyRefreshedInsights,
+                    ) {
+                        if (isApplyingRefreshed) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text(text = "Applying...")
+                        } else {
+                            Text(text = "Use New Variant")
+                        }
+                    }
+                }
             }
         }
     }

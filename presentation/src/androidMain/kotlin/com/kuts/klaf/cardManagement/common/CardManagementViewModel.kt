@@ -172,10 +172,6 @@ abstract class CardManagementViewModel(
                 audioPlayer.play()
             }
 
-            ICardManagementAction.FetchGeminiInsightsClicked -> {
-                onGeminiInsightsClicked()
-            }
-
             ICardManagementAction.NativeWordFieldIconClicked -> {
                 autocompleteState.update { it.copy(isActive = false) }
                 nativeWordSuggestionsState.update { it.copy(isActive = !it.isActive) }
@@ -192,8 +188,6 @@ abstract class CardManagementViewModel(
     }
 
     abstract fun onCardManagementConfirmed()
-
-    protected open fun onGeminiInsightsClicked() = Unit
 
     private fun handleIpaTextFieldFocusChanged(
         action: ICardManagementAction.IpaTextFieldFocusChanged

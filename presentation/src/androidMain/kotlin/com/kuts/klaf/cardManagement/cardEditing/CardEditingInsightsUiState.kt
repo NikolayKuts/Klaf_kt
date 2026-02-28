@@ -14,6 +14,10 @@ data class CardEditingInsightsUiState(
     val meanings: List<WordMeaningItem> = emptyList(),
     val status: CardEditingInsightsStatus = CardEditingInsightsStatus.Idle,
     val errorMessage: String = "",
+    val refreshedMeanings: List<WordMeaningItem> = emptyList(),
+    val refreshedErrorMessage: String = "",
+    val isRefreshing: Boolean = false,
+    val isApplyingRefreshed: Boolean = false,
     val isSheetVisible: Boolean = false,
 ) {
     val hasData: Boolean
@@ -25,4 +29,17 @@ data class CardEditingInsightsUiState(
     val isExpandable: Boolean
         get() = status == CardEditingInsightsStatus.Success
             || status == CardEditingInsightsStatus.Error
+
+    val hasRefreshedData: Boolean
+        get() = refreshedMeanings.isNotEmpty()
+
+    val canRequestRefreshedInsights: Boolean
+        get() = status == CardEditingInsightsStatus.Success
+            && !isRefreshing
+            && !isApplyingRefreshed
+
+    val canApplyRefreshedInsights: Boolean
+        get() = hasRefreshedData
+            && !isRefreshing
+            && !isApplyingRefreshed
 }
