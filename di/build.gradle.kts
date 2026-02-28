@@ -21,14 +21,14 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(project(Modules.Domain))
+                implementation(project(Modules.Domain))
                 implementation(project(Modules.Data))
                 implementation(libs.koin.core)
             }
         }
         val androidMain by getting {
             dependencies {
-                api(project(Modules.Presentation))
+                implementation(project(Modules.Presentation))
 
                 implementation(libs.core.coroutines.core.jvm)
                 implementation(libs.work.manager)

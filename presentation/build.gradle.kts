@@ -34,8 +34,6 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(libs.core.android.ktx)
-                implementation(libs.core.app.compat)
-                implementation(libs.core.legacy.support)
                 implementation(libs.androidx.material3.android)
                 implementation(libs.core.coroutines.core.jvm)
 
@@ -51,19 +49,15 @@ kotlin {
                 implementation(libs.firebase.authentication)
 
                 implementation(platform("androidx.compose:compose-bom:${libs.versions.composeBom.get()}"))
-                implementation(libs.compose.compiler)
                 implementation(libs.compose.runtime)
                 implementation(libs.compose.ui)
                 implementation(libs.compose.foundation)
                 implementation(libs.compose.foundation.layout)
-                implementation(libs.compose.runtime.livedata)
                 implementation(libs.compose.ui.tooling)
                 implementation(libs.compose.activity)
                 implementation(libs.compose.ui.tooling.preview)
                 implementation(libs.compose.accompanist)
 
-                implementation(libs.kotlin.serilization)
-                implementation(libs.androidx.core.splashscreen)
                 implementation(libs.cambridge.dictionary.core)
                 implementation(libs.cambridge.dictionary.client)
                 implementation(libs.lokdroid)

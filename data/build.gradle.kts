@@ -35,11 +35,10 @@ kotlin {
         androidMain {
             dependencies {
                 implementation(libs.core.android.ktx)
-                implementation(libs.core.coroutines.core.jvm)
 
                 implementation(libs.lifecycle.livedata.ktx)
 
-                implementation(libs.koin.android)
+                implementation(libs.koin.core)
 
                 implementation(libs.firebase.rirestore.ktx)
                 implementation(libs.firebase.authentication)
@@ -51,7 +50,6 @@ kotlin {
                 implementation(libs.datastore.android)
 
                 implementation(libs.ktor.serialization.kotlinx.json)
-                implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.ktor.client.cio)
                 implementation(libs.ktor.client.content.negotiation)
