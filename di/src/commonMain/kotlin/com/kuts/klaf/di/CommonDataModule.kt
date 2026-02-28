@@ -20,6 +20,7 @@ import com.kuts.domain.useCases.FetchDeckRepetitionInfoUseCase
 import com.kuts.domain.useCases.FetchDeckSourceUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
+import com.kuts.domain.useCases.FetchWordMeaningInsightsUseCase
 import com.kuts.domain.useCases.RemoveDeckUseCase
 import com.kuts.domain.useCases.RenameDeckUseCase
 import com.kuts.domain.useCases.SaveCardRemotelyUseCase
@@ -174,6 +175,12 @@ private fun Module.commonUseCaseModule() {
     factory {
         FetchWordInfoUseCase(
             wordInfoRepository = get(),
+            coroutineContextProvider = get(),
+        )
+    }
+    factory {
+        FetchWordMeaningInsightsUseCase(
+            wordMeaningInsightsRepository = get(),
             coroutineContextProvider = get(),
         )
     }

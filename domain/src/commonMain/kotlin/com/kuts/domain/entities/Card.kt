@@ -9,5 +9,6 @@ data class Card(
     val nativeWord: String,
     val foreignWord: String,
     val ipa: List<IpaHolder>,
+    val wordMeaningInsights: WordMeaningInsights = WordMeaningInsights.EMPTY,
     val id: Int = 0
 )

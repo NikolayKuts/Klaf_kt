@@ -39,7 +39,11 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
+fun CardManagementScreen(
+    viewModel: BaseCardManagementViewModel,
+    showGeminiDebugButton: Boolean = false,
+    isCambridgeBottomSheetEnabled: Boolean = true,
+) {
     val deck = viewModel.deck.collectAsState(initial = null)
     val cardState by viewModel.cardManagementState.collectAsState()
     val letterInfos = cardState.letterInfos
@@ -67,7 +71,8 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
             autocompleteState = autocompleteState,
             pronunciationLoadingState = pronunciationLoadingState,
             nativeWordSuggestionsState = nativeWordSuggestionsState,
-            cambridgeDataAvailable = cambridgeDataState is ICambridgeDataState.Fetched,
+            cambridgeDataAvailable = isCambridgeBottomSheetEnabled
+                && cambridgeDataState is ICambridgeDataState.Fetched,
             ipaKeyboardState = ipaKeyboardState,
             onIpaTextFieldFocusChanged = { focusList ->
                 viewModel.sendAction(
@@ -120,6 +125,10 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
             onPronounceIconClick = {
                 viewModel.sendAction(action = ICardManagementAction.PronounceForeignWordClicked)
             },
+            showGeminiDebugButton = showGeminiDebugButton,
+            onGeminiDebugClick = {
+                viewModel.sendAction(action = ICardManagementAction.FetchGeminiInsightsClicked)
+            },
             onAutocompleteItemClick = { autocompleteWord ->
                 viewModel.sendAction(
                     action = ICardManagementAction.UpdateDataOnAutocompleteSelected(
@@ -142,11 +151,13 @@ fun CardManagementScreen(viewModel: BaseCardManagementViewModel) {
             }
         )
 
-        BottomSheet(
-            scaffoldState = scaffoldState,
-            showBottomSheetState = showBottomSheet,
-            cambridgeDataState = cambridgeDataState,
-        )
+        if (isCambridgeBottomSheetEnabled) {
+            BottomSheet(
+                scaffoldState = scaffoldState,
+                showBottomSheetState = showBottomSheet,
+                cambridgeDataState = cambridgeDataState,
+            )
+        }
     }
 }
 

@@ -44,6 +44,7 @@ class TransferCardsToDeckUseCase(
                             nativeWord = card.nativeWord,
                             foreignWord = card.foreignWord,
                             ipa = card.ipa,
+                            wordMeaningInsights = card.wordMeaningInsights,
                         )
                     }.onEach { (oldId, updatedCard) ->
                         launch { cardRepository.deleteCard(cardId = oldId) }

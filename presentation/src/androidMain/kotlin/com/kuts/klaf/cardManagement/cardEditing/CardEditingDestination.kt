@@ -4,7 +4,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
-import com.kuts.klaf.cardManagement.cardAddition.CardManagementScreen
 import com.kuts.klaf.cardManagement.common.CardManagementState
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
@@ -41,6 +40,6 @@ internal fun CardEditingDestination(
     }
 
     Surface {
-        CardManagementScreen(viewModel = viewModel)
+        CardEditingScreen(viewModel = viewModel)
     }
 }

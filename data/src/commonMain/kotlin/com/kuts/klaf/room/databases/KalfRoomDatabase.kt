@@ -20,7 +20,7 @@ import com.kuts.klaf.room.entities.RoomStorageSaveVersion
         RoomCard::class,
         RoomStorageSaveVersion::class
     ],
-    version = 4,
+    version = 6,
     exportSchema = true,
     autoMigrations = [AutoMigration(from = 1, to = 2)]
 )

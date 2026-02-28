@@ -45,6 +45,7 @@ fun RoomCard.toDomainEntity(): Card = Card(
     nativeWord = nativeWord,
     foreignWord = foreignWord,
     ipa = Json.decodeFromString(string = ipa),
+    wordMeaningInsights = wordMeaningInsights,
     id = id
 )
 
@@ -53,6 +54,7 @@ fun Card.toRoomEntity(): RoomCard = RoomCard(
     nativeWord = nativeWord,
     foreignWord = foreignWord,
     ipa = Json.encodeToString(value = ipa),
+    wordMeaningInsights = wordMeaningInsights,
     id = id
 )
 

@@ -27,6 +27,7 @@ import com.kuts.domain.repositories.IOldAppKlafDataTransferRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IWordAutocompleteRepository
 import com.kuts.domain.repositories.IWordInfoRepository
+import com.kuts.domain.repositories.IWordMeaningInsightsRepository
 import com.kuts.klaf.common.AppMaintenanceManager
 import com.kuts.klaf.common.AppReopeningWorker
 import com.kuts.klaf.common.CoroutineContextProvider
@@ -50,6 +51,8 @@ import com.kuts.klaf.firestore.repositoryImplementations.DeckRepositoryFirestore
 import com.kuts.klaf.firestore.repositoryImplementations.StorageSaveVersionRepositoryFirestore
 import com.kuts.klaf.firestore.repositoryImplementations.WordAutocompleteFirestore
 import com.kuts.klaf.networking.CardAudioPlayer
+import com.kuts.klaf.networking.gemini.GeminiHttpClientFactory
+import com.kuts.klaf.networking.gemini.GeminiWordMeaningInsightsProvider
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoProvider
 import com.kuts.klaf.room.databases.KlafRoomDatabase
@@ -112,6 +115,11 @@ private fun Module.androidRepositoryModule() {
             client = YandexSecureHttpClientFactory(
                 context = androidContext(),
             ).create(),
+        )
+    }
+    single<IWordMeaningInsightsRepository> {
+        GeminiWordMeaningInsightsProvider(
+            client = GeminiHttpClientFactory().create(),
         )
     }
     single<IOldAppKlafDataTransferRepository> {
