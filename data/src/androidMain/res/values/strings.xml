@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">Klaf</string>
+
+    <string name="year_pointer">%dy</string>
+    <string name="month_pointer">%dm</string>
+    <string name="week_pointer">%dw</string>
+    <string name="day_pointer">%dd</string>
+    <string name="hour_pointer">%dh</string>
+    <string name="minute_pointer">%dmin</string>
+
+    <string name="year">year</string>
+    <string name="month">month</string>
+    <string name="week">week</string>
+    <string name="day">day</string>
+    <string name="hour">hour</string>
+    <string name="minute">minute</string>
+
+    <string name="time_pointer_now">now</string>
+    <string name="unassigned_string_value">---</string>
+    <string name="deck_repetition_mark_successful">successful</string>
+    <string name="deck_repetition_mark_failed">failed</string>
+
+    <string name="app_restart_notification_template">App restarting</string>
+    <string name="data_synchronization_notifier_content_text">Local and remote data synchronization</string>
+
+    <string name="deck_repetition_channel_description">Notify when the decks should be repeated</string>
+    <string name="deck_repetition_notification_template">It is time to repeat the deck "%s"</string>
+    <string name="deck_repetition_common_notification_template">Some decks require repetition</string>
+    <string name="deck_repetition_summery_notification_content_text">There are some decks to repeat</string>
+    <string name="deck_repetition_summery_notification_big_content_title">%d notifications</string>
+    <string name="deck_repetition_summery_notification_summery_text">It\'s time to repeat %d decks</string>
+
+    <string name="work_logic_notification_channel_description">This channel is necessary for the correct work of the application and for data synchronization. For predictable behavior of the application, the channel must be enabled.</string>
+</resources>

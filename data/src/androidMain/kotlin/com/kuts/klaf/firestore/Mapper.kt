@@ -1,0 +1,72 @@
+package com.kuts.klaf.firestore
+
+import com.kuts.klaf.firestore.entities.FirestoreAutocompleteWord
+import com.kuts.klaf.firestore.entities.FirestoreCard
+import com.kuts.klaf.firestore.entities.FirestoreDeck
+import com.kuts.klaf.firestore.entities.FirestoreStorageSaveVersion
+import com.kuts.domain.entities.AutocompleteWord
+import com.kuts.domain.entities.Card
+import com.kuts.domain.entities.Deck
+import com.kuts.domain.entities.StorageSaveVersion
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+
+fun FirestoreDeck.toDomainEntity(): Deck = Deck(
+    name = name,
+    creationDate = creationDate,
+    reviewPassDates = repetitionIterationDates,
+    scheduledReviewDates = scheduledIterationDates,
+    scheduledDateInterval = scheduledDateInterval,
+    reviewCount = repetitionQuantity,
+    cardQuantity = cardQuantity,
+    lastFirstReviewDuration = lastFirstRepetitionDuration,
+    lastSecondReviewDuration = lastSecondRepetitionDuration,
+    lastReviewPassDuration = lastRepetitionIterationDuration,
+    isLastPassSucceeded = isLastIterationSucceeded,
+    id = id
+)
+
+fun Deck.toFirestoreEntity(): FirestoreDeck = FirestoreDeck(
+    name = name,
+    creationDate = creationDate,
+    repetitionIterationDates = reviewPassDates,
+    scheduledIterationDates = scheduledReviewDates,
+    scheduledDateInterval = scheduledDateInterval,
+    repetitionQuantity = reviewCount,
+    cardQuantity = cardQuantity,
+    lastFirstRepetitionDuration = lastFirstReviewDuration,
+    lastSecondRepetitionDuration = lastSecondReviewDuration,
+    lastRepetitionIterationDuration = lastReviewPassDuration,
+    isLastIterationSucceeded = isLastPassSucceeded,
+    id = id
+)
+
+fun FirestoreCard.toDomainEntity(): Card = Card(
+    deckId = deckId,
+    nativeWord = nativeWord,
+    foreignWord = foreignWord,
+    ipa = Json.decodeFromString(string = ipa),
+    id = id
+)
+
+fun Card.toFirestoreEntity(): FirestoreCard = FirestoreCard(
+    deckId = deckId,
+    nativeWord = nativeWord,
+    foreignWord = foreignWord,
+    ipa = Json.encodeToString(value = ipa),
+    id = id
+)
+
+fun FirestoreStorageSaveVersion.toDomainEntity(): StorageSaveVersion = StorageSaveVersion(
+    version = version
+)
+
+fun StorageSaveVersion.toFirestoreEntity(): FirestoreStorageSaveVersion {
+    return FirestoreStorageSaveVersion(
+        version = version
+    )
+}
+
+fun FirestoreAutocompleteWord.toDomainEntity(): AutocompleteWord = AutocompleteWord(
+    value = word
+)

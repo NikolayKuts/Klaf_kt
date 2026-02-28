@@ -1,29 +1,50 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
-    id("java-library")
-    id("org.jetbrains.kotlin.jvm")
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.android.serialization)
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+kotlin {
+    jvmToolchain(17)
+
+    androidTarget {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${libs.versions.coroutinesCoreJvm.get()}")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+                implementation(libs.kotlin.serilization)
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation(libs.tests.kotlin)
+                implementation(libs.tests.coroutine)
+            }
+        }
+    }
 }
 
-dependencies {
+android {
+    namespace = "com.kuts.domain"
+    compileSdk = libs.versions.androidCompileSdk.get().toInt()
 
-    /** Core **/
-    implementation(libs.core.coroutines.core.jvm)
-    implementation(libs.core.javax.inject)
+    defaultConfig {
+        minSdk = libs.versions.androidMinSdk.get().toInt()
+    }
 
-    /** Tests **/
-    testImplementation(libs.tests.junit.core)
-    testImplementation(libs.tests.kotlin)
-    testImplementation(libs.tests.coroutine)
-
-    /** Kotlin Serialization **/
-    implementation(libs.kotlin.serilization)
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions { jvmTarget = "17" }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 }

@@ -1,7 +1,6 @@
 [versions] # =======================================================================================
 kotlinCompilerExtension = "1.5.9"
 googleServices = "4.4.2"
-navigationSafeArgsKotlinPlugin = "2.5.0"
 agp = "8.12.0"
 kotlin = "2.2.20"
 firevaseCrashlyticsPlugin = "3.0.2"
@@ -25,9 +24,6 @@ workManager = "2.9.0"
 androidxCore = "1.13.1"
 androidxAppCompat = "1.7.0"
 androidxLegacySupport = "1.0.0"
-androidxConstraintLayout = "2.1.4"
-androidxFragmentKtx = "1.8.1"
-material = "1.12.0"
 coroutinesCoreJvm = "1.7.3"
 javaxInject = "1"
 
@@ -40,30 +36,31 @@ coroutineTest = "1.6.4"
 turbine = "0.10.0"
 
 # Navigation #
-navigationCore = "2.7.7"
+navigationCore = "2.9.6"
 
 # Room #
-roomCore = "2.6.1"
+roomCore = "2.8.4"
+roomPlugin = "2.8.4"
+sqliteBundled = "2.6.2"
 
 # Lifecycle #
 lifecycle = "2.8.3"
 
-# Hilt #
-hiltAndroid = "2.57.2"
-hiltDaggerCompiler = "2.57.2"
-hiltAndroidCompiler = "1.3.0"
-hiltWork = "1.3.0"
+# Koin #
+koin = "3.5.6"
 
 # Firebase #
 firebaseBom = "33.1.2"
 firebaseCoroutinePlayServices = "1.7.3"
+firebaseFirestoreKtx = "25.0.0"
+firebaseAuthenticationKtx = "23.0.0"
+firebaseCrashlyticsKtx = "19.0.3"
 
 # Compose #
 composeBom = "2024.06.00"
 composeComiler = "1.5.14"
-composeConstraintLayout = "1.0.1"
-compseThemeAdapter = "1.2.1"
 compseAccompanist = "0.19.0"
+composeMultiplatform = "1.10.1"
 
 # LoKdroid #
 lokdroid = "0.0.4-alpha"
@@ -88,9 +85,7 @@ core-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", v
 core-android-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
 core-app-compat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppCompat" }
 core-legacy-support = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "androidxLegacySupport" }
-core-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidxConstraintLayout" }
-core-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidxFragmentKtx" }
-core-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+core-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutinesCoreJvm" }
 core-coroutines-core-jvm = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core-jvm", version.ref = "coroutinesCoreJvm" }
 core-javax-inject = { group = "javax.inject", name = "javax.inject", version.ref = "javaxInject" }
 
@@ -104,33 +99,32 @@ tests-kotlin = { group = "org.jetbrains.kotlin", name = "kotlin-test" }
 tests-turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
 # Navigation
-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationCore" }
-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationCore" }
-navigation-dynamic-features-fragment = { group = "androidx.navigation", name = "navigation-dynamic-features-fragment", version.ref = "navigationCore" }
+navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCore" }
 
 # Room #
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomCore" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomCore" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCore" }
+sqlite-bundled = { group = "androidx.sqlite", name = "sqlite-bundled", version.ref = "sqliteBundled" }
 
 # Lifecycle #
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
 lifecycle-viewmodel-savedstate = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-savedstate", version.ref = "lifecycle" }
 
-# Hilt #
-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hiltAndroid" }
-hilt-dagger-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hiltDaggerCompiler" }
-hilt-android-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltAndroidCompiler" }
-hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltWork" }
+# Koin #
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-androidx-workmanager = { group = "io.insert-koin", name = "koin-androidx-workmanager", version.ref = "koin" }
+koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
 
 # Firebase #
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-coroutine-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "firebaseCoroutinePlayServices" }
 firebase-analytics-kts = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
-firebase-rirestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
-firebase-authentication = { group = "com.google.firebase", name = "firebase-auth-ktx" }
-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
+firebase-rirestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
+firebase-authentication = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthenticationKtx" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx", version.ref = "firebaseCrashlyticsKtx" }
 
 # Compose #
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
@@ -140,12 +134,10 @@ compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 compose-ui = { group = "androidx.compose.ui", name = "ui" }
 compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout" }
-compose-material = { group = "androidx.compose.material", name = "material" }
+compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-compose-constraintLayout = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "composeConstraintLayout" }
-compose-theme-adapter = { group = "com.google.android.material", name = "compose-theme-adapter", version.ref = "compseThemeAdapter" }
 compose-accompanist = { group = "com.google.accompanist", name = "accompanist-swiperefresh", version.ref = "compseAccompanist" }
 
 # Work Manager #
@@ -189,17 +181,19 @@ ktor = ["ktor-client-okhttp", "ktor-client-core", "ktor-client-cio", "ktor-clien
 android-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerializationPlugin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-navigation-safeargs-kotlin = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigationSafeArgsKotlinPlugin" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firevaseCrashlyticsPlugin" }
-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hiltAndroid" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 telegramAppDistribution = { id = "telegram-app-distribution-plugin" }
 kotlin-parcelize = { id = "kotlin-parcelize" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
 # Compose
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 # Kmp
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
+# Room
+room = { id = "androidx.room", version.ref = "roomPlugin" }

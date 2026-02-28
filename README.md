@@ -21,7 +21,7 @@ The application allows you to create cards with the automatic creation of a tran
 * Crashlytics - [_**Firebase Crashlytics SDK**_](https://firebase.google.com/docs/crashlytics)
 * For asynchronous operations used [_**Coroutines**_](https://kotlinlang.org/docs/coroutines-overview.html) and [_**Coroutine flows**_](https://developer.android.com/kotlin/flow)
 * For Ui navigation used [_**Navigation component**_](https://developer.android.com/guide/navigation?gclid=Cj0KCQiA4aacBhCUARIsAI55maG6BEZpROClIXY-7nAHZaGsZe5It8jIBKkVyNfObruJf3uzhwVOVTwaAhXsEALw_wcB&gclsrc=aw.ds)
-* For dependency injection used [_**Hilt**_](https://dagger.dev/hilt/)
+* For dependency injection used [_**Koin**_](https://insert-koin.io/)
 * For Ui used [_**Jetpack Compose**_](https://developer.android.com/jetpack/compose?gclid=Cj0KCQiA4aacBhCUARIsAI55maGeOQkxRqFdEewf0v20hNqbvNWxj42X_bppURJRlGg6UtpjDgiM0JgaAoiVEALw_wcB&gclsrc=aw.ds) and [_**XML**_](https://developer.android.com/develop/ui/views/layout/declaring-layout)
 * For scheduling work used [_**Work Manager**_](https://developer.android.com/topic/libraries/architecture/workmanager?gclid=Cj0KCQiA4aacBhCUARIsAI55maFaZUX1X7MJBVufx-d4U0v-21CXkeivW3igzDQe5cXozmLN4wKd60MaAh_QEALw_wcB&gclsrc=aw.ds)
 * For testing used [_**MockK**_](https://mockk.io/) and [_**JUnit4**_](https://junit.org/junit4/)
@@ -76,5 +76,4 @@ https://github.com/NikolayKuts/Klaf
 
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/card_transferring_fragment_dark_theme.JPEG)
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/deck_choosing_dialog_light_theme.jpg)
-
 
