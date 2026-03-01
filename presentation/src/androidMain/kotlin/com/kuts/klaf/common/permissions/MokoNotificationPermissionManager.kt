@@ -3,11 +3,7 @@ package com.kuts.klaf.common.permissions
 import android.content.Context
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStoreFile
-import com.kuts.klaf.common.booleanPreference
+import com.kuts.klaf.common.localStore.AppLocalStore
 import com.lib.lokdroid.core.logE
 import dev.icerock.moko.permissions.DeniedAlwaysException
 import dev.icerock.moko.permissions.DeniedException
@@ -18,18 +14,12 @@ import dev.icerock.moko.permissions.notifications.REMOTE_NOTIFICATION
 
 class MokoNotificationPermissionManager(
     context: Context,
+    private val appLocalStore: AppLocalStore,
 ) : INotificationPermissionManager, INotificationPermissionBinder {
 
     private val appContext = context.applicationContext
     private val permissionsController = PermissionsController(
         applicationContext = appContext,
-    )
-    private val permissionStateStorage: DataStore<Preferences> = PreferenceDataStoreFactory.create(
-        produceFile = { appContext.preferencesDataStoreFile(PERMISSION_STORAGE_NAME) },
-    )
-    private val permissionRequestedOnce by permissionStateStorage.booleanPreference(
-        keyName = KEY_PERMISSION_REQUESTED_ONCE,
-        defaultValue = false,
     )
 
     override fun bind(activity: AppCompatActivity) {
@@ -82,16 +72,11 @@ class MokoNotificationPermissionManager(
         permissionsController.openAppSettings()
     }
 
-    private suspend fun wasPermissionRequestedOnce(): Boolean {
-        return permissionRequestedOnce.get()
+    private fun wasPermissionRequestedOnce(): Boolean {
+        return appLocalStore.notificationPermissionRequestedOnce
     }
 
-    private suspend fun markPermissionRequestedOnce() {
-        permissionRequestedOnce.set(true)
-    }
-
-    private companion object {
-        private const val PERMISSION_STORAGE_NAME = "notification_permission_state"
-        private const val KEY_PERMISSION_REQUESTED_ONCE = "notification_permission_requested_once"
+    private fun markPermissionRequestedOnce() {
+        appLocalStore.notificationPermissionRequestedOnce = true
     }
 }

@@ -33,6 +33,7 @@ kotlin {
                 implementation(libs.core.coroutines.core.jvm)
                 implementation(libs.work.manager)
                 implementation(libs.datastore.android)
+                implementation(libs.datastore.preferences.android)
                 implementation(libs.room.runtime)
                 implementation(libs.ktor.client.core)
 

@@ -1,5 +1,7 @@
 package com.kuts.klaf.di
 
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.preferencesDataStoreFile
 import com.kuts.domain.managers.IDeckReviewNotifierManager
 import com.kuts.klaf.authentication.AuthenticationViewModel
 import com.kuts.klaf.authentication.BaseAuthenticationViewModel
@@ -9,6 +11,7 @@ import com.kuts.klaf.cardTransferring.common.BaseCardTransferringViewModel
 import com.kuts.klaf.cardTransferring.common.CardTransferringViewModel
 import com.kuts.klaf.cardViewing.CardViewingViewModel
 import com.kuts.klaf.common.RepetitionTimer
+import com.kuts.klaf.common.localStore.AppLocalStore
 import com.kuts.klaf.common.notifications.DeckReviewNotifier
 import com.kuts.klaf.common.permissions.INotificationPermissionBinder
 import com.kuts.klaf.common.permissions.INotificationPermissionManager
@@ -34,7 +37,16 @@ internal val presentationModule = module {
         )
     }
     single<IDeckReviewNotifierManager> { get<DeckReviewNotifier>() }
-    single { MokoNotificationPermissionManager(context = androidContext()) }
+    single {
+        AppLocalStore(
+            dataStore = PreferenceDataStoreFactory.create(
+                produceFile = {
+                    androidContext().preferencesDataStoreFile(AppLocalStore.DATA_STORE_NAME)
+                },
+            ),
+        )
+    }
+    single { MokoNotificationPermissionManager(context = androidContext(), appLocalStore = get()) }
     single<INotificationPermissionManager> { get<MokoNotificationPermissionManager>() }
     single<INotificationPermissionBinder> { get<MokoNotificationPermissionManager>() }
     viewModels()

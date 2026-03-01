@@ -27,6 +27,7 @@ kotlin {
                 implementation(project(Modules.Domain))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${libs.versions.coroutinesCoreJvm.get()}")
                 implementation(libs.kotlin.serilization)
+                implementation(libs.datastore.core)
                 implementation(libs.ktor.client.core)
                 implementation(libs.room.runtime)
                 implementation(libs.sqlite.bundled)
@@ -46,8 +47,6 @@ kotlin {
                 implementation(libs.firebase.crashlytics)
 
                 implementation(libs.work.manager)
-
-                implementation(libs.datastore.android)
 
                 implementation(libs.ktor.serialization.kotlinx.json)
                 implementation(libs.ktor.client.okhttp)

@@ -33,7 +33,6 @@ fun NotificationPermissionDialogs(
 
     LaunchedEffect(key1 = shouldCheckPermission) {
         if (shouldCheckPermission) {
-            onPermissionCheckConsumed()
             when (permissionManager.getPermissionState()) {
                 NotificationPermissionState.GRANTED -> {
                     showRequestDialog = false
@@ -52,6 +51,8 @@ fun NotificationPermissionDialogs(
                     showSettingsDialog = false
                 }
             }
+
+            onPermissionCheckConsumed()
         }
     }
 

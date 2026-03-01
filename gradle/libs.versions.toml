@@ -155,6 +155,8 @@ kotlin-serilization = { group = "org.jetbrains.kotlinx", name = "kotlinx-seriali
 
 # DataStore #
 datastore-android = { group = "androidx.datastore", name = "datastore", version.ref = "dataStore" }
+datastore-core = { group = "androidx.datastore", name = "datastore-core", version.ref = "dataStore" }
+datastore-preferences-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "dataStore" }
 datastore-preferences-android = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "dataStore" }
 
 # Ktor #
