@@ -112,9 +112,7 @@ private fun Module.androidRepositoryModule() {
     }
     single<IWordInfoRepository> {
         YandexWordInfoProvider(
-            client = YandexSecureHttpClientFactory(
-                context = androidContext(),
-            ).create(),
+            client = YandexSecureHttpClientFactory().create(),
         )
     }
     single<IWordMeaningInsightsRepository> {

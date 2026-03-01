@@ -76,7 +76,8 @@ abstract class CardManagementViewModel(
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
-        .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+        .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
+            logE("Failed to fetch deck for card management\n${throwable.stackTraceToString()}")
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
         }.shareIn(
             scope = viewModelScope,
@@ -432,6 +433,7 @@ abstract class CardManagementViewModel(
     }
 
     private fun handleWordInfoError(loadingState: LoadingState.Error<IWordInfoRepository.IWordInfoLoadingError>) {
+        logE("fetchWordInfo() returned error state: ${loadingState.value}")
         val errorMessageId = when (loadingState.value) {
             IWordInfoLoadingError.Common,
             IWordInfoLoadingError.JsonConvert -> {

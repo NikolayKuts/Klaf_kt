@@ -1,30 +1,23 @@
 package com.kuts.klaf.networking.yandexApi
 
-import android.content.Context
-import com.kuts.klaf.data.R
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import java.security.KeyStore
-import java.security.cert.CertificateFactory
-import javax.net.ssl.TrustManagerFactory
-import javax.net.ssl.X509TrustManager
 
-class YandexSecureHttpClientFactory(
-    private val context: Context,
-) {
+class YandexSecureHttpClientFactory {
 
     companion object {
 
-        private const val TIMEOUT = 10_000L
-        private const val YANDEX_CERTIFICATE_ALIAS = "yandex_certificate_alias"
-        private const val CERTIFICATE_FACTORY_TYPE = "X.509"
+        private const val REQUEST_TIMEOUT = 10_000L
+        private const val CONNECT_TIMEOUT = 10_000L
+        private const val SOCKET_TIMEOUT = 10_000L
     }
 
     fun create(): HttpClient {
-        return HttpClient(CIO) {
+        return HttpClient(OkHttp) {
             install(ContentNegotiation) {
                 json(
                     Json {
@@ -34,36 +27,11 @@ class YandexSecureHttpClientFactory(
                     }
                 )
             }
-            engine {
-                requestTimeout = TIMEOUT
-                https {
-                    trustManager = createTrustManager(context = context)
-                }
+            install(HttpTimeout) {
+                requestTimeoutMillis = REQUEST_TIMEOUT
+                connectTimeoutMillis = CONNECT_TIMEOUT
+                socketTimeoutMillis = SOCKET_TIMEOUT
             }
         }
-    }
-
-    private fun createTrustManager(context: Context): X509TrustManager {
-        val keyStore = KeyStore.getInstance(KeyStore.getDefaultType()).apply {
-            val certificateFactory = context.resources
-                .openRawResource(R.raw.yandex_dictionary_api_cert)
-                .use { certInputStream ->
-                    CertificateFactory.getInstance(CERTIFICATE_FACTORY_TYPE)
-                        .generateCertificate(certInputStream)
-                }
-
-            load(null, null)
-            setCertificateEntry(
-                YANDEX_CERTIFICATE_ALIAS,
-                certificateFactory,
-            )
-        }
-
-        val trustManagerFactory = TrustManagerFactory.getInstance(
-            TrustManagerFactory.getDefaultAlgorithm(),
-        ).apply { init(keyStore) }
-
-        val trustManagers = trustManagerFactory.trustManagers
-        return trustManagers.first() as X509TrustManager
     }
 }

@@ -26,7 +26,7 @@ import com.kuts.klaf.cardManagement.common.toTextFieldValueIpaHolder
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
 import com.lib.lokdroid.core.logD
-import com.lib.lokdroid.core.logW
+import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -100,16 +100,17 @@ class CardEditingViewModel(
             eventMessage.tryEmitAsNegative(resId = R.string.native_and_foreign_words_must_be_filled)
         } else {
             val isForeignWordChanged = foreignWord != originalCard.foreignWord
+            val insightsForSaving = resolveInsightsForSaving(
+                originalCard = originalCard,
+                foreignWord = foreignWord,
+                isForeignWordChanged = isForeignWordChanged,
+            )
             val updatedCard = originalCard.copy(
                 deckId = deckId,
                 nativeWord = nativeWord,
                 foreignWord = foreignWord,
                 ipa = trimmedTextFieldValueIpaHoldersState.map { it.toDomainEntity() },
-                wordMeaningInsights = if (isForeignWordChanged) {
-                    WordMeaningInsights.EMPTY
-                } else {
-                    originalCard.wordMeaningInsights
-                },
+                wordMeaningInsights = insightsForSaving,
             )
 
             when {
@@ -143,8 +144,7 @@ class CardEditingViewModel(
     }
 
     fun requestRefreshedInsights() {
-        val card = originalCardState.value ?: return
-        val foreignWord = card.foreignWord.trim()
+        val foreignWord = cardManagementState.value.foreignWordFieldValue.text.trim()
 
         if (foreignWord.isEmpty()) return
         if (!_insightsUiState.value.canRequestRefreshedInsights) return
@@ -168,20 +168,18 @@ class CardEditingViewModel(
 
             _insightsUiState.update { state ->
                 state.copy(
-                    word = refreshedInsights.word.ifBlank { state.word },
                     refreshedMeanings = refreshedMeanings,
                     refreshedErrorMessage = "",
                     isRefreshing = false,
                 )
             }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-            logW(throwable.stackTraceToString())
+            logE("Failed to refresh insights\n${throwable.stackTraceToString()}")
             setRefreshedInsightsError(errorMessage = throwable.toInsightsErrorMessage())
         }
     }
 
     fun applyRefreshedInsights() {
-        val sourceCard = originalCardState.value ?: return
         val refreshedMeanings = _insightsUiState.value.refreshedMeanings
 
         if (refreshedMeanings.isEmpty()) {
@@ -189,35 +187,29 @@ class CardEditingViewModel(
             return
         }
 
+        val currentForeignWord = cardManagementState.value.foreignWordFieldValue.text.trim()
+        val candidateInsights = sanitizeInsights(
+            insights = WordMeaningInsights(
+                word = currentForeignWord.ifBlank { _insightsUiState.value.word },
+                meanings = refreshedMeanings,
+            ),
+        )
+
         _insightsUiState.update { state ->
             state.copy(
-                isApplyingRefreshed = true,
+                word = candidateInsights.word.ifBlank { state.word },
+                meanings = candidateInsights.meanings,
+                status = if (candidateInsights.meanings.isNotEmpty()) {
+                    CardEditingInsightsStatus.Success
+                } else {
+                    CardEditingInsightsStatus.Idle
+                },
+                refreshedMeanings = emptyList(),
                 refreshedErrorMessage = "",
+                isRefreshing = false,
+                isApplyingRefreshed = false,
+                isSheetVisible = state.isSheetVisible && candidateInsights.meanings.isNotEmpty(),
             )
-        }
-
-        viewModelScope.launchWithState(Dispatchers.IO) {
-            val latestCard = fetchCard(cardId = sourceCard.id).firstOrNull() ?: sourceCard
-            val stateSnapshot = _insightsUiState.value
-            val refreshedInsights = latestCard.wordMeaningInsights.copy(
-                word = stateSnapshot.word.ifBlank { latestCard.foreignWord.trim() },
-                meanings = refreshedMeanings,
-            )
-            val sanitizedInsights = sanitizeInsights(insights = refreshedInsights)
-            val updatedCard = latestCard.copy(wordMeaningInsights = sanitizedInsights)
-
-            updateCard.invoke(newCard = updatedCard)
-            originalCardState.value = updatedCard
-            updateInsightsUiState(insights = updatedCard.wordMeaningInsights)
-            eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_changed)
-        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-            logW(throwable.stackTraceToString())
-            _insightsUiState.update { state ->
-                state.copy(
-                    isApplyingRefreshed = false,
-                    refreshedErrorMessage = throwable.toInsightsErrorMessage(),
-                )
-            }
         }
     }
 
@@ -226,7 +218,8 @@ class CardEditingViewModel(
 
         viewModelScope.launchWithState {
             fetchCard(cardId = cardId)
-                .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+                .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
+                    logE("Failed to fetch card flow for editing\n${throwable.stackTraceToString()}")
                     eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_card)
                 }.firstOrNull()
                 ?.let { card: Card? ->
@@ -252,7 +245,7 @@ class CardEditingViewModel(
                     }
                 } ?: setInsightsIdle()
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-            logW(throwable.stackTraceToString())
+            logE("Failed to fetch card for editing\n${throwable.stackTraceToString()}")
             setInsightsIdle()
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_card)
         }
@@ -300,7 +293,7 @@ class CardEditingViewModel(
 
             logD("Gemini insights were auto-saved for cardId=${card.id}, foreignWord=$foreignWord")
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-            logW(throwable.stackTraceToString())
+            logE("Failed to auto-load Gemini insights\n${throwable.stackTraceToString()}")
             setInsightsError(word = foreignWord, throwable = throwable)
         }
     }
@@ -330,9 +323,34 @@ class CardEditingViewModel(
                     )
                 }
             }
-        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
+            logE("Failed to update card\n${throwable.stackTraceToString()}")
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_updating_card)
         }
+    }
+
+    private fun resolveInsightsForSaving(
+        originalCard: Card,
+        foreignWord: String,
+        isForeignWordChanged: Boolean,
+    ): WordMeaningInsights {
+        val uiState = _insightsUiState.value
+        val candidateInsights = sanitizeInsights(
+            insights = WordMeaningInsights(
+                word = uiState.word.ifBlank { foreignWord.trim() },
+                meanings = uiState.meanings,
+            ),
+        )
+        val isCandidateForCurrentWord =
+            candidateInsights.hasData() && candidateInsights.word.toWordKey() == foreignWord.toWordKey()
+
+        if (isForeignWordChanged && !isCandidateForCurrentWord) {
+            return WordMeaningInsights.EMPTY
+        }
+        if (isCandidateForCurrentWord) {
+            return candidateInsights
+        }
+        return originalCard.wordMeaningInsights
     }
 
     private suspend fun performUpdatingCard(updatedCard: Card) {

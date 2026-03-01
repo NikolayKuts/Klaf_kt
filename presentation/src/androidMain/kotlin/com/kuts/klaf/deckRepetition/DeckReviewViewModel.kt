@@ -99,7 +99,8 @@ class DeckReviewViewModel(
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
-        .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+        .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
+            logE("Failed to fetch deck for repetition\n${throwable.stackTraceToString()}")
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
         }.shareIn(
             scope = viewModelScope,
@@ -117,7 +118,8 @@ class DeckReviewViewModel(
     override val cardDeletingState = handleDelegates.cardDeletingState
 
     private val cardsSource: SharedFlow<List<Card>> = fetchCards(deckId)
-        .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+        .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
+            logE("Failed to fetch cards source for repetition\n${throwable.stackTraceToString()}")
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
         }.shareIn(
             scope = viewModelScope,
@@ -272,6 +274,7 @@ class DeckReviewViewModel(
             eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_deleted)
             cardDeletingState.value = LoadingState.Success(data = UnitSurrogate)
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, t ->
+            logE("Failed to delete card during review\n${t.stackTraceToString()}")
             cardDeletingState.value = LoadingState.Non
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_removing_card)
         }
@@ -323,7 +326,8 @@ class DeckReviewViewModel(
     private fun observeCardSource() {
         var isFirstEmissionAfterRestore = cardsToReview.value.isNotEmpty()
 
-        cardsSource.catchWithCrashlyticsReport(crashlytics = crashlytics) {
+        cardsSource.catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
+            logE("Failed to observe cards source during repetition\n${throwable.stackTraceToString()}")
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
         }.onEach { receivedCards ->
             val currentScreenState = screenState.replayCache.firstOrNull() ?: return@onEach
@@ -348,7 +352,8 @@ class DeckReviewViewModel(
     private fun observeCurrentCard() {
         currentCard.filterNotNull()
             .onEach { card -> audioPlayer.preparePronunciation(word = card.foreignWord) }
-            .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+            .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
+                logE("Failed to observe current card during repetition\n${throwable.stackTraceToString()}")
                 eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_card)
             }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
     }
@@ -550,7 +555,8 @@ class DeckReviewViewModel(
 
             screenState.emit(FinishState(repetitionInfoEvent = infoEvent))
             resetScreenState()
-        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
+            logE("Failed to finish repetition flow\n${throwable.stackTraceToString()}")
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_updating_deck)
         }
     }

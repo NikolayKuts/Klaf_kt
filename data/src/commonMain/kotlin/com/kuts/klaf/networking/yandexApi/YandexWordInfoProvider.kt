@@ -41,6 +41,7 @@ class YandexWordInfoProvider(
         val wordInfo = client.get(url).body<YandexWordInfo>().toDomainEntity()
         emit(value = LoadingState.Success(data = wordInfo))
     }.catch { throwable ->
+        print("---> YandexWordInfoProvider ${throwable.stackTraceToString()}")
         when (throwable) {
             is SerializationException -> {
                 emit(value = LoadingState.Error(value = IWordInfoLoadingError.JsonConvert))

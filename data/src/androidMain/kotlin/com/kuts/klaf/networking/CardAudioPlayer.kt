@@ -13,6 +13,7 @@ import com.kuts.domain.common.ifTrue
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.lib.lokdroid.core.logD
+import com.lib.lokdroid.core.logE
 import com.lib.lokdroid.core.logW
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -115,7 +116,8 @@ class CardAudioPlayer(
         if (word.isNotEmpty()) {
             preparingJob = coroutineScope?.launchWithState {
                 startPronunciationPreparing(word = word)
-            }?.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+            }?.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
+                logE("Failed to prepare pronunciation\n${throwable.stackTraceToString()}")
                 mediaPlayer?.reset()
                 _loadingState.value = LoadingState.Non
             }
@@ -137,7 +139,8 @@ class CardAudioPlayer(
 
             preparingJob = coroutineScope?.launchWithState {
                 startPronunciationPreparing(word = word)
-            }?.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+            }?.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
+                logE("Failed to prepare and play pronunciation\n${throwable.stackTraceToString()}")
                 onPronunciationPrepared = null
                 mediaPlayer?.reset()
                 _loadingState.value = LoadingState.Non

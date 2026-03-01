@@ -46,7 +46,8 @@ class DeckManagementViewModel(
 
     private fun subscribeToDeckUpdates() {
         fetchDeckById(deckId = deckId)
-            .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+            .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
+                logE("Failed to fetch deck for management\n${throwable.stackTraceToString()}")
                 eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
             }.onEach { receivedDeck ->
                 logE("receivedDeck: $receivedDeck")

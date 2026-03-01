@@ -22,6 +22,7 @@ import com.kuts.klaf.cardManagement.common.toDomainEntity
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
 import com.lib.lokdroid.core.logD
+import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
 
 class CardAdditionViewModel(
@@ -95,7 +96,8 @@ class CardAdditionViewModel(
                         args = arrayOf(foreignWord, deckNamesAsString),
                     )
                 }
-            }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+            }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
+                logE("Failed to add card\n${throwable.stackTraceToString()}")
                 eventMessage.tryEmitAsNegative(resId = R.string.exception_adding_card)
             }
         }

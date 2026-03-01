@@ -53,7 +53,10 @@ class DeckListViewModel(
         MutableStateFlow<IDataSynchronizationState>(Initial)
 
     override val deckSource: StateFlow<List<Deck>?> = (fetchDeckSource() as Flow<List<Deck>?>)
-        .catchWithCrashlyticsReport(crashlytics = crashlytics) { this.emit(value = null) }
+        .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
+            logE("Failed to fetch deck source\n${throwable.stackTraceToString()}")
+            this.emit(value = null)
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -84,7 +87,10 @@ class DeckListViewModel(
     init {
         appMaintenanceManager.initialize()
         viewModelScope.launchWithState { createInterimDeck() }
-            .onException { _, throwable -> crashlytics.report(exception = throwable) }
+            .onException { _, throwable ->
+                logE("Failed to create interim deck\n${throwable.stackTraceToString()}")
+                crashlytics.report(exception = throwable)
+            }
         observeDataSynchronizationStateWorker()
 //        appMaintenanceManager.scheduleDeckRepetitionChecking()
         observeAuthenticationState()
@@ -150,7 +156,8 @@ class DeckListViewModel(
                         renameDeck(oldDeck = deck, name = updatedName)
                         eventMessage.tryEmitAsPositive(resId = R.string.deck_has_been_renamed)
                         emitNavigationEvent(value = ToPrevious)
-                    }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+                    }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
+                        logE("Failed to rename deck\n${throwable.stackTraceToString()}")
                         eventMessage.tryEmitAsPositive(resId = R.string.problem_with_renaming_deck)
                     }
                 }
@@ -163,7 +170,8 @@ class DeckListViewModel(
             removeDeck(deckId = deckId)
             eventMessage.tryEmitAsPositive(resId = R.string.the_deck_has_been_removed)
             emitNavigationEvent(value = ToPrevious)
-        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
+            logE("Failed to delete deck\n${throwable.stackTraceToString()}")
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_removing_deck)
         }
     }
@@ -246,6 +254,7 @@ class DeckListViewModel(
                 }
 
                 is LoadingState.Error -> {
+                    logE("Logout failed with state error: ${loadingState.value}")
                     eventMessage.tryEmitAsNegative(resId = R.string.log_out_failure_message)
                 }
 
@@ -267,6 +276,7 @@ class DeckListViewModel(
                     }
 
                     is LoadingState.Error -> {
+                        logE("Delete account failed with state error: ${loadingState.value}")
                         handleAccountDeletingError(throwable = loadingState.value)
                     }
 

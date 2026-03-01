@@ -16,6 +16,7 @@ import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
+import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -45,7 +46,8 @@ class CardTransferringViewModel(
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override val sourceDeck = fetchDeckById(deckId = sourceDeckId)
-        .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+        .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
+            logE("Failed to fetch source deck for transferring\n${throwable.stackTraceToString()}")
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
         }.shareIn(
             scope = viewModelScope,
@@ -58,7 +60,8 @@ class CardTransferringViewModel(
     override val navigationEvent = MutableSharedFlow<ICardTransferringNavigationEvent>()
 
     override val decks: StateFlow<List<Deck>> = fetchDeckSource()
-        .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+        .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
+            logE("Failed to fetch decks for transferring\n${throwable.stackTraceToString()}")
             eventMessage.tryEmitAsNegative(resId = R.string.problem_fetching_decks)
         }.filterNotCurrentDecks()
         .stateIn(
@@ -121,7 +124,8 @@ class CardTransferringViewModel(
 
     private fun observeCardSource() {
         fetchCards(deckId = sourceDeckId)
-            .catchWithCrashlyticsReport(crashlytics = crashlytics) {
+            .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
+                logE("Failed to fetch cards for transferring\n${throwable.stackTraceToString()}")
                 eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
             }.onEach { cards ->
                 cardHolders.value = cards.map { card -> SelectableCardHolder(card = card) }
@@ -180,7 +184,8 @@ class CardTransferringViewModel(
                     )
                     eventMessage.tryEmitAsPositive(resId = R.string.message_deletion_completed_successfully)
                     navigationEvent.emit(value = ICardTransferringNavigationEvent.ToPrevious)
-                }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+                }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
+                    logE("Failed to delete cards during transferring\n${throwable.stackTraceToString()}")
                     eventMessage.tryEmitAsNegative(resId = R.string.problem_with_removing_cards)
                 }
             }
@@ -198,7 +203,8 @@ class CardTransferringViewModel(
                 navigationEvent.emit(value = ICardTransferringNavigationEvent.ToPrevious)
                 eventMessage.tryEmitAsPositive(resId = (R.string.message_transfer_completed_successfully))
             }
-        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
+            logE("Failed to move cards between decks\n${throwable.stackTraceToString()}")
             eventMessage.tryEmitAsNegative(resId = R.string.problem_with_moving_cards)
         }
     }
