@@ -38,6 +38,7 @@ import com.kuts.klaf.navigation.AUTHENTICATION_RESULT_KEY
 import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.presentation.R
+import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -255,5 +256,7 @@ private fun Context.navigateToChatGpt(): Boolean {
     return runCatching {
         startActivity(intent)
         true
+    }.onFailure { error ->
+        logE("Failed to open ChatGPT url: $url\n${error.stackTraceToString()}")
     }.getOrDefault(false)
 }

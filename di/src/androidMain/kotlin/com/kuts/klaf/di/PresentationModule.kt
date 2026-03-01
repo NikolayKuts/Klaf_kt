@@ -10,6 +10,9 @@ import com.kuts.klaf.cardTransferring.common.CardTransferringViewModel
 import com.kuts.klaf.cardViewing.CardViewingViewModel
 import com.kuts.klaf.common.RepetitionTimer
 import com.kuts.klaf.common.notifications.DeckReviewNotifier
+import com.kuts.klaf.common.permissions.INotificationPermissionBinder
+import com.kuts.klaf.common.permissions.INotificationPermissionManager
+import com.kuts.klaf.common.permissions.MokoNotificationPermissionManager
 import com.kuts.klaf.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.deckList.common.DeckListViewModel
 import com.kuts.klaf.deckManagment.BaseDeckManagementViewModel
@@ -31,6 +34,9 @@ internal val presentationModule = module {
         )
     }
     single<IDeckReviewNotifierManager> { get<DeckReviewNotifier>() }
+    single { MokoNotificationPermissionManager(context = androidContext()) }
+    single<INotificationPermissionManager> { get<MokoNotificationPermissionManager>() }
+    single<INotificationPermissionBinder> { get<MokoNotificationPermissionManager>() }
     viewModels()
 }
 

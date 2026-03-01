@@ -37,19 +37,17 @@ class TransferCardsToDeckUseCase(
                     (sourceDurationPerCard * cardsToMove.size).coerceAtLeast(0L)
                 }
 
-                coroutineScope {
-                    cardsToMove.map { card ->
-                        card.id to Card(
-                            deckId = targetDeck.id,
-                            nativeWord = card.nativeWord,
-                            foreignWord = card.foreignWord,
-                            ipa = card.ipa,
-                            wordMeaningInsights = card.wordMeaningInsights,
-                        )
-                    }.onEach { (oldId, updatedCard) ->
-                        launch { cardRepository.deleteCard(cardId = oldId) }
-                        launch { cardRepository.insertCard(card = updatedCard) }
-                    }
+                cardsToMove.map { card ->
+                    card.id to Card(
+                        deckId = targetDeck.id,
+                        nativeWord = card.nativeWord,
+                        foreignWord = card.foreignWord,
+                        ipa = card.ipa,
+                        wordMeaningInsights = card.wordMeaningInsights,
+                    )
+                }.onEach { (oldId, updatedCard) ->
+                    cardRepository.deleteCard(cardId = oldId)
+                    cardRepository.insertCard(card = updatedCard)
                 }
 
                 sourceDeck.lastFirstReviewDuration

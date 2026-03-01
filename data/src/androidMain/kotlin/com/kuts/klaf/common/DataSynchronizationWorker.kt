@@ -6,6 +6,7 @@ import androidx.work.*
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.SynchronizeLocalAndRemoteDataUseCase
 import com.kuts.klaf.common.notifications.DataSynchronizationNotifier
+import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -86,6 +87,7 @@ class DataSynchronizationWorker(
         }
         Result.success()
     } catch (exception: Throwable) {
+        logE("DataSynchronizationWorker failed\n${exception.stackTraceToString()}")
         crashlytics.report(exception = exception)
         Result.failure()
     }

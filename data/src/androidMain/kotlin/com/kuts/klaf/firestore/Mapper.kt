@@ -13,6 +13,7 @@ import com.kuts.domain.entities.Deck
 import com.kuts.domain.entities.StorageSaveVersion
 import com.kuts.domain.entities.WordMeaningInsights
 import com.kuts.domain.entities.WordMeaningItem
+import com.lib.lokdroid.core.logE
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -129,5 +130,7 @@ private fun WordMeaningItem.toFirestoreEntity(): FirestoreWordMeaningItem {
 private fun String.toCefrLevelOrDefault(): CefrLevel {
     return runCatching {
         CefrLevel.valueOf(this.trim().uppercase())
+    }.onFailure { error ->
+        logE("Failed to parse CEFR level from '$this'\n${error.stackTraceToString()}")
     }.getOrDefault(defaultValue = CefrLevel.A1)
 }

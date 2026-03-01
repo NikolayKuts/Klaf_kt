@@ -23,6 +23,8 @@ kotlin {
                 implementation(project(Modules.Domain))
                 implementation(libs.core.coroutines.core)
                 implementation(libs.kotlin.serilization)
+                implementation(libs.moko.permissions)
+                implementation(libs.moko.permissions.notifications)
 
                 implementation(compose.runtime)
                 implementation(compose.ui)
@@ -34,6 +36,7 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(libs.core.android.ktx)
+                implementation(libs.core.app.compat)
                 implementation(libs.androidx.material3.android)
                 implementation(libs.core.coroutines.core.jvm)
 
@@ -45,6 +48,7 @@ kotlin {
 
                 implementation(libs.koin.android)
                 implementation(libs.koin.androidx.compose)
+                implementation(libs.datastore.preferences.android)
 
                 implementation(libs.firebase.authentication)
 

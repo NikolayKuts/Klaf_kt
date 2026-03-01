@@ -5,7 +5,7 @@ import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.IDeckRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IStorageTransactionRepository
-import kotlinx.coroutines.*
+import kotlinx.coroutines.withContext
 
 class DeleteCardsFromDeckUseCase(
     private val deckRepository: IDeckRepository,
@@ -21,15 +21,8 @@ class DeleteCardsFromDeckUseCase(
                 val originDeck = deckRepository.getDeckById(deckId = deckId)
                     ?: throw Exception("Fetching deck is failed")
 
-                coroutineScope {
-                    val deletingJobs = mutableSetOf<Job>()
-
-                    cardIds.onEach { id ->
-                        launch { cardRepository.deleteCard(cardId = id) }
-                            .also { job -> deletingJobs.add(job) }
-                    }
-
-                    joinAll(jobs = deletingJobs.toTypedArray())
+                cardIds.forEach { id ->
+                    cardRepository.deleteCard(cardId = id)
                 }
 
                 val actualCardQuantityInDeck =

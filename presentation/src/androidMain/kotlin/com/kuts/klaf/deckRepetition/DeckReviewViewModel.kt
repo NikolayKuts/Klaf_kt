@@ -55,6 +55,7 @@ import com.kuts.klaf.deckRepetition.RepetitionScreenState.StartState
 import com.kuts.klaf.deckRepetition.savedStateHandle.deckReviewDelegates
 import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent
 import com.lib.lokdroid.core.logD
+import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -641,6 +642,7 @@ class DeckReviewViewModel(
             }
         }
     } catch (e: Exception) {
+        logE("Scheduling deck review notification failed\n${e.stackTraceToString()}")
         RepetitionInfoEvent.SchedulingFailed
     }
 }

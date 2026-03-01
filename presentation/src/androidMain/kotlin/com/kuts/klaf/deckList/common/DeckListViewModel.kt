@@ -294,7 +294,10 @@ class DeckListViewModel(
 
     private fun observeDataSynchronizationStateWorker() {
         appMaintenanceManager.observeDataSynchronizationState()
-            .catch { crashlytics.report(exception = it) }
+            .catch {
+                logE("Failed to observe synchronization state worker\n${it.stackTraceToString()}")
+                crashlytics.report(exception = it)
+            }
             .filterNot { it is Uncertain }
             .flowOn(context = Dispatchers.IO)
             .onEach {

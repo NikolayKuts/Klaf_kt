@@ -8,6 +8,7 @@ import com.kuts.domain.entities.Deck
 import com.kuts.domain.managers.IDeckReviewNotifierManager
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.FetchAllDecksUseCase
+import com.lib.lokdroid.core.logE
 import java.util.concurrent.TimeUnit
 
 class DeckRepetitionReminderChecker(
@@ -44,6 +45,7 @@ class DeckRepetitionReminderChecker(
         }
         Result.success()
     } catch (exception: Exception) {
+        logE("DeckRepetitionReminderChecker failed\n${exception.stackTraceToString()}")
         crashlytics.report(exception = exception)
         Result.failure()
     }

@@ -11,6 +11,7 @@ import androidx.work.WorkerParameters
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.useCases.FetchAllDecksUseCase
 import com.lib.lokdroid.core.logD
+import com.lib.lokdroid.core.logE
 
 class DeckReviewRescheduler(
     private val appContext: Context,
@@ -52,6 +53,7 @@ class DeckReviewRescheduler(
 
         Result.success()
     } catch (e: Exception) {
+        logE("DeckReviewRescheduler failed\n${e.stackTraceToString()}")
         Result.failure()
     }
 }

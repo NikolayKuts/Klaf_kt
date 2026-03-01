@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
@@ -16,15 +19,22 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.EventMessageView
 import com.kuts.klaf.common.MainViewModel
+import com.kuts.klaf.common.permissions.INotificationPermissionBinder
+import com.kuts.klaf.common.permissions.INotificationPermissionManager
+import com.kuts.klaf.common.permissions.NotificationPermissionDialogs
 import com.kuts.klaf.navigation.AppLaunchNavigationRequest
 import com.kuts.klaf.navigation.KlafNavHost
 import com.kuts.klaf.navigation.toAppLaunchNavigationRequest
 import com.kuts.klaf.theme.MainTheme
 import kotlinx.coroutines.flow.MutableSharedFlow
+import org.koin.android.ext.android.inject
 
 class MainActivity : AppCompatActivity() {
 
     private val sharedViewModel: BaseMainViewModel by viewModels<MainViewModel>()
+    private val notificationPermissionBinder: INotificationPermissionBinder by inject()
+    private val notificationPermissionManager: INotificationPermissionManager by inject()
+    private var shouldCheckNotificationPermission by mutableStateOf(false)
 
     private val launchRequests = MutableSharedFlow<AppLaunchNavigationRequest>(
         extraBufferCapacity = 1,
@@ -34,6 +44,7 @@ class MainActivity : AppCompatActivity() {
         installSplashScreen()
 
         super.onCreate(savedInstanceState)
+        notificationPermissionBinder.bind(activity = this)
 
         setContent {
             MainTheme {
@@ -56,6 +67,12 @@ class MainActivity : AppCompatActivity() {
                             )
                         }
                 }
+
+                NotificationPermissionDialogs(
+                    shouldCheckPermission = shouldCheckNotificationPermission,
+                    onPermissionCheckConsumed = { shouldCheckNotificationPermission = false },
+                    permissionManager = notificationPermissionManager,
+                )
             }
         }
     }
@@ -65,6 +82,11 @@ class MainActivity : AppCompatActivity() {
 
         setIntent(intent)
         intent.toAppLaunchNavigationRequest()?.let { request -> launchRequests.tryEmit(request) }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        shouldCheckNotificationPermission = true
     }
 
     @Composable

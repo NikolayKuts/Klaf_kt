@@ -49,6 +49,9 @@ lifecycle = "2.8.3"
 # Koin #
 koin = "3.5.6"
 
+# Moko Permissions #
+mokoPermissions = "0.20.1"
+
 # Firebase #
 firebaseBom = "33.1.2"
 firebaseCoroutinePlayServices = "1.7.3"
@@ -118,6 +121,10 @@ koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = 
 koin-androidx-workmanager = { group = "io.insert-koin", name = "koin-androidx-workmanager", version.ref = "koin" }
 koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
 
+# Moko Permissions #
+moko-permissions = { group = "dev.icerock.moko", name = "permissions", version.ref = "mokoPermissions" }
+moko-permissions-notifications = { group = "dev.icerock.moko", name = "permissions-notifications", version.ref = "mokoPermissions" }
+
 # Firebase #
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-coroutine-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "firebaseCoroutinePlayServices" }
@@ -148,6 +155,7 @@ kotlin-serilization = { group = "org.jetbrains.kotlinx", name = "kotlinx-seriali
 
 # DataStore #
 datastore-android = { group = "androidx.datastore", name = "datastore", version.ref = "dataStore" }
+datastore-preferences-android = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "dataStore" }
 
 # Ktor #
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
