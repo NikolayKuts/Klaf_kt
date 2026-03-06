@@ -4,7 +4,6 @@ import android.util.Log
 import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.ColorRes
-import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -14,6 +13,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
 
 
 private const val TIME_FORMAT_TEMPLATE = "%02d:%02d"
@@ -49,11 +49,11 @@ inline fun <T> Flow<T>.collectWhenResumed(
     }
 }
 
-fun MutableSharedFlow<EventMessage>.tryEmit(@StringRes messageId: Int) {
+fun MutableSharedFlow<EventMessage>.tryEmit(messageId: StringResource) {
     tryEmit(value = EventMessage(resId = messageId))
 }
 
-suspend fun MutableSharedFlow<EventMessage>.emit(@StringRes messageId: Int) {
+suspend fun MutableSharedFlow<EventMessage>.emit(messageId: StringResource) {
     emit(value = EventMessage(resId = messageId))
 }
 
@@ -72,7 +72,7 @@ fun <T> log(
 }
 
 fun MutableSharedFlow<EventMessage>.tryEmitAsNegative(
-    @StringRes resId: Int,
+    resId: StringResource,
     vararg args: Any = emptyArray(),
     duration: EventMessage.Duration = EventMessage.Duration.Long,
 ) {
@@ -86,7 +86,7 @@ fun MutableSharedFlow<EventMessage>.tryEmitAsNegative(
 }
 
 fun MutableSharedFlow<EventMessage>.tryEmitAsPositive(
-    @StringRes resId: Int,
+    resId: StringResource,
     duration: EventMessage.Duration = EventMessage.Duration.Medium,
 ) {
     this.tryEmit(
@@ -94,7 +94,7 @@ fun MutableSharedFlow<EventMessage>.tryEmitAsPositive(
 }
 
 fun MutableSharedFlow<EventMessage>.tryEmitAsNeutral(
-    @StringRes resId: Int,
+    resId: StringResource,
     duration: EventMessage.Duration = EventMessage.Duration.Medium,
 ) {
     tryEmit(

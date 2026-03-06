@@ -24,20 +24,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.entities.CefrLevel
 import com.kuts.domain.entities.WordMeaningItem
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun WordInsightsBottomSheetContent(
     word: String,
     meanings: List<WordMeaningItem>,
     refreshedMeanings: List<WordMeaningItem> = emptyList(),
-    refreshedErrorMessageResId: Int? = null,
+    refreshedErrorMessageResId: StringResource? = null,
     isRefreshing: Boolean = false,
     isApplyingRefreshed: Boolean = false,
     canRequestRefreshedInsights: Boolean = false,
@@ -61,7 +62,7 @@ internal fun WordInsightsBottomSheetContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = stringResource(id = R.string.word_insights_word_label),
+                text = stringResource(resource = Res.string.word_insights_word_label),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f),
             )
@@ -86,7 +87,7 @@ internal fun WordInsightsBottomSheetContent(
         }
 
         Text(
-            text = stringResource(id = R.string.word_insights_frequency_note),
+            text = stringResource(resource = Res.string.word_insights_frequency_note),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.78f),
         )
@@ -101,7 +102,7 @@ internal fun WordInsightsBottomSheetContent(
         ) {
             if (isRefreshingAvailable) {
                 Text(
-                    text = stringResource(id = R.string.word_insights_current_saved_variant),
+                    text = stringResource(resource = Res.string.word_insights_current_saved_variant),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
                 )
@@ -126,16 +127,16 @@ internal fun WordInsightsBottomSheetContent(
                             strokeWidth = 2.dp,
                         )
                         Spacer(modifier = Modifier.size(8.dp))
-                        Text(text = stringResource(id = R.string.word_insights_loading_label))
+                        Text(text = stringResource(resource = Res.string.word_insights_loading_label))
                     } else {
-                        Text(text = stringResource(id = R.string.word_insights_load_new_variant_action))
+                        Text(text = stringResource(resource = Res.string.word_insights_load_new_variant_action))
                     }
                 }
             }
 
             if (refreshedErrorMessageResId != null) {
                 Text(
-                    text = stringResource(id = refreshedErrorMessageResId),
+                    text = stringResource(resource = refreshedErrorMessageResId),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )
@@ -156,7 +157,7 @@ internal fun WordInsightsBottomSheetContent(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     Text(
-                        text = stringResource(id = R.string.word_insights_new_variant_preview),
+                        text = stringResource(resource = Res.string.word_insights_new_variant_preview),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.error,
                     )
@@ -179,9 +180,9 @@ internal fun WordInsightsBottomSheetContent(
                                 strokeWidth = 2.dp,
                             )
                             Spacer(modifier = Modifier.size(8.dp))
-                            Text(text = stringResource(id = R.string.word_insights_applying_label))
+                            Text(text = stringResource(resource = Res.string.word_insights_applying_label))
                         } else {
-                            Text(text = stringResource(id = R.string.word_insights_use_new_variant_action))
+                            Text(text = stringResource(resource = Res.string.word_insights_use_new_variant_action))
                         }
                     }
                 }
@@ -240,7 +241,7 @@ private fun WordInsightMeaningSection(
 
         if (examples.isNotEmpty()) {
             Text(
-                text = stringResource(id = R.string.word_insights_examples_label),
+                text = stringResource(resource = Res.string.word_insights_examples_label),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.68f),
                 fontWeight = FontWeight.Medium,

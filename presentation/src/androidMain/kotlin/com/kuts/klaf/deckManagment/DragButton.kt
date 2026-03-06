@@ -40,12 +40,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -53,7 +51,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.invertedCoerceIn
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.CoroutineScope
@@ -63,6 +61,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.sign
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 
 
 private const val ICON_BUTTON_ALPHA_INITIAL = 0.3f
@@ -190,7 +190,7 @@ private fun ButtonContainer(
     ) {
         // decrease button
         IconControlButton(
-            icon = ImageVector.vectorResource(id = R.drawable.ic_remove),
+            icon = Res.drawable.ic_remove,
             contentDescription = "Decrease count",
             onClick = { onAction(IDraggableButtonAction.Decrease) },
             enabled = !clearButtonVisible,
@@ -212,7 +212,7 @@ private fun ButtonContainer(
         // clear button
         if (clearButtonVisible) {
             IconControlButton(
-                icon = ImageVector.vectorResource(id = R.drawable.ic_close_24),
+                icon = Res.drawable.ic_close_24,
                 contentDescription = "Clear count",
                 onClick = { onAction(IDraggableButtonAction.Reset) },
                 enabled = false,
@@ -228,7 +228,7 @@ private fun ButtonContainer(
 
         // increase button
         IconControlButton(
-            icon = ImageVector.vectorResource(id = R.drawable.ic_add_24),
+            icon = Res.drawable.ic_add_24,
             contentDescription = "Increase count",
             onClick = { onAction(IDraggableButtonAction.Increase) },
             enabled = !clearButtonVisible,
@@ -251,7 +251,7 @@ private fun ButtonContainer(
 
 @Composable
 private fun IconControlButton(
-    icon: ImageVector,
+    icon: DrawableResource,
     contentDescription: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -270,7 +270,7 @@ private fun IconControlButton(
             .size(48.dp)
     ) {
         Icon(
-            imageVector = icon,
+            painter = painterResource(resource = icon),
             contentDescription = contentDescription,
             tint = if (isPressed) clickTintColor else tintColor,
             modifier = Modifier.size(32.dp)

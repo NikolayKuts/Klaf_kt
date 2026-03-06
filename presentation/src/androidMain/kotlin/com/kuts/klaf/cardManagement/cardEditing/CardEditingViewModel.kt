@@ -1,6 +1,5 @@
 package com.kuts.klaf.cardManagement.cardEditing
 
-import androidx.annotation.StringRes
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
 import com.cambridge.dictionary.client.CambridgeClient
@@ -25,7 +24,7 @@ import com.kuts.klaf.cardManagement.common.toDomainEntity
 import com.kuts.klaf.cardManagement.common.toTextFieldValueIpaHolder
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +32,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
+import org.jetbrains.compose.resources.StringResource
 
 class CardEditingViewModel(
     private val deckId: Int,
@@ -91,7 +91,7 @@ class CardEditingViewModel(
             }
 
         if (nativeWord.isEmpty() || foreignWord.isEmpty()) {
-            eventMessage.tryEmitAsNegative(resId = R.string.native_and_foreign_words_must_be_filled)
+            eventMessage.tryEmitAsNegative(resId = Res.string.native_and_foreign_words_must_be_filled)
         } else {
             val isForeignWordChanged = foreignWord != originalCard.foreignWord
             val insightsForSaving = resolveInsightsForSaving(
@@ -109,11 +109,11 @@ class CardEditingViewModel(
 
             when {
                 updatedCard.nativeWord.isEmpty() || updatedCard.foreignWord.isEmpty() -> {
-                    eventMessage.tryEmitAsNegative(resId = R.string.native_and_foreign_words_must_be_filled)
+                    eventMessage.tryEmitAsNegative(resId = Res.string.native_and_foreign_words_must_be_filled)
                 }
 
                 updatedCard == originalCard -> {
-                    eventMessage.tryEmitAsNegative(resId = R.string.card_has_not_been_changed)
+                    eventMessage.tryEmitAsNegative(resId = Res.string.card_has_not_been_changed)
                 }
 
                 else -> {
@@ -144,7 +144,7 @@ class CardEditingViewModel(
         if (!_insightsUiState.value.canRequestRefreshedInsights) return
 
         if (!foreignWord.isValidWordFormat()) {
-            setRefreshedInsightsError(errorMessageResId = R.string.word_insights_invalid_word_format)
+            setRefreshedInsightsError(errorMessageResId = Res.string.word_insights_invalid_word_format)
             return
         }
 
@@ -169,7 +169,7 @@ class CardEditingViewModel(
             }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
             logE("Failed to refresh insights\n${throwable.stackTraceToString()}")
-            setRefreshedInsightsError(errorMessageResId = R.string.word_insights_request_failed)
+            setRefreshedInsightsError(errorMessageResId = Res.string.word_insights_request_failed)
         }
     }
 
@@ -177,7 +177,7 @@ class CardEditingViewModel(
         val refreshedMeanings = _insightsUiState.value.refreshedMeanings
 
         if (refreshedMeanings.isEmpty()) {
-            setRefreshedInsightsError(errorMessageResId = R.string.word_insights_no_refreshed_data)
+            setRefreshedInsightsError(errorMessageResId = Res.string.word_insights_no_refreshed_data)
             return
         }
 
@@ -214,7 +214,7 @@ class CardEditingViewModel(
             fetchCard(cardId = cardId)
                 .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
                     logE("Failed to fetch card flow for editing\n${throwable.stackTraceToString()}")
-                    eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_card)
+                    eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_card)
                 }.firstOrNull()
                 ?.let { card: Card? ->
                     originalCardState.value = card
@@ -241,7 +241,7 @@ class CardEditingViewModel(
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
             logE("Failed to fetch card for editing\n${throwable.stackTraceToString()}")
             setInsightsIdle()
-            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_card)
+            eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_card)
         }
     }
 
@@ -258,7 +258,7 @@ class CardEditingViewModel(
             if (!foreignWord.isValidWordFormat()) {
                 setInsightsError(
                     word = foreignWord,
-                    errorMessageResId = R.string.word_insights_invalid_word_format,
+                    errorMessageResId = Res.string.word_insights_invalid_word_format,
                 )
                 return@launchWithState
             }
@@ -288,7 +288,7 @@ class CardEditingViewModel(
             logD("Gemini insights were auto-saved for cardId=${card.id}, foreignWord=$foreignWord")
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
             logE("Failed to auto-load Gemini insights\n${throwable.stackTraceToString()}")
-            setInsightsError(word = foreignWord, errorMessageResId = R.string.word_insights_request_failed)
+            setInsightsError(word = foreignWord, errorMessageResId = Res.string.word_insights_request_failed)
         }
     }
 
@@ -312,14 +312,14 @@ class CardEditingViewModel(
                         decksWithSameForeignWord.joinToString(", ") { it.name }
 
                     eventMessage.tryEmitAsNegative(
-                        resId = R.string.foreign_word_already_exists,
+                        resId = Res.string.foreign_word_already_exists,
                         args = arrayOf(foreignWord, deckNamesAsString),
                     )
                 }
             }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
             logE("Failed to update card\n${throwable.stackTraceToString()}")
-            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_updating_card)
+            eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_updating_card)
         }
     }
 
@@ -349,7 +349,7 @@ class CardEditingViewModel(
 
     private suspend fun performUpdatingCard(updatedCard: Card) {
         updateCard.invoke(newCard = updatedCard)
-        eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_changed)
+        eventMessage.tryEmitAsPositive(resId = Res.string.card_has_been_changed)
         cardManagementState.value = CardManagementState.Finished
     }
 
@@ -430,7 +430,7 @@ class CardEditingViewModel(
 
     private fun setInsightsError(
         word: String,
-        @StringRes errorMessageResId: Int? = null,
+        errorMessageResId: StringResource? = null,
     ) {
         _insightsUiState.update { state ->
             state.copy(
@@ -448,7 +448,7 @@ class CardEditingViewModel(
     }
 
     private fun setRefreshedInsightsError(
-        @StringRes errorMessageResId: Int? = null,
+        errorMessageResId: StringResource? = null,
     ) {
         _insightsUiState.update { state ->
             state.copy(

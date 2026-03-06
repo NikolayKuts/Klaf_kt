@@ -1,8 +1,14 @@
 package com.kuts.klaf.deckRepetition
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
@@ -61,9 +67,19 @@ internal fun DeckRepetitionDestination(
         }
     }
 
+    val screenState by viewModel.screenState.collectAsState(RepetitionScreenState.StartState)
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = screenState == RepetitionScreenState.RepetitionState) {
+        showExitDialog = showExitDialog.not()
+    }
+
     Surface {
         DeckReviewScreen(
             viewModel = viewModel,
+            showExitDialog = showExitDialog,
+            onShowExitDialogChange = { showExitDialog = it },
+            onExitConfirmed = { navController.popBackStack() },
             onDeleteCardClick = { cardId ->
                 navController.navigate(
                     route = AppDestination.DeckRepetitionCardDeletingDialog(

@@ -14,7 +14,7 @@ import com.kuts.domain.repositories.IAuthenticationRepository.ISigningInError.In
 import com.kuts.domain.repositories.IAuthenticationRepository.ISigningInError.NetworkError
 import com.kuts.domain.repositories.IAuthenticationRepository.ISigningInError.NoUserRecord
 import com.kuts.domain.repositories.IAuthenticationRepository.ISigningUpError
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.authentication.EmailValidator.IEmailValidationResult.Empty
 import com.kuts.klaf.authentication.EmailValidator.IEmailValidationResult.Valid
 import com.kuts.klaf.authentication.EmailValidator.IEmailValidationResult.WrongFormat
@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import org.jetbrains.compose.resources.StringResource
 
 class AuthenticationViewModel(
     private val authenticationInteractor: AuthenticationInteractor,
@@ -120,21 +121,21 @@ class AuthenticationViewModel(
         val errorMessageId = when (val error = loadingState.value) {
             is ISigningInError -> {
                 when (error) {
-                    CommonError -> R.string.authentication_warning_common_error_message
-                    NetworkError -> R.string.authentication_warning_network_error
+                    CommonError -> Res.string.authentication_warning_common_error_message
+                    NetworkError -> Res.string.authentication_warning_network_error
                     InvalidPassword -> {
                         setErrorStateForPasswordHolder()
-                        R.string.authentication_warning_invalid_password
+                        Res.string.authentication_warning_invalid_password
                     }
 
                     NoUserRecord -> {
                         setErrorStateForEmailHolder()
-                        R.string.authentication_warning_no_user_record
+                        Res.string.authentication_warning_no_user_record
                     }
                 }
             }
 
-            else -> R.string.authentication_warning_common_error_message
+            else -> Res.string.authentication_warning_common_error_message
         }
 
         eventMessage.tryEmitAsNegative(resId = errorMessageId)
@@ -147,20 +148,20 @@ class AuthenticationViewModel(
                 when (error) {
                     ISigningUpError.EmailAlreadyInUse -> {
                         setErrorStateForEmailHolder()
-                        R.string.authentication_warning_email_already_in_use_error
+                        Res.string.authentication_warning_email_already_in_use_error
                     }
 
                     ISigningUpError.NetworkError -> {
-                        R.string.authentication_warning_network_error
+                        Res.string.authentication_warning_network_error
                     }
 
                     ISigningUpError.CommonError -> {
-                        R.string.authentication_warning_common_error_message
+                        Res.string.authentication_warning_common_error_message
                     }
                 }
             }
 
-            else -> R.string.authentication_warning_common_error_message
+            else -> Res.string.authentication_warning_common_error_message
         }
 
         eventMessage.tryEmitAsNegative(resId = errorMessageId)
@@ -172,11 +173,12 @@ class AuthenticationViewModel(
         passwordConfirmation: String? = null,
     ): Boolean {
         var isValid = true
-        val emailValidationMessageId: Int? = getEmailValidationMessageId(email = email)
-        val passwordValidationMessageId: Int? = getPasswordValidationMessageId(password = password)
+        val emailValidationMessageId: StringResource? = getEmailValidationMessageId(email = email)
+        val passwordValidationMessageId: StringResource? =
+            getPasswordValidationMessageId(password = password)
 
         passwordConfirmation ifNotNull { confirmation ->
-            val passwordConfirmationMessageId: Int? =
+            val passwordConfirmationMessageId: StringResource? =
                 getPasswordConfirmationMessageId(password = password, confirmation = confirmation)
 
             passwordConfirmationMessageId ifNotNull {
@@ -201,33 +203,36 @@ class AuthenticationViewModel(
         return isValid
     }
 
-    private fun getEmailValidationMessageId(email: String): Int? {
+    private fun getEmailValidationMessageId(email: String): StringResource? {
         return when (EmailValidator().validate(data = email)) {
-            Empty -> R.string.authentication_warning_type_email
-            WrongFormat -> R.string.authentication_warning_invalid_email_format
+            Empty -> Res.string.authentication_warning_type_email
+            WrongFormat -> Res.string.authentication_warning_invalid_email_format
             Valid -> null
         }
     }
 
-    private fun getPasswordValidationMessageId(password: String): Int? {
+    private fun getPasswordValidationMessageId(password: String): StringResource? {
         return when (PasswordValidator().validate(data = password)) {
-            IPasswordValidationResult.Empty -> R.string.authentication_warning_type_password
-            ToLong -> R.string.authentication_warning_password_too_long
-            ToShort -> R.string.authentication_warning_password_too_short
+            IPasswordValidationResult.Empty -> Res.string.authentication_warning_type_password
+            ToLong -> Res.string.authentication_warning_password_too_long
+            ToShort -> Res.string.authentication_warning_password_too_short
             IPasswordValidationResult.Valid -> null
         }
     }
 
-    private fun getPasswordConfirmationMessageId(password: String, confirmation: String): Int? {
+    private fun getPasswordConfirmationMessageId(
+        password: String,
+        confirmation: String,
+    ): StringResource? {
         val confirmationState =
             PasswordConfirmationSate(password = password, confirmation = confirmation)
 
         return when (PasswordConfirmationValidator().validate(data = confirmationState)) {
             IPasswordConfirmationValidationResult.Empty -> {
-                R.string.authentication_warning_type_password_confirmation
+                Res.string.authentication_warning_type_password_confirmation
             }
 
-            NotIdentical -> R.string.authentication_warning_Invalid_password_confirmation
+            NotIdentical -> Res.string.authentication_warning_invalid_password_confirmation
             IPasswordConfirmationValidationResult.Valid -> null
         }
     }

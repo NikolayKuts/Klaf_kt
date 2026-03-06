@@ -19,7 +19,7 @@ class MainViewModel : BaseMainViewModel() {
             } ?: 0L
             val lastEventMessageDuration = lastEventMessage?.duration?.value ?: 0L
 
-            val isDifferent = message.equalsTo(other = lastEventMessage).not()
+            val isDifferent = message != lastEventMessage
 
             if (isDifferent || passedTime > lastEventMessageDuration) {
                 eventMessage.emit(value = message)
@@ -27,12 +27,5 @@ class MainViewModel : BaseMainViewModel() {
                 lastEventMessageReceivingTime = System.currentTimeMillis()
             }
         }
-    }
-
-    private fun EventMessage.equalsTo(other: EventMessage?): Boolean {
-        return other != null
-                && resId == other.resId
-                && type == other.type
-                && duration == other.duration
     }
 }

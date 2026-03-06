@@ -29,13 +29,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kuts.klaf.cardManagement.cardAddition.CardManagementScreen
 import com.kuts.klaf.common.WordInsightsBottomSheetContent
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -197,7 +198,7 @@ private fun InsightsLoadingDot(color: Color, alpha: Float) {
 @Composable
 private fun InsightsErrorBottomSheetContent(
     word: String,
-    errorMessageResId: Int?,
+    errorMessageResId: StringResource?,
 ) {
     Column(
         modifier = Modifier
@@ -206,7 +207,7 @@ private fun InsightsErrorBottomSheetContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(
-            text = stringResource(id = R.string.word_insights_title),
+            text = stringResource(resource = Res.string.word_insights_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
         )
@@ -220,14 +221,14 @@ private fun InsightsErrorBottomSheetContent(
         }
 
         Text(
-            text = stringResource(id = R.string.word_insights_loading_error_message),
+            text = stringResource(resource = Res.string.word_insights_loading_error_message),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         Text(
-            text = errorMessageResId?.let { stringResource(id = it) }
-                ?: stringResource(id = R.string.word_insights_unknown_request_error),
+            text = errorMessageResId?.let { stringResource(resource = it) }
+                ?: stringResource(resource = Res.string.word_insights_unknown_request_error),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.error,
         )

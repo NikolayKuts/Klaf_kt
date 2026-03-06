@@ -2,14 +2,14 @@ package com.kuts.klaf.deckList.deckRenaming
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.deckList.common.DeckNamingView
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun DeckRenamingDialog(
@@ -33,7 +33,7 @@ private fun DialogTitle(deckName: String) {
         style = MainTheme.typographies.dialogTextStyle,
         text = buildAnnotatedString {
             withStyle(style = SpanStyle()) {
-                append(text = stringResource(id = R.string.deck_navigation_dialog_item_rename_deck))
+                append(text = stringResource(resource = Res.string.deck_navigation_dialog_item_rename_deck))
             }
             withStyle(style = MainTheme.typographies.accentedDialogText) {
                 append(" \"${deckName}\"")

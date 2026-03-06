@@ -2,11 +2,11 @@ package com.kuts.klaf.deckList.deckCreation
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.deckList.common.DeckNamingView
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun DeckCreationDialog(
@@ -26,6 +26,6 @@ fun DeckCreationDialog(
 private fun DialogTitle() {
     Text(
         style = MainTheme.typographies.dialogTextStyle,
-        text = stringResource(id = R.string.deck_creation_dialog_title),
+        text = stringResource(resource = Res.string.deck_creation_dialog_title),
     )
 }

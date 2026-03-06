@@ -8,7 +8,7 @@ import com.kuts.domain.entities.Deck
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.FetchCardsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.lib.lokdroid.core.logE
@@ -28,7 +28,7 @@ class CardViewingViewModel(
         .onEach { _cards.value = getCardsByDeckId(id = deckId) }
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
             logE("Failed to fetch deck for card viewing\n${throwable.stackTraceToString()}")
-            _eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
+            _eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_deck)
         }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -41,6 +41,6 @@ class CardViewingViewModel(
     private suspend fun getCardsByDeckId(id: Int): List<Card> = fetchCards(deckId = id)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
             logE("Failed to fetch cards for card viewing\n${throwable.stackTraceToString()}")
-            _eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
+            _eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_cards)
         }.firstOrNull() ?: emptyList()
 }

@@ -1,8 +1,5 @@
 package com.kuts.klaf.deckRepetition
 
-import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
-import androidx.annotation.StringRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
@@ -41,10 +38,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -53,8 +47,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -67,7 +59,6 @@ import com.kuts.domain.enums.DifficultyRecallingLevel.GOOD
 import com.kuts.domain.enums.DifficultyRecallingLevel.HARD
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.ipa.toIpaPrompts
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.ButtonState
 import com.kuts.klaf.common.ContentHolder
 import com.kuts.klaf.common.DIALOG_APP_LABEL_SIZE
@@ -79,14 +70,19 @@ import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.TimerCountingState
 import com.kuts.klaf.common.WordInsightsBottomSheetContent
 import com.kuts.klaf.common.timeAsString
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
-import kotlinx.coroutines.android.awaitFrame
-import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeckReviewScreen(
     viewModel: BaseDeckReviewViewModel,
+    showExitDialog: Boolean,
+    onShowExitDialogChange: (Boolean) -> Unit,
+    onExitConfirmed: () -> Unit,
     onDeleteCardClick: (cardId: Int) -> Unit,
     onAddCardClick: () -> Unit,
     onEditCardClick: (cardId: Int) -> Unit,
@@ -101,9 +97,6 @@ fun DeckReviewScreen(
 
     val density = LocalDensity.current
     val minContentHeightPx = density.run { 400.dp.toPx() }
-
-    var shouldInterceptBack by remember { mutableStateOf(true) }
-    var showExitDialog by remember { mutableStateOf(false) }
 
     val deckReviewState by viewModel.deckReviewState.collectAsState()
     val currentCard = repetitionState.card
@@ -120,7 +113,7 @@ fun DeckReviewScreen(
         Row {
             Text(
                 text = stringResource(
-                    id = R.string.deck_review_stat_reviewed_cards,
+                    resource = Res.string.deck_review_stat_reviewed_cards,
                     deckReviewState.reviewedCardsCount
                 )
             )
@@ -129,7 +122,7 @@ fun DeckReviewScreen(
 
             Text(
                 text = stringResource(
-                    id = R.string.deck_review_stat_max_time,
+                    resource = Res.string.deck_review_stat_max_time,
                     deckReviewState.maxTime.timeAsString
                 )
             )
@@ -138,7 +131,7 @@ fun DeckReviewScreen(
 
             Text(
                 text = stringResource(
-                    id = R.string.deck_review_stat_left_time,
+                    resource = Res.string.deck_review_stat_left_time,
                     deckReviewState.leftTime.timeAsString
                 )
             )
@@ -222,13 +215,12 @@ fun DeckReviewScreen(
 
     showExitDialog.ifTrue {
         ExitDialog(
-            onDismiss = { showExitDialog = false },
-            onConfirm = { shouldInterceptBack = false }
+            onDismiss = { onShowExitDialogChange(false) },
+            onConfirm = {
+                onShowExitDialogChange(false)
+                onExitConfirmed()
+            },
         )
-    }
-
-    BackHandler(enabled = shouldInterceptBack && screenState == RepetitionScreenState.RepetitionState) {
-        showExitDialog = showExitDialog.not()
     }
 
     val shouldPauseTimer = showExitDialog || isInsightsSheetVisible
@@ -283,7 +275,7 @@ private fun InsightsSheetHandle(
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = stringResource(id = R.string.word_insights_handle_label),
+            text = stringResource(resource = Res.string.word_insights_handle_label),
             color = textColor,
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Medium,
@@ -295,7 +287,7 @@ private fun InsightsSheetHandle(
 private fun DeckInfo(deckName: String, modifier: Modifier = Modifier) {
     Pointer(
         modifier = modifier,
-        pointerTextId = R.string.pointer_deck,
+        pointerTextRes = Res.string.pointer_deck,
         valueText = deckName
     )
 }
@@ -307,12 +299,12 @@ private fun OrderPointers(
     modifier: Modifier = Modifier,
 ) {
     val frontSidePointerText = when (order) {
-        CardRepetitionOrder.NATIVE_TO_FOREIGN -> stringResource(id = R.string.pointer_native)
-        CardRepetitionOrder.FOREIGN_TO_NATIVE -> stringResource(id = R.string.pointer_foreign)
+        CardRepetitionOrder.NATIVE_TO_FOREIGN -> stringResource(resource = Res.string.pointer_native)
+        CardRepetitionOrder.FOREIGN_TO_NATIVE -> stringResource(resource = Res.string.pointer_foreign)
     }
     val backSidePointerText = when (order) {
-        CardRepetitionOrder.NATIVE_TO_FOREIGN -> stringResource(id = R.string.pointer_foreign)
-        CardRepetitionOrder.FOREIGN_TO_NATIVE -> stringResource(id = R.string.pointer_native)
+        CardRepetitionOrder.NATIVE_TO_FOREIGN -> stringResource(resource = Res.string.pointer_foreign)
+        CardRepetitionOrder.FOREIGN_TO_NATIVE -> stringResource(resource = Res.string.pointer_native)
     }
 
     Row(modifier = modifier) {
@@ -326,7 +318,7 @@ private fun OrderPointers(
                 .padding(start = 8.dp, end = 4.dp)
                 .clip(shape = RoundedCornerShape(50.dp))
                 .clickable { onSwitchIconClick() },
-            painter = painterResource(id = R.drawable.ic_rotate_24),
+            painter = painterResource(resource = Res.drawable.ic_rotate_24),
             contentDescription = null
         )
         Text(
@@ -442,7 +434,7 @@ private fun RepetitionButtons(
     when (screenState) {
         RepetitionScreenState.StartState -> {
             Box(modifier = modifier, contentAlignment = Alignment.Center) {
-                RepetitionButton(textResId = R.string.start, onClick = onStartButtonClick)
+                RepetitionButton(textResId = Res.string.start, onClick = onStartButtonClick)
             }
         }
 
@@ -458,9 +450,9 @@ private fun RepetitionButtons(
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    RepetitionButton(textResId = R.string.hard, onClick = onHardButtonClick)
-                    RepetitionButton(textResId = R.string.good, onClick = onGoodButtonClick)
-                    RepetitionButton(textResId = R.string.easy, onClick = onEasyButtonClick)
+                    RepetitionButton(textResId = Res.string.hard, onClick = onHardButtonClick)
+                    RepetitionButton(textResId = Res.string.good, onClick = onGoodButtonClick)
+                    RepetitionButton(textResId = Res.string.easy, onClick = onEasyButtonClick)
                 }
             }
         }
@@ -471,7 +463,7 @@ private fun RepetitionButtons(
 
 @Composable
 private fun RepetitionButton(
-    @StringRes textResId: Int,
+    textResId: StringResource,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -479,7 +471,7 @@ private fun RepetitionButton(
         modifier = modifier,
         onClick = onClick,
     ) {
-        Text(text = stringResource(textResId))
+        Text(text = stringResource(resource = textResId))
     }
 }
 
@@ -529,7 +521,7 @@ private fun DeleteButton(
     ) {
         RoundButton(
             background = MainTheme.colors.deckRepetitionScreen.deleteButton,
-            iconId = R.drawable.ic_delete_24,
+            iconRes = Res.drawable.ic_delete_24,
             onClick = onClick,
             elevation = 4.dp
         )
@@ -549,7 +541,7 @@ private fun AddButton(
     ) {
         RoundButton(
             background = MainTheme.colors.deckRepetitionScreen.addButton,
-            iconId = R.drawable.ic_add_24,
+            iconRes = Res.drawable.ic_add_24,
             onClick = onClick,
             elevation = 4.dp
         )
@@ -570,7 +562,7 @@ private fun EditButton(
     ) {
         RoundButton(
             background = MainTheme.colors.deckRepetitionScreen.editButton,
-            iconId = R.drawable.ic_edit_24,
+            iconRes = Res.drawable.ic_edit_24,
             enabled = enabled,
             onClick = onClick,
             elevation = 4.dp
@@ -635,7 +627,7 @@ private fun CommonButton(
     RoundButton(
         modifier = modifier.size(scale),
         background = color,
-        iconId = R.drawable.ic_more_vert_24,
+        iconRes = Res.drawable.ic_more_vert_24,
         onClick = onClick,
         elevation = 4.dp
     )
@@ -684,7 +676,7 @@ fun CardButton(
                 .background(color)
                 .clickable { onClick() }
                 .padding(8.dp),
-            painter = painterResource(id = R.drawable.ic_rotate_24),
+            painter = painterResource(resource = Res.drawable.ic_rotate_24),
             contentDescription = null,
         )
     }
@@ -695,16 +687,13 @@ private fun ExitDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
 ) {
-    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-    val coroutineScope = rememberCoroutineScope()
-
     FullBackgroundDialog(
         onBackgroundClick = { onDismiss() },
         topContent = ContentHolder(size = DIALOG_APP_LABEL_SIZE.dp) { DialogAppLabel() },
         mainContent = {
             Text(
                 text = stringResource(
-                    id = R.string.deck_repeating_exit_dialog_question
+                    resource = Res.string.deck_repeating_exit_dialog_question
                 ),
                 textAlign = TextAlign.Center
             )
@@ -712,19 +701,13 @@ private fun ExitDialog(
         bottomContent = {
             RoundButton(
                 background = MainTheme.colors.common.positiveDialogButton,
-                iconId = R.drawable.ic_confirmation_24,
-                onClick = {
-                    coroutineScope.launch {
-                        onConfirm()
-                        awaitFrame()
-                        onBackPressedDispatcher?.onBackPressed()
-                    }
-                }
+                iconRes = Res.drawable.ic_confirmation_24,
+                onClick = onConfirm,
             )
 
             RoundButton(
                 background = MainTheme.colors.common.neutralDialogButton,
-                iconId = R.drawable.ic_close_24,
+                iconRes = Res.drawable.ic_close_24,
                 onClick = onDismiss
             )
         }

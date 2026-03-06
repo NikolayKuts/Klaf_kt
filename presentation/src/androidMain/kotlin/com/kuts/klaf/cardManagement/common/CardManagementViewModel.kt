@@ -22,7 +22,7 @@ import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.cardManagement.cardAddition.AutocompleteState
 import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionItem
 import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionsState
@@ -78,7 +78,7 @@ abstract class CardManagementViewModel(
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
             logE("Failed to fetch deck for card management\n${throwable.stackTraceToString()}")
-            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
+            eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_deck)
         }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -346,7 +346,7 @@ abstract class CardManagementViewModel(
             }
         } else {
             eventMessage.tryEmitAsNegative(
-                resId = R.string.foreign_word_is_too_long,
+                resId = Res.string.foreign_word_is_too_long,
                 duration = EventMessage.Duration.Long
             )
         }
@@ -387,7 +387,7 @@ abstract class CardManagementViewModel(
             )
         } else {
             eventMessage.tryEmitAsNegative(
-                resId = R.string.native_word_is_too_long,
+                resId = Res.string.native_word_is_too_long,
                 duration = EventMessage.Duration.Long
             )
         }
@@ -413,7 +413,7 @@ abstract class CardManagementViewModel(
             }
         } else {
             eventMessage.tryEmitAsNegative(
-                resId = R.string.ipa_is_too_long,
+                resId = Res.string.ipa_is_too_long,
                 duration = EventMessage.Duration.Long
             )
         }
@@ -426,7 +426,7 @@ abstract class CardManagementViewModel(
             nativeWordFieldValueState.value = wordFieldValue
         } else {
             eventMessage.tryEmitAsNegative(
-                resId = R.string.native_word_is_too_long,
+                resId = Res.string.native_word_is_too_long,
                 duration = EventMessage.Duration.Long
             )
         }
@@ -437,7 +437,7 @@ abstract class CardManagementViewModel(
         val errorMessageId = when (loadingState.value) {
             IWordInfoLoadingError.Common,
             IWordInfoLoadingError.JsonConvert -> {
-                R.string.word_info_retrieving_common_warning_message
+                Res.string.word_info_retrieving_common_warning_message
             }
         }
 
@@ -455,7 +455,7 @@ abstract class CardManagementViewModel(
             val deckNamesAsString = decksWithSameForeignWord.joinToString(", ") { it.name }
 
             eventMessage.tryEmitAsNegative(
-                resId = R.string.foreign_word_already_exists,
+                resId = Res.string.foreign_word_already_exists,
                 args = arrayOf(word, deckNamesAsString),
             )
         }

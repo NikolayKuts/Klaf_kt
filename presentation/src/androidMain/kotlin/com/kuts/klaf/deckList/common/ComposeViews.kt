@@ -27,13 +27,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.ifNotNull
 import com.kuts.domain.entities.Deck
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.ClosingButton
 import com.kuts.klaf.common.ConfirmationButton
 import com.kuts.klaf.common.ContentHolder
@@ -46,7 +43,10 @@ import com.kuts.klaf.common.MinElementWidth
 import com.kuts.klaf.common.ROUNDED_ELEMENT_SIZE
 import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.noRippleClickable
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun DeckNamingView(
@@ -75,7 +75,7 @@ fun DeckNamingView(
                     Spacer(modifier = Modifier.height(16.dp))
                     DeckNameTextField(
                         deckNameState = deckNameState,
-                        placeholder = { Text(text = stringResource(id = R.string.enter_deck_name)) },
+                        placeholder = { Text(text = stringResource(resource = Res.string.enter_deck_name)) },
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -138,7 +138,7 @@ internal fun SynchronizationLabel(
                 .size(size)
                 .background(color)
                 .padding(8.dp),
-            painter = painterResource(id = R.drawable.ic_sync_24),
+            painter = painterResource(resource = Res.drawable.ic_sync_24),
             contentDescription = null,
         )
     }
@@ -159,7 +159,7 @@ private fun DeckNameTextField(
                 deckNameState.value = updatedName
             }
         },
-        label = { Text(text = stringResource(R.string.deck_name_label)) },
+        label = { Text(text = stringResource(resource = Res.string.deck_name_label)) },
         placeholder = placeholder,
     )
 }

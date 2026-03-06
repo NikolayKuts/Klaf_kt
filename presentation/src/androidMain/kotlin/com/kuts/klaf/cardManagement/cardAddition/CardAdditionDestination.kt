@@ -3,9 +3,9 @@ package com.kuts.klaf.cardManagement.cardAddition
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.ContextWrapper
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavBackStackEntry
 import com.kuts.domain.common.ifTrue
 import com.kuts.klaf.common.BaseMainViewModel
@@ -20,10 +20,9 @@ private const val MIME_TYPE_TEXT_PLAIN = "text/plain"
 internal fun CardAdditionDestination(
     backStackEntry: NavBackStackEntry,
     sharedViewModel: BaseMainViewModel,
+    context: Context,
     deckId: Int,
 ) {
-    val context = LocalContext.current
-
     val viewModel: CardAdditionViewModel = koinViewModel(
         viewModelStoreOwner = backStackEntry,
         parameters = {
@@ -49,7 +48,7 @@ internal fun CardAdditionDestination(
 }
 
 private fun Context.retrieveSmartSelectedWord(): String? {
-    val activity = this as? Activity ?: return null
+    val activity = findActivity() ?: return null
 
     val intent = activity.intent ?: return null
     if (intent.action != Intent.ACTION_PROCESS_TEXT) {
@@ -66,4 +65,12 @@ private fun Context.retrieveSmartSelectedWord(): String? {
     }
 
     return selectedWord
+}
+
+private tailrec fun Context.findActivity(): Activity? {
+    return when (this) {
+        is Activity -> this
+        is ContextWrapper -> baseContext.findActivity()
+        else -> null
+    }
 }

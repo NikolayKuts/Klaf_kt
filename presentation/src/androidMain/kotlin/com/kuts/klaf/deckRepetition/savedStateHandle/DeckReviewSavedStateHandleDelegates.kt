@@ -51,6 +51,11 @@ class DeckReviewSavedStateHandleDelegates(handle: SavedStateHandle) {
         key = SCREEN_STATE,
         replay = 1,
         extraBufferCapacity = 4,
+        encode = { state -> state.serialized(key = SCREEN_STATE) },
+        decode = { bundle ->
+            bundle.deserialized<RepetitionScreenState>(key = SCREEN_STATE)
+                ?: RepetitionScreenState.StartState
+        }
     )
 
     val cardDeletingState: MutableStateFlow<LoadingState<UnitSurrogate, UnitSurrogate>> by handle.mutStateFlow(
@@ -97,7 +102,9 @@ class DeckReviewSavedStateHandleDelegates(handle: SavedStateHandle) {
 
     val deckReviewState: MutableStateFlow<DeckReviewState> by handle.mutStateFlow(
         key = DECK_REVIEW_STATE,
-        default = DeckReviewState()
+        default = DeckReviewState(),
+        encode = { state -> state.serialized(key = DECK_REVIEW_STATE) },
+        decode = { bundle -> bundle.deserialized<DeckReviewState>(key = DECK_REVIEW_STATE) ?: DeckReviewState() }
     )
 
     var startRepetitionCard: Card? by handle.create(

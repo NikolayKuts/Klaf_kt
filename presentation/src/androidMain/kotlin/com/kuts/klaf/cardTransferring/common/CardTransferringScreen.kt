@@ -1,6 +1,5 @@
 package com.kuts.klaf.cardTransferring.common
 
-import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
@@ -51,20 +50,21 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.ifTrue
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.CustomCheckBox
 import com.kuts.klaf.common.RoundButton
 import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.noRippleClickable
 import com.kuts.klaf.common.rememberAsMutableStateOf
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 private const val CLOSING_ANIMATION_DELAY = 500L
 
@@ -226,18 +226,18 @@ private fun QuantityPointers(
                 .clip(shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
                 .background(MainTheme.colors.cardTransferringScreen.quantityPointerBackground)
                 .padding(start = 4.dp, end = 4.dp),
-            text = stringResource(R.string.pointer_interim_deck_cards),
+            text = stringResource(resource = Res.string.pointer_interim_deck_cards),
             style = MainTheme.typographies.cardTransferringScreenTextStyles.pointerTitle,
         )
         Spacer(modifier = Modifier.height(8.dp))
 
         QuantityPointer(
-            pointerText = stringResource(R.string.pointer_interim_deck_total),
+            pointerText = stringResource(resource = Res.string.pointer_interim_deck_total),
             pointerValue = totalValue
         )
 
         QuantityPointer(
-            pointerText = stringResource(R.string.pointer_interim_deck_selected),
+            pointerText = stringResource(resource = Res.string.pointer_interim_deck_selected),
             pointerValue = selectedValue
         )
     }
@@ -283,8 +283,8 @@ private fun ColumnScope.ListHeaderItem(
         visible = listHeaderState.isVisible,
     ) {
         val visibilityIcon: @Composable (isVisible: Boolean) -> Painter = { isVisible ->
-            val iconRes = if (isVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off
-            painterResource(id = iconRes)
+            val iconRes = if (isVisible) Res.drawable.ic_visibility else Res.drawable.ic_visibility_off
+            painterResource(resource = iconRes)
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Row(
@@ -305,7 +305,7 @@ private fun ColumnScope.ListHeaderItem(
                     contentDescription = null
                 )
             }
-            Text(text = stringResource(R.string.all))
+            Text(text = stringResource(resource = Res.string.all))
 
             CustomCheckBox(
                 modifier = Modifier.padding(6.dp),
@@ -450,7 +450,7 @@ private fun CardTransferringButton(
         isStartPosition = isStartPosition,
         offset = -180F,
         background = MainTheme.colors.cardTransferringScreen.transferringButton,
-        iconId = R.drawable.ic_move_24,
+        iconRes = Res.drawable.ic_move_24,
         stiffness = Spring.StiffnessVeryLow,
         onClick = onClick
     )
@@ -465,7 +465,7 @@ private fun CardAddingButton(
         isStartPosition = isStartPosition,
         offset = -120F,
         background = MainTheme.colors.cardTransferringScreen.cardAddingButton,
-        iconId = R.drawable.ic_add_24,
+        iconRes = Res.drawable.ic_add_24,
         stiffness = Spring.StiffnessLow,
         onClick = onClick,
     )
@@ -480,7 +480,7 @@ private fun CardDeletingButton(
         isStartPosition = isStartPosition,
         offset = -60F,
         background = MainTheme.colors.cardTransferringScreen.deletingButton,
-        iconId = R.drawable.ic_delete_24,
+        iconRes = Res.drawable.ic_delete_24,
         stiffness = Spring.StiffnessMediumLow,
         onClick = onClick,
     )
@@ -491,7 +491,7 @@ private fun AnimatableOffsetButton(
     isStartPosition: Boolean,
     offset: Float,
     background: Color,
-    @DrawableRes iconId: Int,
+    iconRes: DrawableResource,
     onClick: () -> Unit,
     rotationDegrees: Float = 180F,
     stiffness: Float = Spring.StiffnessVeryLow,
@@ -528,7 +528,7 @@ private fun AnimatableOffsetButton(
             .rotate(degrees = degrees)
             .padding(10.dp),
         background = background,
-        iconId = iconId,
+        iconRes = iconRes,
         onClick = onClick,
         elevation = elevation
     )
@@ -556,7 +556,7 @@ private fun MoreButton(
             .scale(scale)
             .padding(10.dp),
         background = color,
-        iconId = R.drawable.ic_more_vert_24,
+        iconRes = Res.drawable.ic_more_vert_24,
         onClick = onClick
     )
 }

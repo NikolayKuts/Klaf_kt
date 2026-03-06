@@ -3,7 +3,6 @@ import com.example.klaf.di.dependencies.Modules
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.android.serialization)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
@@ -26,6 +25,7 @@ kotlin {
                 implementation(libs.datastore.preferences.core)
                 implementation(libs.moko.permissions)
                 implementation(libs.moko.permissions.notifications)
+                implementation(compose.components.resources)
 
                 implementation(compose.runtime)
                 implementation(compose.ui)
@@ -68,6 +68,11 @@ kotlin {
             }
         }
     }
+}
+
+compose.resources {
+    packageOfResClass = "com.kuts.klaf.presentation.resources"
+    publicResClass = true
 }
 
 android {

@@ -12,7 +12,7 @@ import com.kuts.domain.useCases.FetchCardsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.FetchDeckSourceUseCase
 import com.kuts.domain.useCases.TransferCardsToDeckUseCase
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
@@ -48,7 +48,7 @@ class CardTransferringViewModel(
     override val sourceDeck = fetchDeckById(deckId = sourceDeckId)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
             logE("Failed to fetch source deck for transferring\n${throwable.stackTraceToString()}")
-            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
+            eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_deck)
         }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -62,7 +62,7 @@ class CardTransferringViewModel(
     override val decks: StateFlow<List<Deck>> = fetchDeckSource()
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
             logE("Failed to fetch decks for transferring\n${throwable.stackTraceToString()}")
-            eventMessage.tryEmitAsNegative(resId = R.string.problem_fetching_decks)
+            eventMessage.tryEmitAsNegative(resId = Res.string.problem_fetching_decks)
         }.filterNotCurrentDecks()
         .stateIn(
             scope = viewModelScope,
@@ -126,7 +126,7 @@ class CardTransferringViewModel(
         fetchCards(deckId = sourceDeckId)
             .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
                 logE("Failed to fetch cards for transferring\n${throwable.stackTraceToString()}")
-                eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_cards)
+                eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_cards)
             }.onEach { cards ->
                 cardHolders.value = cards.map { card -> SelectableCardHolder(card = card) }
             }.launchIn(viewModelScope)
@@ -182,11 +182,11 @@ class CardTransferringViewModel(
                         cardIds = cardIds.toIntArray(),
                         deckId = sourceDeckId
                     )
-                    eventMessage.tryEmitAsPositive(resId = R.string.message_deletion_completed_successfully)
+                    eventMessage.tryEmitAsPositive(resId = Res.string.message_deletion_completed_successfully)
                     navigationEvent.emit(value = ICardTransferringNavigationEvent.ToPrevious)
                 }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
                     logE("Failed to delete cards during transferring\n${throwable.stackTraceToString()}")
-                    eventMessage.tryEmitAsNegative(resId = R.string.problem_with_removing_cards)
+                    eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_removing_cards)
                 }
             }
     }
@@ -201,11 +201,11 @@ class CardTransferringViewModel(
                 )
 
                 navigationEvent.emit(value = ICardTransferringNavigationEvent.ToPrevious)
-                eventMessage.tryEmitAsPositive(resId = (R.string.message_transfer_completed_successfully))
+                eventMessage.tryEmitAsPositive(resId = (Res.string.message_transfer_completed_successfully))
             }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
             logE("Failed to move cards between decks\n${throwable.stackTraceToString()}")
-            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_moving_cards)
+            eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_moving_cards)
         }
     }
 
@@ -241,7 +241,7 @@ class CardTransferringViewModel(
         val cardForDeleting = selectedCards.value
 
         if (cardForDeleting.isEmpty()) {
-            eventMessage.tryEmitAsNegative(resId = R.string.message_no_cards_selected)
+            eventMessage.tryEmitAsNegative(resId = Res.string.message_no_cards_selected)
         } else {
             emitEvent(
                 event = ICardTransferringNavigationEvent.ToCardDeletingDialog(cardQuantity = cardForDeleting.size)
@@ -251,7 +251,7 @@ class CardTransferringViewModel(
 
     private fun sendCardMovingDialogEvent() {
         if (selectedCards.value.isEmpty()) {
-            eventMessage.tryEmitAsNegative(resId = R.string.message_no_cards_selected)
+            eventMessage.tryEmitAsNegative(resId = Res.string.message_no_cards_selected)
         } else {
             emitEvent(event = ICardTransferringNavigationEvent.ToCardMovingDialog)
         }

@@ -41,7 +41,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.TextFieldValue
@@ -52,7 +51,6 @@ import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.IWordable
 import com.kuts.domain.common.skipOnNewLineCharacter
 import com.kuts.domain.entities.AutocompleteWord
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.cardManagement.cardAddition.AutocompleteState
 import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionsState
 import com.kuts.klaf.common.ConfirmationButton
@@ -62,6 +60,7 @@ import com.kuts.klaf.common.RoundButton
 import com.kuts.klaf.common.noRippleClickable
 import com.kuts.klaf.common.rememberAsMutableStateOf
 import com.kuts.klaf.common.verticalScrollbar
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -69,6 +68,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import org.jetbrains.compose.resources.painterResource
 
 private const val CARD_MANAGEMENT_CONTAINER_WIDTH = 500
 
@@ -152,7 +152,7 @@ private fun DropDownForeignWordField(
         expanded = expanded,
         typedTextFieldValue = typedTextFieldValue,
         dropdownContent = autocompleteState.autocomplete,
-        labelResId = R.string.label_foreign_word,
+        labelRes = Res.string.label_foreign_word,
         textColor = MainTheme.colors.cardManagementView.foreignWord,
         trailingIcon = {
             val (iconColor: Color, clickable: Boolean) = when (loadingState) {
@@ -175,7 +175,7 @@ private fun DropDownForeignWordField(
                     .clip(shape = RoundedCornerShape(50.dp))
                     .clickable(enabled = clickable) { onPronounceIconClick() }
                     .padding(5.dp),
-                painter = painterResource(id = R.drawable.ic_baseline_volume_up_24),
+                painter = painterResource(resource = Res.drawable.ic_baseline_volume_up_24),
                 contentDescription = null,
                 tint = iconColor,
             )
@@ -213,7 +213,7 @@ fun DropDownNativeWordField(
             IWordable { wordSuggestion.word }
         },
         textColor = MainTheme.colors.cardManagementView.nativeWord,
-        labelResId = R.string.label_native_word,
+        labelRes = Res.string.label_native_word,
         trailingIcon = {
             val (iconColor: Color, clickable: Boolean) = when {
                 loadingState is LoadingState.Success
@@ -238,7 +238,7 @@ fun DropDownNativeWordField(
                     .clickable(enabled = clickable) { onArrowIconClick() }
                     .padding(5.dp)
                     .rotate(rotationDegree),
-                painter = painterResource(id = R.drawable.ic_arrow_forward),
+                painter = painterResource(resource = Res.drawable.ic_arrow_forward),
                 contentDescription = null,
                 tint = iconColor,
             )
@@ -277,7 +277,7 @@ fun DropDownNativeWordField(
             ) {
                 RoundButton(
                     background = MainTheme.colors.common.negativeDialogButton,
-                    iconId = R.drawable.ic_list_clear,
+                    iconRes = Res.drawable.ic_list_clear,
                     onClick = onClearSelectionClick
                 )
                 ConfirmationButton { onConfirmSuggestionsSelection() }

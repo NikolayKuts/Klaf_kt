@@ -10,14 +10,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.AuthenticationAction
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.*
 import com.kuts.klaf.common.NavigationDestination.*
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SigningTypeChoosingView(
@@ -33,27 +34,27 @@ fun SigningTypeChoosingView(
             onBackgroundClick = onCloseButtonClick,
             topContent = ContentHolder(size = DIALOG_APP_LABEL_SIZE.dp) { DialogAppLabel() },
             mainContent = {
-                val textId = when (fromSourceDestination) {
-                    DECK_LIST_FRAGMENT -> R.string.authentication_type_choosing_message
-                    DATA_SYNCHRONIZATION_DIALOG -> R.string.authentication_sync_data_message
+                val textRes: StringResource = when (fromSourceDestination) {
+                    DECK_LIST_FRAGMENT -> Res.string.authentication_type_choosing_message
+                    DATA_SYNCHRONIZATION_DIALOG -> Res.string.authentication_sync_data_message
                 }
                 Column {
                     Text(
                         style = MainTheme.typographies.dialogTextStyle,
-                        text = stringResource(id = textId),
+                        text = stringResource(resource = textRes),
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
 
                     SigningButton(
-                        text = stringResource(id = R.string.authentication_sign_in_label),
+                        text = stringResource(resource = Res.string.authentication_sign_in_label),
                         onClick = { onSigningActionButtonClick(AuthenticationAction.SIGN_IN) }
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     SigningButton(
-                        text = stringResource(id = R.string.authentication_sign_up_label),
+                        text = stringResource(resource = Res.string.authentication_sign_up_label),
                         onClick = { onSigningActionButtonClick(AuthenticationAction.SIGN_UP) }
                     )
                 }

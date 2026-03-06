@@ -15,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kuts.klaf.common.EventMessage.Type.*
 import com.kuts.klaf.theme.MainTheme
@@ -97,7 +96,7 @@ fun EventMessageView(
         ) {
             Text(
                 modifier = Modifier.padding(16.dp),
-                text = stringResource(id = message.resId, *message.args),
+                text = message.text.asString(),
                 style = MainTheme.typographies.materialTypographies.bodyLarge
             )
         }

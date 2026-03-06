@@ -15,16 +15,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.MeasurePolicy
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.*
 import com.kuts.domain.common.DeckReviewPassSuccessMark.*
 import com.kuts.domain.entities.DeckRepetitionInfo
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.*
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.max
 
 @Composable
@@ -53,7 +52,7 @@ fun DeckRepetitionInfoView(
                     mainContent = {
                         infoContent.data.ifNull {
                             Text(
-                                text = stringResource(id = R.string.deck_repetition_info_dialog_no_info),
+                                text = stringResource(resource = Res.string.deck_repetition_info_dialog_no_info),
                                 textAlign = TextAlign.Center
                             )
                         } otherwise { info ->
@@ -74,14 +73,12 @@ private fun RepetitionInfo(
     deckName: String,
     info: DeckRepetitionInfo,
 ) {
-    val context = LocalContext.current
-
     Column(modifier = Modifier.defaultMinSize(minWidth = 300.dp)) {
         InfoHeader(deckName = deckName)
         Spacer(modifier = Modifier.height(16.dp))
 
         DualInfoItem(
-            title = stringResource(R.string.pointer_iteration_duration),
+            title = stringResource(resource = Res.string.pointer_iteration_duration),
             currentValue = info.currentDurationAsTimeOrUnassigned,
             previousValue = info.previousDuration.timeAsString,
             currentMark = info.currentIterationSuccessMark,
@@ -89,28 +86,26 @@ private fun RepetitionInfo(
         InfoItemDivider()
 
         ScheduledDateItem(
-            title = stringResource(R.string.pointer_scheduled_repetition),
-            nextValue = info.calculateDetailedScheduledRange(context = context),
-            previousValue = info.calculateDetailedPreviousScheduledRange(
-                context = context
-            ),
+            title = stringResource(resource = Res.string.pointer_scheduled_repetition),
+            nextValue = info.calculateDetailedScheduledRange(),
+            previousValue = info.calculateDetailedPreviousScheduledRange(),
         )
         InfoItemDivider()
 
         DualInfoItem(
-            title = stringResource(R.string.pointer_iteration_success_mark),
+            title = stringResource(resource = Res.string.pointer_iteration_success_mark),
             currentValue = stringResource(
-                id = info.currentIterationSuccessMark.markResId
+                resource = info.currentIterationSuccessMark.markResId
             ),
             previousValue = stringResource(
-                id = info.previousIterationSuccessMark.markResId
+                resource = info.previousIterationSuccessMark.markResId
             ),
             currentMark = info.currentIterationSuccessMark,
         )
         InfoItemDivider()
 
         FlowableInfoItem(
-            textPointer = stringResource(R.string.pointer_repetition_quantity),
+            textPointer = stringResource(resource = Res.string.pointer_repetition_quantity),
             infoValue = info.repetitionQuantity.toString(),
         )
     }
@@ -123,7 +118,7 @@ private fun InfoHeader(deckName: String) {
             .fillMaxWidth(), verticalAlignment = Alignment.Bottom
     ) {
         Text(
-            text = stringResource(id = R.string.pointer_deck) + ":",
+            text = stringResource(resource = Res.string.pointer_deck) + ":",
         )
         Text(
             modifier = Modifier.weight(1F),
@@ -142,9 +137,9 @@ private fun ScheduledDateItem(
 ) {
     DualInfoItemWithValueBackground(
         title = title,
-        firstPointer = stringResource(id = R.string.pointer_next),
+        firstPointer = stringResource(resource = Res.string.pointer_next),
         firstValue = nextValue,
-        secondPointer = stringResource(id = R.string.pointer_previous),
+        secondPointer = stringResource(resource = Res.string.pointer_previous),
         secondValue = previousValue,
         valueBackground = Color.Transparent
     )
@@ -159,9 +154,9 @@ private fun DualInfoItem(
 ) {
     DualInfoItemWithValueBackground(
         title = title,
-        firstPointer = stringResource(id = R.string.pointer_current),
+        firstPointer = stringResource(resource = Res.string.pointer_current),
         firstValue = currentValue,
-        secondPointer = stringResource(id = R.string.pointer_previous),
+        secondPointer = stringResource(resource = Res.string.pointer_previous),
         secondValue = previousValue,
         valueBackground = getValueBackgroundColorBySuccessMark(mark = currentMark)
     )

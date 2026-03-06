@@ -184,6 +184,7 @@ fun KlafNavHost(
             CardAdditionDestination(
                 backStackEntry = backStackEntry,
                 sharedViewModel = sharedViewModel,
+                context = navController.context,
                 deckId = route.deckId,
             )
         }

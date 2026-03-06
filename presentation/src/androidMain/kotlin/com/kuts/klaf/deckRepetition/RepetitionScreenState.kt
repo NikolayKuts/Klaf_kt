@@ -1,15 +1,14 @@
 package com.kuts.klaf.deckRepetition
 
-import android.os.Parcelable
 import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@Parcelize
-sealed class RepetitionScreenState : Parcelable {
-    @Parcelize
+@Serializable
+sealed class RepetitionScreenState {
+    @Serializable
     data object StartState : RepetitionScreenState()
-    @Parcelize
+    @Serializable
     data object RepetitionState : RepetitionScreenState()
-    @Parcelize
+    @Serializable
     data class FinishState(val repetitionInfoEvent: RepetitionInfoEvent) : RepetitionScreenState()
 }

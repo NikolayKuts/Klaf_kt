@@ -10,7 +10,7 @@ import androidx.navigation.NavHostController
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -48,20 +48,20 @@ internal fun DeckRepetitionInfoDialogDestination(
             val eventMessage = when (repetitionInfoEvent) {
                 RepetitionInfoEvent.ScheduledSuccessfully -> {
                     EventMessage(
-                        resId = R.string.deck_repetition_scheduled_successfully,
+                        resId = Res.string.deck_repetition_scheduled_successfully,
                         type = EventMessage.Type.Positive,
                     )
                 }
 
                 RepetitionInfoEvent.SchedulingFailed -> {
                     EventMessage(
-                        resId = R.string.deck_repetition_scheduling_failed,
+                        resId = Res.string.deck_repetition_scheduling_failed,
                         type = EventMessage.Type.Negative,
                     )
                 }
 
                 RepetitionInfoEvent.OneRepetitionToFinish -> {
-                    EventMessage(resId = R.string.deck_repetition_one_repetition_to_finish_iteration)
+                    EventMessage(resId = Res.string.deck_repetition_one_repetition_to_finish_iteration)
                 }
 
                 RepetitionInfoEvent.Non -> null

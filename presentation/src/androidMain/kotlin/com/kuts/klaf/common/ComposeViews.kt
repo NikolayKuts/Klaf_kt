@@ -1,7 +1,5 @@
 package com.kuts.klaf.common
 
-import android.content.res.Configuration
-import androidx.annotation.StringRes
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloatAsState
@@ -17,6 +15,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -40,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -53,10 +53,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
@@ -64,13 +61,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.ifNotNull
 import com.kuts.domain.common.ifTrue
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource as mppPainterResource
+import org.jetbrains.compose.resources.stringResource as mppStringResource
 
 val MinElementWidth = 400.dp
-
-val Configuration.isOrientationLandscape: Boolean
-    get() = this.orientation == Configuration.ORIENTATION_LANDSCAPE
 
 const val DIALOG_APP_LABEL_SIZE = 70
 
@@ -78,7 +75,7 @@ data class ContentHolder(val size: Dp, val content: @Composable RowScope.() -> U
 
 @Composable
 fun Pointer(
-    pointerTextId: Int,
+    pointerTextRes: StringResource,
     valueText: String,
     modifier: Modifier = Modifier,
 ) {
@@ -86,7 +83,7 @@ fun Pointer(
         modifier = modifier,
         text = buildAnnotatedString {
             withStyle(style = MainTheme.typographies.cardPointer) {
-                append("${stringResource(id = pointerTextId)}: ")
+                append("${mppStringResource(resource = pointerTextRes)}: ")
             }
 
             withStyle(style = MainTheme.typographies.cardAdditionPinterValue) {
@@ -108,72 +105,74 @@ fun FullBackgroundDialog(
     bottomContent: @Composable (RowScope.() -> Unit)? = null,
     corners: Shape = RoundedCornerShape(10.dp),
 ) {
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-    val sidePadding = if (screenWidth <= 320.dp) 0.dp else 16.dp
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val screenWidth = maxWidth
+        val sidePadding = if (screenWidth <= 320.dp) 0.dp else 16.dp
+        val isLandscape = maxWidth > maxHeight
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(start = sidePadding, end = sidePadding, bottom = 16.dp)
-            .noRippleClickable(onClick = onBackgroundClick),
-        contentAlignment = Alignment.Center,
-    ) {
         Box(
-            modifier = Modifier.align(Alignment.Center),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = sidePadding, end = sidePadding, bottom = 16.dp)
+                .noRippleClickable(onClick = onBackgroundClick),
             contentAlignment = Alignment.Center,
         ) {
-            val isScreenTurned = screenWidth > 520.dp
-            val isScreenSmall = screenWidth <= 320.dp
-            val fraction = if (configuration.isOrientationLandscape && isScreenTurned) {
-                0.6F
-            } else {
-                if (isScreenSmall) 1F else 0.8F
-            }
-
-            val maxCardWidth = screenWidth * fraction
-
-            Card(
-                modifier = Modifier
-                    .heightIn(min = 150.dp)
-                    .widthIn(min = Dp.Unspecified, max = maxCardWidth)
-                    .padding(
-                        top = ((topContent?.size ?: 0.dp) / 2),
-                        bottom = (ROUNDED_ELEMENT_SIZE.dp / 2),
-                    )
-                    .clip(shape = corners),
-                colors = CardDefaults.cardColors().copy(
-                    containerColor = MainTheme.colors.common.dialogBackground,
-                    contentColor = contentColorFor(MaterialTheme.colorScheme.surface),
-                ),
+            Box(
+                modifier = Modifier.align(Alignment.Center),
+                contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    modifier = mainContentModifier
-                        .noRippleClickable { }
-                        .padding(MainTheme.dimensions.dialogContentPadding)
-                        .bottomPadding(apply = bottomContent != null)
-                        .topPadding(apply = topContent != null),
-                    content = mainContent,
-                    contentAlignment = Alignment.Center
-                )
-            }
+                val isScreenTurned = screenWidth > 520.dp
+                val isScreenSmall = screenWidth <= 320.dp
+                val fraction = if (isLandscape && isScreenTurned) {
+                    0.6F
+                } else {
+                    if (isScreenSmall) 1F else 0.8F
+                }
 
-            topContent?.let { contentHolder ->
-                Row(
-                    modifier = Modifier.align(alignment = Alignment.TopCenter),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    content = contentHolder.content
-                )
-            }
+                val maxCardWidth = screenWidth * fraction
 
-            bottomContent?.let {
-                Row(
+                Card(
                     modifier = Modifier
-                        .widthIn(min = 180.dp)
-                        .align(alignment = Alignment.BottomCenter),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    content = it
-                )
+                        .heightIn(min = 150.dp)
+                        .widthIn(min = Dp.Unspecified, max = maxCardWidth)
+                        .padding(
+                            top = ((topContent?.size ?: 0.dp) / 2),
+                            bottom = (ROUNDED_ELEMENT_SIZE.dp / 2),
+                        )
+                        .clip(shape = corners),
+                    colors = CardDefaults.cardColors().copy(
+                        containerColor = MainTheme.colors.common.dialogBackground,
+                        contentColor = contentColorFor(MaterialTheme.colorScheme.surface),
+                    ),
+                ) {
+                    Box(
+                        modifier = mainContentModifier
+                            .noRippleClickable { }
+                            .padding(MainTheme.dimensions.dialogContentPadding)
+                            .bottomPadding(apply = bottomContent != null)
+                            .topPadding(apply = topContent != null),
+                        content = mainContent,
+                        contentAlignment = Alignment.Center
+                    )
+                }
+
+                topContent?.let { contentHolder ->
+                    Row(
+                        modifier = Modifier.align(alignment = Alignment.TopCenter),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        content = contentHolder.content
+                    )
+                }
+
+                bottomContent?.let {
+                    Row(
+                        modifier = Modifier
+                            .widthIn(min = 180.dp)
+                            .align(alignment = Alignment.BottomCenter),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        content = it
+                    )
+                }
             }
         }
     }
@@ -208,7 +207,7 @@ private fun Modifier.bottomPadding(apply: Boolean): Modifier {
 fun DeletingButton(onClick: () -> Unit) {
     RoundButton(
         background = MainTheme.colors.common.negativeDialogButton,
-        iconId = R.drawable.ic_delete_24,
+        iconRes = Res.drawable.ic_delete_24,
         onClick = onClick
     )
 }
@@ -217,7 +216,7 @@ fun DeletingButton(onClick: () -> Unit) {
 fun ClosingButton(onClick: () -> Unit) {
     RoundButton(
         background = MainTheme.colors.common.neutralDialogButton,
-        iconId = R.drawable.ic_close_24,
+        iconRes = Res.drawable.ic_close_24,
         onClick = onClick
     )
 }
@@ -227,7 +226,7 @@ fun ConfirmationButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
     RoundButton(
         modifier = modifier,
         background = MainTheme.colors.common.positiveDialogButton,
-        iconId = R.drawable.ic_confirmation_24,
+        iconRes = Res.drawable.ic_confirmation_24,
         onClick = onClick
     )
 }
@@ -264,7 +263,7 @@ fun CustomCheckBox(
     ) {
         checked.ifTrue {
             Icon(
-                painter = painterResource(id = R.drawable.ic_confirmation_24),
+                painter = mppPainterResource(resource = Res.drawable.ic_confirmation_24),
                 tint = checkmarkColor,
                 contentDescription = contentDescription,
             )
@@ -283,27 +282,34 @@ fun ScrollableBox(
     eventContent: @Composable BoxScope.() -> Unit = {},
     content: @Composable LazyItemScope.(parentHeightPx: Float) -> Unit,
 ) {
-    val density = LocalDensity.current
-    val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
-    var parentHeightPx by rememberAsMutableStateOf(value = density.run { screenHeightDp.toPx() })
-
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .onSizeChanged { parentHeightPx = it.height.toFloat() },
-        contentAlignment = Alignment.TopCenter
+    BoxWithConstraints(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopCenter,
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .align(alignment = if (dialogMode) Alignment.Center else Alignment.TopCenter),
-            reverseLayout = reverseLayout,
-            verticalArrangement = verticalArrangement,
-            horizontalAlignment = horizontalAlignment,
-        ) {
-            item { content(parentHeightPx) }
+        val density = LocalDensity.current
+        val defaultParentHeightPx = density.run { maxHeight.toPx() }
+        var parentHeightPx by remember(defaultParentHeightPx) {
+            mutableStateOf(defaultParentHeightPx)
         }
 
-        eventContent()
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .onSizeChanged { parentHeightPx = it.height.toFloat() },
+            contentAlignment = Alignment.TopCenter
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .align(alignment = if (dialogMode) Alignment.Center else Alignment.TopCenter),
+                reverseLayout = reverseLayout,
+                verticalArrangement = verticalArrangement,
+                horizontalAlignment = horizontalAlignment,
+            ) {
+                item { content(parentHeightPx) }
+            }
+
+            eventContent()
+        }
     }
 }
 
@@ -411,7 +417,7 @@ fun CardDeletingDialogView(
             topContent = ContentHolder(size = ROUNDED_ELEMENT_SIZE.dp) {
                 RoundedIcon(
                     background = MainTheme.colors.common.negativeDialogButton,
-                    iconId = R.drawable.ic_attention_mark_24
+                    iconRes = Res.drawable.ic_attention_mark_24
                 )
             },
             mainContent = {
@@ -440,7 +446,7 @@ fun DialogAppLabel(isLoading: Boolean = false) {
                 .clip(shape = RoundedCornerShape(50.dp))
                 .background(MainTheme.colors.common.dialogBackground)
                 .padding(10.dp),
-            painter = painterResource(id = R.drawable.ic_app_labale),
+            painter = mppPainterResource(resource = Res.drawable.ic_app_labale),
             contentDescription = null,
             colorFilter = ColorFilter.lighting(filterColor, filterColor)
         )
@@ -452,14 +458,14 @@ fun DialogAppLabel(isLoading: Boolean = false) {
 }
 
 @Composable
-fun WarningMessage(@StringRes textId: Int) {
+fun WarningMessage(textRes: StringResource) {
     Text(
         modifier = Modifier
             .fillMaxWidth()
             .clip(shape = RoundedCornerShape(6.dp))
             .background(animatedWarningColor())
             .padding(16.dp),
-        text = stringResource(textId),
+        text = mppStringResource(resource = textRes),
         style = MainTheme.typographies.dialogTextStyle
     )
 }
@@ -467,9 +473,9 @@ fun WarningMessage(@StringRes textId: Int) {
 @Composable
 private fun getDialogTitleByCardCount(quantity: Int): String {
     return if (quantity == 1) {
-        stringResource(id = R.string.single_cards_deleting_dialog_title, quantity)
+        mppStringResource(resource = Res.string.single_cards_deleting_dialog_title, quantity)
     } else {
-        stringResource(id = R.string.multiple_cards_deleting_dialog_title, quantity)
+        mppStringResource(resource = Res.string.multiple_cards_deleting_dialog_title, quantity)
     }
 }
 

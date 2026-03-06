@@ -1,6 +1,5 @@
 package com.kuts.klaf.deckList.deckNavigation
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,12 +7,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.ifNotNull
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.*
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun DeckNavigationDialogView(
@@ -42,42 +42,42 @@ fun DeckNavigationDialogView(
                 Column {
                     DialogTitle(deckName = deckName)
                     DialogItem(
-                        textId = R.string.deck_navigation_dialog_item_delete_deck,
+                        textRes = Res.string.deck_navigation_dialog_item_delete_deck,
                         onClick = onDeleteDeckClick
                     )
                     SeparationLine()
                     DialogItem(
-                        textId = R.string.deck_navigation_dialog_item_rename_deck,
+                        textRes = Res.string.deck_navigation_dialog_item_rename_deck,
                         onClick = onRenameDeckClick
                     )
                     SeparationLine()
                     DialogItem(
-                        textId = R.string.deck_navigation_dialog_item_browse_cards,
+                        textRes = Res.string.deck_navigation_dialog_item_browse_cards,
                         onClick = onBrowseDeckClick
                     )
                     SeparationLine()
                     DialogItem(
-                        textId = R.string.deck_navigation_dialog_item_add_cards,
+                        textRes = Res.string.deck_navigation_dialog_item_add_cards,
                         onClick = onAddCardsClick
                     )
                     SeparationLine()
                     DialogItem(
-                        textId = R.string.deck_navigation_dialog_item_transfer_cards,
+                        textRes = Res.string.deck_navigation_dialog_item_transfer_cards,
                         onClick = onTransferCardsClick
                     )
                     SeparationLine()
                     DialogItem(
-                        textId = R.string.deck_navigation_dialog_item_info,
+                        textRes = Res.string.deck_navigation_dialog_item_info,
                         onClick = onRepetitionInfoClick
                     )
                     SeparationLine()
                     DialogItem(
-                        textId = R.string.deck_navigation_dialog_deck_management,
+                        textRes = Res.string.deck_navigation_dialog_deck_management,
                         onClick = onDeckManagementClick
                     )
                     SeparationLine()
                     DialogItem(
-                        textId = R.string.deck_navigation_dialog_item_copy_craft_story,
+                        textRes = Res.string.deck_navigation_dialog_item_copy_craft_story,
                         onClick = onCraftStoryClick
                     )
                 }
@@ -85,7 +85,7 @@ fun DeckNavigationDialogView(
             bottomContent = {
                 RoundButton(
                     background = MainTheme.colors.common.neutralDialogButton,
-                    iconId = R.drawable.ic_close_24,
+                    iconRes = Res.drawable.ic_close_24,
                     onClick = onCloseDialogClick
                 )
             }
@@ -106,11 +106,11 @@ private fun ColumnScope.DialogTitle(deckName: String) {
 
 @Composable
 private fun DialogItem(
-    @StringRes textId: Int,
+    textRes: StringResource,
     onClick: () -> Unit,
 ) {
     Text(
-        text = stringResource(id = textId),
+        text = stringResource(resource = textRes),
         modifier = Modifier
             .width(MinElementWidth)
             .clickable { onClick() }

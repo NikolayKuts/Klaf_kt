@@ -34,13 +34,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.ipa.LetterInfo
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.cardManagement.cardAddition.AutocompleteState
 import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionsState
 import com.kuts.klaf.common.Pointer
 import com.kuts.klaf.common.RoundButton
 import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.noRippleClickable
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 
 @Composable
@@ -148,7 +148,7 @@ fun CardManagementView(
                                             bottom = confirmationButtonPadding,
                                         ),
                                     background = Color(0xff59bdc0),
-                                    iconId = R.drawable.ic_arrow_drop_down_24,
+                                    iconRes = Res.drawable.ic_arrow_drop_down_24,
                                     onClick = onBottomSheetAction
                                 )
                             }
@@ -160,7 +160,7 @@ fun CardManagementView(
                                         bottom = confirmationButtonPadding,
                                     ),
                                 background = MainTheme.colors.common.positiveDialogButton,
-                                iconId = R.drawable.ic_confirmation_24,
+                                iconRes = Res.drawable.ic_confirmation_24,
                                 onClick = {
                                     keyboardController?.hide()
                                     onConfirmClick()
@@ -253,12 +253,12 @@ private fun DeckInfo(
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Pointer(
-            pointerTextId = R.string.pointer_deck,
+            pointerTextRes = Res.string.pointer_deck,
             valueText = name
         )
 
         Pointer(
-            pointerTextId = R.string.pointer_card_quantity,
+            pointerTextRes = Res.string.pointer_card_quantity,
             valueText = cardQuantity.toString()
         )
     }

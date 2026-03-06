@@ -3,15 +3,15 @@ package com.kuts.klaf.deckList.deckDeleting
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.ifNotNull
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.*
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun DeckDeletionDialogView(
@@ -35,7 +35,7 @@ fun DeckDeletionDialogView(
                     style = MainTheme.typographies.dialogTextStyle,
                     text = buildAnnotatedString {
                         withStyle(style = SpanStyle()) {
-                            append(stringResource(R.string.deck_deleting_title))
+                            append(stringResource(resource = Res.string.deck_deleting_title))
                         }
                         withStyle(style = MainTheme.typographies.accentedDialogText) {
                             append(" \"${deckName}\"")
@@ -56,7 +56,7 @@ fun DeckDeletionDialogView(
 private fun DeckDeletingConformationButton(onClick: () -> Unit) {
     RoundButton(
         background = MainTheme.colors.common.negativeDialogButton,
-        iconId = R.drawable.ic_delete_24,
+        iconRes = Res.drawable.ic_delete_24,
         onClick = onClick
     )
 }
@@ -65,7 +65,7 @@ private fun DeckDeletingConformationButton(onClick: () -> Unit) {
 private fun DialogClosingButton(onClick: () -> Unit) {
     RoundButton(
         background = MainTheme.colors.common.neutralDialogButton,
-        iconId = R.drawable.ic_close_24,
+        iconRes = Res.drawable.ic_close_24,
         onClick = onClick
     )
 }

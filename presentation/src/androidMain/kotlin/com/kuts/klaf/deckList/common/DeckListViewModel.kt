@@ -20,7 +20,7 @@ import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.IAuthenticationRepository.IAccountDeletingError
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.*
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.NavigationDestination
 import com.kuts.klaf.common.tryEmitAsNegative
@@ -100,7 +100,7 @@ class DeckListViewModel(
         val decks = deckSource.value
 
         if (decks == null) {
-            eventMessage.tryEmitAsNegative(resId = R.string.problem_fetching_decks)
+            eventMessage.tryEmitAsNegative(resId = Res.string.problem_fetching_decks)
 
         } else {
             val deckNames = decks.map { deck -> deck.name }
@@ -108,11 +108,11 @@ class DeckListViewModel(
 
             when {
                 deckNames.contains(deckName) -> {
-                    eventMessage.tryEmitAsNegative(resId = R.string.such_deck_is_already_exist)
+                    eventMessage.tryEmitAsNegative(resId = Res.string.such_deck_is_already_exist)
                 }
 
                 trimmedDeckName.isEmpty() -> {
-                    eventMessage.tryEmitAsNegative(resId = R.string.warning_deck_name_empty)
+                    eventMessage.tryEmitAsNegative(resId = Res.string.warning_deck_name_empty)
                 }
 
                 else -> {
@@ -120,11 +120,11 @@ class DeckListViewModel(
                         createDeck(
                             deck = Deck(name = deckName, creationDate = getCurrentDateAsLong())
                         )
-                        eventMessage.tryEmitAsPositive(resId = R.string.deck_has_been_created)
+                        eventMessage.tryEmitAsPositive(resId = Res.string.deck_has_been_created)
                         emitNavigationEvent(value = ToPrevious)
                     }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, error ->
                         logE("error: ${error.stackTraceToString()}")
-                        eventMessage.tryEmitAsNegative(resId = R.string.problem_with_creating_deck)
+                        eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_creating_deck)
                     }
                 }
             }
@@ -136,29 +136,29 @@ class DeckListViewModel(
         val decks = deckSource.value
 
         if (decks == null) {
-            eventMessage.tryEmitAsNegative(resId = R.string.problem_fetching_decks)
+            eventMessage.tryEmitAsNegative(resId = Res.string.problem_fetching_decks)
         } else {
             when {
                 updatedName.isEmpty() -> {
-                    eventMessage.tryEmitAsNegative(resId = R.string.type_deck_name)
+                    eventMessage.tryEmitAsNegative(resId = Res.string.type_deck_name)
                 }
 
                 updatedName == deck.name -> {
-                    eventMessage.tryEmitAsNegative(resId = R.string.deck_name_is_not_changed)
+                    eventMessage.tryEmitAsNegative(resId = Res.string.deck_name_is_not_changed)
                 }
 
                 decks.any { it.name == newName } -> {
-                    eventMessage.tryEmitAsNegative(resId = R.string.such_deck_is_already_exist)
+                    eventMessage.tryEmitAsNegative(resId = Res.string.such_deck_is_already_exist)
                 }
 
                 else -> {
                     viewModelScope.launchWithState {
                         renameDeck(oldDeck = deck, name = updatedName)
-                        eventMessage.tryEmitAsPositive(resId = R.string.deck_has_been_renamed)
+                        eventMessage.tryEmitAsPositive(resId = Res.string.deck_has_been_renamed)
                         emitNavigationEvent(value = ToPrevious)
                     }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
                         logE("Failed to rename deck\n${throwable.stackTraceToString()}")
-                        eventMessage.tryEmitAsPositive(resId = R.string.problem_with_renaming_deck)
+                        eventMessage.tryEmitAsPositive(resId = Res.string.problem_with_renaming_deck)
                     }
                 }
             }
@@ -168,11 +168,11 @@ class DeckListViewModel(
     override fun deleteDeck(deckId: Int) {
         viewModelScope.launchWithState {
             removeDeck(deckId = deckId)
-            eventMessage.tryEmitAsPositive(resId = R.string.the_deck_has_been_removed)
+            eventMessage.tryEmitAsPositive(resId = Res.string.the_deck_has_been_removed)
             emitNavigationEvent(value = ToPrevious)
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
             logE("Failed to delete deck\n${throwable.stackTraceToString()}")
-            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_removing_deck)
+            eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_removing_deck)
         }
     }
 
@@ -180,7 +180,7 @@ class DeckListViewModel(
         val deck = deckSource.value?.find { deck -> deck.id == deckId }
 
         if (deck == null) {
-            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
+            eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_deck)
         }
 
         return deck
@@ -197,7 +197,7 @@ class DeckListViewModel(
                 appMaintenanceManager.performDataSynchronization()
             } else {
                 eventMessage.tryEmitAsNegative(
-                    resId = R.string.data_synchronization_network_connection_warning
+                    resId = Res.string.data_synchronization_network_connection_warning
                 )
             }
         }
@@ -250,12 +250,12 @@ class DeckListViewModel(
             when (loadingState) {
                 is LoadingState.Success -> {
                     emitNavigationEvent(value = ToPrevious)
-                    eventMessage.tryEmitAsPositive(resId = R.string.log_out_success_message)
+                    eventMessage.tryEmitAsPositive(resId = Res.string.log_out_success_message)
                 }
 
                 is LoadingState.Error -> {
                     logE("Logout failed with state error: ${loadingState.value}")
-                    eventMessage.tryEmitAsNegative(resId = R.string.log_out_failure_message)
+                    eventMessage.tryEmitAsNegative(resId = Res.string.log_out_failure_message)
                 }
 
                 LoadingState.Loading -> {}
@@ -272,7 +272,7 @@ class DeckListViewModel(
                 when (loadingState) {
                     is LoadingState.Success -> {
                         emitNavigationEvent(value = ToPrevious)
-                        eventMessage.tryEmitAsPositive(resId = R.string.delete_account_success_message)
+                        eventMessage.tryEmitAsPositive(resId = Res.string.delete_account_success_message)
                     }
 
                     is LoadingState.Error -> {
@@ -292,7 +292,7 @@ class DeckListViewModel(
             val foreignWords = cards.joinToString { it.foreignWord }
 
             val message = EventMessage(
-                resId = R.string.chat_gpt_story_crafter_prompt_is_created_and_copied,
+                resId = Res.string.chat_gpt_story_crafter_prompt_is_created_and_copied,
                 duration = EventMessage.Duration.Short
             )
 
@@ -316,11 +316,11 @@ class DeckListViewModel(
                 if (navigationDestination.value != DataSynchronizationDialog) {
                     when (it) {
                         is Failed -> {
-                            eventMessage.tryEmitAsNegative(resId = R.string.problem_with_data_synchronization)
+                            eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_data_synchronization)
                         }
 
                         is SuccessfullyFinished -> {
-                            eventMessage.tryEmitAsPositive(resId = R.string.data_synchronization_dialog_data_synchronized)
+                            eventMessage.tryEmitAsPositive(resId = Res.string.data_synchronization_dialog_data_synchronized)
                         }
 
                         else -> {}
@@ -366,12 +366,12 @@ class DeckListViewModel(
     private fun handleAccountDeletingError(throwable: IAuthenticationRepository.IAuthenticationError) {
         val messageId = if (throwable is IAccountDeletingError) {
             when (throwable) {
-                IAccountDeletingError.CommonError -> R.string.delete_account_failure_message
-                IAccountDeletingError.NetworkError -> R.string.authentication_warning_network_error
+                IAccountDeletingError.CommonError -> Res.string.delete_account_failure_message
+                IAccountDeletingError.NetworkError -> Res.string.authentication_warning_network_error
                 IAccountDeletingError.RecentLoginRequired -> TODO()
             }
         } else {
-            R.string.delete_account_failure_message
+            Res.string.delete_account_failure_message
         }
 
         eventMessage.tryEmitAsNegative(resId = messageId)

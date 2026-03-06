@@ -25,8 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -38,11 +36,14 @@ import com.kuts.domain.common.AuthenticationAction.SIGN_IN
 import com.kuts.domain.common.AuthenticationAction.SIGN_UP
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.ifTrue
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.AdaptiveScalableBox
 import com.kuts.klaf.common.ConfirmationButton
 import com.kuts.klaf.common.ROUNDED_ELEMENT_SIZE
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -56,26 +57,22 @@ fun AuthenticationScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     AdaptiveScalableBox { adaptiveModifier ->
-        val (
-            actionLabelTextId: Int,
-            onConfirmationClick: () -> Unit,
-            isPasswordConfirmationEnabled: Boolean,
-        ) = when (action) {
-            SIGN_IN -> {
-                Triple(
-                    first = R.string.authentication_sign_in_label,
-                    second = viewModel::signIn,
-                    third = false
-                )
-            }
-            SIGN_UP -> {
-                Triple(
-                    first = R.string.authentication_sign_up_label,
-                    second = viewModel::signUp,
-                    third = true
-                )
-            }
+        val authUiConfig: Triple<StringResource, () -> Unit, Boolean> = when (action) {
+            SIGN_IN -> Triple(
+                first = Res.string.authentication_sign_in_label,
+                second = { viewModel.signIn() },
+                third = false
+            )
+
+            SIGN_UP -> Triple(
+                first = Res.string.authentication_sign_up_label,
+                second = { viewModel.signUp() },
+                third = true
+            )
         }
+        val actionLabelTextRes = authUiConfig.first
+        val onConfirmationClick = authUiConfig.second
+        val isPasswordConfirmationEnabled = authUiConfig.third
 
         Box(modifier = adaptiveModifier.padding(horizontal = 16.dp)) {
             AuthenticationView(
@@ -83,7 +80,7 @@ fun AuthenticationScreen(
                     .align(Alignment.Center)
                     .fillMaxWidth(),
                 typingState = inputState,
-                actionLabelText = stringResource(id = actionLabelTextId),
+                actionLabelText = stringResource(resource = actionLabelTextRes),
                 isLoading = loadingState is LoadingState.Loading,
                 isPasswordConfirmationEnabled = isPasswordConfirmationEnabled,
                 onEmailChange = viewModel::updateEmail,
@@ -122,7 +119,7 @@ private fun AuthenticationView(
     ) {
         Image(
             modifier = Modifier.size(70.dp),
-            painter = painterResource(id = R.drawable.ic_app_labale),
+            painter = painterResource(resource = Res.drawable.ic_app_labale),
             contentDescription = null,
             colorFilter = ColorFilter.lighting(filterColor, filterColor),
             alignment = BiasAlignment(horizontalBias = 0F, verticalBias = 0.2F)
@@ -140,7 +137,7 @@ private fun AuthenticationView(
             modifier = Modifier.fillMaxWidth(),
             value = typingState.emailHolder.text,
             onValueChange = onEmailChange,
-            labelText = stringResource(R.string.authentication_email_label),
+            labelText = stringResource(resource = Res.string.authentication_email_label),
             isError = typingState.emailHolder.isError,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
@@ -151,7 +148,7 @@ private fun AuthenticationView(
             modifier = Modifier.fillMaxWidth(),
             value = typingState.passwordHolder.text,
             onValueChange = onPasswordChange,
-            labelText = stringResource(R.string.authentication_password_label),
+            labelText = stringResource(resource = Res.string.authentication_password_label),
             isError = typingState.passwordHolder.isError,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation(),
@@ -163,7 +160,7 @@ private fun AuthenticationView(
                 modifier = Modifier.fillMaxWidth(),
                 value = typingState.passwordConfirmationHolder?.text ?: "",
                 onValueChange = onPasswordConfirmationChange,
-                labelText = stringResource(R.string.authentication_password_confirmation),
+                labelText = stringResource(resource = Res.string.authentication_password_confirmation),
                 isError = typingState.passwordConfirmationHolder?.isError ?: false,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = PasswordVisualTransformation(),

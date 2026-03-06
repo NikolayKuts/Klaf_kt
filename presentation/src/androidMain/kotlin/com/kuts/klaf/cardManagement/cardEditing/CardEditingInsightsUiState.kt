@@ -1,7 +1,7 @@
 package com.kuts.klaf.cardManagement.cardEditing
 
-import androidx.annotation.StringRes
 import com.kuts.domain.entities.WordMeaningItem
+import org.jetbrains.compose.resources.StringResource
 
 enum class CardEditingInsightsStatus {
     Idle,
@@ -14,19 +14,13 @@ data class CardEditingInsightsUiState(
     val word: String = "",
     val meanings: List<WordMeaningItem> = emptyList(),
     val status: CardEditingInsightsStatus = CardEditingInsightsStatus.Idle,
-    @StringRes val errorMessageResId: Int? = null,
+    val errorMessageResId: StringResource? = null,
     val refreshedMeanings: List<WordMeaningItem> = emptyList(),
-    @StringRes val refreshedErrorMessageResId: Int? = null,
+    val refreshedErrorMessageResId: StringResource? = null,
     val isRefreshing: Boolean = false,
     val isApplyingRefreshed: Boolean = false,
     val isSheetVisible: Boolean = false,
 ) {
-    val hasData: Boolean
-        get() = meanings.isNotEmpty()
-
-    val isLoading: Boolean
-        get() = status == CardEditingInsightsStatus.Loading
-
     val isExpandable: Boolean
         get() = status == CardEditingInsightsStatus.Success
             || status == CardEditingInsightsStatus.Error

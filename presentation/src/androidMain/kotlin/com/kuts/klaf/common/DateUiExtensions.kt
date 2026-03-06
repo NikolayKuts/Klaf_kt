@@ -1,7 +1,6 @@
 package com.kuts.klaf.common
 
-import android.content.Context
-import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
 import com.kuts.domain.common.DateData
 import com.kuts.domain.common.DateUnit
 import com.kuts.domain.common.DeckReviewPassSuccessMark
@@ -12,7 +11,9 @@ import com.kuts.domain.common.UNASSIGNED_LONG_VALUE
 import com.kuts.domain.common.UNASSIGNED_STRING_VALUE
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.entities.DeckRepetitionInfo
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import java.util.concurrent.TimeUnit
 
 private const val UNASSIGNED_DATE_SYMBOL = "---"
@@ -25,23 +26,23 @@ private val dayInMillis = TimeUnit.DAYS.toMillis(1)
 private val hourImMillis = TimeUnit.HOURS.toMillis(1)
 private val minuteInMillis = TimeUnit.MINUTES.toMillis(1)
 
-@StringRes
-fun DateUnit.toLabelRes(): Int = when (this) {
-    is DateUnit.Year -> R.string.year
-    is DateUnit.Month -> R.string.month
-    is DateUnit.Week -> R.string.week
-    is DateUnit.Day -> R.string.day
-    is DateUnit.Hour -> R.string.hour
-    is DateUnit.Minute -> R.string.minute
+fun DateUnit.toLabelRes(): StringResource = when (this) {
+    is DateUnit.Year -> Res.string.year
+    is DateUnit.Month -> Res.string.month
+    is DateUnit.Week -> Res.string.week
+    is DateUnit.Day -> Res.string.day
+    is DateUnit.Hour -> Res.string.hour
+    is DateUnit.Minute -> Res.string.minute
 }
 
-fun DateData.asString(context: Context): String {
-    val years = context.getYearsOrEmpty(year.value)
-    val months = context.getMonthsOrEmpty(month.value)
-    val week = context.getWeeksOrEmpty(week.value)
-    val days = context.getDaysOrEmpty(day.value)
-    val hours = context.getHoursOrEmpty(hour.value)
-    val minutes = context.getMinutesOrEmpty(minute.value)
+@Composable
+fun DateData.asString(): String {
+    val years = getYearsOrEmpty(year.value)
+    val months = getMonthsOrEmpty(month.value)
+    val week = getWeeksOrEmpty(week.value)
+    val days = getDaysOrEmpty(day.value)
+    val hours = getHoursOrEmpty(hour.value)
+    val minutes = getMinutesOrEmpty(minute.value)
 
     return buildString {
         setOf(years, months, week, days, hours, minutes).forEach {
@@ -50,19 +51,23 @@ fun DateData.asString(context: Context): String {
     }
 }
 
-fun Deck.calculateDetailedScheduledRange(context: Context): String {
-    return scheduledDate.calculateDetailedScheduledRange(context = context)
+@Composable
+fun Deck.calculateDetailedScheduledRange(): String {
+    return scheduledDate.calculateDetailedScheduledRange()
 }
 
-fun DeckRepetitionInfo.calculateDetailedScheduledRange(context: Context): String {
-    return scheduledDate.calculateDetailedScheduledRange(context = context)
+@Composable
+fun DeckRepetitionInfo.calculateDetailedScheduledRange(): String {
+    return scheduledDate.calculateDetailedScheduledRange()
 }
 
-fun DeckRepetitionInfo.calculateDetailedPreviousScheduledRange(context: Context): String {
-    return previousScheduledDate.calculateDetailedScheduledRange(context = context)
+@Composable
+fun DeckRepetitionInfo.calculateDetailedPreviousScheduledRange(): String {
+    return previousScheduledDate.calculateDetailedScheduledRange()
 }
 
-fun Long?.calculateDetailedScheduledRange(context: Context): String {
+@Composable
+fun Long?.calculateDetailedScheduledRange(): String {
     if (this == null || this <= 0) return UNASSIGNED_DATE_SYMBOL
     val currentTime = System.currentTimeMillis()
     val range = this - currentTime
@@ -75,17 +80,18 @@ fun Long?.calculateDetailedScheduledRange(context: Context): String {
     val minutes = range.calculateMinuteQuantity().toInt()
 
     val yearsMonthsWeeks =
-        context.getDetailedYearsMonthsWeeks(years = years, months = months, weeks = weeks)
+        getDetailedYearsMonthsWeeks(years = years, months = months, weeks = weeks)
     val daysHoursMinutes =
-        context.getDetailedDaysHoursMinutes(days = days, hours = hours, minutes = minutes)
+        getDetailedDaysHoursMinutes(days = days, hours = hours, minutes = minutes)
 
     return yearsMonthsWeeks.ifEmpty {
-        daysHoursMinutes.ifEmpty { context.getString(R.string.time_pointer_now) }
+        daysHoursMinutes.ifEmpty { stringResource(resource = Res.string.time_pointer_now) }
     }
 }
 
-fun Deck.getScheduledDateStateByByCalculatedRange(context: Context): ScheduledDateState {
-    val range = calculateDetailedScheduledRange(context = context)
+@Composable
+fun Deck.getScheduledDateStateByByCalculatedRange(): ScheduledDateState {
+    val range = calculateDetailedScheduledRange()
 
     return ScheduledDateState(
         range = range,
@@ -100,11 +106,11 @@ val DeckRepetitionInfo.currentDurationAsTimeOrUnassigned: String
         currentDuration.timeAsString
     }
 
-val DeckReviewPassSuccessMark.markResId: Int
-    @StringRes get() = when (this) {
-        DeckReviewPassSuccessMark.UNASSIGNED -> R.string.unassigned_string_value
-        SUCCESS -> R.string.deck_repetition_mark_successful
-        FAILURE -> R.string.deck_repetition_mark_failed
+val DeckReviewPassSuccessMark.markResId: StringResource
+    get() = when (this) {
+        DeckReviewPassSuccessMark.UNASSIGNED -> Res.string.unassigned_string_value
+        SUCCESS -> Res.string.deck_repetition_mark_successful
+        FAILURE -> Res.string.deck_repetition_mark_failed
     }
 
 private fun Long.calculateYearQuantity(): Long = this / yearInMillis
@@ -126,7 +132,8 @@ private fun Long.calculateMinuteQuantity(): Long {
         monthInMillis % weekInMillis % dayInMillis % hourImMillis / minuteInMillis
 }
 
-private fun Context.getDetailedYearsMonthsWeeks(years: Int, months: Int, weeks: Int): String {
+@Composable
+private fun getDetailedYearsMonthsWeeks(years: Int, months: Int, weeks: Int): String {
     val range =
         "${getYearsOrEmpty(years)} ${getMonthsOrEmpty(months)} ${getWeeksOrEmpty(weeks)}".trim()
 
@@ -134,7 +141,8 @@ private fun Context.getDetailedYearsMonthsWeeks(years: Int, months: Int, weeks: 
     return range.getFormatted()
 }
 
-private fun Context.getDetailedDaysHoursMinutes(days: Int, hours: Int, minutes: Int): String {
+@Composable
+private fun getDetailedDaysHoursMinutes(days: Int, hours: Int, minutes: Int): String {
     val range = "${getDaysOrEmpty(days)} ${getHoursOrEmpty(hours)} ${getMinutesOrEmpty(minutes)}"
         .trim()
 
@@ -147,26 +155,32 @@ private fun String.getFormatted(): String {
         .replace(oldValue = MINUS_SYMBOL, newValue = "")
 }
 
-private fun Context.getYearsOrEmpty(years: Int): String {
-    return if (years == 0) "" else getString(R.string.year_pointer, years)
+@Composable
+private fun getYearsOrEmpty(years: Int): String {
+    return if (years == 0) "" else stringResource(resource = Res.string.year_pointer, years)
 }
 
-private fun Context.getMonthsOrEmpty(months: Int): String {
-    return if (months == 0) "" else getString(R.string.month_pointer, months)
+@Composable
+private fun getMonthsOrEmpty(months: Int): String {
+    return if (months == 0) "" else stringResource(resource = Res.string.month_pointer, months)
 }
 
-private fun Context.getWeeksOrEmpty(weeks: Int): String {
-    return if (weeks == 0) "" else getString(R.string.week_pointer, weeks)
+@Composable
+private fun getWeeksOrEmpty(weeks: Int): String {
+    return if (weeks == 0) "" else stringResource(resource = Res.string.week_pointer, weeks)
 }
 
-private fun Context.getDaysOrEmpty(days: Int): String {
-    return if (days == 0) "" else getString(R.string.day_pointer, days)
+@Composable
+private fun getDaysOrEmpty(days: Int): String {
+    return if (days == 0) "" else stringResource(resource = Res.string.day_pointer, days)
 }
 
-private fun Context.getHoursOrEmpty(hours: Int): String {
-    return if (hours == 0) "" else getString(R.string.hour_pointer, hours)
+@Composable
+private fun getHoursOrEmpty(hours: Int): String {
+    return if (hours == 0) "" else stringResource(resource = Res.string.hour_pointer, hours)
 }
 
-private fun Context.getMinutesOrEmpty(minutes: Int): String {
-    return if (minutes == 0) "" else getString(R.string.minute_pointer, minutes)
+@Composable
+private fun getMinutesOrEmpty(minutes: Int): String {
+    return if (minutes == 0) "" else stringResource(resource = Res.string.minute_pointer, minutes)
 }

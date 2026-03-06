@@ -12,7 +12,6 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
@@ -37,10 +36,17 @@ import com.kuts.klaf.deckList.drawer.DrawerViewState
 import com.kuts.klaf.navigation.AUTHENTICATION_RESULT_KEY
 import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.Res
+import com.kuts.klaf.presentation.resources.authentication_sign_in_success
+import com.kuts.klaf.presentation.resources.authentication_sign_up_success
+import com.kuts.klaf.presentation.resources.chat_gpt_opening_failed
+import com.kuts.klaf.presentation.resources.chat_gpt_story_crafter_prompt
 import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import org.jetbrains.compose.resources.stringResource
 import org.koin.androidx.compose.koinViewModel
+import java.util.Locale
 
 @Composable
 internal fun DeckListDestination(
@@ -49,7 +55,11 @@ internal fun DeckListDestination(
     sharedViewModel: BaseMainViewModel,
     onRestartApp: () -> Unit,
 ) {
-    val context = LocalContext.current
+    val context = navController.context
+    val chatGptStoryCrafterPromptTemplate = stringResource(
+        resource = Res.string.chat_gpt_story_crafter_prompt,
+        "%1\$s",
+    )
 
     val viewModel: BaseDeckListViewModel = koinViewModel(viewModelStoreOwner = backStackEntry)
 
@@ -102,8 +112,9 @@ internal fun DeckListDestination(
             }
 
             is ToChatGptWithDeckContentPrompt -> {
-                val chatGptStoryCrafterPrompt = context.getString(
-                    R.string.chat_gpt_story_crafter_prompt,
+                val chatGptStoryCrafterPrompt = String.format(
+                    Locale.getDefault(),
+                    chatGptStoryCrafterPromptTemplate,
                     event.foreignWords,
                 )
 
@@ -112,7 +123,7 @@ internal fun DeckListDestination(
                 if (!context.navigateToChatGpt()) {
                     sharedViewModel.notify(
                         message = EventMessage(
-                            resId = R.string.chat_gpt_opening_failed,
+                            resId = Res.string.chat_gpt_opening_failed,
                             type = EventMessage.Type.Negative,
                         )
                     )
@@ -124,22 +135,28 @@ internal fun DeckListDestination(
     }
 
     CollectFlowWithLifecycle(
-        flow = backStackEntry.savedStateHandle.getStateFlow<AuthenticationActionResult?>(
+        flow = backStackEntry.savedStateHandle.getStateFlow<String?>(
             key = AUTHENTICATION_RESULT_KEY,
             initialValue = null,
         ),
-    ) { authenticationResult ->
-        if (authenticationResult == null || !authenticationResult.isSuccessful) {
+    ) { rawAuthenticationResult ->
+        val authenticationResult = rawAuthenticationResult?.let { serialized ->
+            runCatching {
+                Json.decodeFromString<AuthenticationActionResult>(serialized)
+            }.getOrNull()
+        }
+
+        if (authenticationResult == null || authenticationResult.isSuccessful.not()) {
             return@CollectFlowWithLifecycle
         }
 
         val messageId = when (authenticationResult.action) {
             AuthenticationAction.SIGN_IN -> {
-                R.string.authentication_sign_in_success
+                Res.string.authentication_sign_in_success
             }
 
             AuthenticationAction.SIGN_UP -> {
-                R.string.authentication_sign_up_success
+                Res.string.authentication_sign_up_success
             }
         }
 

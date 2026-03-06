@@ -1,9 +1,9 @@
 package com.kuts.klaf.deckList.drawer
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -23,13 +23,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun Drawer(
@@ -39,45 +39,46 @@ fun Drawer(
     onDeleteAccountClick: () -> Unit,
 ) {
     val rightCorners = RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp)
-    val drawerWidth = LocalConfiguration.current.screenWidthDp.dp / 2
-
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .clip(rightCorners)
-            .widthIn(min = drawerWidth)
-            .width(IntrinsicSize.Max)
-            .background(color = MainTheme.colors.deckListScreen.drawerColors.contentBackground)
-    ) {
-        Header(
-            signedIn = state.signedIn,
-            email = state.userEmail,
-        )
-
+    BoxWithConstraints {
+        val drawerWidth = maxWidth / 2
         Column(
             modifier = Modifier
-                .fillMaxWidth()
                 .fillMaxHeight()
+                .clip(rightCorners)
+                .widthIn(min = drawerWidth)
                 .width(IntrinsicSize.Max)
-                .padding(16.dp)
+                .background(color = MainTheme.colors.deckListScreen.drawerColors.contentBackground)
         ) {
-            if (state.signedIn) {
-                DrawerItem(
-                    iconId = R.drawable.ic_logout_24,
-                    text = stringResource(R.string.log_out_action),
-                    onClick = onLogOutClick
-                )
-                DrawerItem(
-                    iconId = R.drawable.ic_delete_account_24,
-                    text = stringResource(R.string.account_deleting_action),
-                    onClick = onDeleteAccountClick
-                )
-            } else {
-                DrawerItem(
-                    iconId = R.drawable.ic_login_24,
-                    text = stringResource(R.string.log_in_action),
-                    onClick = onLogInClick
-                )
+            Header(
+                signedIn = state.signedIn,
+                email = state.userEmail,
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .width(IntrinsicSize.Max)
+                    .padding(16.dp)
+            ) {
+                if (state.signedIn) {
+                    DrawerItem(
+                        iconRes = Res.drawable.ic_logout_24,
+                        text = stringResource(resource = Res.string.log_out_action),
+                        onClick = onLogOutClick
+                    )
+                    DrawerItem(
+                        iconRes = Res.drawable.ic_delete_account_24,
+                        text = stringResource(resource = Res.string.account_deleting_action),
+                        onClick = onDeleteAccountClick
+                    )
+                } else {
+                    DrawerItem(
+                        iconRes = Res.drawable.ic_login_24,
+                        text = stringResource(resource = Res.string.log_in_action),
+                        onClick = onLogInClick
+                    )
+                }
             }
         }
     }
@@ -107,7 +108,7 @@ private fun Header(
                 modifier = Modifier
                     .size(70.dp)
                     .padding(bottom = 8.dp),
-                painter = painterResource(id = R.drawable.ic_account_24),
+                painter = painterResource(resource = Res.drawable.ic_account_24),
                 contentDescription = null,
                 tint = iconTint
             )
@@ -115,7 +116,7 @@ private fun Header(
             Text(
                 modifier = Modifier
                     .padding(start = 8.dp),
-                text = email ?: stringResource(R.string.log_in_negative_state),
+                text = email ?: stringResource(resource = Res.string.log_in_negative_state),
                 fontStyle = FontStyle.Italic
             )
         }
@@ -124,7 +125,7 @@ private fun Header(
 
 @Composable
 private fun DrawerItem(
-    @DrawableRes iconId: Int,
+    iconRes: DrawableResource,
     text: String,
     onClick: () -> Unit,
 ) {
@@ -136,7 +137,7 @@ private fun DrawerItem(
             modifier = Modifier
                 .padding(end = 16.dp)
                 .size(30.dp),
-            painter = painterResource(id = iconId),
+            painter = painterResource(resource = iconRes),
             contentDescription = null,
         )
 

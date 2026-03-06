@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,10 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -57,7 +55,6 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kuts.domain.common.ScheduledDateState
 import com.kuts.domain.common.isEven
 import com.kuts.domain.entities.Deck
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.ContentHolder
 import com.kuts.klaf.common.FullBackgroundDialog
 import com.kuts.klaf.common.ROUNDED_ELEMENT_SIZE
@@ -66,8 +63,11 @@ import com.kuts.klaf.common.RoundedIcon
 import com.kuts.klaf.common.getScheduledDateStateByByCalculatedRange
 import com.kuts.klaf.common.noRippleClickable
 import com.kuts.klaf.common.rememberAsMutableStateOf
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import java.util.concurrent.TimeUnit
 
 @Composable
@@ -128,18 +128,18 @@ private fun FetchingDecksWarningView(onRestartApp: () -> Unit) {
     FullBackgroundDialog(
         onBackgroundClick = {},
         topContent = ContentHolder(size = ROUNDED_ELEMENT_SIZE.dp) {
-            RoundedIcon(background = Color.Transparent, iconId = R.drawable.ic_sad_face_24)
+            RoundedIcon(background = Color.Transparent, iconRes = Res.drawable.ic_sad_face_24)
         },
         mainContent = {
             Text(
-                text = stringResource(id = R.string.problem_fetching_decks_view_message),
+                text = stringResource(resource = Res.string.problem_fetching_decks_view_message),
                 textAlign = TextAlign.Center
             )
         },
         bottomContent = {
             RoundButton(
                 background = MainTheme.colors.common.neutralDialogButton,
-                iconId = R.drawable.ic_close_24,
+                iconRes = Res.drawable.ic_close_24,
                 onClick = { onRestartApp() }
             )
         }
@@ -165,7 +165,7 @@ private fun SynchronizationRefreshingIndicator(
                     .size(size)
                     .background(MainTheme.colors.common.dialogBackground)
                     .padding(8.dp),
-                painter = painterResource(id = R.drawable.ic_sync_24),
+                painter = painterResource(resource = Res.drawable.ic_sync_24),
                 contentDescription = null,
             )
         }
@@ -198,7 +198,7 @@ private fun BoxScope.DecksContentView(
 
     RoundButton(
         background = MainTheme.colors.material.primary,
-        iconId = R.drawable.ic_add_24,
+        iconRes = Res.drawable.ic_add_24,
         onClick = onMainButtonClick,
         modifier = Modifier
             .align(alignment = Alignment.BottomEnd)
@@ -273,25 +273,23 @@ private fun RowScope.DeckNameView(deckName: String, position: Int) {
 
 @Composable
 private fun ScheduledDateView(deck: Deck) {
-    val context = LocalContext.current
-    val getScheduledDateState: (deck: Deck) -> ScheduledDateState = {
-        it.getScheduledDateStateByByCalculatedRange(context = context)
-    }
-    var scheduledDateState by remember(deck) {
-        mutableStateOf(value = getScheduledDateState(deck))
-    }
+    var tick by remember(deck.id) { mutableStateOf(0L) }
 
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = deck.id) {
         while (true) {
             delay(TimeUnit.MINUTES.toMillis(1))
-            scheduledDateState = getScheduledDateState(deck)
+            tick++
         }
     }
 
-    Text(
-        text = scheduledDateState.range,
-        style = getScheduledDateStyleByScheduledDateState(state = scheduledDateState)
-    )
+    key(tick) {
+        val scheduledDateState: ScheduledDateState = deck.getScheduledDateStateByByCalculatedRange()
+
+        Text(
+            text = scheduledDateState.range,
+            style = getScheduledDateStyleByScheduledDateState(state = scheduledDateState)
+        )
+    }
 }
 
 @Composable
@@ -307,7 +305,7 @@ private fun RepetitionQuantityView(deck: Deck) {
                 append(deck.reviewCount.toString())
             }
             withStyle(style = MainTheme.typographies.deckItemPointer) {
-                append(stringResource(R.string.repetition_quantity_pointer))
+                append(stringResource(resource = Res.string.repetition_quantity_pointer))
             }
         }
     )
@@ -321,7 +319,7 @@ private fun CardQuantityView(deck: Deck) {
                 append(deck.cardQuantity.toString())
             }
             withStyle(style = MainTheme.typographies.deckItemPointer) {
-                append(stringResource(R.string.card_quantity_pointer))
+                append(stringResource(resource = Res.string.card_quantity_pointer))
             }
         }
     )

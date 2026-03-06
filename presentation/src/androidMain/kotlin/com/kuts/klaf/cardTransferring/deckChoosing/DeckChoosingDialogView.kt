@@ -24,13 +24,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.ifNotNull
 import com.kuts.domain.entities.Deck
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.ClosingButton
 import com.kuts.klaf.common.ConfirmationButton
 import com.kuts.klaf.common.ContentHolder
@@ -42,7 +39,10 @@ import com.kuts.klaf.common.FullBackgroundDialog
 import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.noRippleClickable
 import com.kuts.klaf.common.rememberAsMutableStateOf
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun DeckChoosingDialogView(
@@ -68,7 +68,7 @@ fun DeckChoosingDialogView(
                     var expandedState by rememberAsMutableStateOf(value = false)
 
                     Text(
-                        text = stringResource(R.string.title_card_moving_dialog),
+                        text = stringResource(resource = Res.string.title_card_moving_dialog),
                         modifier = Modifier
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -130,7 +130,7 @@ private fun ChosenDeck(
 
         Icon(
             modifier = Modifier.rotate(degrees = rotation),
-            painter = painterResource(id = R.drawable.ic_arrow_drop_down_24),
+            painter = painterResource(resource = Res.drawable.ic_arrow_drop_down_24),
             contentDescription = null,
         )
     }

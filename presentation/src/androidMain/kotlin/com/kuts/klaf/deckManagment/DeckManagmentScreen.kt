@@ -17,8 +17,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -36,6 +34,7 @@ import com.kuts.klaf.common.DialogAppLabel
 import com.kuts.klaf.common.FullBackgroundDialog
 import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun DeckManagementScreen(
@@ -54,7 +53,7 @@ fun DeckManagementScreen(
                 StateItem(
                     pair = StatePair(
                         pointer = scheduledDateInterval.pointer,
-                        value = scheduledDateInterval.value.asString(LocalContext.current)
+                        value = scheduledDateInterval.value.asString()
                     ),
                     onLongClick = {
                         sendAction(IDeckManagementAction.ScheduledDateIntervalChangeRequested)
@@ -89,7 +88,7 @@ fun DeckManagementScreen(
                                 ) {
                                     Text(text = "Current interval: ")
                                     Text(
-                                        text = scheduledDateInterval.value.asString(LocalContext.current)
+                                        text = scheduledDateInterval.value.asString()
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(16.dp))
@@ -139,7 +138,7 @@ private fun DialogContent(
 
             DateItem(
                 dateUnit = dateUnit,
-                datePointer = stringResource(id = dateUnit.toLabelRes()),
+                datePointer = stringResource(resource = dateUnit.toLabelRes()),
                 onDragButtonAction = { action ->
                     onDateDataChange(updatedDateUnit, action)
                 }

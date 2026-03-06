@@ -10,6 +10,8 @@ import com.kuts.klaf.common.NavigationDestination
 import com.kuts.klaf.navigation.AUTHENTICATION_RESULT_KEY
 import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -34,9 +36,11 @@ internal fun AuthenticationDestination(
                             ?.savedStateHandle
                             ?.set(
                                 key = AUTHENTICATION_RESULT_KEY,
-                                value = AuthenticationActionResult(
-                                    action = finishedAction,
-                                    isSuccessful = true,
+                                value = Json.encodeToString(
+                                    AuthenticationActionResult(
+                                        action = finishedAction,
+                                        isSuccessful = true,
+                                    )
                                 )
                             )
 

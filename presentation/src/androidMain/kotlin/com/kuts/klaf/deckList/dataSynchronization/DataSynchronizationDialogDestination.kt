@@ -12,7 +12,7 @@ import com.kuts.klaf.authentication.AuthenticationActionResult
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.deckList.common.BaseDeckListViewModel
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -42,11 +42,11 @@ internal fun DataSynchronizationDialogDestination(
 
             val messageId = when (authenticationActionResult.action) {
                 AuthenticationAction.SIGN_IN -> {
-                    R.string.authentication_sign_in_success
+                    Res.string.authentication_sign_in_success
                 }
 
                 AuthenticationAction.SIGN_UP -> {
-                    R.string.authentication_sign_up_success
+                    Res.string.authentication_sign_up_success
                 }
             }
 

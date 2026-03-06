@@ -7,12 +7,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.ifNotNull
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.*
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun DrawerActionView(
@@ -50,17 +50,17 @@ fun DrawerActionView(
 
 @Composable
 private fun LogOutView() {
-    Text(text = stringResource(R.string.log_out_confirmation_question))
+    Text(text = stringResource(resource = Res.string.log_out_confirmation_question))
 }
 
 @Composable
 private fun DeletingView() {
     Column {
-        WarningMessage(textId = R.string.account_deleting_warning_message)
+        WarningMessage(textRes = Res.string.account_deleting_warning_message)
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             modifier = Modifier.padding(6.dp),
-            text = stringResource(R.string.account_deleting_confirmation_question),
+            text = stringResource(resource = Res.string.account_deleting_confirmation_question),
             style = MainTheme.typographies.dialogTextStyle
         )
     }

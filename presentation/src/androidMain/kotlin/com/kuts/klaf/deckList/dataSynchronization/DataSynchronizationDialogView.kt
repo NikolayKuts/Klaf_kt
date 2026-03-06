@@ -22,7 +22,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.IDataSynchronizationState
@@ -32,7 +31,6 @@ import com.kuts.domain.common.IDataSynchronizationState.SuccessfullyFinished
 import com.kuts.domain.common.IDataSynchronizationState.Synchronizing
 import com.kuts.domain.common.IDataSynchronizationState.Uncertain
 import com.kuts.domain.common.ifNotNull
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.common.ClosingButton
 import com.kuts.klaf.common.ContentHolder
 import com.kuts.klaf.common.EventMessage
@@ -46,7 +44,9 @@ import com.kuts.klaf.common.WarningMessage
 import com.kuts.klaf.common.noRippleClickable
 import com.kuts.klaf.deckList.common.AnimatedSynchronizationLabel
 import com.kuts.klaf.deckList.common.SynchronizationLabel
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun DataSynchronizationDialogView(
@@ -109,19 +109,19 @@ private fun InitialStateView(
         mainContent = {
             Text(
                 style = MainTheme.typographies.dialogTextStyle,
-                text = stringResource(R.string.data_synchronization_dialog_title)
+                text = stringResource(resource = Res.string.data_synchronization_dialog_title)
             )
         },
         bottomContent = {
             RoundButton(
                 background = MainTheme.colors.common.positiveDialogButton,
-                iconId = R.drawable.ic_confirmation_24,
+                iconRes = Res.drawable.ic_confirmation_24,
                 onClick = onConfirmClick
             )
 
             RoundButton(
                 background = MainTheme.colors.common.neutralDialogButton,
-                iconId = R.drawable.ic_close_24,
+                iconRes = Res.drawable.ic_close_24,
                 onClick = onCloseClick
             )
         }
@@ -135,7 +135,7 @@ private fun SynchronizationStateView(synchronizationData: String) {
         topContent = ContentHolder(size = ROUNDED_ELEMENT_SIZE.dp) { AnimatedSynchronizationLabel() },
         mainContent = {
             Column(modifier = Modifier.width(IntrinsicSize.Max)) {
-                WarningMessage(textId = R.string.data_synchronization_dialog_waiting_message)
+                WarningMessage(textRes = Res.string.data_synchronization_dialog_waiting_message)
                 ContentSpacer()
                 SynchronizingText()
 
@@ -160,19 +160,19 @@ private fun FinishStateView(onCloseClick: () -> Unit) {
         topContent = ContentHolder(size = ROUNDED_ELEMENT_SIZE.dp) {
             RoundedIcon(
                 background = MainTheme.colors.common.positiveDialogButton,
-                iconId = R.drawable.ic_confirmation_24,
+                iconRes = Res.drawable.ic_confirmation_24,
             )
         },
         mainContent = {
             Text(
                 style = MainTheme.typographies.dialogTextStyle,
-                text = stringResource(R.string.data_synchronization_dialog_data_synchronized)
+                text = stringResource(resource = Res.string.data_synchronization_dialog_data_synchronized)
             )
         },
         bottomContent = {
             RoundButton(
                 background = MainTheme.colors.common.neutralDialogButton,
-                iconId = R.drawable.ic_close_24,
+                iconRes = Res.drawable.ic_close_24,
                 onClick = onCloseClick
             )
         }
@@ -190,16 +190,16 @@ private fun FailureStateView(
         topContent = ContentHolder(size = ROUNDED_ELEMENT_SIZE.dp) {
             RoundedIcon(
                 background = MainTheme.colors.common.negativeDialogButton,
-                iconId = R.drawable.ic_attention_mark_24,
+                iconRes = Res.drawable.ic_attention_mark_24,
             )
         },
         mainContent = {
             Column {
-                WarningMessage(textId = R.string.data_synchronization_dialog_failure_message)
+                WarningMessage(textRes = Res.string.data_synchronization_dialog_failure_message)
                 ContentSpacer()
                 Text(
                     modifier = Modifier.padding(6.dp),
-                    text = stringResource(R.string.data_synchronization_dialog_resync_question),
+                    text = stringResource(resource = Res.string.data_synchronization_dialog_resync_question),
                     style = MainTheme.typographies.dialogTextStyle
                 )
             }
@@ -207,7 +207,7 @@ private fun FailureStateView(
         bottomContent = {
             RoundButton(
                 background = MainTheme.colors.common.positiveDialogButton,
-                iconId = R.drawable.ic_sync_24,
+                iconRes = Res.drawable.ic_sync_24,
                 onClick = onResynchronizeClick,
             )
 
@@ -243,7 +243,7 @@ private fun SynchronizingText() {
     ) {
         Text(
             style = MainTheme.typographies.dialogTextStyle,
-            text = stringResource(R.string.data_synchronization_dialog_sync_process)
+            text = stringResource(resource = Res.string.data_synchronization_dialog_sync_process)
         )
         TextDot(alpha1)
         TextDot(alpha2)

@@ -14,7 +14,7 @@ import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.cardManagement.common.ICardManagementAction
 import com.kuts.klaf.cardManagement.common.CardManagementState
 import com.kuts.klaf.cardManagement.common.CardManagementViewModel
@@ -67,7 +67,7 @@ class CardAdditionViewModel(
         val textFieldIpaHoldersState = cardManagementState.value.textFieldValueIpaHolders
 
         if (nativeWord.isEmpty() || foreignWord.isEmpty()) {
-            eventMessage.tryEmitAsNegative(resId = R.string.native_and_foreign_words_must_be_filled)
+            eventMessage.tryEmitAsNegative(resId = Res.string.native_and_foreign_words_must_be_filled)
         } else {
             val ipaHolders = textFieldIpaHoldersState.map { textFieldValueIpaHolder ->
                 textFieldValueIpaHolder.toDomainEntity()
@@ -87,18 +87,18 @@ class CardAdditionViewModel(
                     addNewCardIntoDeck(card = newCard)
                     finishAddingState()
                     audioPlayer.preparePronunciation(word = "")
-                    eventMessage.tryEmitAsPositive(resId = R.string.card_has_been_added)
+                    eventMessage.tryEmitAsPositive(resId = Res.string.card_has_been_added)
                 } else {
                     val deckNamesAsString = decksWithSameForeignWord.joinToString(", ") { it.name }
 
                     eventMessage.tryEmitAsNegative(
-                        resId = R.string.foreign_word_already_exists,
+                        resId = Res.string.foreign_word_already_exists,
                         args = arrayOf(foreignWord, deckNamesAsString),
                     )
                 }
             }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
                 logE("Failed to add card\n${throwable.stackTraceToString()}")
-                eventMessage.tryEmitAsNegative(resId = R.string.exception_adding_card)
+                eventMessage.tryEmitAsNegative(resId = Res.string.exception_adding_card)
             }
         }
     }

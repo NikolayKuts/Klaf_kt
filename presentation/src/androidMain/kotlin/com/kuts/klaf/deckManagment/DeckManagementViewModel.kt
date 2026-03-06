@@ -10,7 +10,7 @@ import com.kuts.domain.entities.Deck
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.UpdateDeckUseCase
-import com.kuts.klaf.presentation.R
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.DateFormatPattern
 import com.kuts.klaf.common.asFormattedDate
@@ -48,7 +48,7 @@ class DeckManagementViewModel(
         fetchDeckById(deckId = deckId)
             .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
                 logE("Failed to fetch deck for management\n${throwable.stackTraceToString()}")
-                eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_deck)
+                eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_deck)
             }.onEach { receivedDeck ->
                 logE("receivedDeck: $receivedDeck")
 

@@ -91,12 +91,21 @@ fun <T> SavedStateHandle.mutSharedFlow(
     key: String,
     replay: Int = 0,
     extraBufferCapacity: Int = 0,
-    onBufferOverflow: BufferOverflow = BufferOverflow.SUSPEND
+    onBufferOverflow: BufferOverflow = BufferOverflow.SUSPEND,
+    encode: ((T) -> Bundle)? = null,
+    decode: ((Bundle) -> T)? = null,
 ): ReadOnlyProperty<Any?, MutableSharedFlow<T>> {
     val handle = this
     val inner = MutableSharedFlow<T>(replay, extraBufferCapacity, onBufferOverflow)
         .apply {
-            handle.get<T>(key)?.let { tryEmit(it) }
+            val restoredValue: T? = if (decode != null) {
+                val storedValue = handle.get<Any?>(key)
+                val storedBundle = storedValue as? Bundle ?: Bundle()
+                decode.invoke(storedBundle)
+            } else {
+                handle.get(key)
+            }
+            restoredValue?.let { tryEmit(it) }
         }
 
     return object : ReadOnlyProperty<Any?, MutableSharedFlow<T>>, MutableSharedFlow<T> by inner {
@@ -106,14 +115,14 @@ fun <T> SavedStateHandle.mutSharedFlow(
         override fun tryEmit(value: T): Boolean {
             val result = inner.tryEmit(value)
             if (result) {
-                handle[key] = value
+                handle[key] = encode?.invoke(value) ?: value
             }
 
             return result
         }
 
         override suspend fun emit(value: T) {
-            handle[key] = value
+            handle[key] = encode?.invoke(value) ?: value
             inner.emit(value)
         }
     }
