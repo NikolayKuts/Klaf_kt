@@ -6,16 +6,52 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import com.kuts.domain.common.ifNotNull
 import com.kuts.klaf.common.*
+import com.kuts.klaf.common.BaseMainViewModel
+import com.kuts.klaf.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import org.jetbrains.compose.resources.stringResource
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun DrawerActionView(
+internal fun DrawerActionDialog(
+    navController: NavHostController,
+    backStackEntry: NavBackStackEntry,
+    sharedViewModel: BaseMainViewModel,
+    drawerAction: DrawerAction,
+) {
+    val owner = remember(backStackEntry) {
+        navController.getBackStackEntry(navController.graph.findStartDestination().id)
+    }
+    val viewModel: BaseDeckListViewModel = koinViewModel(viewModelStoreOwner = owner)
+
+    val eventMessage = sharedViewModel.eventMessage.collectAsState(initial = null).value
+
+    DrawerActionDialogContent(
+        action = drawerAction,
+        loadingState = viewModel.drawerActionLoadingState.collectAsState().value,
+        onCloseDialog = { navController.popBackStack() },
+        onConfirmationClick = {
+            when (drawerAction) {
+                DrawerAction.LOG_OUT -> viewModel.logOut()
+                DrawerAction.DELETE_ACCOUNT -> viewModel.deleteAccount()
+            }
+        },
+        eventMessage = eventMessage,
+    )
+}
+
+@Composable
+private fun DrawerActionDialogContent(
     action: DrawerAction,
     loadingState: Boolean,
     onCloseDialog: () -> Unit,

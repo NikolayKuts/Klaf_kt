@@ -12,16 +12,44 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.klaf.common.*
+import com.kuts.klaf.common.NavigationDestination
 import com.kuts.klaf.common.NavigationDestination.*
+import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun SigningTypeChoosingView(
+internal fun SigningTypeChoosingDialog(
+    navController: NavHostController,
+    fromSourceDestination: NavigationDestination,
+) {
+    SigningTypeChoosingDialogContent(
+        fromSourceDestination = fromSourceDestination,
+        onSigningActionButtonClick = { action ->
+            val currentDestinationId = navController.currentDestination?.id
+
+            navController.navigate(
+                route = AppDestination.Authentication(
+                    authenticationAction = action,
+                    fromSourceDestination = fromSourceDestination,
+                )
+            ) {
+                currentDestinationId?.let { destinationId ->
+                    popUpTo(id = destinationId) { inclusive = true }
+                }
+            }
+        },
+        onCloseButtonClick = { navController.popBackStack() },
+    )
+}
+
+@Composable
+private fun SigningTypeChoosingDialogContent(
     fromSourceDestination: NavigationDestination,
     onSigningActionButtonClick: (action: AuthenticationAction) -> Unit,
     onCloseButtonClick: () -> Unit,

@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
@@ -24,8 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.kuts.domain.common.DateData
 import com.kuts.domain.common.DateUnit
-import com.kuts.klaf.common.asString
-import com.kuts.klaf.common.toLabelRes
+import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.ClosingButton
 import com.kuts.klaf.common.ConfirmationButton
 import com.kuts.klaf.common.ContentHolder
@@ -33,11 +34,33 @@ import com.kuts.klaf.common.DIALOG_APP_LABEL_SIZE
 import com.kuts.klaf.common.DialogAppLabel
 import com.kuts.klaf.common.FullBackgroundDialog
 import com.kuts.klaf.common.ScrollableBox
+import com.kuts.klaf.common.asString
+import com.kuts.klaf.common.toLabelRes
+import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.theme.MainTheme
 import org.jetbrains.compose.resources.stringResource
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
-fun DeckManagementScreen(
+internal fun DeckManagementScreen(
+    sharedViewModel: BaseMainViewModel,
+    deckId: Int,
+) {
+    val viewModel: BaseDeckManagementViewModel = koinViewModel(parameters = { parametersOf(deckId) })
+
+    CollectFlowWithLifecycle(flow = viewModel.eventMessage, onEach = sharedViewModel::notify)
+
+    Surface {
+        DeckManagementContent(
+            deckManagementState = viewModel.deckManagementState.collectAsState().value,
+            sendAction = viewModel::sendAction,
+        )
+    }
+}
+
+@Composable
+private fun DeckManagementContent(
     deckManagementState: DeckManagementState,
     sendAction: (IDeckManagementAction) -> Unit,
 ) {

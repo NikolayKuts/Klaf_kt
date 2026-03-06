@@ -18,12 +18,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.common.IDataSynchronizationState
 import com.kuts.domain.common.IDataSynchronizationState.Failed
 import com.kuts.domain.common.IDataSynchronizationState.Initial
@@ -31,6 +37,8 @@ import com.kuts.domain.common.IDataSynchronizationState.SuccessfullyFinished
 import com.kuts.domain.common.IDataSynchronizationState.Synchronizing
 import com.kuts.domain.common.IDataSynchronizationState.Uncertain
 import com.kuts.domain.common.ifNotNull
+import com.kuts.klaf.authentication.AuthenticationActionResult
+import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.ClosingButton
 import com.kuts.klaf.common.ContentHolder
 import com.kuts.klaf.common.EventMessage
@@ -43,13 +51,60 @@ import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.WarningMessage
 import com.kuts.klaf.common.noRippleClickable
 import com.kuts.klaf.deckList.common.AnimatedSynchronizationLabel
+import com.kuts.klaf.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.deckList.common.SynchronizationLabel
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import org.jetbrains.compose.resources.stringResource
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun DataSynchronizationDialogView(
+internal fun DataSynchronizationDialog(
+    navController: NavHostController,
+    backStackEntry: NavBackStackEntry,
+    sharedViewModel: BaseMainViewModel,
+    authenticationActionResult: AuthenticationActionResult?,
+) {
+    val owner = remember(backStackEntry) {
+        navController.getBackStackEntry(navController.graph.findStartDestination().id)
+    }
+    val viewModel: BaseDeckListViewModel = koinViewModel(viewModelStoreOwner = owner)
+
+    val eventMessage by sharedViewModel.eventMessage.collectAsState(initial = null)
+
+    DataSynchronizationDialogContent(
+        synchronizationState = viewModel.dataSynchronizationState.collectAsState().value,
+        onConfirmClick = viewModel::synchronizeData,
+        onCloseClick = { navController.popBackStack() },
+        onDispose = viewModel::resetSynchronizationState,
+        eventMassage = eventMessage,
+        onLaunched = {
+            if (authenticationActionResult?.isSuccessful != true) {
+                return@DataSynchronizationDialogContent
+            }
+
+            val messageId = when (authenticationActionResult.action) {
+                AuthenticationAction.SIGN_IN -> {
+                    Res.string.authentication_sign_in_success
+                }
+
+                AuthenticationAction.SIGN_UP -> {
+                    Res.string.authentication_sign_up_success
+                }
+            }
+
+            sharedViewModel.notify(
+                message = EventMessage(
+                    resId = messageId,
+                    type = EventMessage.Type.Positive,
+                )
+            )
+        },
+    )
+}
+
+@Composable
+private fun DataSynchronizationDialogContent(
     synchronizationState: IDataSynchronizationState,
     onConfirmClick: () -> Unit,
     onCloseClick: () -> Unit,

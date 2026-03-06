@@ -9,6 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -17,17 +20,82 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.MeasurePolicy
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.kuts.domain.common.*
 import com.kuts.domain.common.DeckReviewPassSuccessMark.*
 import com.kuts.domain.entities.DeckRepetitionInfo
 import com.kuts.klaf.common.*
+import com.kuts.klaf.common.BaseMainViewModel
+import com.kuts.klaf.common.EventMessage
+import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
-import org.jetbrains.compose.resources.stringResource
 import kotlin.math.max
+import org.jetbrains.compose.resources.stringResource
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
-fun DeckRepetitionInfoView(
+internal fun DeckRepetitionInfoDialog(
+    navController: NavHostController,
+    sharedViewModel: BaseMainViewModel,
+    deckId: Int,
+    deckName: String,
+    repetitionInfoEvent: RepetitionInfoEvent,
+) {
+    val viewModel: DeckRepetitionInfoViewModel = koinViewModel(
+        parameters = { parametersOf(deckId) }
+    )
+
+    CollectFlowWithLifecycle(flow = viewModel.eventMessage) { eventMessage ->
+        sharedViewModel.notify(message = eventMessage)
+        navController.popBackStack()
+    }
+
+    var isRepetitionInfoEventHandled by remember(repetitionInfoEvent) {
+        mutableStateOf(value = false)
+    }
+
+    DeckRepetitionInfoDialogContent(
+        viewModel = viewModel,
+        deckName = deckName,
+        onCloseClick = { navController.popBackStack() },
+        eventMessage = sharedViewModel.eventMessage.collectAsState(initial = null).value,
+        onRendered = {
+            if (isRepetitionInfoEventHandled) {
+                return@DeckRepetitionInfoDialogContent
+            }
+
+            val eventMessage = when (repetitionInfoEvent) {
+                RepetitionInfoEvent.ScheduledSuccessfully -> {
+                    EventMessage(
+                        resId = Res.string.deck_repetition_scheduled_successfully,
+                        type = EventMessage.Type.Positive,
+                    )
+                }
+
+                RepetitionInfoEvent.SchedulingFailed -> {
+                    EventMessage(
+                        resId = Res.string.deck_repetition_scheduling_failed,
+                        type = EventMessage.Type.Negative,
+                    )
+                }
+
+                RepetitionInfoEvent.OneRepetitionToFinish -> {
+                    EventMessage(resId = Res.string.deck_repetition_one_repetition_to_finish_iteration)
+                }
+
+                RepetitionInfoEvent.Non -> null
+            }
+
+            eventMessage?.let { sharedViewModel.notify(message = it) }
+            isRepetitionInfoEventHandled = true
+        },
+    )
+}
+
+@Composable
+private fun DeckRepetitionInfoDialogContent(
     viewModel: DeckRepetitionInfoViewModel,
     deckName: String,
     onCloseClick: () -> Unit,

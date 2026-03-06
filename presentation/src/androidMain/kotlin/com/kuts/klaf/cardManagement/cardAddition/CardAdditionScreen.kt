@@ -1,5 +1,9 @@
 package com.kuts.klaf.cardManagement.cardAddition
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +16,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -27,19 +32,87 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
 import com.cambridge.dictionary.core.Meaning
 import com.cambridge.dictionary.core.PartsOfSpeech
 import com.cambridge.dictionary.core.Phrase
 import com.cambridge.dictionary.core.Word
+import com.kuts.domain.common.ifTrue
 import com.kuts.klaf.cardManagement.common.BaseCardManagementViewModel
+import com.kuts.klaf.cardManagement.common.CardManagementView
 import com.kuts.klaf.cardManagement.common.ICambridgeDataState
 import com.kuts.klaf.cardManagement.common.ICardManagementAction
-import com.kuts.klaf.cardManagement.common.CardManagementView
+import com.kuts.klaf.common.BaseMainViewModel
+import com.kuts.klaf.navigation.CollectFlowWithLifecycle
+import com.kuts.klaf.navigation.ObserveAudioLifecycle
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
+
+private const val MIME_TYPE_TEXT_PLAIN = "text/plain"
+
+@Composable
+internal fun CardAdditionScreen(
+    backStackEntry: NavBackStackEntry,
+    sharedViewModel: BaseMainViewModel,
+    context: Context,
+    deckId: Int,
+) {
+    val viewModel: CardAdditionViewModel = koinViewModel(
+        viewModelStoreOwner = backStackEntry,
+        parameters = {
+            parametersOf(
+                deckId,
+                context.retrieveSmartSelectedWord(),
+            )
+        },
+    )
+
+    ObserveAudioLifecycle(
+        onCreate = viewModel.audioPlayer::onCreate,
+        onResume = viewModel.audioPlayer::onResume,
+        onStop = viewModel.audioPlayer::onStop,
+        onDestroy = viewModel.audioPlayer::onDestroy,
+    )
+
+    CollectFlowWithLifecycle(flow = viewModel.eventMessage, onEach = sharedViewModel::notify)
+
+    Surface {
+        CardManagementContent(viewModel = viewModel)
+    }
+}
+
+private fun Context.retrieveSmartSelectedWord(): String? {
+    val activity = findActivity() ?: return null
+
+    val intent = activity.intent ?: return null
+    if (intent.action != Intent.ACTION_PROCESS_TEXT) {
+        return null
+    }
+
+    val selectedWord = intent.type
+        ?.startsWith(MIME_TYPE_TEXT_PLAIN)
+        ?.ifTrue { intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString() }
+
+    if (selectedWord != null) {
+        intent.removeExtra(Intent.EXTRA_PROCESS_TEXT)
+        intent.action = Intent.ACTION_MAIN
+    }
+
+    return selectedWord
+}
+
+private tailrec fun Context.findActivity(): Activity? {
+    return when (this) {
+        is Activity -> this
+        is ContextWrapper -> baseContext.findActivity()
+        else -> null
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CardManagementScreen(
+internal fun CardManagementContent(
     viewModel: BaseCardManagementViewModel,
     isCambridgeBottomSheetEnabled: Boolean = true,
 ) {

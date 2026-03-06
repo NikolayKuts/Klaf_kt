@@ -1,5 +1,6 @@
 package com.kuts.klaf.deckRepetition
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
@@ -31,14 +32,18 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -50,6 +55,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavHostController
 import com.kuts.domain.common.CardRepetitionOrder
 import com.kuts.domain.common.CardSide
 import com.kuts.domain.common.DeckRepetitionState
@@ -59,6 +67,7 @@ import com.kuts.domain.enums.DifficultyRecallingLevel.GOOD
 import com.kuts.domain.enums.DifficultyRecallingLevel.HARD
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.ipa.toIpaPrompts
+import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.ButtonState
 import com.kuts.klaf.common.ContentHolder
 import com.kuts.klaf.common.DIALOG_APP_LABEL_SIZE
@@ -70,15 +79,99 @@ import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.TimerCountingState
 import com.kuts.klaf.common.WordInsightsBottomSheetContent
 import com.kuts.klaf.common.timeAsString
+import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent.Non
+import com.kuts.klaf.navigation.AppDestination
+import com.kuts.klaf.navigation.CollectFlowWithLifecycle
+import com.kuts.klaf.navigation.ObserveAudioLifecycle
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
+
+@Composable
+internal fun DeckRepetitionScreen(
+    navController: NavHostController,
+    backStackEntry: NavBackStackEntry,
+    sharedViewModel: BaseMainViewModel,
+    deckId: Int,
+    deckName: String,
+) {
+    val viewModel: BaseDeckReviewViewModel = koinViewModel(
+        viewModelStoreOwner = backStackEntry,
+        parameters = { parametersOf(deckId) },
+    )
+
+    ObserveAudioLifecycle(
+        onCreate = viewModel.audioPlayer::onCreate,
+        onResume = viewModel.audioPlayer::onResume,
+        onStop = viewModel.audioPlayer::onStop,
+        onDestroy = viewModel.audioPlayer::onDestroy,
+    )
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(key1 = lifecycleOwner, key2 = viewModel.timer) {
+        lifecycleOwner.lifecycle.addObserver(viewModel.timer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(viewModel.timer)
+        }
+    }
+
+    CollectFlowWithLifecycle(flow = viewModel.eventMessage, onEach = sharedViewModel::notify)
+
+    CollectFlowWithLifecycle(flow = viewModel.screenState) { state ->
+        if (
+            state is RepetitionScreenState.FinishState
+            && state.repetitionInfoEvent != Non
+        ) {
+            navController.navigate(
+                route = AppDestination.DeckRepetitionInfoDialog(
+                    deckId = deckId,
+                    deckName = deckName,
+                    repetitionInfoEvent = state.repetitionInfoEvent,
+                )
+            )
+        }
+    }
+
+    val screenState by viewModel.screenState.collectAsState(RepetitionScreenState.StartState)
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = screenState == RepetitionScreenState.RepetitionState) {
+        showExitDialog = showExitDialog.not()
+    }
+
+    Surface {
+        DeckRepetitionContent(
+            viewModel = viewModel,
+            showExitDialog = showExitDialog,
+            onShowExitDialogChange = { showExitDialog = it },
+            onExitConfirmed = { navController.popBackStack() },
+            onDeleteCardClick = { cardId ->
+                navController.navigate(
+                    route = AppDestination.DeckRepetitionCardDeletingDialog(
+                        deckId = deckId,
+                        cardId = cardId,
+                    )
+                )
+            },
+            onAddCardClick = {
+                navController.navigate(route = AppDestination.CardAddition(deckId = deckId))
+            },
+            onEditCardClick = { cardId ->
+                navController.navigate(route = AppDestination.CardEditing(deckId = deckId, cardId = cardId))
+            },
+        )
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeckReviewScreen(
+private fun DeckRepetitionContent(
     viewModel: BaseDeckReviewViewModel,
     showExitDialog: Boolean,
     onShowExitDialogChange: (Boolean) -> Unit,

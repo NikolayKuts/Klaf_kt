@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -31,23 +32,84 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.common.AuthenticationAction.SIGN_IN
 import com.kuts.domain.common.AuthenticationAction.SIGN_UP
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.ifTrue
 import com.kuts.klaf.common.AdaptiveScalableBox
+import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.ConfirmationButton
+import com.kuts.klaf.common.NavigationDestination
 import com.kuts.klaf.common.ROUNDED_ELEMENT_SIZE
+import com.kuts.klaf.navigation.AUTHENTICATION_RESULT_KEY
+import com.kuts.klaf.navigation.AppDestination
+import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.androidx.compose.koinViewModel
+
+@Composable
+internal fun AuthenticationScreen(
+    navController: NavHostController,
+    sharedViewModel: BaseMainViewModel,
+    authenticationAction: AuthenticationAction,
+    fromSourceDestination: NavigationDestination,
+) {
+    val viewModel: BaseAuthenticationViewModel = koinViewModel()
+
+    CollectFlowWithLifecycle(flow = viewModel.eventMessage, onEach = sharedViewModel::notify)
+
+    Surface {
+        AuthenticationContent(
+            action = authenticationAction,
+            viewModel = viewModel,
+            onAuthenticationFinished = { finishedAction ->
+                when (fromSourceDestination) {
+                    NavigationDestination.DECK_LIST_FRAGMENT -> {
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set(
+                                key = AUTHENTICATION_RESULT_KEY,
+                                value = Json.encodeToString(
+                                    AuthenticationActionResult(
+                                        action = finishedAction,
+                                        isSuccessful = true,
+                                    )
+                                )
+                            )
+
+                        navController.popBackStack()
+                    }
+
+                    NavigationDestination.DATA_SYNCHRONIZATION_DIALOG -> {
+                        navController.navigate(
+                            route = AppDestination.DataSynchronizationDialog(
+                                authenticationAction = finishedAction,
+                                isSuccessful = true,
+                            )
+                        ) {
+                            popUpTo(id = navController.graph.findStartDestination().id) {
+                                inclusive = false
+                            }
+                        }
+                    }
+                }
+            },
+        )
+    }
+}
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun AuthenticationScreen(
+private fun AuthenticationContent(
     viewModel: BaseAuthenticationViewModel,
     action: AuthenticationAction,
     onAuthenticationFinished: (authenticationAction: AuthenticationAction) -> Unit,

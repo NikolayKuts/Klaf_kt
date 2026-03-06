@@ -8,10 +8,11 @@ import com.kuts.klaf.cardTransferring.common.ICardTransferringAction
 import com.kuts.klaf.cardTransferring.common.ICardTransferringNavigationDestination.CardTransferringScreen as CardTransferringScreenDestination
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.CardDeletingDialogView
+import com.kuts.klaf.common.EventMessage
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-internal fun CardTransferringDeletingDialogDestination(
+internal fun CardTransferringDeletingDialog(
     navController: NavHostController,
     sharedViewModel: BaseMainViewModel,
     cardQuantity: Int,
@@ -19,9 +20,11 @@ internal fun CardTransferringDeletingDialogDestination(
     val owner = navController.previousBackStackEntry ?: return
 
     val viewModel: BaseCardTransferringViewModel = koinViewModel(viewModelStoreOwner = owner)
+    val eventMessage = sharedViewModel.eventMessage.collectAsState(initial = null).value
 
-    CardDeletingDialogView(
+    CardTransferringDeletingDialogContent(
         cardQuantity = cardQuantity,
+        eventMessage = eventMessage,
         onConfirmDeleting = {
             viewModel.sendAction(action = ICardTransferringAction.DeleteCards)
         },
@@ -30,6 +33,20 @@ internal fun CardTransferringDeletingDialogDestination(
                 action = ICardTransferringAction.NavigateTo(destination = CardTransferringScreenDestination)
             )
         },
-        eventMessage = sharedViewModel.eventMessage.collectAsState(initial = null).value,
+    )
+}
+
+@Composable
+private fun CardTransferringDeletingDialogContent(
+    cardQuantity: Int,
+    eventMessage: EventMessage?,
+    onConfirmDeleting: () -> Unit,
+    onCancel: () -> Unit,
+) {
+    CardDeletingDialogView(
+        cardQuantity = cardQuantity,
+        eventMessage = eventMessage,
+        onConfirmDeleting = onConfirmDeleting,
+        onCancel = onCancel,
     )
 }

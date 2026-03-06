@@ -35,6 +35,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,23 +54,90 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavHostController
 import com.kuts.domain.common.ifTrue
+import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.CustomCheckBox
 import com.kuts.klaf.common.RoundButton
 import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.noRippleClickable
 import com.kuts.klaf.common.rememberAsMutableStateOf
+import com.kuts.klaf.navigation.AppDestination
+import com.kuts.klaf.navigation.CollectFlowWithLifecycle
+import com.kuts.klaf.navigation.ObserveAudioLifecycle
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
+
+@Composable
+internal fun CardTransferringScreen(
+    navController: NavHostController,
+    backStackEntry: NavBackStackEntry,
+    sharedViewModel: BaseMainViewModel,
+    sourceDeckId: Int,
+) {
+    val viewModel: BaseCardTransferringViewModel = koinViewModel(
+        viewModelStoreOwner = backStackEntry,
+        parameters = { parametersOf(sourceDeckId) },
+    )
+
+    ObserveAudioLifecycle(
+        onCreate = viewModel.audioPlayer::onCreate,
+        onResume = viewModel.audioPlayer::onResume,
+        onStop = viewModel.audioPlayer::onStop,
+        onDestroy = viewModel.audioPlayer::onDestroy,
+    )
+
+    CollectFlowWithLifecycle(flow = viewModel.eventMessage, onEach = sharedViewModel::notify)
+
+    CollectFlowWithLifecycle(flow = viewModel.navigationEvent) { event ->
+        when (event) {
+            is ICardTransferringNavigationEvent.ToCardEditingScreen -> {
+                navController.navigate(
+                    route = AppDestination.CardEditing(
+                        deckId = event.deckId,
+                        cardId = event.cardId,
+                    )
+                )
+            }
+
+            ICardTransferringNavigationEvent.ToCardMovingDialog -> {
+                navController.navigate(route = AppDestination.CardMovingDialog)
+            }
+
+            is ICardTransferringNavigationEvent.ToCardAddingScreen -> {
+                navController.navigate(route = AppDestination.CardAddition(deckId = event.sourceDeckId))
+            }
+
+            is ICardTransferringNavigationEvent.ToCardDeletingDialog -> {
+                navController.navigate(
+                    route = AppDestination.CardTransferringDeletingDialog(
+                        cardQuantity = event.cardQuantity
+                    )
+                )
+            }
+
+            ICardTransferringNavigationEvent.ToPrevious -> {
+                navController.popBackStack()
+            }
+        }
+    }
+
+    Surface {
+        CardTransferringContent(viewModel = viewModel)
+    }
+}
 
 private const val CLOSING_ANIMATION_DELAY = 500L
 
 @Composable
-fun CardTransferringScreen(viewModel: BaseCardTransferringViewModel) {
+private fun CardTransferringContent(viewModel: BaseCardTransferringViewModel) {
     val deck = viewModel.sourceDeck.collectAsState(initial = null).value ?: return
     val cardHolders by viewModel.cardHolders.collectAsState()
     val listHeaderState by viewModel.listHeaderState.collectAsState()

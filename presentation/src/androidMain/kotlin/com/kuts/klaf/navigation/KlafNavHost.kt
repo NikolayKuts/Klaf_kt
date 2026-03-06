@@ -9,26 +9,26 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.kuts.domain.entities.Deck
 import com.kuts.klaf.authentication.AuthenticationActionResult
-import com.kuts.klaf.authentication.AuthenticationDestination
-import com.kuts.klaf.cardManagement.cardAddition.CardAdditionDestination
-import com.kuts.klaf.cardManagement.cardEditing.CardEditingDestination
-import com.kuts.klaf.cardTransferring.cardDeleting.CardTransferringDeletingDialogDestination
-import com.kuts.klaf.cardTransferring.common.CardTransferringDestination
-import com.kuts.klaf.cardTransferring.deckChoosing.CardMovingDialogDestination
-import com.kuts.klaf.cardViewing.CardViewingDestination
+import com.kuts.klaf.authentication.AuthenticationScreen
+import com.kuts.klaf.cardManagement.cardAddition.CardAdditionScreen
+import com.kuts.klaf.cardManagement.cardEditing.CardEditingScreen
+import com.kuts.klaf.cardTransferring.cardDeleting.CardTransferringDeletingDialog
+import com.kuts.klaf.cardTransferring.common.CardTransferringScreen
+import com.kuts.klaf.cardTransferring.deckChoosing.CardMovingDialog
+import com.kuts.klaf.cardViewing.CardViewingScreen
 import com.kuts.klaf.common.BaseMainViewModel
-import com.kuts.klaf.deckList.common.DeckListDestination
-import com.kuts.klaf.deckList.dataSynchronization.DataSynchronizationDialogDestination
-import com.kuts.klaf.deckList.deckCreation.DeckCreationDialogDestination
-import com.kuts.klaf.deckList.deckDeleting.DeckDeletingDialogDestination
-import com.kuts.klaf.deckList.deckNavigation.DeckNavigationDialogDestination
-import com.kuts.klaf.deckList.deckRenaming.DeckRenamingDialogDestination
-import com.kuts.klaf.deckList.drawer.DrawerActionDialogDestination
-import com.kuts.klaf.deckList.sygningTypeChoosing.SigningTypeChoosingDialogDestination
-import com.kuts.klaf.deckManagment.DeckManagementDestination
-import com.kuts.klaf.deckRepetition.DeckRepetitionDestination
-import com.kuts.klaf.deckRepetition.cardDeleting.DeckRepetitionCardDeletingDialogDestination
-import com.kuts.klaf.deckRepetitionInfo.DeckRepetitionInfoDialogDestination
+import com.kuts.klaf.deckList.common.DeckListScreen
+import com.kuts.klaf.deckList.dataSynchronization.DataSynchronizationDialog
+import com.kuts.klaf.deckList.deckCreation.DeckCreationDialog
+import com.kuts.klaf.deckList.deckDeleting.DeckDeletingDialog
+import com.kuts.klaf.deckList.deckNavigation.DeckNavigationDialog
+import com.kuts.klaf.deckList.deckRenaming.DeckRenamingDialog
+import com.kuts.klaf.deckList.drawer.DrawerActionDialog
+import com.kuts.klaf.deckList.sygningTypeChoosing.SigningTypeChoosingDialog
+import com.kuts.klaf.deckManagment.DeckManagementScreen
+import com.kuts.klaf.deckRepetition.DeckRepetitionScreen
+import com.kuts.klaf.deckRepetition.cardDeleting.DeckRepetitionCardDeletingDialog
+import com.kuts.klaf.deckRepetitionInfo.DeckRepetitionInfoDialog
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 
@@ -106,7 +106,7 @@ fun KlafNavHost(
         startDestination = AppDestination.DeckList,
     ) {
         buildComposableWithEntry<AppDestination.DeckList> { backStackEntry ->
-            DeckListDestination(
+            DeckListScreen(
                 navController = navController,
                 backStackEntry = backStackEntry,
                 sharedViewModel = sharedViewModel,
@@ -115,7 +115,7 @@ fun KlafNavHost(
         }
 
         buidDialogWithEntry<AppDestination.DeckCreationDialog> { backStackEntry ->
-            DeckCreationDialogDestination(
+            DeckCreationDialog(
                 navController = navController,
                 backStackEntry = backStackEntry,
                 sharedViewModel = sharedViewModel,
@@ -123,7 +123,7 @@ fun KlafNavHost(
         }
 
         buildDialog<AppDestination.DeckNavigationDialog> { backStackEntry, route ->
-            DeckNavigationDialogDestination(
+            DeckNavigationDialog(
                 navController = navController,
                 backStackEntry = backStackEntry,
                 sharedViewModel = sharedViewModel,
@@ -133,7 +133,7 @@ fun KlafNavHost(
         }
 
         buildDialog<AppDestination.DeckRenamingDialog> { backStackEntry, route ->
-            DeckRenamingDialogDestination(
+            DeckRenamingDialog(
                 navController = navController,
                 backStackEntry = backStackEntry,
                 sharedViewModel = sharedViewModel,
@@ -142,7 +142,7 @@ fun KlafNavHost(
         }
 
         buildDialog<AppDestination.DeckDeletingDialog> { backStackEntry, route ->
-            DeckDeletingDialogDestination(
+            DeckDeletingDialog(
                 navController = navController,
                 backStackEntry = backStackEntry,
                 sharedViewModel = sharedViewModel,
@@ -152,7 +152,7 @@ fun KlafNavHost(
         }
 
         buildComposable<AppDestination.DeckRepetition> { backStackEntry, route ->
-            DeckRepetitionDestination(
+            DeckRepetitionScreen(
                 navController = navController,
                 backStackEntry = backStackEntry,
                 sharedViewModel = sharedViewModel,
@@ -162,7 +162,7 @@ fun KlafNavHost(
         }
 
         buildDialog<AppDestination.DeckRepetitionCardDeletingDialog> { route ->
-            DeckRepetitionCardDeletingDialogDestination(
+            DeckRepetitionCardDeletingDialog(
                 navController = navController,
                 sharedViewModel = sharedViewModel,
                 deckId = route.deckId,
@@ -171,7 +171,7 @@ fun KlafNavHost(
         }
 
         buildDialog<AppDestination.DeckRepetitionInfoDialog> { route ->
-            DeckRepetitionInfoDialogDestination(
+            DeckRepetitionInfoDialog(
                 navController = navController,
                 sharedViewModel = sharedViewModel,
                 deckId = route.deckId,
@@ -181,7 +181,7 @@ fun KlafNavHost(
         }
 
         buildComposable<AppDestination.CardAddition> { backStackEntry, route ->
-            CardAdditionDestination(
+            CardAdditionScreen(
                 backStackEntry = backStackEntry,
                 sharedViewModel = sharedViewModel,
                 context = navController.context,
@@ -190,7 +190,7 @@ fun KlafNavHost(
         }
 
         buildComposable<AppDestination.CardEditing> { backStackEntry, route ->
-            CardEditingDestination(
+            CardEditingScreen(
                 navController = navController,
                 backStackEntry = backStackEntry,
                 sharedViewModel = sharedViewModel,
@@ -200,14 +200,14 @@ fun KlafNavHost(
         }
 
         buildComposable<AppDestination.CardViewing> { route ->
-            CardViewingDestination(
+            CardViewingScreen(
                 sharedViewModel = sharedViewModel,
                 deckId = route.deckId,
             )
         }
 
         buildDialog<AppDestination.DataSynchronizationDialog> { backStackEntry, route ->
-            DataSynchronizationDialogDestination(
+            DataSynchronizationDialog(
                 navController = navController,
                 backStackEntry = backStackEntry,
                 sharedViewModel = sharedViewModel,
@@ -221,14 +221,14 @@ fun KlafNavHost(
         }
 
         buildDialog<AppDestination.SigningTypeChoosingDialog> { route ->
-            SigningTypeChoosingDialogDestination(
+            SigningTypeChoosingDialog(
                 navController = navController,
                 fromSourceDestination = route.fromSourceDestination,
             )
         }
 
         buildComposable<AppDestination.Authentication> { route ->
-            AuthenticationDestination(
+            AuthenticationScreen(
                 navController = navController,
                 sharedViewModel = sharedViewModel,
                 authenticationAction = route.authenticationAction,
@@ -237,7 +237,7 @@ fun KlafNavHost(
         }
 
         buildDialog<AppDestination.DrawerActionDialog> { backStackEntry, route ->
-            DrawerActionDialogDestination(
+            DrawerActionDialog(
                 navController = navController,
                 backStackEntry = backStackEntry,
                 sharedViewModel = sharedViewModel,
@@ -246,7 +246,7 @@ fun KlafNavHost(
         }
 
         buildComposable<AppDestination.CardTransferring> { backStackEntry, route ->
-            CardTransferringDestination(
+            CardTransferringScreen(
                 navController = navController,
                 backStackEntry = backStackEntry,
                 sharedViewModel = sharedViewModel,
@@ -255,7 +255,7 @@ fun KlafNavHost(
         }
 
         buildDialog<AppDestination.CardTransferringDeletingDialog> { route ->
-            CardTransferringDeletingDialogDestination(
+            CardTransferringDeletingDialog(
                 navController = navController,
                 sharedViewModel = sharedViewModel,
                 cardQuantity = route.cardQuantity,
@@ -263,14 +263,14 @@ fun KlafNavHost(
         }
 
         buidDialogWithEntry<AppDestination.CardMovingDialog> {
-            CardMovingDialogDestination(
+            CardMovingDialog(
                 navController = navController,
                 sharedViewModel = sharedViewModel,
             )
         }
 
         buildComposable<AppDestination.DeckManagement> { route ->
-            DeckManagementDestination(
+            DeckManagementScreen(
                 sharedViewModel = sharedViewModel,
                 deckId = route.deckId,
             )

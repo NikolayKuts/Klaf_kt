@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -13,10 +14,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.entities.Card
 import com.kuts.domain.ipa.toCompletedViewingIpa
+import com.kuts.klaf.common.BaseMainViewModel
+import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.theme.MainTheme
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
-fun CardViewingScreen(viewModel: CardViewingViewModel) {
+internal fun CardViewingScreen(
+    sharedViewModel: BaseMainViewModel,
+    deckId: Int,
+) {
+    val viewModel: CardViewingViewModel = koinViewModel(parameters = { parametersOf(deckId) })
+
+    CollectFlowWithLifecycle(flow = viewModel.eventMessage, onEach = sharedViewModel::notify)
+
+    Surface {
+        CardViewingContent(viewModel = viewModel)
+    }
+}
+
+@Composable
+private fun CardViewingContent(viewModel: CardViewingViewModel) {
     val cards by viewModel.cards.collectAsState()
     val deck by viewModel.deck.collectAsState(initial = null)
 

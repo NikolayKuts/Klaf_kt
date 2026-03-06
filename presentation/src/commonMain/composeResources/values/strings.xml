@@ -43,6 +43,7 @@
         <string name="authentication_sync_data_message">To sync data, you must be authenticated. Please choose authentication action</string>
         <string name="authentication_type_choosing_message">Please choose authentication action</string>
         <string name="card_quantity_pointer">c</string>
+        <string name="card_moving_no_available_target_decks">No available target decks</string>
         <string name="data_synchronization_dialog_data_synchronized">The local and the remote data are synchronized</string>
         <string name="data_synchronization_dialog_failure_message">Data synchronization failed</string>
         <string name="data_synchronization_dialog_resync_question">Would you like to try again?</string>
