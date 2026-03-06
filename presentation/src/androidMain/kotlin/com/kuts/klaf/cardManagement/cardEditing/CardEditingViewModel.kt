@@ -1,5 +1,6 @@
 package com.kuts.klaf.cardManagement.cardEditing
 
+import androidx.annotation.StringRes
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
 import com.cambridge.dictionary.client.CambridgeClient
@@ -18,19 +19,19 @@ import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.domain.useCases.FetchWordMeaningInsightsUseCase
 import com.kuts.domain.useCases.UpdateCardUseCase
-import com.kuts.klaf.presentation.R
 import com.kuts.klaf.cardManagement.common.CardManagementState
 import com.kuts.klaf.cardManagement.common.CardManagementViewModel
 import com.kuts.klaf.cardManagement.common.toDomainEntity
 import com.kuts.klaf.cardManagement.common.toTextFieldValueIpaHolder
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
+import com.kuts.klaf.presentation.R
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 
 class CardEditingViewModel(
@@ -56,13 +57,6 @@ class CardEditingViewModel(
     fetchDeckById = fetchDeckById,
     checkIfWordExists = checkIfWordExists,
 ) {
-    companion object {
-
-        private const val DEFAULT_INSIGHTS_ERROR_MESSAGE = "Word insights request failed."
-        private const val INVALID_WORD_FORMAT_ERROR_MESSAGE =
-            "The word format is invalid. Please enter a real English word."
-        private const val NO_REFRESHED_DATA_MESSAGE = "There is no refreshed insights data to apply."
-    }
 
     private val originalCardState = MutableStateFlow<Card?>(value = null)
     private val _insightsUiState = MutableStateFlow(CardEditingInsightsUiState())
@@ -150,14 +144,14 @@ class CardEditingViewModel(
         if (!_insightsUiState.value.canRequestRefreshedInsights) return
 
         if (!foreignWord.isValidWordFormat()) {
-            setRefreshedInsightsError(errorMessage = INVALID_WORD_FORMAT_ERROR_MESSAGE)
+            setRefreshedInsightsError(errorMessageResId = R.string.word_insights_invalid_word_format)
             return
         }
 
         _insightsUiState.update { state ->
             state.copy(
                 refreshedMeanings = emptyList(),
-                refreshedErrorMessage = "",
+                refreshedErrorMessageResId = null,
                 isRefreshing = true,
             )
         }
@@ -169,13 +163,13 @@ class CardEditingViewModel(
             _insightsUiState.update { state ->
                 state.copy(
                     refreshedMeanings = refreshedMeanings,
-                    refreshedErrorMessage = "",
+                    refreshedErrorMessageResId = null,
                     isRefreshing = false,
                 )
             }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
             logE("Failed to refresh insights\n${throwable.stackTraceToString()}")
-            setRefreshedInsightsError(errorMessage = throwable.toInsightsErrorMessage())
+            setRefreshedInsightsError(errorMessageResId = R.string.word_insights_request_failed)
         }
     }
 
@@ -183,7 +177,7 @@ class CardEditingViewModel(
         val refreshedMeanings = _insightsUiState.value.refreshedMeanings
 
         if (refreshedMeanings.isEmpty()) {
-            setRefreshedInsightsError(errorMessage = NO_REFRESHED_DATA_MESSAGE)
+            setRefreshedInsightsError(errorMessageResId = R.string.word_insights_no_refreshed_data)
             return
         }
 
@@ -205,7 +199,7 @@ class CardEditingViewModel(
                     CardEditingInsightsStatus.Idle
                 },
                 refreshedMeanings = emptyList(),
-                refreshedErrorMessage = "",
+                refreshedErrorMessageResId = null,
                 isRefreshing = false,
                 isApplyingRefreshed = false,
                 isSheetVisible = state.isSheetVisible && candidateInsights.meanings.isNotEmpty(),
@@ -264,7 +258,7 @@ class CardEditingViewModel(
             if (!foreignWord.isValidWordFormat()) {
                 setInsightsError(
                     word = foreignWord,
-                    errorMessage = INVALID_WORD_FORMAT_ERROR_MESSAGE,
+                    errorMessageResId = R.string.word_insights_invalid_word_format,
                 )
                 return@launchWithState
             }
@@ -294,7 +288,7 @@ class CardEditingViewModel(
             logD("Gemini insights were auto-saved for cardId=${card.id}, foreignWord=$foreignWord")
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
             logE("Failed to auto-load Gemini insights\n${throwable.stackTraceToString()}")
-            setInsightsError(word = foreignWord, throwable = throwable)
+            setInsightsError(word = foreignWord, errorMessageResId = R.string.word_insights_request_failed)
         }
     }
 
@@ -372,9 +366,9 @@ class CardEditingViewModel(
                 } else {
                     CardEditingInsightsStatus.Idle
                 },
-                errorMessage = "",
+                errorMessageResId = null,
                 refreshedMeanings = emptyList(),
-                refreshedErrorMessage = "",
+                refreshedErrorMessageResId = null,
                 isRefreshing = false,
                 isApplyingRefreshed = false,
                 isSheetVisible = state.isSheetVisible && hasSanitizedMeanings,
@@ -408,9 +402,9 @@ class CardEditingViewModel(
             state.copy(
                 word = word.trim().ifEmpty { state.word },
                 status = CardEditingInsightsStatus.Loading,
-                errorMessage = "",
+                errorMessageResId = null,
                 refreshedMeanings = emptyList(),
-                refreshedErrorMessage = "",
+                refreshedErrorMessageResId = null,
                 isRefreshing = false,
                 isApplyingRefreshed = false,
                 isSheetVisible = false,
@@ -424,9 +418,9 @@ class CardEditingViewModel(
                 word = word.trim().ifEmpty { state.word },
                 meanings = emptyList(),
                 status = CardEditingInsightsStatus.Idle,
-                errorMessage = "",
+                errorMessageResId = null,
                 refreshedMeanings = emptyList(),
-                refreshedErrorMessage = "",
+                refreshedErrorMessageResId = null,
                 isRefreshing = false,
                 isApplyingRefreshed = false,
                 isSheetVisible = false,
@@ -434,22 +428,18 @@ class CardEditingViewModel(
         }
     }
 
-    private fun setInsightsError(word: String, throwable: Throwable) {
-        setInsightsError(
-            word = word,
-            errorMessage = throwable.toInsightsErrorMessage(),
-        )
-    }
-
-    private fun setInsightsError(word: String, errorMessage: String) {
+    private fun setInsightsError(
+        word: String,
+        @StringRes errorMessageResId: Int? = null,
+    ) {
         _insightsUiState.update { state ->
             state.copy(
                 word = word.trim().ifEmpty { state.word },
                 meanings = emptyList(),
                 status = CardEditingInsightsStatus.Error,
-                errorMessage = errorMessage,
+                errorMessageResId = errorMessageResId,
                 refreshedMeanings = emptyList(),
-                refreshedErrorMessage = "",
+                refreshedErrorMessageResId = null,
                 isRefreshing = false,
                 isApplyingRefreshed = false,
                 isSheetVisible = false,
@@ -457,23 +447,17 @@ class CardEditingViewModel(
         }
     }
 
-    private fun setRefreshedInsightsError(errorMessage: String) {
+    private fun setRefreshedInsightsError(
+        @StringRes errorMessageResId: Int? = null,
+    ) {
         _insightsUiState.update { state ->
             state.copy(
                 refreshedMeanings = emptyList(),
-                refreshedErrorMessage = errorMessage,
+                refreshedErrorMessageResId = errorMessageResId,
                 isRefreshing = false,
                 isApplyingRefreshed = false,
             )
         }
-    }
-
-    private fun Throwable.toInsightsErrorMessage(): String {
-        val parsedMessage = message
-            .orEmpty()
-            .trim()
-
-        return parsedMessage.ifEmpty { DEFAULT_INSIGHTS_ERROR_MESSAGE }
     }
 
     private fun Card.hasValidInsightsForCurrentWord(): Boolean {

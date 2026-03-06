@@ -118,15 +118,30 @@ fun DeckReviewScreen(
         }
 
         Row {
-            Text(text = "reviewed: ${deckReviewState.reviewedCardsCount}")
+            Text(
+                text = stringResource(
+                    id = R.string.deck_review_stat_reviewed_cards,
+                    deckReviewState.reviewedCardsCount
+                )
+            )
 
             Spacer(Modifier.width(10.dp))
 
-            Text(text = "max time: ${deckReviewState.maxTime.timeAsString}")
+            Text(
+                text = stringResource(
+                    id = R.string.deck_review_stat_max_time,
+                    deckReviewState.maxTime.timeAsString
+                )
+            )
 
             Spacer(Modifier.width(10.dp))
 
-            Text(text = "left: ${deckReviewState.leftTime.timeAsString}")
+            Text(
+                text = stringResource(
+                    id = R.string.deck_review_stat_left_time,
+                    deckReviewState.leftTime.timeAsString
+                )
+            )
         }
 
         Box(
@@ -226,7 +241,7 @@ fun DeckReviewScreen(
         }
     }
 
-    if (isInsightsSheetVisible && areInsightsAvailable) {
+    if (isInsightsSheetVisible) {
         ModalBottomSheet(
             onDismissRequest = viewModel::hideInsightsSheet,
             sheetState = insightsSheetState,
@@ -245,15 +260,16 @@ private fun InsightsSheetHandle(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val wordInsightsColors = MainTheme.colors.wordInsightsBottomSheet
     val containerColor = if (isEnabled) {
-        Color(0x664CAF50)
+        wordInsightsColors.reviewHandleEnabledContainer
     } else {
-        Color(0x331A1A1A)
+        wordInsightsColors.reviewHandleDisabledContainer
     }
     val textColor = if (isEnabled) {
-        Color(0xFF66BB6A)
+        wordInsightsColors.reviewHandleEnabledContent
     } else {
-        Color(0xFFB6B6B6)
+        wordInsightsColors.reviewHandleDisabledContent
     }
 
     Box(
@@ -267,7 +283,7 @@ private fun InsightsSheetHandle(
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = "Insights",
+            text = stringResource(id = R.string.word_insights_handle_label),
             color = textColor,
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Medium,

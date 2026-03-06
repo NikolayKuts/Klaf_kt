@@ -12,6 +12,7 @@ val LightMainPalettes = MainColors(
     deckListScreen = DeckListScreenColors.Theme.light,
     cardManagementView = CardManagementViewColors.Theme.light,
     deckRepetitionScreen = DeckRepetitionScreenColors.Theme.light,
+    wordInsightsBottomSheet = WordInsightsBottomSheetColors.Theme.light,
     dataSynchronizationView = DataSynchronizationViewColors.Theme.light,
     cardViewingScreen = CardViewingScreenColors.Theme.light,
     deckRepetitionInfoScreen = DeckRepetitionInfoScreenColors.Theme.light,
@@ -26,6 +27,7 @@ val DarkMainPalettes = MainColors(
     deckListScreen = DeckListScreenColors.Theme.dark,
     cardManagementView = CardManagementViewColors.Theme.dark,
     deckRepetitionScreen = DeckRepetitionScreenColors.Theme.dark,
+    wordInsightsBottomSheet = WordInsightsBottomSheetColors.Theme.dark,
     dataSynchronizationView = DataSynchronizationViewColors.Theme.dark,
     cardViewingScreen = CardViewingScreenColors.Theme.dark,
     deckRepetitionInfoScreen = DeckRepetitionInfoScreenColors.Theme.dark,
@@ -40,6 +42,7 @@ data class MainColors(
     val deckListScreen: DeckListScreenColors,
     val cardManagementView: CardManagementViewColors,
     val deckRepetitionScreen: DeckRepetitionScreenColors,
+    val wordInsightsBottomSheet: WordInsightsBottomSheetColors,
     val dataSynchronizationView: DataSynchronizationViewColors,
     val cardViewingScreen: CardViewingScreenColors,
     val deckRepetitionInfoScreen: DeckRepetitionInfoScreenColors,
@@ -251,6 +254,76 @@ data class DeckRepetitionScreenColors(
             addButton = Color(0xFF88A568),
             frontSideCardButton = Color(0xFF8CA86B),
             backSideCardButton = Color(0xFF81B7BD),
+        )
+    }
+}
+
+data class WordInsightsBottomSheetColors(
+    val editingHandleIdleContainer: Color,
+    val editingHandleLoadingContainer: Color,
+    val editingHandleSuccessContainer: Color,
+    val editingHandleErrorContainer: Color,
+    val editingHandleIdleIndicator: Color,
+    val editingHandleLoadingIndicator: Color,
+    val editingHandleSuccessIndicator: Color,
+    val editingHandleErrorIndicator: Color,
+    val reviewHandleEnabledContainer: Color,
+    val reviewHandleDisabledContainer: Color,
+    val reviewHandleEnabledContent: Color,
+    val reviewHandleDisabledContent: Color,
+    val levelA1BadgeBackground: Color,
+    val levelA2BadgeBackground: Color,
+    val levelB1BadgeBackground: Color,
+    val levelB2BadgeBackground: Color,
+    val levelC1BadgeBackground: Color,
+    val levelC2BadgeBackground: Color,
+    val levelBadgeContent: Color,
+) {
+
+    object Theme : IThemable<WordInsightsBottomSheetColors> {
+
+        override val light = WordInsightsBottomSheetColors(
+            editingHandleIdleContainer = Color(0xFF1A1A1A),
+            editingHandleLoadingContainer = Color(0xFF1A1A1A),
+            editingHandleSuccessContainer = Color(0x664CAF50),
+            editingHandleErrorContainer = Color(0x66E53935),
+            editingHandleIdleIndicator = Color(0xFFB6B6B6),
+            editingHandleLoadingIndicator = MaterialColorScheme.Theme.light.onBackground.copy(alpha = 0.9f),
+            editingHandleSuccessIndicator = Color(0xFF66BB6A),
+            editingHandleErrorIndicator = Color(0xFFEF5350),
+            reviewHandleEnabledContainer = Color(0x664CAF50),
+            reviewHandleDisabledContainer = Color(0x331A1A1A),
+            reviewHandleEnabledContent = Color(0xFF66BB6A),
+            reviewHandleDisabledContent = Color(0xFFB6B6B6),
+            levelA1BadgeBackground = Color(0x6943A047),
+            levelA2BadgeBackground = Color(0x7243A047),
+            levelB1BadgeBackground = Color(0x531E88E5),
+            levelB2BadgeBackground = Color(0x701565C0),
+            levelC1BadgeBackground = Color(0xC9FB8C00),
+            levelC2BadgeBackground = Color(0xCFE53935),
+            levelBadgeContent = Color(0xFFFFFFFF),
+        )
+
+        override val dark = WordInsightsBottomSheetColors(
+            editingHandleIdleContainer = Color(0xFF1A1A1A),
+            editingHandleLoadingContainer = Color(0xFF1A1A1A),
+            editingHandleSuccessContainer = Color(0x664CAF50),
+            editingHandleErrorContainer = Color(0x66E53935),
+            editingHandleIdleIndicator = Color(0xFFB6B6B6),
+            editingHandleLoadingIndicator = MaterialColorScheme.Theme.dark.onPrimary.copy(alpha = 0.9f),
+            editingHandleSuccessIndicator = Color(0xFF66BB6A),
+            editingHandleErrorIndicator = Color(0xFFEF5350),
+            reviewHandleEnabledContainer = Color(0x664CAF50),
+            reviewHandleDisabledContainer = Color(0x331A1A1A),
+            reviewHandleEnabledContent = Color(0xFF66BB6A),
+            reviewHandleDisabledContent = Color(0xFFB6B6B6),
+            levelA1BadgeBackground = Color(0x6943A047),
+            levelA2BadgeBackground = Color(0x7243A047),
+            levelB1BadgeBackground = Color(0x531E88E5),
+            levelB2BadgeBackground = Color(0x701565C0),
+            levelC1BadgeBackground = Color(0xC9FB8C00),
+            levelC2BadgeBackground = Color(0xCFE53935),
+            levelBadgeContent = Color(0xFFFFFFFF),
         )
     }
 }

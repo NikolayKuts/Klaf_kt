@@ -29,10 +29,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kuts.klaf.cardManagement.cardAddition.CardManagementScreen
 import com.kuts.klaf.common.WordInsightsBottomSheetContent
+import com.kuts.klaf.presentation.R
+import com.kuts.klaf.theme.MainTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,7 +69,7 @@ internal fun CardEditingScreen(viewModel: CardEditingViewModel) {
                     word = insightsUiState.word,
                     meanings = insightsUiState.meanings,
                     refreshedMeanings = insightsUiState.refreshedMeanings,
-                    refreshedErrorMessage = insightsUiState.refreshedErrorMessage,
+                    refreshedErrorMessageResId = insightsUiState.refreshedErrorMessageResId,
                     isRefreshing = insightsUiState.isRefreshing,
                     isApplyingRefreshed = insightsUiState.isApplyingRefreshed,
                     canRequestRefreshedInsights = insightsUiState.canRequestRefreshedInsights,
@@ -77,7 +80,7 @@ internal fun CardEditingScreen(viewModel: CardEditingViewModel) {
             } else {
                 InsightsErrorBottomSheetContent(
                     word = insightsUiState.word,
-                    errorMessage = insightsUiState.errorMessage,
+                    errorMessageResId = insightsUiState.errorMessageResId,
                 )
             }
         }
@@ -91,17 +94,19 @@ private fun InsightsSheetHandle(
     isEnabled: Boolean,
     onClick: () -> Unit,
 ) {
+    val wordInsightsColors = MainTheme.colors.wordInsightsBottomSheet
+
     val containerColor = when (status) {
-        CardEditingInsightsStatus.Idle -> Color(0xFF1A1A1A)
-        CardEditingInsightsStatus.Loading -> Color(0xFF1A1A1A)
-        CardEditingInsightsStatus.Success -> Color(0x664CAF50)
-        CardEditingInsightsStatus.Error -> Color(0x66E53935)
+        CardEditingInsightsStatus.Idle -> wordInsightsColors.editingHandleIdleContainer
+        CardEditingInsightsStatus.Loading -> wordInsightsColors.editingHandleLoadingContainer
+        CardEditingInsightsStatus.Success -> wordInsightsColors.editingHandleSuccessContainer
+        CardEditingInsightsStatus.Error -> wordInsightsColors.editingHandleErrorContainer
     }
     val indicatorColor = when (status) {
-        CardEditingInsightsStatus.Idle -> Color(0xFFB6B6B6)
-        CardEditingInsightsStatus.Loading -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
-        CardEditingInsightsStatus.Success -> Color(0xFF66BB6A)
-        CardEditingInsightsStatus.Error -> Color(0xFFEF5350)
+        CardEditingInsightsStatus.Idle -> wordInsightsColors.editingHandleIdleIndicator
+        CardEditingInsightsStatus.Loading -> wordInsightsColors.editingHandleLoadingIndicator
+        CardEditingInsightsStatus.Success -> wordInsightsColors.editingHandleSuccessIndicator
+        CardEditingInsightsStatus.Error -> wordInsightsColors.editingHandleErrorIndicator
     }
     val handleModifier = modifier
         .background(
@@ -192,7 +197,7 @@ private fun InsightsLoadingDot(color: Color, alpha: Float) {
 @Composable
 private fun InsightsErrorBottomSheetContent(
     word: String,
-    errorMessage: String,
+    errorMessageResId: Int?,
 ) {
     Column(
         modifier = Modifier
@@ -201,7 +206,7 @@ private fun InsightsErrorBottomSheetContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(
-            text = "Word insights",
+            text = stringResource(id = R.string.word_insights_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
         )
@@ -215,13 +220,14 @@ private fun InsightsErrorBottomSheetContent(
         }
 
         Text(
-            text = "Unable to load insights for this word.",
+            text = stringResource(id = R.string.word_insights_loading_error_message),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         Text(
-            text = errorMessage.ifBlank { "Unknown request error." },
+            text = errorMessageResId?.let { stringResource(id = it) }
+                ?: stringResource(id = R.string.word_insights_unknown_request_error),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.error,
         )

@@ -1,5 +1,6 @@
 package com.kuts.klaf.cardManagement.cardEditing
 
+import androidx.annotation.StringRes
 import com.kuts.domain.entities.WordMeaningItem
 
 enum class CardEditingInsightsStatus {
@@ -13,9 +14,9 @@ data class CardEditingInsightsUiState(
     val word: String = "",
     val meanings: List<WordMeaningItem> = emptyList(),
     val status: CardEditingInsightsStatus = CardEditingInsightsStatus.Idle,
-    val errorMessage: String = "",
+    @StringRes val errorMessageResId: Int? = null,
     val refreshedMeanings: List<WordMeaningItem> = emptyList(),
-    val refreshedErrorMessage: String = "",
+    @StringRes val refreshedErrorMessageResId: Int? = null,
     val isRefreshing: Boolean = false,
     val isApplyingRefreshed: Boolean = false,
     val isSheetVisible: Boolean = false,
