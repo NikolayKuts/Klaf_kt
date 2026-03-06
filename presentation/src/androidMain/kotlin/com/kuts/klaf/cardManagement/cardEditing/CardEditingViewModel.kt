@@ -471,9 +471,6 @@ class CardEditingViewModel(
     private fun Throwable.toInsightsErrorMessage(): String {
         val parsedMessage = message
             .orEmpty()
-            .lineSequence()
-            .firstOrNull()
-            .orEmpty()
             .trim()
 
         return parsedMessage.ifEmpty { DEFAULT_INSIGHTS_ERROR_MESSAGE }

@@ -20,11 +20,15 @@ abstract class BaseDeckReviewViewModel : ViewModel(), IEventMessageSource {
     abstract val deck: SharedFlow<Deck?>
     abstract val screenState: SharedFlow<RepetitionScreenState>
     abstract val cardState: SharedFlow<DeckRepetitionState>
+    abstract val isInsightsAvailable: StateFlow<Boolean>
+    abstract val isInsightsSheetVisible: StateFlow<Boolean>
     abstract val mainButtonState: StateFlow<ButtonState>
     abstract val cardDeletingState: StateFlow<LoadingState<UnitSurrogate, UnitSurrogate>>
     abstract val deckReviewState: StateFlow<DeckReviewState>
 
     abstract fun pronounceWord()
+    abstract fun showInsightsSheet()
+    abstract fun hideInsightsSheet()
     abstract fun startRepeating()
     abstract fun turnCard()
     abstract fun changeRepetitionOrder()

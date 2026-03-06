@@ -30,8 +30,12 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -51,6 +55,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.CardRepetitionOrder
@@ -72,11 +77,13 @@ import com.kuts.klaf.common.Pointer
 import com.kuts.klaf.common.RoundButton
 import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.TimerCountingState
+import com.kuts.klaf.common.WordInsightsBottomSheetContent
 import com.kuts.klaf.common.timeAsString
 import com.kuts.klaf.theme.MainTheme
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeckReviewScreen(
     viewModel: BaseDeckReviewViewModel,
@@ -99,6 +106,10 @@ fun DeckReviewScreen(
     var showExitDialog by remember { mutableStateOf(false) }
 
     val deckReviewState by viewModel.deckReviewState.collectAsState()
+    val currentCard = repetitionState.card
+    val areInsightsAvailable by viewModel.isInsightsAvailable.collectAsState()
+    val isInsightsSheetVisible by viewModel.isInsightsSheetVisible.collectAsState()
+    val insightsSheetState = rememberModalBottomSheetState()
 
     ScrollableBox { parentHeightPx ->
         val contentHeight = when {
@@ -156,6 +167,13 @@ fun DeckReviewScreen(
                     onWordClick = { viewModel.pronounceWord() },
                 )
 
+                InsightsSheetHandle(
+                    modifier = Modifier
+                        .padding(bottom = 8.dp),
+                    isEnabled = areInsightsAvailable,
+                    onClick = viewModel::showInsightsSheet,
+                )
+
                 RepetitionButtons(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -198,12 +216,62 @@ fun DeckReviewScreen(
         showExitDialog = showExitDialog.not()
     }
 
-    LaunchedEffect(key1 = showExitDialog) {
-        if (showExitDialog) {
+    val shouldPauseTimer = showExitDialog || isInsightsSheetVisible
+
+    LaunchedEffect(key1 = shouldPauseTimer) {
+        if (shouldPauseTimer) {
             viewModel.pauseTimerCounting()
         } else {
             viewModel.resumeTimerCounting()
         }
+    }
+
+    if (isInsightsSheetVisible && areInsightsAvailable) {
+        ModalBottomSheet(
+            onDismissRequest = viewModel::hideInsightsSheet,
+            sheetState = insightsSheetState,
+        ) {
+            WordInsightsBottomSheetContent(
+                word = currentCard?.wordMeaningInsights?.word.orEmpty(),
+                meanings = currentCard?.wordMeaningInsights?.meanings.orEmpty(),
+            )
+        }
+    }
+}
+
+@Composable
+private fun InsightsSheetHandle(
+    isEnabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val containerColor = if (isEnabled) {
+        Color(0x664CAF50)
+    } else {
+        Color(0x331A1A1A)
+    }
+    val textColor = if (isEnabled) {
+        Color(0xFF66BB6A)
+    } else {
+        Color(0xFFB6B6B6)
+    }
+
+    Box(
+        modifier = modifier
+            .clip(shape = RoundedCornerShape(16.dp))
+            .background(color = containerColor)
+            .let { currentModifier ->
+                if (isEnabled) currentModifier.clickable(onClick = onClick) else currentModifier
+            }
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "Insights",
+            color = textColor,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Medium,
+        )
     }
 }
 

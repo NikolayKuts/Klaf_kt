@@ -61,13 +61,14 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -151,6 +152,16 @@ class DeckReviewViewModel(
         replay = 1
     )
 
+    override val isInsightsAvailable: StateFlow<Boolean> = currentCard.map { card ->
+        card.hasInsightsForCurrentWord()
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = false
+    )
+    private val mutableInsightsSheetVisible = MutableStateFlow(value = false)
+    override val isInsightsSheetVisible: StateFlow<Boolean> = mutableInsightsSheetVisible
+
     private val reviewedCardIds = handleDelegates.reviewedCardIds
 
     override val deckReviewState = handleDelegates.deckReviewState
@@ -180,6 +191,17 @@ class DeckReviewViewModel(
                 audioPlayer.play()
             }
         }
+    }
+
+    override fun showInsightsSheet() {
+        val cardForSheet = currentCard.replayCache.firstOrNull() ?: return
+        if (!cardForSheet.hasInsightsForCurrentWord()) return
+
+        mutableInsightsSheetVisible.value = true
+    }
+
+    override fun hideInsightsSheet() {
+        mutableInsightsSheetVisible.value = false
     }
 
     override fun startRepeating() {
@@ -350,8 +372,22 @@ class DeckReviewViewModel(
     }
 
     private fun observeCurrentCard() {
-        currentCard.filterNotNull()
-            .onEach { card -> audioPlayer.preparePronunciation(word = card.foreignWord) }
+        currentCard
+            .onEach { card ->
+                if (card == null) {
+                    hideInsightsSheet()
+                    return@onEach
+                }
+
+                val mustHideSheetBecauseInsightsUnavailable = mutableInsightsSheetVisible.value
+                        && !card.hasInsightsForCurrentWord()
+
+                if (mustHideSheetBecauseInsightsUnavailable) {
+                    hideInsightsSheet()
+                }
+
+                audioPlayer.preparePronunciation(word = card.foreignWord)
+            }
             .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
                 logE("Failed to observe current card during repetition\n${throwable.stackTraceToString()}")
                 eventMessage.tryEmitAsNegative(resId = R.string.problem_with_fetching_card)
@@ -650,5 +686,14 @@ class DeckReviewViewModel(
     } catch (e: Exception) {
         logE("Scheduling deck review notification failed\n${e.stackTraceToString()}")
         RepetitionInfoEvent.SchedulingFailed
+    }
+
+    private fun Card?.hasInsightsForCurrentWord(): Boolean {
+        this ?: return false
+
+        val insights = wordMeaningInsights
+        if (!insights.hasData()) return false
+
+        return insights.word.trim().lowercase() == foreignWord.trim().lowercase()
     }
 }
