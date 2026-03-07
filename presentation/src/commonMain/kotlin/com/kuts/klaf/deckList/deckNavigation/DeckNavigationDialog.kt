@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.kuts.domain.common.ifNotNull
 import com.kuts.klaf.common.*
@@ -34,7 +33,7 @@ internal fun DeckNavigationDialog(
     deckName: String,
 ) {
     val owner = remember(backStackEntry) {
-        navController.getBackStackEntry(navController.graph.findStartDestination().id)
+        navController.getBackStackEntry(route = AppDestination.DeckList)
     }
     val viewModel: BaseDeckListViewModel = koinViewModel(viewModelStoreOwner = owner)
 
@@ -99,10 +98,9 @@ private fun NavHostController.navigateAndCloseCurrentDialog(
     backStackEntry: NavBackStackEntry,
     destination: AppDestination
 ) {
-    this.currentBackStackEntry
     navigate(route = destination) {
-        popUpTo(id = backStackEntry.destination.id) {
-            inclusive = true
+        backStackEntry.destination.route?.let { currentRoute ->
+            popUpTo(route = currentRoute) { inclusive = true }
         }
     }
 }

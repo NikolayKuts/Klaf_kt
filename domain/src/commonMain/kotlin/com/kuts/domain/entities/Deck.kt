@@ -1,7 +1,8 @@
 package com.kuts.domain.entities
 
 import com.kuts.domain.common.UNASSIGNED_LONG_VALUE
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 data class Deck(
     val name: String,
@@ -29,6 +30,7 @@ data class Deck(
     val lastRepetitionIterationDate: Long? get() = reviewPassDates.lastOrNull()
     val scheduledDate: Long? get() = scheduledReviewDates.lastOrNull()
     val scheduledDateOrUnassignedValue: Long get() = scheduledDate ?: UNASSIGNED_LONG_VALUE
+    @OptIn(ExperimentalTime::class)
     val existenceDayQuantity: Long get() {
         val dayInMillis = 24L * 60L * 60L * 1000L
         val currentTime = Clock.System.now().toEpochMilliseconds()

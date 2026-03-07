@@ -27,7 +27,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.common.IDataSynchronizationState
@@ -53,6 +52,7 @@ import com.kuts.klaf.common.noRippleClickable
 import com.kuts.klaf.deckList.common.AnimatedSynchronizationLabel
 import com.kuts.klaf.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.deckList.common.SynchronizationLabel
+import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import org.jetbrains.compose.resources.stringResource
@@ -66,7 +66,7 @@ internal fun DataSynchronizationDialog(
     authenticationActionResult: AuthenticationActionResult?,
 ) {
     val owner = remember(backStackEntry) {
-        navController.getBackStackEntry(navController.graph.findStartDestination().id)
+        navController.getBackStackEntry(route = AppDestination.DeckList)
     }
     val viewModel: BaseDeckListViewModel = koinViewModel(viewModelStoreOwner = owner)
 

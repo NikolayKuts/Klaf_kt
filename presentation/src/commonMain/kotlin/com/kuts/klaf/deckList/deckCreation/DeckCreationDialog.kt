@@ -6,12 +6,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.deckList.common.DeckNamingView
+import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import org.jetbrains.compose.resources.stringResource
@@ -24,7 +24,7 @@ internal fun DeckCreationDialog(
     sharedViewModel: BaseMainViewModel,
 ) {
     val owner = remember(backStackEntry) {
-        navController.getBackStackEntry(navController.graph.findStartDestination().id)
+        navController.getBackStackEntry(route = AppDestination.DeckList)
     }
     val viewModel: BaseDeckListViewModel = koinViewModel(viewModelStoreOwner = owner)
     val message by sharedViewModel.eventMessage.collectAsState(initial = null)

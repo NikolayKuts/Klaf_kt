@@ -12,6 +12,12 @@ plugins {
 kotlin {
     jvmToolchain(17)
 
+    jvm("desktop") {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
@@ -25,15 +31,22 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(project(Modules.Domain))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${libs.versions.coroutinesCoreJvm.get()}")
+                implementation(libs.core.coroutines.core)
                 implementation(libs.kotlin.serilization)
                 implementation(libs.datastore.core)
                 implementation(libs.ktor.client.core)
+                implementation(libs.ktor.serialization.kotlinx.json)
+                implementation(libs.ktor.client.content.negotiation)
                 implementation(libs.room.runtime)
                 implementation(libs.sqlite.bundled)
             }
         }
-        androidMain {
+        val desktopMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.cio)
+            }
+        }
+        val androidMain by getting {
             dependencies {
                 implementation(libs.core.android.ktx)
 
@@ -48,10 +61,7 @@ kotlin {
 
                 implementation(libs.work.manager)
 
-                implementation(libs.ktor.serialization.kotlinx.json)
                 implementation(libs.ktor.client.okhttp)
-                implementation(libs.ktor.client.cio)
-                implementation(libs.ktor.client.content.negotiation)
 
                 implementation(libs.lokdroid)
             }
@@ -82,6 +92,7 @@ android {
 dependencies {
     setOf(
         "kspCommonMainMetadata",
+        "kspDesktop",
         "kspAndroid",
         "kspIosX64",
         "kspIosArm64",

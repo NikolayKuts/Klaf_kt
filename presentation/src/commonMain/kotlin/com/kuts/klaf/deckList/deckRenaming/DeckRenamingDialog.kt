@@ -10,12 +10,12 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.deckList.common.DeckNamingView
+import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import org.jetbrains.compose.resources.stringResource
@@ -29,7 +29,7 @@ internal fun DeckRenamingDialog(
     deckId: Int,
 ) {
     val owner = remember(backStackEntry) {
-        navController.getBackStackEntry(navController.graph.findStartDestination().id)
+        navController.getBackStackEntry(route = AppDestination.DeckList)
     }
     val viewModel: BaseDeckListViewModel = koinViewModel(viewModelStoreOwner = owner)
     val deck = viewModel.getDeckById(deckId = deckId)

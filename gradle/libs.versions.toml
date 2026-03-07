@@ -25,6 +25,7 @@ androidxCore = "1.13.1"
 androidxAppCompat = "1.7.0"
 androidxLegacySupport = "1.0.0"
 coroutinesCoreJvm = "1.7.3"
+datetime = "0.7.1"
 javaxInject = "1"
 
 # Tests #
@@ -89,6 +90,8 @@ core-app-compat = { group = "androidx.appcompat", name = "appcompat", version.re
 core-legacy-support = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "androidxLegacySupport" }
 core-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutinesCoreJvm" }
 core-coroutines-core-jvm = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core-jvm", version.ref = "coroutinesCoreJvm" }
+core-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "coroutinesCoreJvm" }
+core-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "datetime" }
 core-javax-inject = { group = "javax.inject", name = "javax.inject", version.ref = "javaxInject" }
 
 # Tests #
@@ -143,6 +146,7 @@ compose-compiler = { group = "androidx.compose.compiler", name = "compiler", ver
 compose-activity = { group = "androidx.activity", name = "activity-compose" }
 compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 compose-ui = { group = "androidx.compose.ui", name = "ui" }
+compose-ui-backhandler = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "composeMultiplatform" }
 compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3" }

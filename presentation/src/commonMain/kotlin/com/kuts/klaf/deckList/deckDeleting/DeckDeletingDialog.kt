@@ -11,12 +11,12 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.kuts.domain.common.ifNotNull
 import com.kuts.klaf.common.*
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.deckList.common.BaseDeckListViewModel
+import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import org.jetbrains.compose.resources.stringResource
@@ -31,7 +31,7 @@ internal fun DeckDeletingDialog(
     deckName: String,
 ) {
     val owner = remember(backStackEntry) {
-        navController.getBackStackEntry(navController.graph.findStartDestination().id)
+        navController.getBackStackEntry(route = AppDestination.DeckList)
     }
     val viewModel: BaseDeckListViewModel = koinViewModel(viewModelStoreOwner = owner)
     val eventMessage by sharedViewModel.eventMessage.collectAsState(initial = null)

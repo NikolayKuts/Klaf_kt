@@ -9,6 +9,8 @@ plugins {
 kotlin {
     jvmToolchain(17)
 
+    jvm("desktop")
+
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
@@ -21,8 +23,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${libs.versions.coroutinesCoreJvm.get()}")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+                implementation(libs.core.coroutines.core)
+                implementation(libs.core.datetime)
                 implementation(libs.kotlin.serilization)
             }
         }

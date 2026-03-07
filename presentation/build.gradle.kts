@@ -11,6 +11,8 @@ plugins {
 kotlin {
     jvmToolchain(17)
 
+    jvm("desktop")
+
     androidTarget()
     iosX64()
     iosArm64()
@@ -22,22 +24,20 @@ kotlin {
                 implementation(project(Modules.Domain))
                 implementation(libs.core.coroutines.core)
                 implementation(libs.kotlin.serilization)
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+                implementation(libs.core.datetime)
                 implementation(libs.datastore.preferences.core)
-                implementation(libs.moko.permissions)
-                implementation(libs.moko.permissions.notifications)
                 implementation(compose.components.resources)
 
                 implementation(compose.runtime)
                 implementation(compose.ui)
-                implementation("org.jetbrains.compose.ui:ui-backhandler:${libs.versions.composeMultiplatform.get()}")
+                implementation(libs.compose.ui.backhandler)
                 implementation(compose.foundation)
                 implementation(compose.material3)
                 implementation(libs.navigation.compose)
 
                 implementation(libs.lifecycle.runtime)
                 implementation(libs.lifecycle.runtime.compose)
-                implementation(libs.lifecycle.viewmodel)
+                api(libs.lifecycle.viewmodel)
                 implementation(libs.lifecycle.viewmodel.savedstate)
 
                 implementation(libs.koin.compose)
@@ -54,17 +54,15 @@ kotlin {
 
                 implementation(libs.lifecycle.viewmodel.ktx)
                 implementation(libs.lifecycle.livedata.ktx)
-                implementation(libs.lifecycle.viewmodel.savedstate)
                 implementation(libs.lifecycle.viewmodel.compose)
-                implementation(libs.lifecycle.runtime.compose)
 
                 implementation(libs.koin.android)
-                implementation(libs.koin.compose)
-                implementation(libs.koin.compose.viewmodel)
+                implementation(libs.moko.permissions)
+                implementation(libs.moko.permissions.notifications)
 
                 implementation(libs.firebase.authentication)
 
-                implementation(platform("androidx.compose:compose-bom:${libs.versions.composeBom.get()}"))
+                implementation(platform(libs.compose.bom.get()))
                 implementation(libs.compose.runtime)
                 implementation(libs.compose.ui)
                 implementation(libs.compose.foundation)

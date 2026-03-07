@@ -9,6 +9,12 @@ plugins {
 kotlin {
     jvmToolchain(17)
 
+    jvm("desktop") {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
@@ -23,19 +29,23 @@ kotlin {
             dependencies {
                 implementation(project(Modules.Domain))
                 implementation(project(Modules.Data))
+                implementation(project(Modules.Presentation))
                 implementation(libs.koin.core)
+                implementation(libs.ktor.client.core)
+            }
+        }
+        val desktopMain by getting {
+            dependencies {
+                implementation(libs.koin.compose.viewmodel)
             }
         }
         val androidMain by getting {
             dependencies {
-                implementation(project(Modules.Presentation))
-
                 implementation(libs.core.coroutines.core.jvm)
                 implementation(libs.work.manager)
                 implementation(libs.datastore.android)
                 implementation(libs.datastore.preferences.android)
                 implementation(libs.room.runtime)
-                implementation(libs.ktor.client.core)
 
                 implementation(libs.firebase.rirestore.ktx)
                 implementation(libs.firebase.authentication)

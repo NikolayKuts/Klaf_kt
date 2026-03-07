@@ -11,12 +11,12 @@ import com.kuts.klaf.common.create
 import com.kuts.klaf.common.mutSharedFlow
 import com.kuts.klaf.common.mutStateFlow
 import com.kuts.klaf.deckRepetition.DeckReviewState
-import com.kuts.klaf.deckRepetition.DeckReviewStateStore
+import com.kuts.klaf.deckRepetition.IDeckReviewStateStore
 import com.kuts.klaf.deckRepetition.RepetitionScreenState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 
-class DeckReviewSavedStateHandleStateStore(handle: SavedStateHandle) : DeckReviewStateStore {
+class DeckReviewSavedStateHandleStateStore(handle: SavedStateHandle) : IDeckReviewStateStore {
 
     companion object {
         private const val MAIN_BUTTON_STATE = "main_button_state"

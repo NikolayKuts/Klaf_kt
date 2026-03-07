@@ -9,7 +9,8 @@ import com.kuts.klaf.common.ButtonState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 
-interface DeckReviewStateStore {
+interface IDeckReviewStateStore {
+
     val mainButtonState: MutableStateFlow<ButtonState>
     val screenState: MutableSharedFlow<RepetitionScreenState>
     val cardDeletingState: MutableStateFlow<LoadingState<UnitSurrogate, UnitSurrogate>>

@@ -25,9 +25,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.IntOffset
@@ -41,11 +41,6 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import com.kuts.klaf.common.verticalScrollbar
 import com.kuts.klaf.theme.MainTheme
-
-private enum class PopupDirection {
-    Above,
-    Below,
-}
 
 @Composable
 fun <T : IWordable> DropDownWordField(
@@ -66,13 +61,11 @@ fun <T : IWordable> DropDownWordField(
 ) {
     Box(modifier = Modifier) {
         val density = LocalDensity.current
-        val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
-        val availableHeightDp = screenHeightDp
         var textFieldPosition by remember { mutableStateOf(Offset.Zero) }
         var textFieldSize by remember { mutableStateOf(IntSize.Zero) }
+        var rootContainerHeightPx by remember { mutableStateOf(0) }
         var itemHeightDp by rememberAsMutableStateOf(value = 10.dp)
         var popupContentContainerHeightDp by rememberAsMutableStateOf(value = 0.dp)
-        var popupDirection by remember { mutableStateOf(PopupDirection.Below) }
         val popupMenuPadding = 6.dp
         var bottomDropdownMenuContentHeightDp by remember { mutableStateOf(0.dp) }
 
@@ -92,31 +85,26 @@ fun <T : IWordable> DropDownWordField(
             itemHeightDp,
             textFieldPosition,
             bottomDropdownMenuContentHeightDp,
-            availableHeightDp,
+            rootContainerHeightPx,
         ) {
-            val textFieldTopDp = density.run { textFieldPosition.y.toDp() }
-            val textFieldBottomDp = textFieldTopDp + density.run { textFieldSize.height.toDp() }
-            val freeContentHeightBelow =
-                (availableHeightDp - textFieldBottomDp - popupMenuPadding * 2).coerceAtLeast(0.dp)
-            val freeContentHeightAbove = (textFieldTopDp - popupMenuPadding * 2).coerceAtLeast(0.dp)
-            val neededHeight =
-                (itemHeightDp * dropdownContent.size) +
+            val availableHeightDp = density.run { rootContainerHeightPx.toDp() }
+
+            if (availableHeightDp == 0.dp) return@LaunchedEffect
+
+            val textFieldBottomDp = density.run { textFieldPosition.y.toDp() }+
+                    density.run { textFieldSize.height.toDp() }
+
+            val freeContentHeightBelow = (availableHeightDp - textFieldBottomDp - popupMenuPadding * 2)
+                .coerceAtLeast(0.dp)
+
+            val neededHeight = (itemHeightDp * dropdownContent.size) +
                     bottomDropdownMenuContentHeightDp +
                     popupMenuPadding * 2
 
-            val shouldOpenAbove = freeContentHeightAbove > freeContentHeightBelow &&
-                freeContentHeightBelow < neededHeight
-            popupDirection = if (shouldOpenAbove) PopupDirection.Above else PopupDirection.Below
-            val availableContentHeight = if (shouldOpenAbove) {
-                freeContentHeightAbove
-            } else {
-                freeContentHeightBelow
-            }
-
-            popupContentContainerHeightDp = if (neededHeight < availableContentHeight) {
+            popupContentContainerHeightDp = if (neededHeight < freeContentHeightBelow) {
                 neededHeight
             } else {
-                availableContentHeight
+                freeContentHeightBelow
             }
         }
 
@@ -126,6 +114,7 @@ fun <T : IWordable> DropDownWordField(
                     .onGloballyPositioned { coordinates ->
                         textFieldPosition = coordinates.positionInRoot()
                         textFieldSize = coordinates.size
+                        rootContainerHeightPx = coordinates.findRootCoordinates().size.height
                     }
                     .width(500.dp),
                 value = typedTextFieldValue,
@@ -145,11 +134,7 @@ fun <T : IWordable> DropDownWordField(
             )
 
             expanded.ifTrue {
-                val popupHeightPx = density.run { popupContentContainerHeightDp.roundToPx() }
-                val popupYOffset = when (popupDirection) {
-                    PopupDirection.Below -> textFieldSize.height
-                    PopupDirection.Above -> -popupHeightPx
-                }
+                val popupYOffset = textFieldSize.height
 
                 Popup(offset = IntOffset(x = 0, y = popupYOffset)) {
                     val menuShape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)

@@ -18,9 +18,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 fun <T> MutableList<T>.update(newData: List<T>) {
     clear()
@@ -99,6 +100,7 @@ inline fun <R> List<R>.updatedAt(index: Int, block: (oldValue: R) -> R): List<R>
     return this.toMutableList().apply { this[index] = block(this[index]) }
 }
 
+@OptIn(ExperimentalTime::class)
 fun getCurrentDateAsLong(): Long {
     return Clock.System.now().toEpochMilliseconds()
 }

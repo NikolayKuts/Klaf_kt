@@ -39,6 +39,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "Klaf"
 include(":app")
+include(":desktopApp")
 include(":domain")
 include(":shared")
 include(":data")

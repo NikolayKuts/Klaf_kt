@@ -70,7 +70,7 @@ import kotlinx.coroutines.withContext
 
 class DeckReviewViewModel(
     private val deckId: Int,
-    private val stateStore: DeckReviewStateStore,
+    private val stateStore: IDeckReviewStateStore,
     fetchCards: FetchCardsUseCase,
     fetchDeckById: FetchDeckByIdUseCase,
     override val timer: RepetitionTimer,

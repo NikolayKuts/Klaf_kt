@@ -2,6 +2,7 @@ package com.kuts.klaf.navigation
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import com.kuts.domain.common.AuthenticationAction
 import com.kuts.klaf.authentication.AuthenticationActionResult
 import com.kuts.klaf.authentication.AuthenticationScreen
 import com.kuts.klaf.cardManagement.cardAddition.CardAdditionScreen
@@ -11,6 +12,7 @@ import com.kuts.klaf.cardTransferring.common.CardTransferringScreen
 import com.kuts.klaf.cardTransferring.deckChoosing.CardMovingDialog
 import com.kuts.klaf.cardViewing.CardViewingScreen
 import com.kuts.klaf.common.BaseMainViewModel
+import com.kuts.klaf.common.NavigationDestination
 import com.kuts.klaf.common.externalActions.IExternalAppActions
 import com.kuts.klaf.deckList.common.DeckListScreen
 import com.kuts.klaf.deckList.dataSynchronization.DataSynchronizationDialog
@@ -18,12 +20,14 @@ import com.kuts.klaf.deckList.deckCreation.DeckCreationDialog
 import com.kuts.klaf.deckList.deckDeleting.DeckDeletingDialog
 import com.kuts.klaf.deckList.deckNavigation.DeckNavigationDialog
 import com.kuts.klaf.deckList.deckRenaming.DeckRenamingDialog
+import com.kuts.klaf.deckList.drawer.DrawerAction
 import com.kuts.klaf.deckList.drawer.DrawerActionDialog
 import com.kuts.klaf.deckList.sygningTypeChoosing.SigningTypeChoosingDialog
 import com.kuts.klaf.deckManagment.DeckManagementScreen
 import com.kuts.klaf.deckRepetition.DeckRepetitionScreen
 import com.kuts.klaf.deckRepetition.cardDeleting.DeckRepetitionCardDeletingDialog
 import com.kuts.klaf.deckRepetitionInfo.DeckRepetitionInfoDialog
+import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent
 
 internal fun NavGraphBuilder.registerAppDestinations(
     navController: NavHostController,
@@ -97,7 +101,9 @@ internal fun NavGraphBuilder.registerAppDestinations(
         )
     }
 
-    buildDialog<AppDestination.DeckRepetitionInfoDialog> { route ->
+    buildDialog<AppDestination.DeckRepetitionInfoDialog>(
+        typeMap = enumNavTypeMap<RepetitionInfoEvent>(),
+    ) { route ->
         DeckRepetitionInfoDialog(
             navController = navController,
             sharedViewModel = sharedViewModel,
@@ -133,7 +139,9 @@ internal fun NavGraphBuilder.registerAppDestinations(
         )
     }
 
-    buildDialog<AppDestination.DataSynchronizationDialog> { backStackEntry, route ->
+    buildDialog<AppDestination.DataSynchronizationDialog>(
+        typeMap = enumNavTypeMap<AuthenticationAction>(includeNullable = true),
+    ) { backStackEntry, route ->
         DataSynchronizationDialog(
             navController = navController,
             backStackEntry = backStackEntry,
@@ -147,14 +155,18 @@ internal fun NavGraphBuilder.registerAppDestinations(
         )
     }
 
-    buildDialog<AppDestination.SigningTypeChoosingDialog> { route ->
+    buildDialog<AppDestination.SigningTypeChoosingDialog>(
+        typeMap = enumNavTypeMap<NavigationDestination>(),
+    ) { route ->
         SigningTypeChoosingDialog(
             navController = navController,
             fromSourceDestination = route.fromSourceDestination,
         )
     }
 
-    buildComposable<AppDestination.Authentication> { route ->
+    buildComposable<AppDestination.Authentication>(
+        typeMap = enumNavTypeMap<AuthenticationAction>() + enumNavTypeMap<NavigationDestination>(),
+    ) { route ->
         AuthenticationScreen(
             navController = navController,
             sharedViewModel = sharedViewModel,
@@ -163,7 +175,9 @@ internal fun NavGraphBuilder.registerAppDestinations(
         )
     }
 
-    buildDialog<AppDestination.DrawerActionDialog> { backStackEntry, route ->
+    buildDialog<AppDestination.DrawerActionDialog>(
+        typeMap = enumNavTypeMap<DrawerAction>(),
+    ) { backStackEntry, route ->
         DrawerActionDialog(
             navController = navController,
             backStackEntry = backStackEntry,
