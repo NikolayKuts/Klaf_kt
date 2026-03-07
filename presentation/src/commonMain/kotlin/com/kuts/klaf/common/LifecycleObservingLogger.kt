@@ -17,6 +17,6 @@ class LifecycleObservingLogger(private val ownerName: String) : LifecycleEventOb
             Lifecycle.Event.ON_ANY -> ""
         }
 
-        log(message = eventMessage, pointerMessage = ownerName)
+//        log(message = eventMessage, pointerMessage = ownerName)
     }
 }

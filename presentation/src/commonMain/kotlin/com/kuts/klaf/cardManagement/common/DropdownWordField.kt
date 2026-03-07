@@ -41,7 +41,6 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import com.kuts.klaf.common.verticalScrollbar
 import com.kuts.klaf.theme.MainTheme
-import com.lib.lokdroid.core.logD
 
 private enum class PopupDirection {
     Above,
@@ -131,7 +130,6 @@ fun <T : IWordable> DropDownWordField(
                     .width(500.dp),
                 value = typedTextFieldValue,
                 onValueChange = {
-                    logD("onValueChange() called")
                     onTypedWordFieldValueChange(it)
                 },
                 label = { Text(text = stringResource(resource = labelRes)) },

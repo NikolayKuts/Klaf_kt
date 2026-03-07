@@ -45,15 +45,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.common.invertedCoerceIn
 import com.kuts.klaf.presentation.resources.*
-import com.lib.lokdroid.core.logD
-import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -79,24 +76,6 @@ private const val DRAG_VERTICAL_ICON_HIGHLIGHT_LIMIT_DP = 60
 private const val DRAG_CLEAR_ICON_REVEAL_DP = 2
 private const val COUNTER_DELAY_INITIAL_MS = 500L
 private const val COUNTER_DELAY_FAST_MS = 150L
-
-@Preview(
-    showBackground = true,
-//    showSystemUi = true
-)
-@Composable
-private fun Preview() {
-    Box(modifier = Modifier.padding(32.dp)) {
-        DragButton(
-            modifier = Modifier
-                .width(80.dp)
-                .height(35.dp),
-            value = "0",
-            onDragButtonAction = { /*TODO*/ },
-        )
-    }
-}
-
 @Composable
 fun DragButton(
     value: String,
@@ -372,7 +351,6 @@ private fun DraggableButton(
                         }
                     },
                     onDragEnd = {
-                        logE("onDragEnd DETECTED")
                         quickChangingValueJob?.cancel()
                         buttonReleased = true
 
@@ -516,7 +494,6 @@ private suspend fun returnDragButtonIdDeeded(
 ) {
 
     if (dragDirectionState.value == DragDirection.HORIZONTAL && thumbOffsetX.value != 0f) {
-        logD("returning button HORIZONTAL")
         thumbOffsetX.animateTo(
             targetValue = 0f,
             animationSpec = spring(

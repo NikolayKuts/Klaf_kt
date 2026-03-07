@@ -25,7 +25,6 @@ import com.kuts.domain.common.isOdd
 import com.kuts.domain.common.isRepetitionIterationSucceeded
 import com.kuts.domain.common.lastReviewPassSuccessMark
 import com.kuts.domain.common.launchIn
-import com.kuts.domain.common.update
 import com.kuts.domain.entities.Card
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.entities.DeckRepetitionInfo
@@ -433,7 +432,7 @@ class DeckReviewViewModel(
     }
 
     private fun clearRepetitionProgress() {
-        stateStore.savedProgressCards.clear()
+        stateStore.savedProgressCards.value = emptyList()
     }
 
     private fun mustRepetitionBeFinished(): Boolean {
@@ -487,17 +486,18 @@ class DeckReviewViewModel(
     }
 
     private fun saveRepetitionProgress(cards: List<Card>) {
-        stateStore.savedProgressCards.update(cards)
+        stateStore.savedProgressCards.value = cards.toList()
     }
 
     private fun getCardsByProgress(receivedCards: List<Card>): List<Card> {
+        val savedProgressCards = stateStore.savedProgressCards.value
         val result = mutableListOf<Card>()
 
         val newAddedCards = mutableListOf<Card>().apply {
-            if (stateStore.savedProgressCards.size < receivedCards.size) {
+            if (savedProgressCards.size < receivedCards.size) {
 
                 receivedCards.forEach { receivedCard ->
-                    if (!stateStore.savedProgressCards.contains(receivedCard)) {
+                    if (!savedProgressCards.contains(receivedCard)) {
                         add(receivedCard)
                     }
                 }
@@ -507,7 +507,7 @@ class DeckReviewViewModel(
         val temporaryCardList = mutableListOf(*receivedCards.toTypedArray())
             .apply { removeAll(newAddedCards) }
 
-        stateStore.savedProgressCards.forEach { savedCard ->
+        savedProgressCards.forEach { savedCard ->
             temporaryCardList.forEach { relevantCard ->
                 if (relevantCard.id == savedCard.id) {
                     result.add(relevantCard)

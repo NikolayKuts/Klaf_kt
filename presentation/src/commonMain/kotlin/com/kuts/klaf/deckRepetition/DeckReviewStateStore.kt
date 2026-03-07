@@ -23,6 +23,6 @@ interface DeckReviewStateStore {
     var lastRepetitionCard: Card?
     var isAllCardsRepeated: Boolean
     var isWaitingForFinish: Boolean
-    val savedProgressCards: MutableList<Card>
+    val savedProgressCards: MutableStateFlow<List<Card>>
     var timerTime: Long
 }

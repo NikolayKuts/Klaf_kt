@@ -8,7 +8,6 @@ import com.kuts.domain.common.UnitSurrogate
 import com.kuts.domain.entities.Card
 import com.kuts.klaf.common.ButtonState
 import com.kuts.klaf.common.create
-import com.kuts.klaf.common.mutList
 import com.kuts.klaf.common.mutSharedFlow
 import com.kuts.klaf.common.mutStateFlow
 import com.kuts.klaf.deckRepetition.DeckReviewState
@@ -117,9 +116,9 @@ class DeckReviewSavedStateHandleStateStore(handle: SavedStateHandle) : DeckRevie
         default = false
     )
 
-    override val savedProgressCards: MutableList<Card> by handle.mutList(
+    override val savedProgressCards: MutableStateFlow<List<Card>> by handle.mutStateFlow(
         key = SAVED_PROGRESS_CARDS,
-        default = mutableListOf(),
+        default = emptyList(),
         encode = { cards -> cards.serialized() },
         decode = { value -> value.deserialized<List<Card>>() }
     )

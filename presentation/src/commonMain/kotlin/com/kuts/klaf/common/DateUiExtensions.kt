@@ -14,17 +14,16 @@ import com.kuts.domain.entities.DeckRepetitionInfo
 import com.kuts.klaf.presentation.resources.*
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import java.util.concurrent.TimeUnit
 
 private const val UNASSIGNED_DATE_SYMBOL = "---"
 private const val MINUS_SYMBOL = "-"
 
-private val yearInMillis = TimeUnit.DAYS.toMillis(365)
-private val monthInMillis = TimeUnit.DAYS.toMillis(31)
-private val weekInMillis = TimeUnit.DAYS.toMillis(7)
-private val dayInMillis = TimeUnit.DAYS.toMillis(1)
-private val hourImMillis = TimeUnit.HOURS.toMillis(1)
-private val minuteInMillis = TimeUnit.MINUTES.toMillis(1)
+private const val MINUTE_IN_MILLIS = 60_000L
+private const val HOUR_IN_MILLIS = 3_600_000L
+private const val DAY_IN_MILLIS = 86_400_000L
+private const val WEEK_IN_MILLIS = 604_800_000L
+private const val MONTH_IN_MILLIS = 2_678_400_000L
+private const val YEAR_IN_MILLIS = 31_536_000_000L
 
 fun DateUnit.toLabelRes(): StringResource = when (this) {
     is DateUnit.Year -> Res.string.year
@@ -113,23 +112,23 @@ val DeckReviewPassSuccessMark.markResId: StringResource
         FAILURE -> Res.string.deck_repetition_mark_failed
     }
 
-private fun Long.calculateYearQuantity(): Long = this / yearInMillis
+private fun Long.calculateYearQuantity(): Long = this / YEAR_IN_MILLIS
 
-private fun Long.calculateMonthQuantity(): Long = this % yearInMillis / monthInMillis
+private fun Long.calculateMonthQuantity(): Long = this % YEAR_IN_MILLIS / MONTH_IN_MILLIS
 
-private fun Long.calculateWeekQuantity(): Long = this % yearInMillis % monthInMillis / weekInMillis
+private fun Long.calculateWeekQuantity(): Long = this % YEAR_IN_MILLIS % MONTH_IN_MILLIS / WEEK_IN_MILLIS
 
 private fun Long.calculateDayQuantity(): Long {
-    return this % yearInMillis % monthInMillis % weekInMillis / dayInMillis
+    return this % YEAR_IN_MILLIS % MONTH_IN_MILLIS % WEEK_IN_MILLIS / DAY_IN_MILLIS
 }
 
 private fun Long.calculateHoursQuantity(): Long {
-    return this % yearInMillis % monthInMillis % weekInMillis % dayInMillis / hourImMillis
+    return this % YEAR_IN_MILLIS % MONTH_IN_MILLIS % WEEK_IN_MILLIS % DAY_IN_MILLIS / HOUR_IN_MILLIS
 }
 
 private fun Long.calculateMinuteQuantity(): Long {
-    return this % yearInMillis %
-        monthInMillis % weekInMillis % dayInMillis % hourImMillis / minuteInMillis
+    return this % YEAR_IN_MILLIS %
+        MONTH_IN_MILLIS % WEEK_IN_MILLIS % DAY_IN_MILLIS % HOUR_IN_MILLIS / MINUTE_IN_MILLIS
 }
 
 @Composable

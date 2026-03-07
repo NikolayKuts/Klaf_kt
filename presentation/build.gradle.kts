@@ -22,6 +22,7 @@ kotlin {
                 implementation(project(Modules.Domain))
                 implementation(libs.core.coroutines.core)
                 implementation(libs.kotlin.serilization)
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
                 implementation(libs.datastore.preferences.core)
                 implementation(libs.moko.permissions)
                 implementation(libs.moko.permissions.notifications)
@@ -38,6 +39,9 @@ kotlin {
                 implementation(libs.lifecycle.runtime.compose)
                 implementation(libs.lifecycle.viewmodel)
                 implementation(libs.lifecycle.viewmodel.savedstate)
+
+                implementation(libs.koin.compose)
+                implementation(libs.koin.compose.viewmodel)
             }
         }
 

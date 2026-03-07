@@ -95,14 +95,16 @@ import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
-import java.util.Locale
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+
+private const val CHAT_GPT_PROMPT_PLACEHOLDER_INDEXED = "%1\$s"
+private const val CHAT_GPT_PROMPT_PLACEHOLDER_SIMPLE = "%s"
+private const val ONE_MINUTE_IN_MILLIS = 60_000L
 
 @Composable
 internal fun DeckListScreen(
@@ -168,10 +170,12 @@ internal fun DeckListScreen(
             }
 
             is ToChatGptWithDeckContentPrompt -> {
-                val chatGptStoryCrafterPrompt = String.format(
-                    Locale.getDefault(),
-                    chatGptStoryCrafterPromptTemplate,
-                    event.foreignWords,
+                val chatGptStoryCrafterPrompt = chatGptStoryCrafterPromptTemplate.replace(
+                    oldValue = CHAT_GPT_PROMPT_PLACEHOLDER_INDEXED,
+                    newValue = event.foreignWords,
+                ).replace(
+                    oldValue = CHAT_GPT_PROMPT_PLACEHOLDER_SIMPLE,
+                    newValue = event.foreignWords,
                 )
 
                 externalAppActions.copyTextToClipboard(text = chatGptStoryCrafterPrompt)
@@ -505,7 +509,7 @@ private fun ScheduledDateView(deck: Deck) {
 
     LaunchedEffect(key1 = deck.id) {
         while (true) {
-            delay(TimeUnit.MINUTES.toMillis(1))
+            delay(ONE_MINUTE_IN_MILLIS)
             tick++
         }
     }

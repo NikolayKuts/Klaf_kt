@@ -81,31 +81,6 @@ fun <T> SavedStateHandle.mutStateFlow(
     }
 }
 
-fun <T> SavedStateHandle.mutList(
-    key: String,
-    default: MutableList<T>,
-    encode: ((List<T>) -> String)? = null,
-    decode: ((String) -> List<T>)? = null,
-): ReadOnlyProperty<Any?, MutableList<T>> {
-    val initialList = if (decode != null) {
-        this@mutList.get<String>(key = key)
-            ?.let { value -> runCatching { decode(value) }.getOrNull() }
-            ?.toMutableList()
-            ?: default
-    } else {
-        this@mutList.get<MutableList<T>>(key = key) ?: default
-    }
-
-    val inner = initialList.asObservable { updatedList ->
-        this@mutList[key] = encode?.invoke(updatedList) ?: updatedList
-    }
-
-    return object : ReadOnlyProperty<Any?, MutableList<T>>, MutableList<T> by inner {
-
-        override fun getValue(thisRef: Any?, property: KProperty<*>): MutableList<T> = this
-    }
-}
-
 fun <T> SavedStateHandle.mutSharedFlow(
     key: String,
     replay: Int = 0,
@@ -142,89 +117,6 @@ fun <T> SavedStateHandle.mutSharedFlow(
         override suspend fun emit(value: T) {
             handle[key] = encode?.invoke(value) ?: value
             inner.emit(value)
-        }
-    }
-}
-
-fun <T> MutableList<T>.asObservable(
-    onChange: (updatedList: List<T>) -> Unit
-): MutableList<T> = object : MutableList<T> by this {
-    val original = this@asObservable
-
-    override fun add(element: T): Boolean =
-        original.add(element).also { if (it) onChange(this) }
-
-    override fun add(index: Int, element: T) =
-        original.add(index, element).also { onChange(this) }
-
-    override fun addAll(elements: Collection<T>): Boolean =
-        original.addAll(elements).also { if (it) onChange(this) }
-
-    override fun addAll(index: Int, elements: Collection<T>): Boolean =
-        original.addAll(index, elements).also { if (it) onChange(this) }
-
-    override fun remove(element: T): Boolean =
-        original.remove(element).also { if (it) onChange(this) }
-
-    override fun removeAt(index: Int): T = original.removeAt(index).also { onChange(this) }
-    override fun removeAll(elements: Collection<T>): Boolean =
-        original.removeAll(elements).also { if (it) onChange(this) }
-
-    override fun retainAll(elements: Collection<T>): Boolean =
-        original.retainAll(elements).also { if (it) onChange(this) }
-
-    override fun clear() = original.clear().also { onChange(this) }
-    override fun set(index: Int, element: T): T =
-        original.set(index, element).also { onChange(this) }
-
-    override fun iterator(): MutableIterator<T> {
-        val originalIterator = original.iterator()
-
-        return object : MutableIterator<T> by originalIterator {
-            override fun remove() {
-                originalIterator.remove()
-                onChange(original)
-            }
-        }
-    }
-
-    override fun listIterator(): MutableListIterator<T> {
-        val it = original.listIterator()
-        return object : MutableListIterator<T> by it {
-            override fun remove() {
-                it.remove()
-                onChange(original)
-            }
-
-            override fun set(element: T) {
-                it.set(element)
-                onChange(original)
-            }
-
-            override fun add(element: T) {
-                it.add(element)
-                onChange(original)
-            }
-        }
-    }
-
-    override fun listIterator(index: Int): MutableListIterator<T> {
-        val it = original.listIterator(index)
-        return object : MutableListIterator<T> by it {
-            override fun remove() {
-                it.remove()
-                onChange(original)
-            }
-
-            override fun set(element: T) {
-                it.set(element)
-                onChange(original)
-            }
-
-            override fun add(element: T) {
-                it.add(element)
-                onChange(original)
-            }
         }
     }
 }
