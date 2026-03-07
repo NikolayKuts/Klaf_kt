@@ -23,6 +23,7 @@ import com.kuts.domain.useCases.*
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.NavigationDestination
+import com.kuts.klaf.common.SecretConstants
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
 import com.kuts.klaf.deckList.common.IDeckListNavigationDestination.DataSynchronizationDialog
@@ -289,6 +290,7 @@ class DeckListViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val cards = fetchCardsUseCase.invoke(deckId = deckId).firstOrNull() ?: return@launch
             val foreignWords = cards.joinToString { it.foreignWord }
+            val chatGptUrl = getValidatedChatGptUrl()
 
             val message = EventMessage(
                 resId = Res.string.chat_gpt_story_crafter_prompt_is_created_and_copied,
@@ -296,9 +298,32 @@ class DeckListViewModel(
             )
 
             navigationEvent.emit(
-                ToChatGptWithDeckContentPrompt(foreignWords = foreignWords, event = message)
+                ToChatGptWithDeckContentPrompt(
+                    foreignWords = foreignWords,
+                    chatGptUrl = chatGptUrl,
+                    event = message,
+                )
             )
         }
+    }
+
+    private fun getValidatedChatGptUrl(): String {
+        val rawUrl = SecretConstants.ChatGpt.STORY_CRAFTER_URL.trim()
+
+        if (rawUrl.isBlank() || rawUrl.equals("empty", ignoreCase = true)) {
+            return DEFAULT_CHAT_GPT_URL
+        }
+
+        val hasValidScheme = rawUrl.startsWith(prefix = "https://", ignoreCase = true) ||
+            rawUrl.startsWith(prefix = "http://", ignoreCase = true)
+        val host = rawUrl.substringAfter(delimiter = "://", missingDelimiterValue = "")
+            .substringBefore(delimiter = "/")
+            .substringBefore(delimiter = "?")
+            .substringBefore(delimiter = "#")
+            .trim()
+        val hasHost = host.isNotBlank()
+
+        return if (hasValidScheme && hasHost) rawUrl else DEFAULT_CHAT_GPT_URL
     }
 
     private fun observeDataSynchronizationStateWorker() {
@@ -374,5 +399,10 @@ class DeckListViewModel(
         }
 
         eventMessage.tryEmitAsNegative(resId = messageId)
+    }
+
+    private companion object {
+
+        private const val DEFAULT_CHAT_GPT_URL = "https://chatgpt.com/"
     }
 }

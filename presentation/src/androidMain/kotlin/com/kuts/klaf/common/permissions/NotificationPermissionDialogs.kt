@@ -18,8 +18,11 @@ import com.kuts.klaf.common.DialogAppLabel
 import com.kuts.klaf.common.FullBackgroundDialog
 import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.noRippleClickable
+import com.kuts.klaf.presentation.resources.Res
+import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun NotificationPermissionDialogs(
@@ -67,8 +70,9 @@ fun NotificationPermissionDialogs(
                 mainContent = {
                     Text(
                         style = MainTheme.typographies.dialogTextStyle,
-                        text = "Allow notifications so we can remind you on time " +
-                            "to review your decks."
+                        text = stringResource(
+                            resource = Res.string.notification_permission_request_dialog_message
+                        ),
                     )
                 },
                 bottomContent = {
@@ -100,8 +104,9 @@ fun NotificationPermissionDialogs(
                 mainContent = {
                     Text(
                         style = MainTheme.typographies.dialogTextStyle,
-                        text = "Notification permission is permanently denied. " +
-                            "Open app settings and enable it manually."
+                        text = stringResource(
+                            resource = Res.string.notification_permission_settings_dialog_message
+                        ),
                     )
                 },
                 bottomContent = {

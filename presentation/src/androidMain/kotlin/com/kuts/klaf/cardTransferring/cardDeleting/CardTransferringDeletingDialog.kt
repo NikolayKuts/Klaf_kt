@@ -9,7 +9,7 @@ import com.kuts.klaf.cardTransferring.common.ICardTransferringNavigationDestinat
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.CardDeletingDialogView
 import com.kuts.klaf.common.EventMessage
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 internal fun CardTransferringDeletingDialog(

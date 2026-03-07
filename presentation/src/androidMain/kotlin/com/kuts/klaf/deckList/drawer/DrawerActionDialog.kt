@@ -20,7 +20,7 @@ import com.kuts.klaf.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import org.jetbrains.compose.resources.stringResource
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 internal fun DrawerActionDialog(

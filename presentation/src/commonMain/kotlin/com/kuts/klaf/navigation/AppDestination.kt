@@ -9,6 +9,7 @@ import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent.Non
 import kotlinx.serialization.Serializable
 
 internal sealed interface AppDestination {
+
     @Serializable
     data object DeckList : AppDestination
 

@@ -1,9 +1,5 @@
 package com.kuts.klaf.cardManagement.cardAddition
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
-import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -33,7 +29,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
-import com.kuts.domain.common.ifTrue
 import com.kuts.klaf.cardManagement.common.BaseCardManagementViewModel
 import com.kuts.klaf.cardManagement.common.CambridgeMeaning
 import com.kuts.klaf.cardManagement.common.CambridgePartOfSpeech
@@ -43,27 +38,28 @@ import com.kuts.klaf.cardManagement.common.CardManagementView
 import com.kuts.klaf.cardManagement.common.ICambridgeDataState
 import com.kuts.klaf.cardManagement.common.ICardManagementAction
 import com.kuts.klaf.common.BaseMainViewModel
+import com.kuts.klaf.common.externalActions.IExternalAppActions
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.navigation.ObserveAudioLifecycle
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-
-private const val MIME_TYPE_TEXT_PLAIN = "text/plain"
 
 @Composable
 internal fun CardAdditionScreen(
     backStackEntry: NavBackStackEntry,
     sharedViewModel: BaseMainViewModel,
-    context: Context,
+    externalAppActions: IExternalAppActions,
     deckId: Int,
 ) {
+    val smartSelectedWord = remember { externalAppActions.consumeProcessTextWord() }
+
     val viewModel: CardAdditionViewModel = koinViewModel(
         viewModelStoreOwner = backStackEntry,
         parameters = {
             parametersOf(
                 deckId,
-                context.retrieveSmartSelectedWord(),
+                smartSelectedWord,
             )
         },
     )
@@ -79,34 +75,6 @@ internal fun CardAdditionScreen(
 
     Surface {
         CardManagementContent(viewModel = viewModel)
-    }
-}
-
-private fun Context.retrieveSmartSelectedWord(): String? {
-    val activity = findActivity() ?: return null
-
-    val intent = activity.intent ?: return null
-    if (intent.action != Intent.ACTION_PROCESS_TEXT) {
-        return null
-    }
-
-    val selectedWord = intent.type
-        ?.startsWith(MIME_TYPE_TEXT_PLAIN)
-        ?.ifTrue { intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString() }
-
-    if (selectedWord != null) {
-        intent.removeExtra(Intent.EXTRA_PROCESS_TEXT)
-        intent.action = Intent.ACTION_MAIN
-    }
-
-    return selectedWord
-}
-
-private tailrec fun Context.findActivity(): Activity? {
-    return when (this) {
-        is Activity -> this
-        is ContextWrapper -> baseContext.findActivity()
-        else -> null
     }
 }
 

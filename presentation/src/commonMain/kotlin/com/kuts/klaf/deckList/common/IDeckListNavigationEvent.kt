@@ -27,6 +27,7 @@ sealed interface IDeckListNavigationEvent {
 
     data class ToChatGptWithDeckContentPrompt(
         val foreignWords: String,
+        val chatGptUrl: String,
         val event: EventMessage
     ) : IDeckListNavigationEvent
 }

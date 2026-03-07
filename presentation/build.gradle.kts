@@ -29,13 +29,15 @@ kotlin {
 
                 implementation(compose.runtime)
                 implementation(compose.ui)
+                implementation("org.jetbrains.compose.ui:ui-backhandler:${libs.versions.composeMultiplatform.get()}")
                 implementation(compose.foundation)
                 implementation(compose.material3)
+                implementation(libs.navigation.compose)
 
+                implementation(libs.lifecycle.runtime)
+                implementation(libs.lifecycle.runtime.compose)
                 implementation(libs.lifecycle.viewmodel)
                 implementation(libs.lifecycle.viewmodel.savedstate)
-                implementation(libs.lifecycle.viewmodel.compose)
-                implementation(libs.lifecycle.runtime.compose)
             }
         }
 
@@ -46,14 +48,15 @@ kotlin {
                 implementation(libs.androidx.material3.android)
                 implementation(libs.core.coroutines.core.jvm)
 
-                implementation(libs.navigation.compose)
-
                 implementation(libs.lifecycle.viewmodel.ktx)
                 implementation(libs.lifecycle.livedata.ktx)
                 implementation(libs.lifecycle.viewmodel.savedstate)
+                implementation(libs.lifecycle.viewmodel.compose)
+                implementation(libs.lifecycle.runtime.compose)
 
                 implementation(libs.koin.android)
-                implementation(libs.koin.androidx.compose)
+                implementation(libs.koin.compose)
+                implementation(libs.koin.compose.viewmodel)
 
                 implementation(libs.firebase.authentication)
 
@@ -65,7 +68,6 @@ kotlin {
                 implementation(libs.compose.ui.tooling)
                 implementation(libs.compose.activity)
                 implementation(libs.compose.ui.tooling.preview)
-                implementation(libs.compose.accompanist)
 
                 implementation(libs.lokdroid)
             }

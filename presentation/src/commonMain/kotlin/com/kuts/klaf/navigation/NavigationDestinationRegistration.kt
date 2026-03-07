@@ -47,7 +47,7 @@ internal inline fun <reified T : Any> NavGraphBuilder.buildDialog(
     }
 }
 
-internal inline fun <reified T : Any> NavGraphBuilder.buidDialogWithEntry(
+internal inline fun <reified T : Any> NavGraphBuilder.buildDialogWithEntry(
     noinline content: @Composable (entry: NavBackStackEntry) -> Unit,
 ) {
     dialog<T> { backStackEntry ->

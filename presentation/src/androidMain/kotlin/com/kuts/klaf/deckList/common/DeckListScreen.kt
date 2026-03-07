@@ -1,10 +1,5 @@
 package com.kuts.klaf.deckList.common
 
-import android.app.Activity.CLIPBOARD_SERVICE
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloatAsState
@@ -34,10 +29,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,7 +52,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -61,11 +59,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.common.ScheduledDateState
 import com.kuts.domain.common.isEven
@@ -79,7 +74,7 @@ import com.kuts.klaf.common.NavigationDestination
 import com.kuts.klaf.common.ROUNDED_ELEMENT_SIZE
 import com.kuts.klaf.common.RoundButton
 import com.kuts.klaf.common.RoundedIcon
-import com.kuts.klaf.common.SecretConstants
+import com.kuts.klaf.common.externalActions.IExternalAppActions
 import com.kuts.klaf.common.getScheduledDateStateByByCalculatedRange
 import com.kuts.klaf.common.noRippleClickable
 import com.kuts.klaf.common.rememberAsMutableStateOf
@@ -100,7 +95,6 @@ import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
-import com.lib.lokdroid.core.logE
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.delay
@@ -108,16 +102,16 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 internal fun DeckListScreen(
     navController: NavHostController,
     backStackEntry: NavBackStackEntry,
     sharedViewModel: BaseMainViewModel,
+    externalAppActions: IExternalAppActions,
     onRestartApp: () -> Unit,
 ) {
-    val context = navController.context
     val chatGptStoryCrafterPromptTemplate = stringResource(
         resource = Res.string.chat_gpt_story_crafter_prompt,
         "%1\$s",
@@ -180,9 +174,9 @@ internal fun DeckListScreen(
                     event.foreignWords,
                 )
 
-                context.copyToClipboard(text = chatGptStoryCrafterPrompt)
+                externalAppActions.copyTextToClipboard(text = chatGptStoryCrafterPrompt)
                 sharedViewModel.notify(message = event.event)
-                if (!context.navigateToChatGpt()) {
+                if (!externalAppActions.openExternalUrl(url = event.chatGptUrl)) {
                     sharedViewModel.notify(
                         message = EventMessage(
                             resId = Res.string.chat_gpt_opening_failed,
@@ -305,42 +299,8 @@ internal fun DeckListScreen(
     }
 }
 
-private fun Context.copyToClipboard(text: String) {
-    val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-    val clip = ClipData.newPlainText("prompt", text)
-
-    clipboard.setPrimaryClip(clip)
-}
-
-private fun Context.navigateToChatGpt(): Boolean {
-    val url = SecretConstants.ChatGpt.STORY_CRAFTER_URL
-        .takeUnless { it.isBlank() || it.equals("empty", ignoreCase = true) }
-        ?: "https://chatgpt.com/"
-
-    val uri = url.toUri()
-    val isSupportedScheme = uri.scheme == "http" || uri.scheme == "https"
-    if (!isSupportedScheme) {
-        return false
-    }
-
-    val intent = Intent(Intent.ACTION_VIEW, uri).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    }
-
-    val canHandleIntent = intent.resolveActivity(packageManager) != null
-    if (!canHandleIntent) {
-        return false
-    }
-
-    return runCatching {
-        startActivity(intent)
-        true
-    }.onFailure { error ->
-        logE("Failed to open ChatGPT url: $url\n${error.stackTraceToString()}")
-    }.getOrDefault(false)
-}
-
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 private fun DeckListContent(
     decks: List<Deck>?,
     shouldSynchronizationIndicatorBeShown: Boolean,
@@ -351,24 +311,25 @@ private fun DeckListContent(
     onMainButtonClick: () -> Unit,
     onRestartApp: () -> Unit,
 ) {
-    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = false)
-    val offsetY = swipeRefreshState.indicatorOffset
-    var visible by rememberAsMutableStateOf(value = false)
+    val pullToRefreshState = rememberPullToRefreshState()
+    val pullOffsetY = PullToRefreshDefaults.PositionalThreshold * pullToRefreshState.distanceFraction
+    val showPullIndicator = pullToRefreshState.distanceFraction > 0f && !shouldSynchronizationIndicatorBeShown
 
-    SwipeRefresh(
+    PullToRefreshBox(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues = contentPadding),
-        state = swipeRefreshState,
+        state = pullToRefreshState,
+        isRefreshing = false,
         onRefresh = onRefresh,
-        indicator = { _, _ ->
+        indicator = {
             SynchronizationRefreshingIndicator(
-                visible = visible,
-                offsetY = LocalDensity.current.run { offsetY.toDp() - 50.dp }
+                modifier = Modifier.align(Alignment.TopCenter),
+                visible = showPullIndicator,
+                offsetY = pullOffsetY - 50.dp,
             )
-        }
+        },
     ) {
-
         Box(modifier = Modifier.fillMaxSize()) {
             if (decks == null) {
                 FetchingDecksWarningView(onRestartApp = onRestartApp)
@@ -382,14 +343,10 @@ private fun DeckListContent(
 
                 AnimatableDataSynchronizationIndicator(
                     visible = shouldSynchronizationIndicatorBeShown,
-                    modifier = Modifier.offset(y = LocalDensity.current.run { offsetY.toDp() })
+                    modifier = Modifier.offset(y = pullOffsetY),
                 )
             }
         }
-    }
-
-    LaunchedEffect(key1 = swipeRefreshState.isSwipeInProgress) {
-        visible = swipeRefreshState.isSwipeInProgress && !shouldSynchronizationIndicatorBeShown
     }
 }
 
@@ -418,13 +375,14 @@ private fun FetchingDecksWarningView(onRestartApp: () -> Unit) {
 
 @Composable
 private fun SynchronizationRefreshingIndicator(
+    modifier: Modifier = Modifier,
     visible: Boolean,
     offsetY: Dp,
     size: Dp = ROUNDED_ELEMENT_SIZE.dp
 ) {
     if (visible) {
         Card(
-            modifier = Modifier
+            modifier = modifier
                 .size(size)
                 .noRippleClickable { }
                 .offset(y = offsetY),

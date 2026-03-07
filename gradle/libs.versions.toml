@@ -36,7 +36,7 @@ coroutineTest = "1.6.4"
 turbine = "0.10.0"
 
 # Navigation #
-navigationCore = "2.9.6"
+navigationCore = "2.9.2"
 
 # Room #
 roomCore = "2.8.4"
@@ -47,7 +47,7 @@ sqliteBundled = "2.6.2"
 lifecycle = "2.9.4"
 
 # Koin #
-koin = "3.5.6"
+koin = "4.1.1"
 
 # Moko Permissions #
 mokoPermissions = "0.20.1"
@@ -62,7 +62,6 @@ firebaseCrashlyticsKtx = "19.0.3"
 # Compose #
 composeBom = "2024.06.00"
 composeComiler = "1.5.14"
-compseAccompanist = "0.19.0"
 composeMultiplatform = "1.10.1"
 
 # LoKdroid #
@@ -102,7 +101,7 @@ tests-kotlin = { group = "org.jetbrains.kotlin", name = "kotlin-test" }
 tests-turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
 # Navigation
-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCore" }
+navigation-compose = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "navigationCore" }
 
 # Room #
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomCore" }
@@ -114,6 +113,7 @@ sqlite-bundled = { group = "androidx.sqlite", name = "sqlite-bundled", version.r
 lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "lifecycle" }
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
+lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime", version.ref = "lifecycle" }
 lifecycle-viewmodel-savedstate = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-savedstate", version.ref = "lifecycle" }
 lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
@@ -122,7 +122,8 @@ lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-ru
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-androidx-workmanager = { group = "io.insert-koin", name = "koin-androidx-workmanager", version.ref = "koin" }
-koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
+koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
+koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
 
 # Moko Permissions #
 moko-permissions = { group = "dev.icerock.moko", name = "permissions", version.ref = "mokoPermissions" }
@@ -148,7 +149,6 @@ compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-compose-accompanist = { group = "com.google.accompanist", name = "accompanist-swiperefresh", version.ref = "compseAccompanist" }
 
 # Work Manager #
 work-manager = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }

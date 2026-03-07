@@ -10,7 +10,7 @@ import com.kuts.klaf.common.CardDeletingDialogView
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.deckRepetition.BaseDeckReviewViewModel
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 internal fun DeckRepetitionCardDeletingDialog(

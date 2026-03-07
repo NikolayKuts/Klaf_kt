@@ -32,7 +32,7 @@ import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
 import kotlin.math.max
 import org.jetbrains.compose.resources.stringResource
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable

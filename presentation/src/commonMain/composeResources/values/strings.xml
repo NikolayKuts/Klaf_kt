@@ -129,6 +129,8 @@
         <string name="deck_repetition_scheduling_failed">Scheduling deck repetition failed</string>
         <string name="delete_account_failure_message">Deleting account is failed</string>
         <string name="delete_account_success_message">You have deleted account successfully</string>
+        <string name="notification_permission_request_dialog_message">Allow notifications so we can remind you on time to review your decks.</string>
+        <string name="notification_permission_settings_dialog_message">Notification permission is permanently denied. Open app settings and enable it manually.</string>
         <string name="exception_adding_card">Adding card is failed</string>
         <string name="foreign_word_already_exists">This foreign word "%1$s" already exists in deck "%2$s"</string>
         <string name="foreign_word_is_too_long">Input length limit exceeded for 'foreign'</string>
