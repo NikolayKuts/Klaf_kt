@@ -9,7 +9,6 @@ import com.kuts.domain.useCases.FetchDeckRepetitionInfoUseCase
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
-import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.flow.*
 
 class DeckRepetitionInfoViewModel(
@@ -23,7 +22,7 @@ class DeckRepetitionInfoViewModel(
     override val repetitionInfo: StateFlow<IEmptiable<DeckRepetitionInfo?>> =
         fetchDeckRepetitionInfo(deckId = deckId)
             .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
-                logE("Failed to fetch deck repetition info\n${throwable.stackTraceToString()}")
+                // logE("Failed to fetch deck repetition info\n${throwable.stackTraceToString()}")
                 eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_deck_repetition_info)
             }.map { info -> IEmptiable.Content(data = info) }
             .stateIn(

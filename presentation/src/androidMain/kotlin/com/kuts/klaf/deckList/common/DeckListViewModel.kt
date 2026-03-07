@@ -1,12 +1,12 @@
 package com.kuts.klaf.deckList.common
 
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
 import com.kuts.domain.common.*
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.managers.IAppMaintenanceManager
+import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.common.IDataSynchronizationState
 import com.kuts.domain.common.IDataSynchronizationState.Failed
 import com.kuts.domain.common.IDataSynchronizationState.Initial
@@ -29,7 +29,6 @@ import com.kuts.klaf.deckList.common.IDeckListNavigationDestination.DataSynchron
 import com.kuts.klaf.deckList.common.IDeckListNavigationDestination.Unspecified
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent.*
 import com.kuts.klaf.deckList.drawer.DrawerViewState
-import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -41,7 +40,7 @@ class DeckListViewModel(
     private val renameDeck: RenameDeckUseCase,
     private val removeDeck: RemoveDeckUseCase,
     private val fetchCardsUseCase: FetchCardsUseCase,
-    private val auth: FirebaseAuth,
+    private val authenticationSessionManager: IAuthenticationSessionManager,
     private val crashlytics: ICrashlyticsRepository,
     private val appMaintenanceManager: IAppMaintenanceManager,
     private val authenticationInteractor: AuthenticationInteractor,
@@ -54,7 +53,7 @@ class DeckListViewModel(
 
     override val deckSource: StateFlow<List<Deck>?> = (fetchDeckSource() as Flow<List<Deck>?>)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
-            logE("Failed to fetch deck source\n${throwable.stackTraceToString()}")
+            // logE("Failed to fetch deck source\n${throwable.stackTraceToString()}")
             this.emit(value = null)
         }
         .stateIn(
@@ -88,7 +87,7 @@ class DeckListViewModel(
         appMaintenanceManager.initialize()
         viewModelScope.launchWithState { createInterimDeck() }
             .onException { _, throwable ->
-                logE("Failed to create interim deck\n${throwable.stackTraceToString()}")
+                // logE("Failed to create interim deck\n${throwable.stackTraceToString()}")
                 crashlytics.report(exception = throwable)
             }
         observeDataSynchronizationStateWorker()
@@ -123,7 +122,7 @@ class DeckListViewModel(
                         eventMessage.tryEmitAsPositive(resId = Res.string.deck_has_been_created)
                         emitNavigationEvent(value = ToPrevious)
                     }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, error ->
-                        logE("error: ${error.stackTraceToString()}")
+                        // logE("error: ${error.stackTraceToString()}")
                         eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_creating_deck)
                     }
                 }
@@ -157,7 +156,7 @@ class DeckListViewModel(
                         eventMessage.tryEmitAsPositive(resId = Res.string.deck_has_been_renamed)
                         emitNavigationEvent(value = ToPrevious)
                     }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-                        logE("Failed to rename deck\n${throwable.stackTraceToString()}")
+                        // logE("Failed to rename deck\n${throwable.stackTraceToString()}")
                         eventMessage.tryEmitAsPositive(resId = Res.string.problem_with_renaming_deck)
                     }
                 }
@@ -171,7 +170,7 @@ class DeckListViewModel(
             eventMessage.tryEmitAsPositive(resId = Res.string.the_deck_has_been_removed)
             emitNavigationEvent(value = ToPrevious)
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-            logE("Failed to delete deck\n${throwable.stackTraceToString()}")
+            // logE("Failed to delete deck\n${throwable.stackTraceToString()}")
             eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_removing_deck)
         }
     }
@@ -187,7 +186,7 @@ class DeckListViewModel(
     }
 
     override fun synchronizeData() {
-        if (auth.currentUser == null) {
+        if (!authenticationSessionManager.isSignedIn()) {
             viewModelScope.launch {
                 val source = NavigationDestination.DATA_SYNCHRONIZATION_DIALOG
                 emitNavigationEvent(value = ToSigningTypeChoosingDialog(fromSourceDestination = source))
@@ -254,7 +253,7 @@ class DeckListViewModel(
                 }
 
                 is LoadingState.Error -> {
-                    logE("Logout failed with state error: ${loadingState.value}")
+                    // logE("Logout failed with state error: ${loadingState.value}")
                     eventMessage.tryEmitAsNegative(resId = Res.string.log_out_failure_message)
                 }
 
@@ -276,7 +275,7 @@ class DeckListViewModel(
                     }
 
                     is LoadingState.Error -> {
-                        logE("Delete account failed with state error: ${loadingState.value}")
+                        // logE("Delete account failed with state error: ${loadingState.value}")
                         handleAccountDeletingError(throwable = loadingState.value)
                     }
 
@@ -305,7 +304,7 @@ class DeckListViewModel(
     private fun observeDataSynchronizationStateWorker() {
         appMaintenanceManager.observeDataSynchronizationState()
             .catch {
-                logE("Failed to observe synchronization state worker\n${it.stackTraceToString()}")
+                // logE("Failed to observe synchronization state worker\n${it.stackTraceToString()}")
                 crashlytics.report(exception = it)
             }
             .filterNot { it is Uncertain }

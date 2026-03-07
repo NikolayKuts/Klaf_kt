@@ -44,7 +44,7 @@ roomPlugin = "2.8.4"
 sqliteBundled = "2.6.2"
 
 # Lifecycle #
-lifecycle = "2.8.3"
+lifecycle = "2.9.4"
 
 # Koin #
 koin = "3.5.6"
@@ -111,9 +111,12 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 sqlite-bundled = { group = "androidx.sqlite", name = "sqlite-bundled", version.ref = "sqliteBundled" }
 
 # Lifecycle #
+lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "lifecycle" }
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
 lifecycle-viewmodel-savedstate = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-savedstate", version.ref = "lifecycle" }
+lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
 
 # Koin #
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }

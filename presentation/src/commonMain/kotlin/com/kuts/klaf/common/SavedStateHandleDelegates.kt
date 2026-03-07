@@ -1,6 +1,5 @@
 package com.kuts.klaf.common
 
-import android.os.Bundle
 import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -12,12 +11,19 @@ import kotlin.reflect.KProperty
 fun <T> SavedStateHandle.create(
     key: String,
     default: T,
-    encode: ((T) -> Bundle)? = null,
-    decode: ((Bundle) -> T)? = null,
+    encode: ((T) -> String)? = null,
+    decode: ((String) -> T)? = null,
 ): ReadWriteProperty<Any, T> = object : ReadWriteProperty<Any, T> {
 
     override fun getValue(thisRef: Any, property: KProperty<*>): T {
-        return decode?.invoke(this@create[key] ?: Bundle()) ?: this@create[key] ?: default
+        val restoredValue = if (decode != null) {
+            this@create.get<String>(key = key)
+                ?.let { value -> runCatching { decode(value) }.getOrNull() }
+        } else {
+            null
+        }
+
+        return restoredValue ?: this@create.get(key = key) ?: default
     }
 
     override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
@@ -28,10 +34,17 @@ fun <T> SavedStateHandle.create(
 fun <T> SavedStateHandle.mutStateFlow(
     key: String,
     default: T,
-    encode: ((T) -> Bundle)? = null,
-    decode: ((Bundle) -> T)? = null,
+    encode: ((T) -> String)? = null,
+    decode: ((String) -> T)? = null,
 ): ReadOnlyProperty<Any?, MutableStateFlow<T>> {
-    val initial = decode?.invoke(this[key] ?: Bundle()) ?: this[key] ?: default
+    val initial = if (decode != null) {
+        this.get<String>(key = key)
+            ?.let { value -> runCatching { decode(value) }.getOrNull() }
+            ?: default
+    } else {
+        this.get(key = key) ?: default
+    }
+
     val inner = MutableStateFlow(initial)
 
     return object : ReadOnlyProperty<Any?, MutableStateFlow<T>>, MutableStateFlow<T> by inner {
@@ -71,15 +84,21 @@ fun <T> SavedStateHandle.mutStateFlow(
 fun <T> SavedStateHandle.mutList(
     key: String,
     default: MutableList<T>,
-    encode: ((List<T>) -> Bundle)? = null,
-    decode: ((Bundle) -> List<T>)? = null,
+    encode: ((List<T>) -> String)? = null,
+    decode: ((String) -> List<T>)? = null,
 ): ReadOnlyProperty<Any?, MutableList<T>> {
-    val inner: MutableList<T> = decode?.invoke(this@mutList[key] ?: Bundle())
-        ?.toMutableList()
-        ?: this@mutList[key]
-        ?: default.asObservable { updatedList ->
-            this@mutList[key] = encode?.invoke(updatedList) ?: updatedList
-        }
+    val initialList = if (decode != null) {
+        this@mutList.get<String>(key = key)
+            ?.let { value -> runCatching { decode(value) }.getOrNull() }
+            ?.toMutableList()
+            ?: default
+    } else {
+        this@mutList.get<MutableList<T>>(key = key) ?: default
+    }
+
+    val inner = initialList.asObservable { updatedList ->
+        this@mutList[key] = encode?.invoke(updatedList) ?: updatedList
+    }
 
     return object : ReadOnlyProperty<Any?, MutableList<T>>, MutableList<T> by inner {
 
@@ -92,16 +111,15 @@ fun <T> SavedStateHandle.mutSharedFlow(
     replay: Int = 0,
     extraBufferCapacity: Int = 0,
     onBufferOverflow: BufferOverflow = BufferOverflow.SUSPEND,
-    encode: ((T) -> Bundle)? = null,
-    decode: ((Bundle) -> T)? = null,
+    encode: ((T) -> String)? = null,
+    decode: ((String) -> T)? = null,
 ): ReadOnlyProperty<Any?, MutableSharedFlow<T>> {
     val handle = this
     val inner = MutableSharedFlow<T>(replay, extraBufferCapacity, onBufferOverflow)
         .apply {
             val restoredValue: T? = if (decode != null) {
-                val storedValue = handle.get<Any?>(key)
-                val storedBundle = storedValue as? Bundle ?: Bundle()
-                decode.invoke(storedBundle)
+                handle.get<String>(key = key)
+                    ?.let { value -> runCatching { decode(value) }.getOrNull() }
             } else {
                 handle.get(key)
             }

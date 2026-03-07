@@ -42,6 +42,7 @@ kotlin {
                 implementation(libs.firebase.crashlytics)
 
                 implementation(libs.cambridge.dictionary.client)
+                implementation(libs.cambridge.dictionary.core)
                 implementation(libs.lokdroid)
 
                 implementation(libs.koin.android)

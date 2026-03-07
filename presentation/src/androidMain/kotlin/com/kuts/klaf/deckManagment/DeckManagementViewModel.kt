@@ -12,11 +12,7 @@ import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.UpdateDeckUseCase
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.common.EventMessage
-import com.kuts.klaf.common.DateFormatPattern
-import com.kuts.klaf.common.asFormattedDate
 import com.kuts.klaf.common.tryEmitAsNegative
-import com.lib.lokdroid.core.logD
-import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,10 +43,10 @@ class DeckManagementViewModel(
     private fun subscribeToDeckUpdates() {
         fetchDeckById(deckId = deckId)
             .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
-                logE("Failed to fetch deck for management\n${throwable.stackTraceToString()}")
+                // logE("Failed to fetch deck for management\n${throwable.stackTraceToString()}")
                 eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_deck)
             }.onEach { receivedDeck ->
-                logE("receivedDeck: $receivedDeck")
+                // logE("receivedDeck: $receivedDeck")
 
                 deck.value = receivedDeck
                 receivedDeck?.let { deck -> updateDeckState(deck = deck) }
@@ -62,9 +58,7 @@ class DeckManagementViewModel(
         deckManagementState.update {
             it.copy(
                 name = it.name.copy(value = deck.name),
-                creationDate = it.creationDate.copy(
-                    value = deck.creationDate.asFormattedDate(pattern = DateFormatPattern.FULL)
-                ),
+                creationDate = it.creationDate.copy(value = deck.creationDate),
                 repetitionIterationDates = it.repetitionIterationDates,
                 scheduledIterationDates = it.scheduledIterationDates,
                 scheduledDateInterval = it.scheduledDateInterval.copy(value = deck.scheduledDateInterval.calculateDetailedScheduledInterval()),
@@ -80,7 +74,7 @@ class DeckManagementViewModel(
     }
 
     override fun sendAction(action: IDeckManagementAction) {
-        logD("sendAction() called. Action: $action")
+        // logD("sendAction() called. Action: $action")
 
         when (action) {
             is IDeckManagementAction.ScheduledDateIntervalChangeRequested -> {
@@ -124,7 +118,7 @@ class DeckManagementViewModel(
                             )
                         }
                     }.onException { _, throwable ->
-                        logE("Exception: ${throwable.stackTraceToString()}")
+                        // logE("Exception: ${throwable.stackTraceToString()}")
                     }
 
                 }

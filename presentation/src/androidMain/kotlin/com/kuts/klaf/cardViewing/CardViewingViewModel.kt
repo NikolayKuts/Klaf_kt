@@ -11,7 +11,6 @@ import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
-import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.flow.*
 
 class CardViewingViewModel(
@@ -27,7 +26,7 @@ class CardViewingViewModel(
     val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
         .onEach { _cards.value = getCardsByDeckId(id = deckId) }
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
-            logE("Failed to fetch deck for card viewing\n${throwable.stackTraceToString()}")
+            // logE("Failed to fetch deck for card viewing\n${throwable.stackTraceToString()}")
             _eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_deck)
         }.shareIn(
             scope = viewModelScope,
@@ -40,7 +39,7 @@ class CardViewingViewModel(
 
     private suspend fun getCardsByDeckId(id: Int): List<Card> = fetchCards(deckId = id)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
-            logE("Failed to fetch cards for card viewing\n${throwable.stackTraceToString()}")
+            // logE("Failed to fetch cards for card viewing\n${throwable.stackTraceToString()}")
             _eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_cards)
         }.firstOrNull() ?: emptyList()
 }

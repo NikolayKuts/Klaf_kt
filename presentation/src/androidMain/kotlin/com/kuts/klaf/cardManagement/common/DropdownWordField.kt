@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -28,9 +27,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -44,7 +43,10 @@ import com.kuts.klaf.common.verticalScrollbar
 import com.kuts.klaf.theme.MainTheme
 import com.lib.lokdroid.core.logD
 
-private val fallbackAvailableDropdownHeight = 600.dp
+private enum class PopupDirection {
+    Above,
+    Below,
+}
 
 @Composable
 fun <T : IWordable> DropDownWordField(
@@ -63,14 +65,15 @@ fun <T : IWordable> DropDownWordField(
     ) -> Unit,
     bottomDropdownMenuContent: @Composable () -> Unit = { },
 ) {
-    BoxWithConstraints(modifier = Modifier) {
+    Box(modifier = Modifier) {
         val density = LocalDensity.current
-        val availableHeightDp: Dp =
-            if (maxHeight != Dp.Infinity) maxHeight else fallbackAvailableDropdownHeight
+        val screenHeightDp = LocalConfiguration.current.screenHeightDp.dp
+        val availableHeightDp = screenHeightDp
         var textFieldPosition by remember { mutableStateOf(Offset.Zero) }
         var textFieldSize by remember { mutableStateOf(IntSize.Zero) }
         var itemHeightDp by rememberAsMutableStateOf(value = 10.dp)
         var popupContentContainerHeightDp by rememberAsMutableStateOf(value = 0.dp)
+        var popupDirection by remember { mutableStateOf(PopupDirection.Below) }
         val popupMenuPadding = 6.dp
         var bottomDropdownMenuContentHeightDp by remember { mutableStateOf(0.dp) }
 
@@ -92,20 +95,29 @@ fun <T : IWordable> DropDownWordField(
             bottomDropdownMenuContentHeightDp,
             availableHeightDp,
         ) {
-            val popupMenuPositionDp = density.run {
-                textFieldPosition.y.toDp() + textFieldSize.height.toDp()
-            }
-            val freeContentHeight =
-                (availableHeightDp - popupMenuPositionDp - popupMenuPadding * 2).coerceAtLeast(0.dp)
+            val textFieldTopDp = density.run { textFieldPosition.y.toDp() }
+            val textFieldBottomDp = textFieldTopDp + density.run { textFieldSize.height.toDp() }
+            val freeContentHeightBelow =
+                (availableHeightDp - textFieldBottomDp - popupMenuPadding * 2).coerceAtLeast(0.dp)
+            val freeContentHeightAbove = (textFieldTopDp - popupMenuPadding * 2).coerceAtLeast(0.dp)
             val neededHeight =
                 (itemHeightDp * dropdownContent.size) +
                     bottomDropdownMenuContentHeightDp +
                     popupMenuPadding * 2
 
-            popupContentContainerHeightDp = if (neededHeight < freeContentHeight) {
+            val shouldOpenAbove = freeContentHeightAbove > freeContentHeightBelow &&
+                freeContentHeightBelow < neededHeight
+            popupDirection = if (shouldOpenAbove) PopupDirection.Above else PopupDirection.Below
+            val availableContentHeight = if (shouldOpenAbove) {
+                freeContentHeightAbove
+            } else {
+                freeContentHeightBelow
+            }
+
+            popupContentContainerHeightDp = if (neededHeight < availableContentHeight) {
                 neededHeight
             } else {
-                freeContentHeight
+                availableContentHeight
             }
         }
 
@@ -126,6 +138,8 @@ fun <T : IWordable> DropDownWordField(
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = MainTheme.colors.cardManagementView.textFieldBackground,
                     unfocusedContainerColor = MainTheme.colors.cardManagementView.textFieldBackground,
+                    focusedTextColor = textColor,
+                    unfocusedTextColor = textColor,
                 ),
                 trailingIcon = trailingIcon,
                 singleLine = true,
@@ -133,7 +147,13 @@ fun <T : IWordable> DropDownWordField(
             )
 
             expanded.ifTrue {
-                Popup(offset = IntOffset(x = 0, y = textFieldSize.height)) {
+                val popupHeightPx = density.run { popupContentContainerHeightDp.roundToPx() }
+                val popupYOffset = when (popupDirection) {
+                    PopupDirection.Below -> textFieldSize.height
+                    PopupDirection.Above -> -popupHeightPx
+                }
+
+                Popup(offset = IntOffset(x = 0, y = popupYOffset)) {
                     val menuShape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
                     val lazyListSate = rememberLazyListState()
                     val bottomContentDividerSpace =
@@ -142,6 +162,7 @@ fun <T : IWordable> DropDownWordField(
                         popupContentContainerHeightDp -
                             bottomDropdownMenuContentHeightDp -
                             bottomContentDividerSpace
+                    val clampedLazyListHeight = lazyLiatHeight.coerceAtLeast(0.dp)
 
                     Box(
                         Modifier
@@ -159,7 +180,7 @@ fun <T : IWordable> DropDownWordField(
                     ) {
                         LazyColumn(
                             modifier = Modifier
-                                .height(lazyLiatHeight)
+                                .height(clampedLazyListHeight)
                                 .verticalScrollbar(
                                     state = lazyListSate,
                                     color = MainTheme.colors.material.primary,

@@ -278,12 +278,6 @@ private fun IconControlButton(
     }
 }
 
-sealed interface IDraggableButtonAction {
-    data object Increase : IDraggableButtonAction
-    data object Decrease : IDraggableButtonAction
-    data object Reset : IDraggableButtonAction
-}
-
 @Composable
 private fun DraggableButton(
     containerSize: () -> IntSize,

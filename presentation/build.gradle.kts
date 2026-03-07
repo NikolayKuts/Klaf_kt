@@ -31,6 +31,11 @@ kotlin {
                 implementation(compose.ui)
                 implementation(compose.foundation)
                 implementation(compose.material3)
+
+                implementation(libs.lifecycle.viewmodel)
+                implementation(libs.lifecycle.viewmodel.savedstate)
+                implementation(libs.lifecycle.viewmodel.compose)
+                implementation(libs.lifecycle.runtime.compose)
             }
         }
 
@@ -62,8 +67,6 @@ kotlin {
                 implementation(libs.compose.ui.tooling.preview)
                 implementation(libs.compose.accompanist)
 
-                implementation(libs.cambridge.dictionary.core)
-                implementation(libs.cambridge.dictionary.client)
                 implementation(libs.lokdroid)
             }
         }

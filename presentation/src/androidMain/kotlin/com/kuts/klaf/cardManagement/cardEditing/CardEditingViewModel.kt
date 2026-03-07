@@ -2,7 +2,6 @@ package com.kuts.klaf.cardManagement.cardEditing
 
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
-import com.cambridge.dictionary.client.CambridgeClient
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.catchWithCrashlyticsReport
@@ -20,13 +19,12 @@ import com.kuts.domain.useCases.FetchWordMeaningInsightsUseCase
 import com.kuts.domain.useCases.UpdateCardUseCase
 import com.kuts.klaf.cardManagement.common.CardManagementState
 import com.kuts.klaf.cardManagement.common.CardManagementViewModel
+import com.kuts.klaf.cardManagement.common.ICambridgeWordDataProvider
 import com.kuts.klaf.cardManagement.common.toDomainEntity
 import com.kuts.klaf.cardManagement.common.toTextFieldValueIpaHolder
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
 import com.kuts.klaf.presentation.resources.*
-import com.lib.lokdroid.core.logD
-import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,7 +40,7 @@ class CardEditingViewModel(
     private val fetchWordMeaningInsights: FetchWordMeaningInsightsUseCase,
     checkIfWordExists: CheckIfCardExistsUseCase,
     audioPlayer: IAudioPlayerManager,
-    cambridgeClient: CambridgeClient,
+    cambridgeWordDataProvider: ICambridgeWordDataProvider,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
     crashlytics: ICrashlyticsRepository,
@@ -50,7 +48,7 @@ class CardEditingViewModel(
 ) : CardManagementViewModel(
     deckId = deckId,
     audioPlayer = audioPlayer,
-    cambridgeClient = cambridgeClient,
+    cambridgeWordDataProvider = cambridgeWordDataProvider,
     fetchWordAutocomplete = fetchWordAutocomplete,
     fetchWordInfo = fetchWordInfo,
     crashlytics = crashlytics,
@@ -69,7 +67,7 @@ class CardEditingViewModel(
     override suspend fun onForeignWordChanged(word: String) {
         val originalForeignWord = originalCardState.value?.foreignWord
 
-        logD("onForeignWordChanged() called. foreignWord -> $word, originalForeignWord -> $originalForeignWord")
+        // logD("onForeignWordChanged() called. foreignWord -> $word, originalForeignWord -> $originalForeignWord")
 
         if (word.isNotEmpty() && originalForeignWord != word) {
             checkIfForeignWordExists(word = word)
@@ -168,7 +166,7 @@ class CardEditingViewModel(
                 )
             }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-            logE("Failed to refresh insights\n${throwable.stackTraceToString()}")
+            // logE("Failed to refresh insights\n${throwable.stackTraceToString()}")
             setRefreshedInsightsError(errorMessageResId = Res.string.word_insights_request_failed)
         }
     }
@@ -213,7 +211,7 @@ class CardEditingViewModel(
         viewModelScope.launchWithState {
             fetchCard(cardId = cardId)
                 .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
-                    logE("Failed to fetch card flow for editing\n${throwable.stackTraceToString()}")
+                    // logE("Failed to fetch card flow for editing\n${throwable.stackTraceToString()}")
                     eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_card)
                 }.firstOrNull()
                 ?.let { card: Card? ->
@@ -239,7 +237,7 @@ class CardEditingViewModel(
                     }
                 } ?: setInsightsIdle()
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-            logE("Failed to fetch card for editing\n${throwable.stackTraceToString()}")
+            // logE("Failed to fetch card for editing\n${throwable.stackTraceToString()}")
             setInsightsIdle()
             eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_card)
         }
@@ -272,10 +270,10 @@ class CardEditingViewModel(
                 return@launchWithState
             }
             if (latestCard.foreignWord != foreignWord) {
-                logD(
-                    "Gemini insights skipping auto-save because foreign word changed. " +
-                        "initial=$foreignWord, latest=${latestCard.foreignWord}"
-                )
+                // logD(
+                //     "Gemini insights skipping auto-save because foreign word changed. " +
+                //         "initial=$foreignWord, latest=${latestCard.foreignWord}"
+                // )
                 setInsightsIdle(word = latestCard.foreignWord)
                 return@launchWithState
             }
@@ -285,9 +283,9 @@ class CardEditingViewModel(
             originalCardState.value = updatedCard
             updateInsightsUiState(insights = updatedCard.wordMeaningInsights)
 
-            logD("Gemini insights were auto-saved for cardId=${card.id}, foreignWord=$foreignWord")
+            // logD("Gemini insights were auto-saved for cardId=${card.id}, foreignWord=$foreignWord")
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-            logE("Failed to auto-load Gemini insights\n${throwable.stackTraceToString()}")
+            // logE("Failed to auto-load Gemini insights\n${throwable.stackTraceToString()}")
             setInsightsError(word = foreignWord, errorMessageResId = Res.string.word_insights_request_failed)
         }
     }
@@ -318,7 +316,7 @@ class CardEditingViewModel(
                 }
             }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-            logE("Failed to update card\n${throwable.stackTraceToString()}")
+            // logE("Failed to update card\n${throwable.stackTraceToString()}")
             eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_updating_card)
         }
     }

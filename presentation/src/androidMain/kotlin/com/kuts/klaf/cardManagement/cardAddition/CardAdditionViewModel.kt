@@ -2,7 +2,6 @@ package com.kuts.klaf.cardManagement.cardAddition
 
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
-import com.cambridge.dictionary.client.CambridgeClient
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.entities.Card
@@ -16,13 +15,12 @@ import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.cardManagement.common.ICardManagementAction
+import com.kuts.klaf.cardManagement.common.ICambridgeWordDataProvider
 import com.kuts.klaf.cardManagement.common.CardManagementState
 import com.kuts.klaf.cardManagement.common.CardManagementViewModel
 import com.kuts.klaf.cardManagement.common.toDomainEntity
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
-import com.lib.lokdroid.core.logD
-import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
 
 class CardAdditionViewModel(
@@ -31,7 +29,7 @@ class CardAdditionViewModel(
     private val addNewCardIntoDeck: AddNewCardIntoDeckUseCase,
     checkIfWordExists: CheckIfCardExistsUseCase,
     audioPlayer: IAudioPlayerManager,
-    cambridgeClient: CambridgeClient,
+    cambridgeWordDataProvider: ICambridgeWordDataProvider,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
     crashlytics: ICrashlyticsRepository,
@@ -39,7 +37,7 @@ class CardAdditionViewModel(
 ) : CardManagementViewModel(
     deckId = deckId,
     audioPlayer = audioPlayer,
-    cambridgeClient = cambridgeClient,
+    cambridgeWordDataProvider = cambridgeWordDataProvider,
     fetchWordAutocomplete = fetchWordAutocomplete,
     fetchWordInfo = fetchWordInfo,
     crashlytics = crashlytics,
@@ -53,7 +51,7 @@ class CardAdditionViewModel(
 
     override suspend fun onForeignWordChanged(word: String) {
         super.onForeignWordChanged(word = word)
-        logD("onForeignWordChanged() called. foreignWord -> $word")
+        // logD("onForeignWordChanged() called. foreignWord -> $word")
 
         if (word.isNotEmpty()) {
             checkIfForeignWordExists(word = word)
@@ -97,7 +95,7 @@ class CardAdditionViewModel(
                     )
                 }
             }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-                logE("Failed to add card\n${throwable.stackTraceToString()}")
+                // logE("Failed to add card\n${throwable.stackTraceToString()}")
                 eventMessage.tryEmitAsNegative(resId = Res.string.exception_adding_card)
             }
         }

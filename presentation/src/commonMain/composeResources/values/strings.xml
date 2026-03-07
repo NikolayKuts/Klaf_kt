@@ -51,7 +51,7 @@
         <string name="data_synchronization_dialog_title">Would you like to synchronize the data with the remote storage?</string>
         <string name="data_synchronization_dialog_waiting_message">Please wait for the end of synchronization</string>
         <string name="day">day</string>
-        <string name="day_pointer">%dd</string>
+        <string name="day_pointer">%1$dd</string>
         <string name="deck_creation_dialog_title">Create a deck</string>
         <string name="deck_deleting_title">Would you like to delete the deck</string>
         <string name="deck_name_label">Deck name</string>
@@ -68,7 +68,7 @@
         <string name="deck_repetition_mark_successful">successful</string>
         <string name="enter_deck_name">Enter deck name</string>
         <string name="hour">hour</string>
-        <string name="hour_pointer">%dh</string>
+        <string name="hour_pointer">%1$dh</string>
         <string name="label_foreign_word">foreign</string>
         <string name="label_native_word">native</string>
         <string name="log_in_action">Log in</string>
@@ -76,9 +76,9 @@
         <string name="log_out_action">Log out</string>
         <string name="log_out_confirmation_question">Would you like to log out?</string>
         <string name="minute">minute</string>
-        <string name="minute_pointer">%dmin</string>
+        <string name="minute_pointer">%1$dmin</string>
         <string name="month">month</string>
-        <string name="month_pointer">%dm</string>
+        <string name="month_pointer">%1$dm</string>
         <string name="pointer_card_quantity">card quantity</string>
         <string name="pointer_current">current</string>
         <string name="pointer_interim_deck_cards">cards</string>
@@ -96,9 +96,9 @@
         <string name="time_pointer_now">now</string>
         <string name="unassigned_string_value">---</string>
         <string name="week">week</string>
-        <string name="week_pointer">%dw</string>
+        <string name="week_pointer">%1$dw</string>
         <string name="year">year</string>
-        <string name="year_pointer">%dy</string>
+        <string name="year_pointer">%1$dy</string>
         <string name="authentication_sign_in_success">You have signed in successfully</string>
         <string name="authentication_sign_up_success">You have signed up successfully</string>
         <string name="authentication_warning_invalid_password_confirmation">Invalid password confirmation</string>

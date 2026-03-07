@@ -30,10 +30,12 @@ import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.ClosingButton
 import com.kuts.klaf.common.ConfirmationButton
 import com.kuts.klaf.common.ContentHolder
+import com.kuts.klaf.common.DateFormatPattern
 import com.kuts.klaf.common.DIALOG_APP_LABEL_SIZE
 import com.kuts.klaf.common.DialogAppLabel
 import com.kuts.klaf.common.FullBackgroundDialog
 import com.kuts.klaf.common.ScrollableBox
+import com.kuts.klaf.common.asFormattedDate
 import com.kuts.klaf.common.asString
 import com.kuts.klaf.common.toLabelRes
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
@@ -72,7 +74,12 @@ private fun DeckManagementContent(
                     .padding(32.dp)
             ) {
                 StateItem(pair = name)
-                StateItem(pair = creationDate)
+                StateItem(
+                    pair = StatePair(
+                        pointer = creationDate.pointer,
+                        value = creationDate.value.asFormattedDate(pattern = DateFormatPattern.FULL),
+                    )
+                )
                 StateItem(
                     pair = StatePair(
                         pointer = scheduledDateInterval.pointer,

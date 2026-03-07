@@ -1,8 +1,6 @@
 package com.kuts.klaf.cardManagement.common
 
 import androidx.lifecycle.ViewModel
-import com.cambridge.dictionary.client.CambridgeClient
-import com.cambridge.dictionary.core.Word
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.managers.IAudioPlayerManager
@@ -14,7 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 abstract class BaseCardManagementViewModel(
     val audioPlayer: IAudioPlayerManager,
-    protected val cambridgeClient: CambridgeClient,
+    protected val cambridgeWordDataProvider: ICambridgeWordDataProvider,
 ) : ViewModel(), IEventMessageSource {
 
     abstract val deck: SharedFlow<Deck?>
@@ -27,11 +25,4 @@ abstract class BaseCardManagementViewModel(
     abstract val ipaKeyboardState: StateFlow<IpaKeyboardState>
 
     abstract fun sendAction(action: ICardManagementAction)
-}
-
-sealed interface ICambridgeDataState {
-
-    data class Fetched(val word: Word): ICambridgeDataState
-
-    data object Empty : ICambridgeDataState
 }

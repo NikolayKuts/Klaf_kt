@@ -33,12 +33,12 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
-import com.cambridge.dictionary.core.Meaning
-import com.cambridge.dictionary.core.PartsOfSpeech
-import com.cambridge.dictionary.core.Phrase
-import com.cambridge.dictionary.core.Word
 import com.kuts.domain.common.ifTrue
 import com.kuts.klaf.cardManagement.common.BaseCardManagementViewModel
+import com.kuts.klaf.cardManagement.common.CambridgeMeaning
+import com.kuts.klaf.cardManagement.common.CambridgePartOfSpeech
+import com.kuts.klaf.cardManagement.common.CambridgePhrase
+import com.kuts.klaf.cardManagement.common.CambridgeWordData
 import com.kuts.klaf.cardManagement.common.CardManagementView
 import com.kuts.klaf.cardManagement.common.ICambridgeDataState
 import com.kuts.klaf.cardManagement.common.ICardManagementAction
@@ -250,7 +250,7 @@ private fun BottomSheet(
 }
 
 @Composable
-private fun WordDetailsScreen(word: Word) {
+private fun WordDetailsScreen(word: CambridgeWordData) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -275,7 +275,7 @@ private fun WordDetailsScreen(word: Word) {
 }
 
 @Composable
-private fun PartOfSpeechSection(pos: PartsOfSpeech) {
+private fun PartOfSpeechSection(pos: CambridgePartOfSpeech) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(
             text = pos.text + if (pos.label.isNotBlank()) " (${pos.label})" else "",
@@ -315,7 +315,7 @@ private fun PartOfSpeechSection(pos: PartsOfSpeech) {
 }
 
 @Composable
-private fun MeaningItem(meaning: Meaning) {
+private fun MeaningItem(meaning: CambridgeMeaning) {
     Column(
         modifier = Modifier
             .clip(RoundedCornerShape(5.dp))
@@ -344,7 +344,7 @@ private fun MeaningItem(meaning: Meaning) {
 }
 
 @Composable
-private fun PhraseItem(phrase: Phrase) {
+private fun PhraseItem(phrase: CambridgePhrase) {
     Column(
         modifier = Modifier
             .clip(RoundedCornerShape(5.dp))

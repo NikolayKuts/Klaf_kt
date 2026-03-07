@@ -3,7 +3,6 @@ package com.kuts.klaf.cardManagement.common
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
-import com.cambridge.dictionary.client.CambridgeClient
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.DebouncedMutableStateFlow
 import com.kuts.domain.common.LoadingState
@@ -28,7 +27,6 @@ import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionItem
 import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionsState
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
-import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -53,7 +51,7 @@ import kotlinx.coroutines.launch
 abstract class CardManagementViewModel(
     deckId: Int,
     audioPlayer: IAudioPlayerManager,
-    cambridgeClient: CambridgeClient,
+    cambridgeWordDataProvider: ICambridgeWordDataProvider,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     private val fetchWordInfo: FetchWordInfoUseCase,
     protected val crashlytics: ICrashlyticsRepository,
@@ -61,7 +59,7 @@ abstract class CardManagementViewModel(
     fetchDeckById: FetchDeckByIdUseCase,
 ) : BaseCardManagementViewModel(
     audioPlayer = audioPlayer,
-    cambridgeClient = cambridgeClient
+    cambridgeWordDataProvider = cambridgeWordDataProvider
 ) {
 
     companion object {
@@ -77,7 +75,7 @@ abstract class CardManagementViewModel(
 
     override val deck: SharedFlow<Deck?> = fetchDeckById(deckId = deckId)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
-            logE("Failed to fetch deck for card management\n${throwable.stackTraceToString()}")
+            // logE("Failed to fetch deck for card management\n${throwable.stackTraceToString()}")
             eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_deck)
         }.shareIn(
             scope = viewModelScope,
@@ -114,7 +112,7 @@ abstract class CardManagementViewModel(
     protected open suspend fun onForeignWordChanged(word: String) {
         if (word.isEmpty()) return
         viewModelScope.launch(Dispatchers.IO) {
-            val wordData = cambridgeClient.fetchWordData(word = word)
+            val wordData = cambridgeWordDataProvider.fetchWordData(word = word)
 
             if (wordData == null) {
                 cambridgeDataState.value = ICambridgeDataState.Empty
@@ -341,7 +339,7 @@ abstract class CardManagementViewModel(
                         isActive = true,
                     )
                 }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-                    logE("fetchWordAutocomplete() caught ERROR: ${throwable.stackTraceToString()}")
+                    // logE("fetchWordAutocomplete() caught ERROR: ${throwable.stackTraceToString()}")
                 }
             }
         } else {
@@ -433,7 +431,7 @@ abstract class CardManagementViewModel(
     }
 
     private fun handleWordInfoError(loadingState: LoadingState.Error<IWordInfoRepository.IWordInfoLoadingError>) {
-        logE("fetchWordInfo() returned error state: ${loadingState.value}")
+        // logE("fetchWordInfo() returned error state: ${loadingState.value}")
         val errorMessageId = when (loadingState.value) {
             IWordInfoLoadingError.Common,
             IWordInfoLoadingError.JsonConvert -> {

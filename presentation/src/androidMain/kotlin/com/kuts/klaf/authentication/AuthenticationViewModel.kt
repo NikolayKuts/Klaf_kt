@@ -25,7 +25,6 @@ import com.kuts.klaf.authentication.PasswordValidator.IPasswordValidationResult.
 import com.kuts.klaf.authentication.PasswordValidator.IPasswordValidationResult.ToShort
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
-import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -117,7 +116,7 @@ class AuthenticationViewModel(
     }
 
     private fun handleSigningInError(loadingState: LoadingState.Error<IAuthenticationError>) {
-        logE("Sign-in failed with state error: ${loadingState.value}")
+        // logE("Sign-in failed with state error: ${loadingState.value}")
         val errorMessageId = when (val error = loadingState.value) {
             is ISigningInError -> {
                 when (error) {
@@ -142,7 +141,7 @@ class AuthenticationViewModel(
     }
 
     private fun handleSigningUpError(loadingState: LoadingState.Error<IAuthenticationError>) {
-        logE("Sign-up failed with state error: ${loadingState.value}")
+        // logE("Sign-up failed with state error: ${loadingState.value}")
         val errorMessageId = when (val error = loadingState.value) {
             is ISigningUpError -> {
                 when (error) {

@@ -5,7 +5,7 @@ import com.kuts.domain.common.DateUnit
 
 data class DeckManagementState(
     val name: StatePair<String> = StatePair(pointer = "name", value = ""),
-    val creationDate: StatePair<String> = StatePair(pointer = "creationDate", value = ""),
+    val creationDate: StatePair<Long> = StatePair(pointer = "creationDate", value = 0L),
     val repetitionIterationDates: List<String> = emptyList(),
     val scheduledIterationDates: List<String> = emptyList(),
     val scheduledDateInterval: StatePair<DateData> = StatePair(
