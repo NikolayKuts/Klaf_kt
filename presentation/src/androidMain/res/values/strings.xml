@@ -155,7 +155,7 @@
     <string name="authentication_warning_network_error">Check internet connection</string>
     <string name="authentication_password_confirmation">password confirmation</string>
     <string name="authentication_warning_type_password_confirmation">Type password confirmation</string>
-    <string name="authentication_warning_Invalid_password_confirmation">Invalid password confirmation</string>
+    <string name="authentication_warning_invalid_password_confirmation">Invalid password confirmation</string>
     <string name="authentication_sign_in_success">You have signed in successfully</string>
     <string name="authentication_sign_up_success">You have signed up successfully</string>
     <string name="data_synchronization_dialog_failure_message">Data synchronization failed</string>

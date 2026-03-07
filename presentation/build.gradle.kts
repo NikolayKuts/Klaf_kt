@@ -3,7 +3,6 @@ import com.example.klaf.di.dependencies.Modules
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.android.serialization)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
@@ -23,14 +22,26 @@ kotlin {
                 implementation(project(Modules.Domain))
                 implementation(libs.core.coroutines.core)
                 implementation(libs.kotlin.serilization)
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
                 implementation(libs.datastore.preferences.core)
                 implementation(libs.moko.permissions)
                 implementation(libs.moko.permissions.notifications)
+                implementation(compose.components.resources)
 
                 implementation(compose.runtime)
                 implementation(compose.ui)
+                implementation("org.jetbrains.compose.ui:ui-backhandler:${libs.versions.composeMultiplatform.get()}")
                 implementation(compose.foundation)
                 implementation(compose.material3)
+                implementation(libs.navigation.compose)
+
+                implementation(libs.lifecycle.runtime)
+                implementation(libs.lifecycle.runtime.compose)
+                implementation(libs.lifecycle.viewmodel)
+                implementation(libs.lifecycle.viewmodel.savedstate)
+
+                implementation(libs.koin.compose)
+                implementation(libs.koin.compose.viewmodel)
             }
         }
 
@@ -41,14 +52,15 @@ kotlin {
                 implementation(libs.androidx.material3.android)
                 implementation(libs.core.coroutines.core.jvm)
 
-                implementation(libs.navigation.compose)
-
                 implementation(libs.lifecycle.viewmodel.ktx)
                 implementation(libs.lifecycle.livedata.ktx)
                 implementation(libs.lifecycle.viewmodel.savedstate)
+                implementation(libs.lifecycle.viewmodel.compose)
+                implementation(libs.lifecycle.runtime.compose)
 
                 implementation(libs.koin.android)
-                implementation(libs.koin.androidx.compose)
+                implementation(libs.koin.compose)
+                implementation(libs.koin.compose.viewmodel)
 
                 implementation(libs.firebase.authentication)
 
@@ -60,14 +72,16 @@ kotlin {
                 implementation(libs.compose.ui.tooling)
                 implementation(libs.compose.activity)
                 implementation(libs.compose.ui.tooling.preview)
-                implementation(libs.compose.accompanist)
 
-                implementation(libs.cambridge.dictionary.core)
-                implementation(libs.cambridge.dictionary.client)
                 implementation(libs.lokdroid)
             }
         }
     }
+}
+
+compose.resources {
+    packageOfResClass = "com.kuts.klaf.presentation.resources"
+    publicResClass = true
 }
 
 android {

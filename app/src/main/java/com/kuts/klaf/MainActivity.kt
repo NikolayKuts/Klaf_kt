@@ -22,9 +22,9 @@ import com.kuts.klaf.common.MainViewModel
 import com.kuts.klaf.common.permissions.INotificationPermissionBinder
 import com.kuts.klaf.common.permissions.INotificationPermissionManager
 import com.kuts.klaf.common.permissions.NotificationPermissionDialogs
+import com.kuts.klaf.navigation.AndroidKlafNavHost
+import com.kuts.klaf.navigation.AppLaunchNavigationExtras
 import com.kuts.klaf.navigation.AppLaunchNavigationRequest
-import com.kuts.klaf.navigation.KlafNavHost
-import com.kuts.klaf.navigation.toAppLaunchNavigationRequest
 import com.kuts.klaf.theme.MainTheme
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.koin.android.ext.android.inject
@@ -40,6 +40,10 @@ class MainActivity : AppCompatActivity() {
         extraBufferCapacity = 1,
     )
 
+    companion object {
+        private const val MIME_TYPE_TEXT_PLAIN = "text/plain"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
 
@@ -51,9 +55,9 @@ class MainActivity : AppCompatActivity() {
                 setStatusBarColor()
 
                 Box(modifier = Modifier.fillMaxSize()) {
-                    KlafNavHost(
+                    AndroidKlafNavHost(
                         sharedViewModel = sharedViewModel,
-                        initialLaunchRequest = intent.toAppLaunchNavigationRequest(),
+                        initialLaunchRequest = intent.toLaunchNavigationRequest(),
                         launchRequests = launchRequests,
                         onRestartApp = ::finish,
                     )
@@ -81,7 +85,7 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
 
         setIntent(intent)
-        intent.toAppLaunchNavigationRequest()?.let { request -> launchRequests.tryEmit(request) }
+        intent.toLaunchNavigationRequest()?.let { request -> launchRequests.tryEmit(request) }
     }
 
     override fun onStart() {
@@ -92,5 +96,46 @@ class MainActivity : AppCompatActivity() {
     @Composable
     private fun setStatusBarColor() {
         window.statusBarColor = MainTheme.colors.common.statusBarBackground.toArgb()
+    }
+
+    private fun Intent.toLaunchNavigationRequest(): AppLaunchNavigationRequest? {
+        val destination = getStringExtra(AppLaunchNavigationExtras.DESTINATION_KEY)
+
+        if (destination != null) {
+            return when (destination) {
+                AppLaunchNavigationExtras.DESTINATION_DECK_LIST -> {
+                    AppLaunchNavigationRequest.OpenDeckList
+                }
+
+                AppLaunchNavigationExtras.DESTINATION_INTERIM_CARD_ADDITION -> {
+                    AppLaunchNavigationRequest.OpenInterimCardAddition
+                }
+
+                AppLaunchNavigationExtras.DESTINATION_DECK_REPETITION -> {
+                    val deckId = getIntExtra(
+                        AppLaunchNavigationExtras.DECK_ID_KEY,
+                        AppLaunchNavigationExtras.DEFAULT_DECK_ID,
+                    )
+                    val deckName = getStringExtra(AppLaunchNavigationExtras.DECK_NAME_KEY)
+                        ?: AppLaunchNavigationExtras.DEFAULT_DECK_NAME
+
+                    AppLaunchNavigationRequest.OpenDeckRepetition(
+                        deckId = deckId,
+                        deckName = deckName,
+                    )
+                }
+
+                else -> null
+            }
+        }
+
+        return if (
+            action == Intent.ACTION_PROCESS_TEXT
+            && type?.startsWith(MIME_TYPE_TEXT_PLAIN) == true
+        ) {
+            AppLaunchNavigationRequest.OpenInterimCardAddition
+        } else {
+            null
+        }
     }
 }

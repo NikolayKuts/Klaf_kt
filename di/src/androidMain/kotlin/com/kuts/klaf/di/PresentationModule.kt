@@ -22,6 +22,7 @@ import com.kuts.klaf.deckManagment.BaseDeckManagementViewModel
 import com.kuts.klaf.deckManagment.DeckManagementViewModel
 import com.kuts.klaf.deckRepetition.BaseDeckReviewViewModel
 import com.kuts.klaf.deckRepetition.DeckReviewViewModel
+import com.kuts.klaf.deckRepetition.savedStateHandle.DeckReviewSavedStateHandleStateStore
 import com.kuts.klaf.deckRepetitionInfo.DeckRepetitionInfoViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -63,7 +64,7 @@ private fun Module.viewModels() {
             renameDeck = get(),
             removeDeck = get(),
             fetchCardsUseCase = get(),
-            auth = get(),
+            authenticationSessionManager = get(),
             crashlytics = get(),
             appMaintenanceManager = get(),
             authenticationInteractor = get(),
@@ -73,7 +74,7 @@ private fun Module.viewModels() {
     viewModel<BaseDeckReviewViewModel> { params ->
         DeckReviewViewModel(
             deckId = params.get(),
-            handle = get(),
+            stateStore = DeckReviewSavedStateHandleStateStore(handle = get()),
             fetchCards = get(),
             fetchDeckById = get(),
             timer = get(),
@@ -103,7 +104,7 @@ private fun Module.viewModels() {
             addNewCardIntoDeck = get(),
             checkIfWordExists = get(),
             audioPlayer = get(),
-            cambridgeClient = get(),
+            cambridgeWordDataProvider = get(),
             fetchWordAutocomplete = get(),
             fetchWordInfo = get(),
             crashlytics = get(),
@@ -120,7 +121,7 @@ private fun Module.viewModels() {
             fetchWordMeaningInsights = get(),
             checkIfWordExists = get(),
             audioPlayer = get(),
-            cambridgeClient = get(),
+            cambridgeWordDataProvider = get(),
             fetchWordAutocomplete = get(),
             fetchWordInfo = get(),
             crashlytics = get(),

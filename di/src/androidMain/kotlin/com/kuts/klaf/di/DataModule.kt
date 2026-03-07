@@ -16,6 +16,7 @@ import com.google.firebase.ktx.Firebase
 import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.entities.DeckRepetitionInfos
 import com.kuts.domain.managers.IAppMaintenanceManager
+import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.repositories.IAuthenticationRepository
@@ -28,6 +29,7 @@ import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IWordAutocompleteRepository
 import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.repositories.IWordMeaningInsightsRepository
+import com.kuts.klaf.cardManagement.common.ICambridgeWordDataProvider
 import com.kuts.klaf.common.AppMaintenanceManager
 import com.kuts.klaf.common.AppReopeningWorker
 import com.kuts.klaf.common.CoroutineContextProvider
@@ -50,6 +52,7 @@ import com.kuts.klaf.firestore.repositoryImplementations.CrashlyticsRepositoryFi
 import com.kuts.klaf.firestore.repositoryImplementations.DeckRepositoryFirestore
 import com.kuts.klaf.firestore.repositoryImplementations.StorageSaveVersionRepositoryFirestore
 import com.kuts.klaf.firestore.repositoryImplementations.WordAutocompleteFirestore
+import com.kuts.klaf.firestore.FirebaseAuthenticationSessionManager
 import com.kuts.klaf.networking.CardAudioPlayer
 import com.kuts.klaf.networking.gemini.GeminiHttpClientFactory
 import com.kuts.klaf.networking.gemini.GeminiWordMeaningInsightsProvider
@@ -110,6 +113,7 @@ private fun Module.androidRepositoryModule() {
             crashlytics = get(),
         )
     }
+    single<IAuthenticationSessionManager> { FirebaseAuthenticationSessionManager(auth = get()) }
     single<IWordInfoRepository> {
         YandexWordInfoProvider(
             client = YandexSecureHttpClientFactory().create(),
@@ -158,6 +162,7 @@ private fun Module.infrastructureModule() {
     }
 
     single { CambridgeClient }
+    single<ICambridgeWordDataProvider> { CambridgeWordDataProvider(client = get()) }
     single { LoKdroid }
 }
 
