@@ -9,8 +9,6 @@
 .externalNativeBuild
 .cxx
 local.properties
-/gradlew
-/gradlew.bat
 /app/google-services.json
 /app/release/
 
