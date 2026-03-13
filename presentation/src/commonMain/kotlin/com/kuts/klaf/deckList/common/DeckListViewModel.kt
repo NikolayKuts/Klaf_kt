@@ -13,6 +13,7 @@ import com.kuts.domain.common.IDataSynchronizationState.Initial
 import com.kuts.domain.common.IDataSynchronizationState.SuccessfullyFinished
 import com.kuts.domain.common.IDataSynchronizationState.Synchronizing
 import com.kuts.domain.common.IDataSynchronizationState.Uncertain
+import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.common.launchIn
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.interactors.AuthenticationInteractor
@@ -31,8 +32,6 @@ import com.kuts.klaf.deckList.common.IDeckListNavigationDestination.DataSynchron
 import com.kuts.klaf.deckList.common.IDeckListNavigationDestination.Unspecified
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent.*
 import com.kuts.klaf.deckList.drawer.DrawerViewState
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -47,6 +46,7 @@ class DeckListViewModel(
     private val crashlytics: ICrashlyticsRepository,
     private val appMaintenanceManager: IAppMaintenanceManager,
     private val authenticationInteractor: AuthenticationInteractor,
+    private val coroutineContextProvider: ICoroutineContextProvider,
 ) : BaseDeckListViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
@@ -271,7 +271,7 @@ class DeckListViewModel(
     }
 
     override fun deleteAccount() {
-        authenticationInteractor.deleteAccount().flowOn(context = Dispatchers.IO)
+        authenticationInteractor.deleteAccount().flowOn(context = coroutineContextProvider.io)
             .onEach { loadingState ->
                 drawerActionLoadingState.value = loadingState is LoadingState.Loading
 
@@ -293,7 +293,7 @@ class DeckListViewModel(
     }
 
     override fun generateGptPromptWithDeckContent(deckId: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(coroutineContextProvider.io) {
             val cards = fetchCardsUseCase.invoke(deckId = deckId).firstOrNull() ?: return@launch
             val foreignWords = cards.joinToString { it.foreignWord }
             val chatGptUrl = getValidatedChatGptUrl()
@@ -339,7 +339,7 @@ class DeckListViewModel(
                 crashlytics.report(exception = it)
             }
             .filterNot { it is Uncertain }
-            .flowOn(context = Dispatchers.IO)
+            .flowOn(context = coroutineContextProvider.io)
             .onEach {
                 dataSynchronizationState.value = it
 
@@ -361,7 +361,7 @@ class DeckListViewModel(
 
     private fun observeAuthenticationState() {
         authenticationInteractor.getObservableAuthenticationState()
-            .flowOn(Dispatchers.IO)
+            .flowOn(coroutineContextProvider.io)
             .onEach {
                 drawerState.emit(
                     DrawerViewState(

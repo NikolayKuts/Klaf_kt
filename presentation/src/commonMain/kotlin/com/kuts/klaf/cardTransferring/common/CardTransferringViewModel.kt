@@ -3,6 +3,7 @@ package com.kuts.klaf.cardTransferring.common
 import androidx.lifecycle.viewModelScope
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.managers.IAudioPlayerManager
@@ -16,7 +17,6 @@ import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,6 +40,7 @@ class CardTransferringViewModel(
     override val audioPlayer: IAudioPlayerManager,
     private val moveCardsToDeck: TransferCardsToDeckUseCase,
     private val crashlytics: ICrashlyticsRepository,
+    private val coroutineContextProvider: ICoroutineContextProvider,
 ) : BaseCardTransferringViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
@@ -136,7 +137,7 @@ class CardTransferringViewModel(
             listHeaderState.update { state ->
                 state.copy(isChecked = holders.all { it.isSelected })
             }
-        }.flowOn(Dispatchers.IO)
+        }.flowOn(coroutineContextProvider.io)
             .launchIn(viewModelScope)
     }
 

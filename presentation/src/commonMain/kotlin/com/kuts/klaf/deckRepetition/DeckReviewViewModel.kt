@@ -9,6 +9,7 @@ import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.DeckRepetitionState
 import com.kuts.domain.common.DeckReviewPassSuccessMark
+import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.MINIMUM_NUMBER_OF_FIRST_REPETITIONS
 import com.kuts.domain.common.UNASSIGNED_LONG_VALUE
@@ -51,7 +52,6 @@ import com.kuts.klaf.deckRepetition.RepetitionScreenState.FinishState
 import com.kuts.klaf.deckRepetition.RepetitionScreenState.RepetitionState
 import com.kuts.klaf.deckRepetition.RepetitionScreenState.StartState
 import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -81,6 +81,7 @@ class DeckReviewViewModel(
     private val saveDeckReviewInfo: SaveDeckReviewInfoUseCase,
     private val deckReviewNotifier: IDeckReviewNotifierManager,
     private val crashlytics: ICrashlyticsRepository,
+    private val coroutineContextProvider: ICoroutineContextProvider,
 ) : BaseDeckReviewViewModel() {
 
     companion object Companion {
@@ -197,7 +198,7 @@ class DeckReviewViewModel(
 
         val currentScreenState = screenState.replayCache.firstOrNull() ?: StartState
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(coroutineContextProvider.io) {
             if (cardsToReview.value.isEmpty()) {
                 eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_cards)
             } else if (currentScreenState is StartState || currentScreenState is FinishState) {
@@ -356,7 +357,7 @@ class DeckReviewViewModel(
             }
 
             cardsToReview.value = getCardsByProgress(receivedCards = receivedCards.shuffled())
-        }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
+        }.launchIn(scope = viewModelScope, context = coroutineContextProvider.io)
     }
 
     private fun observeCurrentCard() {
@@ -379,18 +380,18 @@ class DeckReviewViewModel(
             .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
                 // logE("Failed to observe current card during repetition\n${throwable.stackTraceToString()}")
                 eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_card)
-            }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
+            }.launchIn(scope = viewModelScope, context = coroutineContextProvider.io)
     }
 
     private fun observeReviewedCardIdList() {
         reviewedCardIds.map { it.size }
             .onEach { deckReviewState.update { state -> state.copy(reviewedCardsCount = it) } }
-            .flowOn(Dispatchers.IO)
+            .flowOn(coroutineContextProvider.io)
             .launchIn(scope = viewModelScope)
     }
 
     private fun observeDeck() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(coroutineContextProvider.io) {
             deck.collect {
                 if (it != null) {
                     deckReviewState.update { state ->
@@ -411,7 +412,7 @@ class DeckReviewViewModel(
     }
 
     private fun observeTimerState() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(coroutineContextProvider.io) {
             timer.timerState.collect { timerState ->
                 deck.firstOrNull()?.let {
                     stateStore.timerTime = timerState.totalSeconds
@@ -525,7 +526,7 @@ class DeckReviewViewModel(
 
         // logD("finishRepetition() called")
 
-        viewModelScope.launchWithState(Dispatchers.IO) {
+        viewModelScope.launchWithState(coroutineContextProvider.io) {
             screenState.emit(FinishState(repetitionInfoEvent = RepetitionInfoEvent.Non))
             stateStore.isWaitingForFinish = false
             clearRepetitionProgress()
@@ -651,8 +652,8 @@ class DeckReviewViewModel(
         repeatedDeck: Deck,
         updatedDeck: Deck,
     ): RepetitionInfoEvent = try {
-        withContext(Dispatchers.IO) {
-            val currentTime = System.currentTimeMillis()
+        withContext(coroutineContextProvider.io) {
+            val currentTime = getCurrentDateAsLong()
             val scheduledDate = updatedDeck.scheduledDate ?: currentTime
 
             val isIterationFinished = scheduledDate > currentTime

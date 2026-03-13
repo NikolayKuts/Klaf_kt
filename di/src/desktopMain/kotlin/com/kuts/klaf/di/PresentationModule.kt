@@ -2,6 +2,7 @@ package com.kuts.klaf.di
 
 import com.kuts.domain.common.CardRepetitionOrder
 import com.kuts.domain.common.CardSide
+import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.UnitSurrogate
 import com.kuts.domain.entities.Card
@@ -35,14 +36,19 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 internal val presentationModule = module {
-    factory { RepetitionTimer() }
+    factory { RepetitionTimer(coroutineContextProvider = get()) }
     single<IDeckReviewNotifierManager> { NoOpDeckReviewNotifier() }
     single<ICambridgeWordDataProvider> { NoOpCambridgeWordDataProvider() }
     viewModels()
 }
 
 private fun Module.viewModels() {
-    viewModel<BaseAuthenticationViewModel> { AuthenticationViewModel(authenticationInteractor = get()) }
+    viewModel<BaseAuthenticationViewModel> {
+        AuthenticationViewModel(
+            authenticationInteractor = get(),
+            coroutineContextProvider = get<ICoroutineContextProvider>(),
+        )
+    }
 
     viewModel<BaseDeckListViewModel> {
         DeckListViewModel(
@@ -56,6 +62,7 @@ private fun Module.viewModels() {
             crashlytics = get(),
             appMaintenanceManager = get(),
             authenticationInteractor = get(),
+            coroutineContextProvider = get(),
         )
     }
 
@@ -73,6 +80,7 @@ private fun Module.viewModels() {
             saveDeckReviewInfo = get(),
             deckReviewNotifier = get(),
             crashlytics = get(),
+            coroutineContextProvider = get(),
         )
     }
 
@@ -82,6 +90,7 @@ private fun Module.viewModels() {
             fetchDeckById = get(),
             updateDeck = get(),
             crashlytics = get(),
+            coroutineContextProvider = get(),
         )
     }
 
@@ -97,6 +106,7 @@ private fun Module.viewModels() {
             fetchWordInfo = get(),
             crashlytics = get(),
             fetchDeckById = get(),
+            coroutineContextProvider = get(),
         )
     }
 
@@ -114,6 +124,7 @@ private fun Module.viewModels() {
             fetchWordInfo = get(),
             crashlytics = get(),
             fetchDeckById = get(),
+            coroutineContextProvider = get(),
         )
     }
 
@@ -127,6 +138,7 @@ private fun Module.viewModels() {
             audioPlayer = get(),
             moveCardsToDeck = get(),
             crashlytics = get(),
+            coroutineContextProvider = get(),
         )
     }
 
