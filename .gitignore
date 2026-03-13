@@ -32,6 +32,10 @@ buildSrc/build/tmp/jar/MANIFEST.MF
 /build/reports/problems/problems-report.html
 **/build/reports/problems/problems-report.html
 
+# Xcode user-specific files
+**/xcuserdata/
+*.xcuserstate
+
 # Gradle outputs (all modules)
 **/build/
 /.kotlin/
