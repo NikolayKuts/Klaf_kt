@@ -28,7 +28,7 @@ kotlin {
     iosSimulatorArm64()
 
     sourceSets {
-        commonMain {
+        val commonMain by getting {
             dependencies {
                 implementation(project(Modules.Domain))
                 implementation(libs.core.coroutines.core)
@@ -41,6 +41,14 @@ kotlin {
                 implementation(libs.sqlite.bundled)
             }
         }
+
+        val iosMain = maybeCreate("iosMain").apply {
+            dependsOn(commonMain)
+        }
+        val iosX64Main by getting { dependsOn(iosMain) }
+        val iosArm64Main by getting { dependsOn(iosMain) }
+        val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
+
         val desktopMain by getting {
             dependencies {
                 implementation(libs.ktor.client.cio)

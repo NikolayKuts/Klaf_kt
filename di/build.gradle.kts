@@ -20,9 +20,16 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_17)
         }
     }
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+    val iosX64 = iosX64()
+    val iosArm64 = iosArm64()
+    val iosSimulatorArm64 = iosSimulatorArm64()
+
+    val frameworkName = "KlafAppKit"
+    listOf(iosX64, iosArm64, iosSimulatorArm64).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = frameworkName
+        }
+    }
 
     sourceSets {
         val commonMain by getting {
@@ -34,6 +41,17 @@ kotlin {
                 implementation(libs.ktor.client.core)
             }
         }
+
+        val iosMain = maybeCreate("iosMain").apply {
+            dependsOn(commonMain)
+            dependencies {
+                implementation(libs.koin.compose.viewmodel)
+            }
+        }
+        val iosX64Main by getting { dependsOn(iosMain) }
+        val iosArm64Main by getting { dependsOn(iosMain) }
+        val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
+
         val desktopMain by getting {
             dependencies {
                 implementation(libs.koin.compose.viewmodel)

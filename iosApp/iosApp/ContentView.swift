@@ -1,10 +1,10 @@
 import SwiftUI
-import PresentationKit
+import KlafAppKit
 
 struct ComposeViewController: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> UIViewController {
-        MainViewControllerKt.MainViewController()
+        IosAppEntryPointKt.IosAppEntryPoint()
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
