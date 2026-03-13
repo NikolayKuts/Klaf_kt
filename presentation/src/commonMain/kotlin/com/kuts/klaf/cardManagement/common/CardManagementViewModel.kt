@@ -5,6 +5,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.DebouncedMutableStateFlow
+import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.common.generateLetterInfos
@@ -27,7 +28,6 @@ import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionItem
 import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionsState
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -56,6 +56,7 @@ abstract class CardManagementViewModel(
     private val fetchWordInfo: FetchWordInfoUseCase,
     protected val crashlytics: ICrashlyticsRepository,
     protected val checkIfWordExists: CheckIfCardExistsUseCase,
+    protected val coroutineContextProvider: ICoroutineContextProvider,
     fetchDeckById: FetchDeckByIdUseCase,
 ) : BaseCardManagementViewModel(
     audioPlayer = audioPlayer,
@@ -111,7 +112,7 @@ abstract class CardManagementViewModel(
 
     protected open suspend fun onForeignWordChanged(word: String) {
         if (word.isEmpty()) return
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(coroutineContextProvider.io) {
             val wordData = cambridgeWordDataProvider.fetchWordData(word = word)
 
             if (wordData == null) {
@@ -215,7 +216,7 @@ abstract class CardManagementViewModel(
                 ipaHolders = textFieldValueIpaHolders
             )
         }.onEach { addingState -> cardManagementState.value = addingState }
-            .flowOn(Dispatchers.IO)
+            .flowOn(coroutineContextProvider.io)
             .launchIn(viewModelScope)
     }
 
@@ -225,7 +226,7 @@ abstract class CardManagementViewModel(
             .distinctUntilChanged()
             .debounce(1500L)
             .onEach { onForeignWordChanged(word = it) }
-            .flowOn(Dispatchers.IO)
+            .flowOn(coroutineContextProvider.io)
             .launchIn(viewModelScope)
 
         foreignWordFieldValueState.map { fieldValue -> fieldValue.text.trim() }
@@ -274,7 +275,7 @@ abstract class CardManagementViewModel(
                     }
                 }
 
-            }.flowOn(Dispatchers.IO)
+            }.flowOn(coroutineContextProvider.io)
             .launchIn(viewModelScope)
     }
 
@@ -296,7 +297,7 @@ abstract class CardManagementViewModel(
                     }
                 }
             }
-        }.flowOn(Dispatchers.IO)
+        }.flowOn(coroutineContextProvider.io)
             .launchIn(viewModelScope)
     }
 
@@ -331,7 +332,7 @@ abstract class CardManagementViewModel(
 
                 autocompleteState.launchUpdateWithState(
                     scope = viewModelScope,
-                    context = Dispatchers.IO
+                    context = coroutineContextProvider.io
                 ) {
                     AutocompleteState(
                         prefix = word,

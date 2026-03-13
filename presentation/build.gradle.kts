@@ -14,9 +14,16 @@ kotlin {
     jvm("desktop")
 
     androidTarget()
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+    val iosX64 = iosX64()
+    val iosArm64 = iosArm64()
+    val iosSimulatorArm64 = iosSimulatorArm64()
+
+    val frameworkName = "PresentationKit"
+    listOf(iosX64, iosArm64, iosSimulatorArm64).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = frameworkName
+        }
+    }
 
     sourceSets {
         val commonMain by getting {

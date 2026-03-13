@@ -4,6 +4,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.entities.Card
 import com.kuts.domain.ipa.toRowInfos
 import com.kuts.domain.managers.IAudioPlayerManager
@@ -21,7 +22,6 @@ import com.kuts.klaf.cardManagement.common.CardManagementViewModel
 import com.kuts.klaf.cardManagement.common.toDomainEntity
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
-import kotlinx.coroutines.Dispatchers
 
 class CardAdditionViewModel(
     deckId: Int,
@@ -34,6 +34,7 @@ class CardAdditionViewModel(
     fetchWordInfo: FetchWordInfoUseCase,
     crashlytics: ICrashlyticsRepository,
     fetchDeckById: FetchDeckByIdUseCase,
+    coroutineContextProvider: ICoroutineContextProvider,
 ) : CardManagementViewModel(
     deckId = deckId,
     audioPlayer = audioPlayer,
@@ -42,7 +43,8 @@ class CardAdditionViewModel(
     fetchWordInfo = fetchWordInfo,
     crashlytics = crashlytics,
     fetchDeckById = fetchDeckById,
-    checkIfWordExists = checkIfWordExists
+    checkIfWordExists = checkIfWordExists,
+    coroutineContextProvider = coroutineContextProvider,
 ) {
 
     init {
@@ -78,7 +80,7 @@ class CardAdditionViewModel(
                 ipa = ipaHolders
             )
 
-            viewModelScope.launchWithState(Dispatchers.IO) {
+            viewModelScope.launchWithState(coroutineContextProvider.io) {
                 val decksWithSameForeignWord = checkIfWordExists.invoke(foreignWord = foreignWord)
 
                 if (decksWithSameForeignWord.isEmpty()) {

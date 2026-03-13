@@ -4,6 +4,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.viewModelScope
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
+import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.entities.Card
 import com.kuts.domain.entities.WordMeaningInsights
@@ -25,7 +26,6 @@ import com.kuts.klaf.cardManagement.common.toTextFieldValueIpaHolder
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
 import com.kuts.klaf.presentation.resources.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -45,6 +45,7 @@ class CardEditingViewModel(
     fetchWordInfo: FetchWordInfoUseCase,
     crashlytics: ICrashlyticsRepository,
     fetchDeckById: FetchDeckByIdUseCase,
+    coroutineContextProvider: ICoroutineContextProvider,
 ) : CardManagementViewModel(
     deckId = deckId,
     audioPlayer = audioPlayer,
@@ -54,6 +55,7 @@ class CardEditingViewModel(
     crashlytics = crashlytics,
     fetchDeckById = fetchDeckById,
     checkIfWordExists = checkIfWordExists,
+    coroutineContextProvider = coroutineContextProvider,
 ) {
 
     private val originalCardState = MutableStateFlow<Card?>(value = null)
@@ -154,7 +156,7 @@ class CardEditingViewModel(
             )
         }
 
-        viewModelScope.launchWithState(Dispatchers.IO) {
+        viewModelScope.launchWithState(coroutineContextProvider.io) {
             val refreshedInsights = sanitizeInsights(insights = fetchWordMeaningInsights(word = foreignWord))
             val refreshedMeanings = refreshedInsights.meanings
 
@@ -252,7 +254,7 @@ class CardEditingViewModel(
         }
         setInsightsLoading(word = foreignWord)
 
-        viewModelScope.launchWithState(Dispatchers.IO) {
+        viewModelScope.launchWithState(coroutineContextProvider.io) {
             if (!foreignWord.isValidWordFormat()) {
                 setInsightsError(
                     word = foreignWord,

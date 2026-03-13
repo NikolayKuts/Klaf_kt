@@ -3,6 +3,7 @@ package com.kuts.klaf.deckManagment
 import androidx.lifecycle.viewModelScope
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
+import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.common.calculateDetailedScheduledInterval
 import com.kuts.domain.common.calculateDetailedScheduledIntervalAsLong
 import com.kuts.domain.common.catchWithCrashlyticsReport
@@ -13,7 +14,6 @@ import com.kuts.domain.useCases.UpdateDeckUseCase
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
@@ -26,6 +26,7 @@ class DeckManagementViewModel(
     private val fetchDeckById: FetchDeckByIdUseCase,
     private val updateDeck: UpdateDeckUseCase,
     private val crashlytics: ICrashlyticsRepository,
+    private val coroutineContextProvider: ICoroutineContextProvider,
 ) : BaseDeckManagementViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
@@ -50,7 +51,7 @@ class DeckManagementViewModel(
 
                 deck.value = receivedDeck
                 receivedDeck?.let { deck -> updateDeckState(deck = deck) }
-            }.flowOn(Dispatchers.IO)
+            }.flowOn(coroutineContextProvider.io)
             .launchIn(viewModelScope)
     }
 
@@ -108,7 +109,7 @@ class DeckManagementViewModel(
 //                        return
                     }
 
-                    viewModelScope.launchWithState(Dispatchers.IO) {
+                    viewModelScope.launchWithState(coroutineContextProvider.io) {
                         val interval = validatedDateData.calculateDetailedScheduledIntervalAsLong()
 
                         updateDeck(updatedDeck = deck.value!!.copy(scheduledDateInterval = interval))

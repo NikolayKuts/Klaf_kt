@@ -9,8 +9,6 @@
 .externalNativeBuild
 .cxx
 local.properties
-/gradlew
-/gradlew.bat
 /app/google-services.json
 /app/release/
 
@@ -33,6 +31,10 @@ buildSrc/build/tmp/jar/MANIFEST.MF
 # Android Studio/Gradle problem report
 /build/reports/problems/problems-report.html
 **/build/reports/problems/problems-report.html
+
+# Xcode user-specific files
+**/xcuserdata/
+*.xcuserstate
 
 # Gradle outputs (all modules)
 **/build/

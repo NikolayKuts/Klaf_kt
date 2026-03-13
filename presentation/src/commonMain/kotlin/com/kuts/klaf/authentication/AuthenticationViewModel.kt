@@ -2,6 +2,7 @@ package com.kuts.klaf.authentication
 
 import androidx.lifecycle.viewModelScope
 import com.kuts.domain.common.AuthenticationAction
+import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.common.ifNotNull
 import com.kuts.domain.common.ifTrue
@@ -25,7 +26,6 @@ import com.kuts.klaf.authentication.PasswordValidator.IPasswordValidationResult.
 import com.kuts.klaf.authentication.PasswordValidator.IPasswordValidationResult.ToShort
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.onEach
@@ -34,6 +34,7 @@ import org.jetbrains.compose.resources.StringResource
 
 class AuthenticationViewModel(
     private val authenticationInteractor: AuthenticationInteractor,
+    private val coroutineContextProvider: ICoroutineContextProvider,
 ) : BaseAuthenticationViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
@@ -87,7 +88,7 @@ class AuthenticationViewModel(
                 }
 
                 screenLoadingState.value = loadingState
-            }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
+            }.launchIn(scope = viewModelScope, context = coroutineContextProvider.io)
         }
     }
 
@@ -111,7 +112,7 @@ class AuthenticationViewModel(
                 }
 
                 screenLoadingState.value = loadingState
-            }.launchIn(scope = viewModelScope, context = Dispatchers.IO)
+            }.launchIn(scope = viewModelScope, context = coroutineContextProvider.io)
         }
     }
 

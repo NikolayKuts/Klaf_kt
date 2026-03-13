@@ -2,11 +2,14 @@ package com.kuts.klaf.common
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.klaf.common.TimerCountingState.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
-class RepetitionTimer() : DefaultLifecycleObserver {
+class RepetitionTimer(
+    coroutineContextProvider: ICoroutineContextProvider,
+) : DefaultLifecycleObserver {
 
     companion object {
 
@@ -14,7 +17,7 @@ class RepetitionTimer() : DefaultLifecycleObserver {
         private const val INITIAL_TIME_VALUE: Long = 0
     }
 
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val scope = CoroutineScope(coroutineContextProvider.io + SupervisorJob())
     private var job: Job? = null
 
     private var totalSeconds: Long = 0

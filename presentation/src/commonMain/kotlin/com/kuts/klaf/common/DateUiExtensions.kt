@@ -9,6 +9,7 @@ import com.kuts.domain.common.DeckReviewPassSuccessMark.SUCCESS
 import com.kuts.domain.common.ScheduledDateState
 import com.kuts.domain.common.UNASSIGNED_LONG_VALUE
 import com.kuts.domain.common.UNASSIGNED_STRING_VALUE
+import com.kuts.domain.common.getCurrentDateAsLong
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.entities.DeckRepetitionInfo
 import com.kuts.klaf.presentation.resources.*
@@ -68,7 +69,7 @@ fun DeckRepetitionInfo.calculateDetailedPreviousScheduledRange(): String {
 @Composable
 fun Long?.calculateDetailedScheduledRange(): String {
     if (this == null || this <= 0) return UNASSIGNED_DATE_SYMBOL
-    val currentTime = System.currentTimeMillis()
+    val currentTime = getCurrentDateAsLong()
     val range = this - currentTime
 
     val years = range.calculateYearQuantity().toInt()

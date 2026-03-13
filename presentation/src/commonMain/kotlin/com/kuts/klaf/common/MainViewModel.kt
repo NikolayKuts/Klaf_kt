@@ -1,7 +1,7 @@
 package com.kuts.klaf.common
 
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
+import com.kuts.domain.common.getCurrentDateAsLong
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
@@ -13,9 +13,9 @@ class MainViewModel : BaseMainViewModel() {
     private var lastEventMessageReceivingTime: Long? = null
 
     override fun notify(message: EventMessage) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val passedTime = lastEventMessageReceivingTime?.let { messageTime ->
-                System.currentTimeMillis() - messageTime
+                getCurrentDateAsLong() - messageTime
             } ?: 0L
             val lastEventMessageDuration = lastEventMessage?.duration?.value ?: 0L
 
@@ -24,7 +24,7 @@ class MainViewModel : BaseMainViewModel() {
             if (isDifferent || passedTime > lastEventMessageDuration) {
                 eventMessage.emit(value = message)
                 lastEventMessage = message
-                lastEventMessageReceivingTime = System.currentTimeMillis()
+                lastEventMessageReceivingTime = getCurrentDateAsLong()
             }
         }
     }
