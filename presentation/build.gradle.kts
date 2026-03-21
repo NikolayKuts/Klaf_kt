@@ -34,6 +34,7 @@ kotlin {
                 implementation(libs.core.datetime)
                 implementation(libs.datastore.preferences.core)
                 implementation(compose.components.resources)
+                implementation(libs.compose.multiplatform.tooling.preview)
 
                 implementation(compose.runtime)
                 implementation(compose.ui)

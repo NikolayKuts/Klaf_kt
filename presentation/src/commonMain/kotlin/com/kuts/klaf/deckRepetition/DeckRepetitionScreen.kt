@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavBackStackEntry
@@ -63,9 +64,14 @@ import com.kuts.domain.common.CardRepetitionOrder
 import com.kuts.domain.common.CardSide
 import com.kuts.domain.common.DeckRepetitionState
 import com.kuts.domain.common.ifTrue
+import com.kuts.domain.entities.Card
+import com.kuts.domain.entities.CefrLevel
+import com.kuts.domain.entities.WordMeaningInsights
+import com.kuts.domain.entities.WordMeaningItem
 import com.kuts.domain.enums.DifficultyRecallingLevel.EASY
 import com.kuts.domain.enums.DifficultyRecallingLevel.GOOD
 import com.kuts.domain.enums.DifficultyRecallingLevel.HARD
+import com.kuts.domain.ipa.IpaHolder
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.ipa.toIpaPrompts
 import com.kuts.klaf.common.BaseMainViewModel
@@ -76,6 +82,7 @@ import com.kuts.klaf.common.DialogAppLabel
 import com.kuts.klaf.common.FullBackgroundDialog
 import com.kuts.klaf.common.Pointer
 import com.kuts.klaf.common.RoundButton
+import com.kuts.klaf.common.RepetitionTimerState
 import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.TimerCountingState
 import com.kuts.klaf.common.WordInsightsBottomSheetContent
@@ -141,6 +148,13 @@ internal fun DeckRepetitionScreen(
     }
 
     val screenState by viewModel.screenState.collectAsState(RepetitionScreenState.StartState)
+    val deckRepetitionState by viewModel.cardState.collectAsState(initial = null)
+    val deck by viewModel.deck.collectAsState(initial = null)
+    val mainButtonState by viewModel.mainButtonState.collectAsState()
+    val deckReviewState by viewModel.deckReviewState.collectAsState()
+    val areInsightsAvailable by viewModel.isInsightsAvailable.collectAsState()
+    val isInsightsSheetVisible by viewModel.isInsightsSheetVisible.collectAsState()
+    val timerState by viewModel.timer.timerState.collectAsState()
     var showExitDialog by remember { mutableStateOf(false) }
 
     BackHandler(enabled = screenState == RepetitionScreenState.RepetitionState) {
@@ -148,55 +162,88 @@ internal fun DeckRepetitionScreen(
     }
 
     Surface {
-        DeckRepetitionContent(
-            viewModel = viewModel,
-            showExitDialog = showExitDialog,
-            onShowExitDialogChange = { showExitDialog = it },
-            onExitConfirmed = { navController.popBackStack() },
-            onDeleteCardClick = { cardId ->
-                navController.navigate(
-                    route = AppDestination.DeckRepetitionCardDeletingDialog(
-                        deckId = deckId,
-                        cardId = cardId,
+        if (deckRepetitionState != null && deck != null) {
+            DeckRepetitionContent(
+                deckName = deck!!.name,
+                deckRepetitionState = deckRepetitionState!!,
+                mainButtonState = mainButtonState,
+                screenState = screenState,
+                deckReviewState = deckReviewState,
+                timerState = timerState,
+                areInsightsAvailable = areInsightsAvailable,
+                isInsightsSheetVisible = isInsightsSheetVisible,
+                showExitDialog = showExitDialog,
+                onShowExitDialogChange = { showExitDialog = it },
+                onExitConfirmed = { navController.popBackStack() },
+                onDeleteCardClick = { cardId ->
+                    navController.navigate(
+                        route = AppDestination.DeckRepetitionCardDeletingDialog(
+                            deckId = deckId,
+                            cardId = cardId,
+                        )
                     )
-                )
-            },
-            onAddCardClick = {
-                navController.navigate(route = AppDestination.CardAddition(deckId = deckId))
-            },
-            onEditCardClick = { cardId ->
-                navController.navigate(route = AppDestination.CardEditing(deckId = deckId, cardId = cardId))
-            },
-        )
+                },
+                onAddCardClick = {
+                    navController.navigate(route = AppDestination.CardAddition(deckId = deckId))
+                },
+                onEditCardClick = { cardId ->
+                    navController.navigate(
+                        route = AppDestination.CardEditing(
+                            deckId = deckId,
+                            cardId = cardId,
+                        )
+                    )
+                },
+                onWordClick = viewModel::pronounceWord,
+                onShowInsightsClick = viewModel::showInsightsSheet,
+                onHideInsightsClick = viewModel::hideInsightsSheet,
+                onStartButtonClick = viewModel::startRepeating,
+                onEasyButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = EASY) },
+                onGoodButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = GOOD) },
+                onHardButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = HARD) },
+                onCardButtonClick = viewModel::turnCard,
+                onSwitchRepetitionOrderClick = viewModel::changeRepetitionOrder,
+                onCommonButtonClick = viewModel::changeButtonsStateOnCommonButtonClick,
+                onPauseTimer = viewModel::pauseTimerCounting,
+                onResumeTimer = viewModel::resumeTimerCounting,
+            )
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DeckRepetitionContent(
-    viewModel: BaseDeckReviewViewModel,
+    deckName: String,
+    deckRepetitionState: DeckRepetitionState,
+    mainButtonState: ButtonState,
+    screenState: RepetitionScreenState,
+    deckReviewState: DeckReviewState,
+    timerState: RepetitionTimerState,
+    areInsightsAvailable: Boolean,
+    isInsightsSheetVisible: Boolean,
     showExitDialog: Boolean,
     onShowExitDialogChange: (Boolean) -> Unit,
     onExitConfirmed: () -> Unit,
     onDeleteCardClick: (cardId: Int) -> Unit,
     onAddCardClick: () -> Unit,
     onEditCardClick: (cardId: Int) -> Unit,
+    onWordClick: () -> Unit,
+    onShowInsightsClick: () -> Unit,
+    onHideInsightsClick: () -> Unit,
+    onStartButtonClick: () -> Unit,
+    onEasyButtonClick: () -> Unit,
+    onGoodButtonClick: () -> Unit,
+    onHardButtonClick: () -> Unit,
+    onCardButtonClick: () -> Unit,
+    onSwitchRepetitionOrderClick: () -> Unit,
+    onCommonButtonClick: () -> Unit,
+    onPauseTimer: () -> Unit,
+    onResumeTimer: () -> Unit,
 ) {
-    val deckRepetitionState by viewModel.cardState.collectAsState(initial = null)
-    val deck by viewModel.deck.collectAsState(initial = null)
-    val mainButtonState by viewModel.mainButtonState.collectAsState()
-    val screenState by viewModel.screenState.collectAsState(RepetitionScreenState.StartState)
-
-    val repetitionState = deckRepetitionState ?: return
-    val receivedDeck = deck ?: return
-
     val density = LocalDensity.current
     val minContentHeightPx = density.run { 400.dp.toPx() }
-
-    val deckReviewState by viewModel.deckReviewState.collectAsState()
-    val currentCard = repetitionState.card
-    val areInsightsAvailable by viewModel.isInsightsAvailable.collectAsState()
-    val isInsightsSheetVisible by viewModel.isInsightsSheetVisible.collectAsState()
+    val currentCard = deckRepetitionState.card
     val insightsSheetState = rememberModalBottomSheetState()
 
     ScrollableBox { parentHeightPx ->
@@ -243,7 +290,7 @@ private fun DeckRepetitionContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 DeckInfo(
-                    deckName = receivedDeck.name,
+                    deckName = deckName,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -251,12 +298,12 @@ private fun DeckRepetitionContent(
 
                 Box(modifier = Modifier.fillMaxWidth()) {
                     OrderPointers(
-                        order = repetitionState.repetitionOrder,
-                        onSwitchIconClick = { viewModel.changeRepetitionOrder() },
+                        order = deckRepetitionState.repetitionOrder,
+                        onSwitchIconClick = onSwitchRepetitionOrderClick,
                         modifier = Modifier.align(Alignment.CenterStart)
                     )
                     Timer(
-                        viewModel = viewModel,
+                        timerState = timerState,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -266,28 +313,28 @@ private fun DeckRepetitionContent(
                         .fillMaxWidth()
                         .weight(1f)
                         .padding(vertical = 8.dp),
-                    deckRepetitionState = repetitionState,
-                    onWordClick = { viewModel.pronounceWord() },
+                    deckRepetitionState = deckRepetitionState,
+                    onWordClick = onWordClick,
                 )
 
                 InsightsSheetHandle(
                     modifier = Modifier
                         .padding(bottom = 8.dp),
                     isEnabled = areInsightsAvailable,
-                    onClick = viewModel::showInsightsSheet,
+                    onClick = onShowInsightsClick,
                 )
 
                 RepetitionButtons(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
-                    deckRepetitionState = repetitionState,
+                    deckRepetitionState = deckRepetitionState,
                     screenState = screenState,
-                    onStartButtonClick = { viewModel.startRepeating() },
-                    onEasyButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = EASY) },
-                    onGoodButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = GOOD) },
-                    onHardButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = HARD) },
-                    onCardButtonClick = { viewModel.turnCard() },
+                    onStartButtonClick = onStartButtonClick,
+                    onEasyButtonClick = onEasyButtonClick,
+                    onGoodButtonClick = onGoodButtonClick,
+                    onHardButtonClick = onHardButtonClick,
+                    onCardButtonClick = onCardButtonClick,
                 )
             }
 
@@ -296,14 +343,10 @@ private fun DeckRepetitionContent(
                     .align(Alignment.TopEnd)
                     .padding(top = 32.dp),
                 additionalButtonsEnabled = mainButtonState == ButtonState.PRESSED,
-                onDeleteClick = {
-                    repetitionState.card?.id?.let { cardId -> onDeleteCardClick(cardId) }
-                },
+                onDeleteClick = { deckRepetitionState.card?.id?.let(onDeleteCardClick) },
                 onAddClick = onAddCardClick,
-                onEditClick = {
-                    repetitionState.card?.id?.let { cardId -> onEditCardClick(cardId) }
-                },
-                onCommonButtonClick = { viewModel.changeButtonsStateOnCommonButtonClick() }
+                onEditClick = { deckRepetitionState.card?.id?.let(onEditCardClick) },
+                onCommonButtonClick = onCommonButtonClick,
             )
         }
     }
@@ -322,15 +365,15 @@ private fun DeckRepetitionContent(
 
     LaunchedEffect(key1 = shouldPauseTimer) {
         if (shouldPauseTimer) {
-            viewModel.pauseTimerCounting()
+            onPauseTimer()
         } else {
-            viewModel.resumeTimerCounting()
+            onResumeTimer()
         }
     }
 
     if (isInsightsSheetVisible) {
         ModalBottomSheet(
-            onDismissRequest = viewModel::hideInsightsSheet,
+            onDismissRequest = onHideInsightsClick,
             sheetState = insightsSheetState,
         ) {
             WordInsightsBottomSheetContent(
@@ -425,10 +468,9 @@ private fun OrderPointers(
 
 @Composable
 private fun Timer(
-    viewModel: BaseDeckReviewViewModel,
+    timerState: RepetitionTimerState,
     modifier: Modifier = Modifier
 ) {
-    val timerState by viewModel.timer.timerState.collectAsState()
     val timerColor = when (timerState.countingState) {
         TimerCountingState.RUN -> MainTheme.colors.deckRepetitionScreen.timerActive
         else -> MainTheme.colors.deckRepetitionScreen.timerInactive
@@ -440,6 +482,90 @@ private fun Timer(
         color = timerColor,
         style = MainTheme.typographies.timerTextStyle
     )
+}
+
+@Preview(
+    name = "Light",
+    showBackground = true,
+    backgroundColor = 0xFFF4F0E8
+)
+@Composable
+private fun DeckRepetitionContentPreview() {
+    DeckRepetitionContentPreviewContent(darkTheme = false)
+}
+
+@Preview(name = "Dark", showBackground = true, backgroundColor = 0xFF1B1B1F)
+@Composable
+private fun DeckRepetitionContentDarkPreview() {
+    DeckRepetitionContentPreviewContent(darkTheme = true)
+}
+
+@Composable
+private fun DeckRepetitionContentPreviewContent(darkTheme: Boolean) {
+    MainTheme(darkTheme = darkTheme) {
+        DeckRepetitionContent(
+            deckName = "French Basics",
+            deckRepetitionState = DeckRepetitionState(
+                card = Card(
+                    deckId = 1,
+                    nativeWord = "hello",
+                    foreignWord = "bonjour",
+                    ipa = listOf(
+                        IpaHolder(letterGroup = "bon", ipa = "bɔ̃", groupIndex = 0),
+                        IpaHolder(letterGroup = "jour", ipa = "ʒuʁ", groupIndex = 1),
+                    ),
+                    wordMeaningInsights = WordMeaningInsights(
+                        word = "bonjour",
+                        language = "fr",
+                        meanings = listOf(
+                            WordMeaningItem(
+                                frequencyRank = 120,
+                                translation = "hello",
+                                proficiencyLevel = CefrLevel.A1,
+                                context = "Common greeting",
+                                examples = listOf("Bonjour, Marie."),
+                            )
+                        ),
+                    ),
+                    id = 7,
+                ),
+                side = CardSide.BACK,
+                repetitionOrder = CardRepetitionOrder.NATIVE_TO_FOREIGN,
+            ),
+            mainButtonState = ButtonState.PRESSED,
+            screenState = RepetitionScreenState.RepetitionState,
+            deckReviewState = DeckReviewState(
+                reviewedCardsCount = 12,
+                leftTime = 95,
+                maxTime = 180,
+            ),
+            timerState = RepetitionTimerState(
+                time = "01:25",
+                totalSeconds = 85,
+                countingState = TimerCountingState.RUN,
+            ),
+            areInsightsAvailable = true,
+            isInsightsSheetVisible = false,
+            showExitDialog = false,
+            onShowExitDialogChange = {},
+            onExitConfirmed = {},
+            onDeleteCardClick = {},
+            onAddCardClick = {},
+            onEditCardClick = {},
+            onWordClick = {},
+            onShowInsightsClick = {},
+            onHideInsightsClick = {},
+            onStartButtonClick = {},
+            onEasyButtonClick = {},
+            onGoodButtonClick = {},
+            onHardButtonClick = {},
+            onCardButtonClick = {},
+            onSwitchRepetitionOrderClick = {},
+            onCommonButtonClick = {},
+            onPauseTimer = {},
+            onResumeTimer = {},
+        )
+    }
 }
 
 @Composable
@@ -760,15 +886,16 @@ fun CardButton(
         tween(durationMillis = animationDuration, easing = LinearEasing)
     )
 
-    Card(
+    Box(
         modifier = modifier
             .size(width = 40.dp, height = 56.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(color)
             .graphicsLayer { rotationY = rotation },
-        shape = RoundedCornerShape(8.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Icon(
             modifier = Modifier
-                .background(color)
                 .clickable { onClick() }
                 .padding(8.dp),
             painter = painterResource(resource = Res.drawable.ic_rotate_24),
