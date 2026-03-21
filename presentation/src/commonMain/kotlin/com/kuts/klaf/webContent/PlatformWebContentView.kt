@@ -13,4 +13,5 @@ expect fun PlatformWebContentView(
     onPageLoadFinished: (String?) -> Unit = {},
     onPageLoadProgressChanged: (Int) -> Unit = {},
     onPageLoadError: (String?) -> Unit = {},
+    onCloseRequest: () -> Unit = {},
 )

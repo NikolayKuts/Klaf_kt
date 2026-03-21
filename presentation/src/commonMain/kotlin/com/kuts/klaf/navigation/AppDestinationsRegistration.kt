@@ -225,6 +225,7 @@ internal fun NavGraphBuilder.registerAppDestinations(
         typeMap = serializableNavTypeMap<WebContentSource>(),
     ) { backStackEntry, route ->
         WebContentScreen(
+            navController = navController,
             backStackEntry = backStackEntry,
             source = route.source,
         )

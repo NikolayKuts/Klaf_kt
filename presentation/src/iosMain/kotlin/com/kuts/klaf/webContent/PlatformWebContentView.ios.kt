@@ -13,6 +13,7 @@ actual fun PlatformWebContentView(
     onPageLoadFinished: (String?) -> Unit,
     onPageLoadProgressChanged: (Int) -> Unit,
     onPageLoadError: (String?) -> Unit,
+    onCloseRequest: () -> Unit,
 ) {
     TODO("iOS web content view is not implemented yet")
 }

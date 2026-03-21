@@ -7,7 +7,6 @@ import com.kuts.domain.common.LoadingState
 import com.kuts.domain.entities.AuthenticationState
 import com.kuts.domain.entities.AutocompleteWord
 import com.kuts.domain.entities.DeckRepetitionInfo
-import com.kuts.domain.entities.WordMeaningInsights
 import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
@@ -23,6 +22,8 @@ import com.kuts.domain.repositories.IWordAutocompleteRepository
 import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.repositories.IWordMeaningInsightsRepository
 import com.kuts.klaf.common.CoroutineContextProvider
+import com.kuts.klaf.networking.gemini.GeminiHttpClientFactory
+import com.kuts.klaf.networking.gemini.GeminiWordMeaningInsightsProvider
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoProvider
 import com.kuts.klaf.room.databases.KlafRoomDatabase
@@ -71,7 +72,11 @@ private fun Module.desktopRepositoryModule() {
         )
     }
     single<IWordAutocompleteRepository> { DesktopWordAutocompleteRepository() }
-    single<IWordMeaningInsightsRepository> { DesktopWordMeaningInsightsRepository() }
+    single<IWordMeaningInsightsRepository> {
+        GeminiWordMeaningInsightsProvider(
+            client = GeminiHttpClientFactory().create(),
+        )
+    }
     single<IDeckRepetitionInfoRepository> { InMemoryDeckRepetitionInfoRepository() }
     single<IOldAppKlafDataTransferRepository> { NoOpOldAppKlafDataTransferRepository() }
     single<ICrashlyticsRepository> { NoOpCrashlyticsRepository() }
@@ -139,12 +144,6 @@ private class DesktopAuthenticationSessionManager(
 
 private class DesktopWordAutocompleteRepository : IWordAutocompleteRepository {
     override suspend fun fetchAutocomplete(prefix: String): List<AutocompleteWord> = emptyList()
-}
-
-private class DesktopWordMeaningInsightsRepository : IWordMeaningInsightsRepository {
-    override suspend fun fetchWordMeaningInsights(word: String): WordMeaningInsights {
-        return WordMeaningInsights.EMPTY
-    }
 }
 
 private class InMemoryDeckRepetitionInfoRepository : IDeckRepetitionInfoRepository {

@@ -8,10 +8,31 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
+fun resolveJavaFxPlatform(): String {
+    val osName = System.getProperty("os.name").lowercase()
+    val osArch = System.getProperty("os.arch").lowercase()
+
+    return when {
+        osName.contains(other = "mac") && (osArch.contains(other = "aarch64") || osArch.contains(other = "arm64")) ->
+            "mac-aarch64"
+        osName.contains(other = "mac") -> "mac"
+        osName.contains(other = "win") && (osArch.contains(other = "aarch64") || osArch.contains(other = "arm64")) ->
+            "win-aarch64"
+        osName.contains(other = "win") -> "win"
+        osName.contains(other = "linux") && (osArch.contains(other = "aarch64") || osArch.contains(other = "arm64")) ->
+            "linux-aarch64"
+        osName.contains(other = "linux") -> "linux"
+        else -> error("Unsupported JavaFX platform: $osName / $osArch")
+    }
+}
+
 kotlin {
     jvmToolchain(17)
 
     jvm("desktop")
+
+    val javaFxPlatform = resolveJavaFxPlatform()
+    val javaFxVersion = libs.versions.javafx.get()
 
     androidTarget()
     val iosX64 = iosX64()
@@ -33,14 +54,14 @@ kotlin {
                 implementation(libs.kotlin.serilization)
                 implementation(libs.core.datetime)
                 implementation(libs.datastore.preferences.core)
-                implementation(compose.components.resources)
+                implementation(libs.compose.multiplatform.components.resources)
                 implementation(libs.compose.multiplatform.tooling.preview)
 
-                implementation(compose.runtime)
-                implementation(compose.ui)
+                implementation(libs.compose.multiplatform.runtime)
+                implementation(libs.compose.multiplatform.ui)
                 implementation(libs.compose.ui.backhandler)
-                implementation(compose.foundation)
-                implementation(compose.material3)
+                implementation(libs.compose.multiplatform.foundation)
+                implementation(libs.compose.multiplatform.material3)
                 implementation(libs.navigation.compose)
 
                 implementation(libs.lifecycle.runtime)
@@ -80,6 +101,18 @@ kotlin {
                 implementation(libs.compose.ui.tooling.preview)
 
                 implementation(libs.lokdroid)
+            }
+        }
+
+        val desktopMain by getting {
+            dependencies {
+                implementation(compose.desktop.currentOs)
+                implementation("org.openjfx:javafx-base:$javaFxVersion:$javaFxPlatform")
+                implementation("org.openjfx:javafx-controls:$javaFxVersion:$javaFxPlatform")
+                implementation("org.openjfx:javafx-graphics:$javaFxVersion:$javaFxPlatform")
+                implementation("org.openjfx:javafx-media:$javaFxVersion:$javaFxPlatform")
+                implementation("org.openjfx:javafx-web:$javaFxVersion:$javaFxPlatform")
+                implementation("org.openjfx:javafx-swing:$javaFxVersion:$javaFxPlatform")
             }
         }
     }

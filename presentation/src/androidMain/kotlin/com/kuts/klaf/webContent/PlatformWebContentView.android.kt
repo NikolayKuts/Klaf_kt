@@ -35,6 +35,7 @@ actual fun PlatformWebContentView(
     onPageLoadFinished: (String?) -> Unit,
     onPageLoadProgressChanged: (Int) -> Unit,
     onPageLoadError: (String?) -> Unit,
+    onCloseRequest: () -> Unit,
 ) {
     val currentOnNavigationRequest = rememberUpdatedState(newValue = onNavigationRequest)
     val currentOnPageLoadStarted = rememberUpdatedState(newValue = onPageLoadStarted)

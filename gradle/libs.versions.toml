@@ -64,6 +64,8 @@ firebaseCrashlyticsKtx = "19.0.3"
 composeBom = "2024.06.00"
 composeComiler = "1.5.14"
 composeMultiplatform = "1.10.1"
+composeMultiplatformMaterial3 = "1.9.0"
+javafx = "21.0.7"
 
 # LoKdroid #
 lokdroid = "0.0.4-alpha"
@@ -154,6 +156,15 @@ compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 compose-multiplatform-tooling-preview = { group = "org.jetbrains.compose.ui", name = "ui-tooling-preview", version.ref = "composeMultiplatform" }
+compose-multiplatform-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "composeMultiplatform" }
+compose-multiplatform-ui = { group = "org.jetbrains.compose.ui", name = "ui", version.ref = "composeMultiplatform" }
+compose-multiplatform-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "composeMultiplatform" }
+compose-multiplatform-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "composeMultiplatformMaterial3" }
+compose-multiplatform-components-resources = { group = "org.jetbrains.compose.components", name = "components-resources", version.ref = "composeMultiplatform" }
+javafx-web = { group = "org.openjfx", name = "javafx-web", version.ref = "javafx" }
+javafx-swing = { group = "org.openjfx", name = "javafx-swing", version.ref = "javafx" }
+javafx-controls = { group = "org.openjfx", name = "javafx-controls", version.ref = "javafx" }
+javafx-media = { group = "org.openjfx", name = "javafx-media", version.ref = "javafx" }
 
 # Work Manager #
 work-manager = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }

@@ -7,11 +7,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavHostController
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
 internal fun WebContentScreen(
+    navController: NavHostController,
     backStackEntry: NavBackStackEntry,
     source: WebContentSource,
 ) {
@@ -32,6 +34,7 @@ internal fun WebContentScreen(
                 onPageLoadFinished = viewModel::onPageLoadFinished,
                 onPageLoadProgressChanged = viewModel::onPageLoadProgressChanged,
                 onPageLoadError = viewModel::onPageLoadError,
+                onCloseRequest = navController::popBackStack,
             )
         }
     }
@@ -47,6 +50,7 @@ private fun WebContentContent(
     onPageLoadFinished: (String?) -> Unit,
     onPageLoadProgressChanged: (Int) -> Unit,
     onPageLoadError: (String?) -> Unit,
+    onCloseRequest: () -> Unit,
 ) {
     PlatformWebContentView(
         url = url,
@@ -57,5 +61,6 @@ private fun WebContentContent(
         onPageLoadFinished = onPageLoadFinished,
         onPageLoadProgressChanged = onPageLoadProgressChanged,
         onPageLoadError = onPageLoadError,
+        onCloseRequest = onCloseRequest,
     )
 }
