@@ -1,13 +1,16 @@
 package com.kuts.klaf.common
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,22 +18,37 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.entities.CefrLevel
 import com.kuts.domain.entities.WordMeaningItem
-import com.kuts.klaf.presentation.resources.*
+import com.kuts.klaf.presentation.resources.Res
+import com.kuts.klaf.presentation.resources.ic_youglish_logo
+import com.kuts.klaf.presentation.resources.word_insights_applying_label
+import com.kuts.klaf.presentation.resources.word_insights_current_saved_variant
+import com.kuts.klaf.presentation.resources.word_insights_examples_label
+import com.kuts.klaf.presentation.resources.word_insights_load_new_variant_action
+import com.kuts.klaf.presentation.resources.word_insights_loading_label
+import com.kuts.klaf.presentation.resources.word_insights_new_variant_preview
+import com.kuts.klaf.presentation.resources.word_insights_use_new_variant_action
+import com.kuts.klaf.presentation.resources.word_insights_word_label
+import com.kuts.klaf.presentation.resources.word_insights_youglish_action
 import com.kuts.klaf.theme.MainTheme
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -45,8 +63,10 @@ internal fun WordInsightsBottomSheetContent(
     canApplyRefreshedInsights: Boolean = false,
     onRequestRefreshedInsights: (() -> Unit)? = null,
     onApplyRefreshedInsights: (() -> Unit)? = null,
+    onYouGlishClick: () -> Unit = {},
 ) {
-    val isRefreshingAvailable = onRequestRefreshedInsights != null && onApplyRefreshedInsights != null
+    val isRefreshingAvailable =
+        onRequestRefreshedInsights != null && onApplyRefreshedInsights != null
     val refreshedSectionShape = RoundedCornerShape(14.dp)
     val refreshedSectionBorderColor = MaterialTheme.colorScheme.error.copy(alpha = 0.75f)
 
@@ -86,11 +106,11 @@ internal fun WordInsightsBottomSheetContent(
             }
         }
 
-        Text(
-            text = stringResource(resource = Res.string.word_insights_frequency_note),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.78f),
-        )
+        if (word.isNotBlank()) {
+            WordInsightActionsRow(
+                onYouGlishClick = onYouGlishClick,
+            )
+        }
 
         Column(
             modifier = Modifier
@@ -187,6 +207,35 @@ internal fun WordInsightsBottomSheetContent(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun WordInsightActionsRow(
+    onYouGlishClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OutlinedButton(
+            modifier = Modifier
+                .height(28.dp),
+            onClick = onYouGlishClick,
+            shape = RoundedCornerShape(12.dp),
+            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = Color(0x16ffffff),
+            )
+        ) {
+            Image(
+                painter = painterResource(resource = Res.drawable.ic_youglish_logo),
+                contentDescription = stringResource(resource = Res.string.word_insights_youglish_action),
+                colorFilter = ColorFilter.tint(Color.White)
+            )
         }
     }
 }
@@ -292,5 +341,61 @@ private fun CefrLevel.toWordInsightBadgeColor(): Color {
         CefrLevel.B2 -> bottomSheetColors.levelB2BadgeBackground
         CefrLevel.C1 -> bottomSheetColors.levelC1BadgeBackground
         CefrLevel.C2 -> bottomSheetColors.levelC2BadgeBackground
+    }
+}
+
+@Preview(name = "Light", showBackground = true, backgroundColor = 0xFFF4F0E8)
+@Composable
+private fun WordInsightsBottomSheetContentPreview() {
+    WordInsightsBottomSheetContentPreviewContent(darkTheme = false)
+}
+
+@Preview(name = "Dark", showBackground = true, backgroundColor = 0xFF1B1B1F)
+@Composable
+private fun WordInsightsBottomSheetContentDarkPreview() {
+    WordInsightsBottomSheetContentPreviewContent(darkTheme = true)
+}
+
+@Composable
+private fun WordInsightsBottomSheetContentPreviewContent(darkTheme: Boolean) {
+    MainTheme(darkTheme = darkTheme) {
+        Surface {
+            WordInsightsBottomSheetContent(
+                word = "bonjour",
+                meanings = listOf(
+                    WordMeaningItem(
+                        frequencyRank = 120,
+                        translation = "hello",
+                        proficiencyLevel = CefrLevel.A1,
+                        context = "Common greeting used in everyday conversations.",
+                        examples = listOf(
+                            "Bonjour, Marie.",
+                            "Bonjour tout le monde.",
+                        ),
+                    ),
+                    WordMeaningItem(
+                        frequencyRank = 345,
+                        translation = "good morning",
+                        proficiencyLevel = CefrLevel.A2,
+                        context = "Used as a polite morning greeting.",
+                        examples = listOf("Bonjour, monsieur."),
+                    ),
+                ),
+                refreshedMeanings = listOf(
+                    WordMeaningItem(
+                        frequencyRank = 98,
+                        translation = "hi",
+                        proficiencyLevel = CefrLevel.A1,
+                        context = "A shorter, more informal translation variant.",
+                        examples = listOf("Bonjour, Anna."),
+                    ),
+                ),
+                canRequestRefreshedInsights = true,
+                canApplyRefreshedInsights = true,
+                onRequestRefreshedInsights = {},
+                onApplyRefreshedInsights = {},
+                onYouGlishClick = {},
+            )
+        }
     }
 }

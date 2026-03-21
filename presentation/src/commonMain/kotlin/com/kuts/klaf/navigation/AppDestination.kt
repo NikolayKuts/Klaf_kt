@@ -6,6 +6,7 @@ import com.kuts.klaf.common.NavigationDestination
 import com.kuts.klaf.deckList.drawer.DrawerAction
 import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent
 import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent.Non
+import com.kuts.klaf.webContent.WebContentSource
 import kotlinx.serialization.Serializable
 
 internal sealed interface AppDestination {
@@ -105,5 +106,10 @@ internal sealed interface AppDestination {
     @Serializable
     data class DeckManagement(
         val deckId: Int,
+    ) : AppDestination
+
+    @Serializable
+    data class WebContent(
+        val source: WebContentSource,
     ) : AppDestination
 }

@@ -38,10 +38,12 @@ import com.kuts.klaf.cardManagement.cardAddition.CardManagementContent
 import com.kuts.klaf.cardManagement.common.CardManagementState
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.WordInsightsBottomSheetContent
+import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.navigation.ObserveAudioLifecycle
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import com.kuts.klaf.webContent.WebContentSource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -76,13 +78,26 @@ internal fun CardEditingScreen(
     }
 
     Surface {
-        CardEditingContent(viewModel = viewModel)
+        CardEditingContent(
+            viewModel = viewModel,
+            onYouGlishClick = { word ->
+                viewModel.hideInsightsSheet()
+                navController.navigate(
+                    route = AppDestination.WebContent(
+                        source = WebContentSource.YouGlish(word = word),
+                    )
+                )
+            },
+        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CardEditingContent(viewModel: CardEditingViewModel) {
+private fun CardEditingContent(
+    viewModel: CardEditingViewModel,
+    onYouGlishClick: (String) -> Unit,
+) {
     val insightsUiState by viewModel.insightsUiState.collectAsState()
     val sheetState = rememberModalBottomSheetState()
 
@@ -119,6 +134,11 @@ private fun CardEditingContent(viewModel: CardEditingViewModel) {
                     canApplyRefreshedInsights = insightsUiState.canApplyRefreshedInsights,
                     onRequestRefreshedInsights = viewModel::requestRefreshedInsights,
                     onApplyRefreshedInsights = viewModel::applyRefreshedInsights,
+                    onYouGlishClick = {
+                        insightsUiState.word
+                            .takeIf(String::isNotBlank)
+                            ?.let(onYouGlishClick)
+                    },
                 )
             } else {
                 InsightsErrorBottomSheetContent(
