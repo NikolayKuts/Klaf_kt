@@ -19,11 +19,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.entities.CefrLevel
@@ -292,5 +294,60 @@ private fun CefrLevel.toWordInsightBadgeColor(): Color {
         CefrLevel.B2 -> bottomSheetColors.levelB2BadgeBackground
         CefrLevel.C1 -> bottomSheetColors.levelC1BadgeBackground
         CefrLevel.C2 -> bottomSheetColors.levelC2BadgeBackground
+    }
+}
+
+@Preview(name = "Light", showBackground = true, backgroundColor = 0xFFF4F0E8)
+@Composable
+private fun WordInsightsBottomSheetContentPreview() {
+    WordInsightsBottomSheetContentPreviewContent(darkTheme = false)
+}
+
+@Preview(name = "Dark", showBackground = true, backgroundColor = 0xFF1B1B1F)
+@Composable
+private fun WordInsightsBottomSheetContentDarkPreview() {
+    WordInsightsBottomSheetContentPreviewContent(darkTheme = true)
+}
+
+@Composable
+private fun WordInsightsBottomSheetContentPreviewContent(darkTheme: Boolean) {
+    MainTheme(darkTheme = darkTheme) {
+        Surface {
+            WordInsightsBottomSheetContent(
+                word = "bonjour",
+                meanings = listOf(
+                    WordMeaningItem(
+                        frequencyRank = 120,
+                        translation = "hello",
+                        proficiencyLevel = CefrLevel.A1,
+                        context = "Common greeting used in everyday conversations.",
+                        examples = listOf(
+                            "Bonjour, Marie.",
+                            "Bonjour tout le monde.",
+                        ),
+                    ),
+                    WordMeaningItem(
+                        frequencyRank = 345,
+                        translation = "good morning",
+                        proficiencyLevel = CefrLevel.A2,
+                        context = "Used as a polite morning greeting.",
+                        examples = listOf("Bonjour, monsieur."),
+                    ),
+                ),
+                refreshedMeanings = listOf(
+                    WordMeaningItem(
+                        frequencyRank = 98,
+                        translation = "hi",
+                        proficiencyLevel = CefrLevel.A1,
+                        context = "A shorter, more informal translation variant.",
+                        examples = listOf("Bonjour, Anna."),
+                    ),
+                ),
+                canRequestRefreshedInsights = true,
+                canApplyRefreshedInsights = true,
+                onRequestRefreshedInsights = {},
+                onApplyRefreshedInsights = {},
+            )
+        }
     }
 }
