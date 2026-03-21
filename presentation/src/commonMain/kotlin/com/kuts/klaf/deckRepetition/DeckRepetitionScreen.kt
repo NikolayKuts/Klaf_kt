@@ -93,6 +93,7 @@ import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.navigation.ObserveAudioLifecycle
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import com.kuts.klaf.webContent.WebContentSource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -197,6 +198,14 @@ internal fun DeckRepetitionScreen(
                 onWordClick = viewModel::pronounceWord,
                 onShowInsightsClick = viewModel::showInsightsSheet,
                 onHideInsightsClick = viewModel::hideInsightsSheet,
+                onYouGlishClick = { word ->
+                    viewModel.hideInsightsSheet()
+                    navController.navigate(
+                        route = AppDestination.WebContent(
+                            source = WebContentSource.YouGlish(word = word),
+                        )
+                    )
+                },
                 onStartButtonClick = viewModel::startRepeating,
                 onEasyButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = EASY) },
                 onGoodButtonClick = { viewModel.moveCardByDifficultyRecallingLevel(level = GOOD) },
@@ -231,6 +240,7 @@ private fun DeckRepetitionContent(
     onWordClick: () -> Unit,
     onShowInsightsClick: () -> Unit,
     onHideInsightsClick: () -> Unit,
+    onYouGlishClick: (String) -> Unit,
     onStartButtonClick: () -> Unit,
     onEasyButtonClick: () -> Unit,
     onGoodButtonClick: () -> Unit,
@@ -379,6 +389,11 @@ private fun DeckRepetitionContent(
             WordInsightsBottomSheetContent(
                 word = currentCard?.wordMeaningInsights?.word.orEmpty(),
                 meanings = currentCard?.wordMeaningInsights?.meanings.orEmpty(),
+                onYouGlishClick = {
+                    currentCard?.wordMeaningInsights?.word
+                        ?.takeIf(String::isNotBlank)
+                        ?.let(onYouGlishClick)
+                },
             )
         }
     }
@@ -555,6 +570,7 @@ private fun DeckRepetitionContentPreviewContent(darkTheme: Boolean) {
             onWordClick = {},
             onShowInsightsClick = {},
             onHideInsightsClick = {},
+            onYouGlishClick = {},
             onStartButtonClick = {},
             onEasyButtonClick = {},
             onGoodButtonClick = {},

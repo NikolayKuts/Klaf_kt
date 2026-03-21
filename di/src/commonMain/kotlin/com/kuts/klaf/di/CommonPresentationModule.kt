@@ -17,6 +17,7 @@ import com.kuts.klaf.deckRepetition.BaseDeckReviewViewModel
 import com.kuts.klaf.deckRepetition.DeckReviewViewModel
 import com.kuts.klaf.deckRepetition.IDeckReviewStateStore
 import com.kuts.klaf.deckRepetitionInfo.DeckRepetitionInfoViewModel
+import com.kuts.klaf.webContent.WebContentViewModel
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.scope.Scope
@@ -141,6 +142,12 @@ internal fun Module.registerCommonPresentationViewModels(
             deckId = params.get(),
             fetchDeckRepetitionInfo = get(),
             crashlytics = get(),
+        )
+    }
+
+    viewModel { params ->
+        WebContentViewModel(
+            source = params.get(),
         )
     }
 }

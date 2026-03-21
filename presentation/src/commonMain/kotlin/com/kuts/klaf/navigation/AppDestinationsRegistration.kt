@@ -28,6 +28,10 @@ import com.kuts.klaf.deckRepetition.DeckRepetitionScreen
 import com.kuts.klaf.deckRepetition.cardDeleting.DeckRepetitionCardDeletingDialog
 import com.kuts.klaf.deckRepetitionInfo.DeckRepetitionInfoDialog
 import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent
+import com.kuts.klaf.navigation.navType.enumNavTypeMap
+import com.kuts.klaf.navigation.navType.serializableNavTypeMap
+import com.kuts.klaf.webContent.WebContentScreen
+import com.kuts.klaf.webContent.WebContentSource
 
 internal fun NavGraphBuilder.registerAppDestinations(
     navController: NavHostController,
@@ -214,6 +218,15 @@ internal fun NavGraphBuilder.registerAppDestinations(
         DeckManagementScreen(
             sharedViewModel = sharedViewModel,
             deckId = route.deckId,
+        )
+    }
+
+    buildComposable<AppDestination.WebContent>(
+        typeMap = serializableNavTypeMap<WebContentSource>(),
+    ) { backStackEntry, route ->
+        WebContentScreen(
+            backStackEntry = backStackEntry,
+            source = route.source,
         )
     }
 }
