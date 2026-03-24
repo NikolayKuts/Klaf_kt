@@ -2,6 +2,7 @@ package plugins.telegramAppDistribution
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.BodyProgress
 import kotlinx.coroutines.runBlocking
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
@@ -27,14 +28,18 @@ abstract class UploadTask : DefaultTask() {
 
     @TaskAction
     fun upload() {
-        val api = TelegramApi(HttpClient(OkHttp))
+        val api = TelegramApi(
+            HttpClient(OkHttp) {
+                install(BodyProgress)
+            }
+        )
         val localProperties = project.loadLocalProperties()
 
         runBlocking {
             apkDirectoryProperty.get().asFile.listFiles()
-                ?.onEach { println("File -> ${it.name}") }
                 ?.filter { it.name.endsWith(APK_FILE_EXTENSION) }
                 ?.forEach { apkFile ->
+                    UploadConsoleEvent.status("Preparing APK...")
                     val newFileName = buildFileName(
                         projectName = project.rootProject.name,
                         apkData = apkData
@@ -43,13 +48,29 @@ abstract class UploadTask : DefaultTask() {
                     val renamed = apkFile.renameTo(newFile)
 
                     if (renamed) {
-                        println("File renamed successfully to ${newFile.name}")
+                        UploadConsoleEvent.status("Uploading ${newFile.name}")
+                        var lastPercent = -1
                         api.uploadFile(
                             file = newFile,
                             token = localProperties["telegramApi.token"] ?: "",
-                            chatId = localProperties["telegramApi.chatId"] ?: "")
+                            chatId = localProperties["telegramApi.chatId"] ?: "",
+                        ) { sentBytes, totalBytes ->
+                            if (totalBytes <= 0L) return@uploadFile
+
+                            val percent = ((sentBytes * 100) / totalBytes)
+                                .toInt()
+                                .coerceIn(minimumValue = 0, maximumValue = 100)
+                            if (percent != lastPercent) {
+                                lastPercent = percent
+                                UploadConsoleEvent.progress(
+                                    sentBytes = sentBytes,
+                                    totalBytes = totalBytes,
+                                )
+                            }
+                        }
+                        UploadConsoleEvent.status("Upload completed.")
                     } else {
-                        println("File renamed failed")
+                        UploadConsoleEvent.status("APK rename failed.")
                     }
                 }
         }

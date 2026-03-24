@@ -17,6 +17,8 @@ class UploadPlugin : Plugin<Project> {
     companion object {
 
         private const val TASK_NAME_PREFIX = "uploadApkFor"
+        private const val DESCRIBE_TASK_NAME_PREFIX = "describeUploadFor"
+        private const val PLUGIN_NAME = "telegram-app-distribution-plugin"
     }
 
     override fun apply(project: Project) {
@@ -32,31 +34,35 @@ class UploadPlugin : Plugin<Project> {
                 variantOutput.versionCode.get()
             }
 
-            val taskName = variant.buildTaskName()
+            val taskName = variant.buildTaskName(prefix = TASK_NAME_PREFIX)
+            val describeTaskName = variant.buildTaskName(prefix = DESCRIBE_TASK_NAME_PREFIX)
             val apkVariantDiractoryProvider: Provider<Directory> = variant.artifacts.get(
                 SingleArtifact.APK
             )
+            val data = ApkData(
+                versionCode = variantCodes.firstOrNull()?.toString() ?: "",
+                versionName = variantNames.firstOrNull() ?: "",
+                buildType = variant.buildType.toString()
+            )
 
             project.tasks.register(taskName, UploadTask::class.java) {
-                val data = ApkData(
-                    versionCode = variantCodes.firstOrNull()?.toString() ?: "",
-                    versionName = variantNames.firstOrNull() ?: "",
-                    buildType = variant.buildType.toString()
-                )
-
                 apkData = data
                 apkDirectoryProperty.set(apkVariantDiractoryProvider)
+            }
 
-                println("ApkData = ${data}")
+            project.tasks.register(describeTaskName, DescribeUploadTask::class.java) {
+                pluginName = PLUGIN_NAME
+                uploadTaskName = taskName
+                apkData = data
             }
         }
     }
 
-    private fun ApplicationVariant.buildTaskName(): String {
+    private fun ApplicationVariant.buildTaskName(prefix: String): String {
         val variantName = this.name.replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
 
-        return "$TASK_NAME_PREFIX$variantName"
+        return "$prefix$variantName"
     }
 }

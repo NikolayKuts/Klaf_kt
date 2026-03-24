@@ -68,6 +68,9 @@ composeMultiplatform = "1.10.1"
 # LoKdroid #
 lokdroid = "0.0.4-alpha"
 
+# Mosaic #
+mosaic = "0.18.0"
+
 # KSP #
 ksp = "2.2.20-2.0.4"
 
@@ -176,6 +179,9 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 
 # LoKdroid #
 lokdroid = { group = "io.github.nikolaykuts", name = "lokdroid", version.ref = "lokdroid" }
+
+# Mosaic #
+mosaic-runtime = { group = "com.jakewharton.mosaic", name = "mosaic-runtime", version.ref = "mosaic" }
 
 # Cambridge Lib #
 cambridge-dictionary-core  = { group = "com.cambridge.dictionary", name = "core", version.ref = "cambridgeLib" }

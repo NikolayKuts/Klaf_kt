@@ -1,6 +1,7 @@
 package plugins.telegramAppDistribution
 
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.onUpload
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.parameter
@@ -24,7 +25,12 @@ class TelegramApi(
         private const val DOCUMENT_PARAMETER_KEY = "document"
     }
 
-    suspend fun uploadFile(file: File, token: String, chatId: String) {
+    suspend fun uploadFile(
+        file: File,
+        token: String,
+        chatId: String,
+        onUploadProgress: suspend (sentBytes: Long, totalBytes: Long) -> Unit,
+    ) {
         val url = "$BASE_URL$token/$SEND_DOCUMENT_ENDPOINT"
         val headers = Headers.build {
             append(
@@ -42,9 +48,15 @@ class TelegramApi(
 
         val response = httpClient.post(urlString = url) {
             parameter(CHAT_ID_PARAMETER_KEY, chatId)
+            onUpload { bytesSentTotal, contentLength ->
+                if (contentLength > 0L) {
+                    onUploadProgress(bytesSentTotal, contentLength)
+                }
+            }
             setBody(body = MultiPartFormDataContent(parts = partData))
         }
 
+        UploadConsoleEvent.status("Upload response received.")
         println("TelegramApi. Upload file response: ${response.bodyAsText()}")
     }
 }
