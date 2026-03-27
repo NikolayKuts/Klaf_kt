@@ -42,7 +42,6 @@ import com.kuts.domain.useCases.FetchCardsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.SaveDeckReviewInfoUseCase
 import com.kuts.domain.useCases.UpdateDeckUseCase
-import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.common.ButtonState
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.RepetitionTimer
@@ -52,6 +51,13 @@ import com.kuts.klaf.deckRepetition.RepetitionScreenState.FinishState
 import com.kuts.klaf.deckRepetition.RepetitionScreenState.RepetitionState
 import com.kuts.klaf.deckRepetition.RepetitionScreenState.StartState
 import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent
+import com.kuts.klaf.presentation.resources.Res
+import com.kuts.klaf.presentation.resources.card_has_been_deleted
+import com.kuts.klaf.presentation.resources.problem_with_fetching_card
+import com.kuts.klaf.presentation.resources.problem_with_fetching_cards
+import com.kuts.klaf.presentation.resources.problem_with_fetching_deck
+import com.kuts.klaf.presentation.resources.problem_with_removing_card
+import com.kuts.klaf.presentation.resources.problem_with_updating_deck
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -534,10 +540,6 @@ class DeckReviewViewModel(
             cardsToReview.update { it.shuffled() }
 
             val updatedDeck = getUpdatedDesk(deckForUpdating = repeatedDeck)
-            // logD("is repetition Even (repeated) -> ${repeatedDeck.reviewCount.isEven()}")
-            // logD("is repetition Even (updated) -> ${updatedDeck.reviewCount.isEven()}")
-            // logD("repeatedDeck -> $repeatedDeck")
-            // logD("updatedDeck -> $updatedDeck")
 
             val (
                 currentIterationDuration: Long,

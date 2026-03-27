@@ -233,7 +233,7 @@ class CardEditingViewModel(
                             it.toTextFieldValueIpaHolder()
                         }
                         nativeWordFieldValueState.value = TextFieldValue(text = card.nativeWord)
-                        requestAndStoreGeminiInsightsIfMissing(card = card)
+                        requestAndStoreWordInsightsIfMissing(card = card)
                     } else {
                         setInsightsIdle()
                     }
@@ -245,7 +245,7 @@ class CardEditingViewModel(
         }
     }
 
-    private fun requestAndStoreGeminiInsightsIfMissing(card: Card) {
+    private fun requestAndStoreWordInsightsIfMissing(card: Card) {
         if (card.hasValidInsightsForCurrentWord()) return
         val foreignWord = card.foreignWord.trim()
         if (foreignWord.isEmpty()) {
@@ -273,7 +273,7 @@ class CardEditingViewModel(
             }
             if (latestCard.foreignWord != foreignWord) {
                 // logD(
-                //     "Gemini insights skipping auto-save because foreign word changed. " +
+                //     "Word insights skipping auto-save because foreign word changed. " +
                 //         "initial=$foreignWord, latest=${latestCard.foreignWord}"
                 // )
                 setInsightsIdle(word = latestCard.foreignWord)
@@ -285,9 +285,9 @@ class CardEditingViewModel(
             originalCardState.value = updatedCard
             updateInsightsUiState(insights = updatedCard.wordMeaningInsights)
 
-            // logD("Gemini insights were auto-saved for cardId=${card.id}, foreignWord=$foreignWord")
+            // logD("Word insights were auto-saved for cardId=${card.id}, foreignWord=$foreignWord")
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-            // logE("Failed to auto-load Gemini insights\n${throwable.stackTraceToString()}")
+            // logE("Failed to auto-load word insights\n${throwable.stackTraceToString()}")
             setInsightsError(word = foreignWord, errorMessageResId = Res.string.word_insights_request_failed)
         }
     }

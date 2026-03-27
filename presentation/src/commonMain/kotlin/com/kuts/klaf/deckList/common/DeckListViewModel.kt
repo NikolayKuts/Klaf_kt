@@ -16,6 +16,7 @@ import com.kuts.domain.common.IDataSynchronizationState.Uncertain
 import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.common.launchIn
 import com.kuts.domain.entities.Deck
+import com.kuts.domain.entities.WordInsightsProvider
 import com.kuts.domain.interactors.AuthenticationInteractor
 import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.IAuthenticationRepository.IAccountDeletingError
@@ -46,6 +47,8 @@ class DeckListViewModel(
     private val crashlytics: ICrashlyticsRepository,
     private val appMaintenanceManager: IAppMaintenanceManager,
     private val authenticationInteractor: AuthenticationInteractor,
+    private val observeWordInsightsProviderState: ObserveWordInsightsProviderStateUseCase,
+    private val setWordInsightsProviderUseCase: SetWordInsightsProviderUseCase,
     private val coroutineContextProvider: ICoroutineContextProvider,
 ) : BaseDeckListViewModel() {
 
@@ -94,7 +97,7 @@ class DeckListViewModel(
                 crashlytics.report(exception = throwable)
             }
         observeDataSynchronizationStateWorker()
-//        appMaintenanceManager.scheduleDeckRepetitionChecking()
+        appMaintenanceManager.scheduleDeckRepetitionChecking()
         observeAuthenticationState()
     }
 
@@ -313,6 +316,14 @@ class DeckListViewModel(
         }
     }
 
+    override fun setWordInsightsProvider(provider: WordInsightsProvider) {
+        viewModelScope.launchWithState {
+            setWordInsightsProviderUseCase(provider = provider)
+        }.onException { _, throwable ->
+            crashlytics.report(exception = throwable)
+        }
+    }
+
     private fun getValidatedChatGptUrl(): String {
         val rawUrl = SecretConstants.ChatGpt.STORY_CRAFTER_URL.trim()
 
@@ -321,7 +332,7 @@ class DeckListViewModel(
         }
 
         val hasValidScheme = rawUrl.startsWith(prefix = "https://", ignoreCase = true) ||
-            rawUrl.startsWith(prefix = "http://", ignoreCase = true)
+                rawUrl.startsWith(prefix = "http://", ignoreCase = true)
         val host = rawUrl.substringAfter(delimiter = "://", missingDelimiterValue = "")
             .substringBefore(delimiter = "/")
             .substringBefore(delimiter = "?")
@@ -360,16 +371,18 @@ class DeckListViewModel(
     }
 
     private fun observeAuthenticationState() {
-        authenticationInteractor.getObservableAuthenticationState()
-            .flowOn(coroutineContextProvider.io)
-            .onEach {
-                drawerState.emit(
-                    DrawerViewState(
-                        signedIn = it.email.isNotNull(),
-                        userEmail = it.email
-                    ),
-                )
-            }
+        combine(
+            authenticationInteractor.getObservableAuthenticationState(),
+            observeWordInsightsProviderState(),
+        ) { authenticationState, providerState ->
+            DrawerViewState(
+                signedIn = authenticationState.email.isNotNull(),
+                userEmail = authenticationState.email,
+                wordInsightsProvider = providerState.selectedProvider,
+                codexObserverSessionState = providerState.codexObserverSessionState,
+            )
+        }.flowOn(coroutineContextProvider.io)
+            .onEach { drawerViewState -> drawerState.emit(drawerViewState) }
             .launchIn(scope = viewModelScope)
     }
 

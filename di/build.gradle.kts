@@ -37,6 +37,7 @@ kotlin {
                 implementation(project(Modules.Domain))
                 implementation(project(Modules.Data))
                 implementation(project(Modules.Presentation))
+                implementation(libs.datastore.preferences.core)
                 implementation(libs.koin.core)
                 implementation(libs.ktor.client.core)
             }

@@ -8,13 +8,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.application
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.EventMessageView
 import com.kuts.klaf.common.MainViewModel
 import com.kuts.klaf.di.appModules
 import com.kuts.klaf.navigation.DesktopKlafNavHost
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
 import com.kuts.klaf.theme.MainTheme
 import org.koin.core.context.startKoin
 
