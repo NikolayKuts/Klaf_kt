@@ -21,11 +21,13 @@ import com.kuts.domain.useCases.FetchDeckSourceUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.domain.useCases.FetchWordMeaningInsightsUseCase
+import com.kuts.domain.useCases.ObserveWordInsightsProviderStateUseCase
 import com.kuts.domain.useCases.RemoveDeckUseCase
 import com.kuts.domain.useCases.RenameDeckUseCase
 import com.kuts.domain.useCases.SaveCardRemotelyUseCase
 import com.kuts.domain.useCases.SaveDeckRemotelyUseCase
 import com.kuts.domain.useCases.SaveDeckReviewInfoUseCase
+import com.kuts.domain.useCases.SetWordInsightsProviderUseCase
 import com.kuts.domain.useCases.SynchronizeLocalAndRemoteDataUseCase
 import com.kuts.domain.useCases.TransferCardsToDeckUseCase
 import com.kuts.domain.useCases.TransferDataOfOldAppKlafUseCase
@@ -184,6 +186,7 @@ private fun Module.commonUseCaseModule() {
             coroutineContextProvider = get(),
         )
     }
+    factory { ObserveWordInsightsProviderStateUseCase(wordInsightsProviderManager = get()) }
     factory {
         RemoveDeckUseCase(
             deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
@@ -221,6 +224,12 @@ private fun Module.commonUseCaseModule() {
     factory {
         SaveDeckReviewInfoUseCase(
             deckRepetitionInfoRepository = get(),
+            coroutineContextProvider = get(),
+        )
+    }
+    factory {
+        SetWordInsightsProviderUseCase(
+            wordInsightsProviderManager = get(),
             coroutineContextProvider = get(),
         )
     }

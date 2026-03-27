@@ -31,6 +31,12 @@
     <string name="word_insights_request_failed">Word insights request failed.</string>
     <string name="word_insights_invalid_word_format">The word format is invalid. Please enter a real English word.</string>
     <string name="word_insights_no_refreshed_data">There is no refreshed insights data to apply.</string>
+    <string name="drawer_word_insights_source_label">Word insights source</string>
+    <string name="drawer_word_insights_source_open_ai">OpenAI</string>
+    <string name="drawer_word_insights_source_codex_observer">CodeX Observer</string>
+    <string name="drawer_word_insights_status_connecting">Connecting...</string>
+    <string name="drawer_word_insights_status_ready">Ready</string>
+    <string name="drawer_word_insights_status_not_ready">Not ready</string>
         <string name="account_deleting_action">Delete account</string>
         <string name="account_deleting_confirmation_question">Would you like to delete account?</string>
         <string name="account_deleting_warning_message">Warning!!! If you confirm deleting account local and remote storage state will be reset</string>

@@ -199,7 +199,6 @@ internal fun DeckRepetitionScreen(
                 onShowInsightsClick = viewModel::showInsightsSheet,
                 onHideInsightsClick = viewModel::hideInsightsSheet,
                 onYouGlishClick = { word ->
-                    viewModel.hideInsightsSheet()
                     navController.navigate(
                         route = AppDestination.WebContent(
                             source = WebContentSource.YouGlish(word = word),

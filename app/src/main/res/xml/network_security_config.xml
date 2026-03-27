@@ -9,4 +9,7 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">4264181-lu28184.twc1.net</domain>
     </domain-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.185.131.120</domain>
+    </domain-config>
 </network-security-config>

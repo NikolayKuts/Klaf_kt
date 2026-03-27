@@ -1,5 +1,7 @@
 package com.kuts.klaf.di
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.klaf.authentication.AuthenticationViewModel
 import com.kuts.klaf.authentication.BaseAuthenticationViewModel
@@ -9,24 +11,28 @@ import com.kuts.klaf.cardTransferring.common.BaseCardTransferringViewModel
 import com.kuts.klaf.cardTransferring.common.CardTransferringViewModel
 import com.kuts.klaf.cardViewing.CardViewingViewModel
 import com.kuts.klaf.common.RepetitionTimer
+import com.kuts.klaf.common.localStore.AppLocalStore
 import com.kuts.klaf.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.deckList.common.DeckListViewModel
 import com.kuts.klaf.deckManagment.BaseDeckManagementViewModel
 import com.kuts.klaf.deckManagment.DeckManagementViewModel
 import com.kuts.klaf.deckRepetition.BaseDeckReviewViewModel
 import com.kuts.klaf.deckRepetition.DeckReviewViewModel
-import com.kuts.klaf.deckRepetition.IDeckReviewStateStore
 import com.kuts.klaf.deckRepetitionInfo.DeckRepetitionInfoViewModel
 import com.kuts.klaf.webContent.WebContentViewModel
-import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
-import org.koin.core.scope.Scope
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 
-internal typealias DeckReviewStateStoreFactory = Scope.() -> IDeckReviewStateStore
-
-internal fun Module.registerCommonPresentationViewModels(
-    deckReviewStateStoreFactory: DeckReviewStateStoreFactory,
-) {
+internal val commonPresentationModule = module {
+    single<DataStore<Preferences>>(qualifier = named(name = APP_PREFERENCES_DATA_STORE)) {
+        get<IAppPreferencesDataStoreFactory>().create()
+    }
+    single {
+        AppLocalStore(
+            dataStore = get(qualifier = named(name = APP_PREFERENCES_DATA_STORE)),
+        )
+    }
     factory { RepetitionTimer(coroutineContextProvider = get()) }
 
     viewModel<BaseAuthenticationViewModel> {
@@ -48,6 +54,8 @@ internal fun Module.registerCommonPresentationViewModels(
             crashlytics = get(),
             appMaintenanceManager = get(),
             authenticationInteractor = get(),
+            observeWordInsightsProviderState = get(),
+            setWordInsightsProviderUseCase = get(),
             coroutineContextProvider = get(),
         )
     }
@@ -55,7 +63,7 @@ internal fun Module.registerCommonPresentationViewModels(
     viewModel<BaseDeckReviewViewModel> { params ->
         DeckReviewViewModel(
             deckId = params.get(),
-            stateStore = deckReviewStateStoreFactory(),
+            stateStore = get<IDeckReviewStateStoreFactory>().create(),
             fetchCards = get(),
             fetchDeckById = get(),
             timer = get(),

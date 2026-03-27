@@ -5,6 +5,7 @@ import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
+import com.kuts.domain.managers.IWordInsightsProviderManager
 import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.ICrashlyticsRepository
@@ -26,6 +27,7 @@ import com.kuts.klaf.ios.IosNoOpDeckReviewScheduler
 import com.kuts.klaf.ios.IosNoOpOldAppKlafDataTransferRepository
 import com.kuts.klaf.ios.IosNoOpWordAutocompleteRepository
 import com.kuts.klaf.ios.IosNoOpWordInfoRepository
+import com.kuts.klaf.ios.IosNoOpWordInsightsProviderManager
 import com.kuts.klaf.ios.IosNoOpWordMeaningInsightsRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
@@ -34,7 +36,6 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 internal val dataModule = module {
-    includes(commonDataModule)
     iosRepositoryModule()
     iosInfrastructureModule()
     iosManagerBindings()
@@ -65,6 +66,7 @@ private fun Module.iosRepositoryModule() {
     single<IWordInfoRepository> { IosNoOpWordInfoRepository() }
     single<IWordAutocompleteRepository> { IosNoOpWordAutocompleteRepository() }
     single<IWordMeaningInsightsRepository> { IosNoOpWordMeaningInsightsRepository() }
+    single<IWordInsightsProviderManager> { IosNoOpWordInsightsProviderManager() }
     single<IDeckRepetitionInfoRepository> { IosInMemoryDeckRepetitionInfoRepository() }
     single<IOldAppKlafDataTransferRepository> { IosNoOpOldAppKlafDataTransferRepository() }
     single<ICrashlyticsRepository> { IosNoOpCrashlyticsRepository() }

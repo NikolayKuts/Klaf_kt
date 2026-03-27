@@ -16,9 +16,10 @@ import com.google.firebase.ktx.Firebase
 import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.entities.DeckRepetitionInfos
 import com.kuts.domain.managers.IAppMaintenanceManager
-import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IAudioPlayerManager
+import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
+import com.kuts.domain.managers.IWordInsightsProviderManager
 import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.ICrashlyticsRepository
@@ -30,37 +31,43 @@ import com.kuts.domain.repositories.IWordAutocompleteRepository
 import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.repositories.IWordMeaningInsightsRepository
 import com.kuts.klaf.cardManagement.common.ICambridgeWordDataProvider
-import com.kuts.klaf.common.AppMaintenanceManager
+import com.kuts.klaf.common.AndroidAppMaintenanceManager
+import com.kuts.klaf.common.AndroidDeckReviewingReminder
+import com.kuts.klaf.common.AndroidOldAppKlafDataTransferRepository
 import com.kuts.klaf.common.AppReopeningWorker
 import com.kuts.klaf.common.CoroutineContextProvider
 import com.kuts.klaf.common.DataSynchronizationWorker
 import com.kuts.klaf.common.DeckRepetitionReminder
 import com.kuts.klaf.common.DeckRepetitionReminderChecker
 import com.kuts.klaf.common.DeckReviewRescheduler
-import com.kuts.klaf.common.DeckReviewingReminder
 import com.kuts.klaf.common.NetworkConnectivity
-import com.kuts.klaf.common.OldAppKlafDataTransferRepository
 import com.kuts.klaf.common.notifications.AppRestartNotifier
 import com.kuts.klaf.common.notifications.DataSynchronizationNotifier
 import com.kuts.klaf.common.notifications.NotificationChannelInitializer
 import com.kuts.klaf.dataStore.DECK_REPETITION_INFO_FILE_NAME
 import com.kuts.klaf.dataStore.DeckRepetitionInfosSerializer
 import com.kuts.klaf.dataStore.implementations.DataStoreDeckRepetitionInfoRepository
-import com.kuts.klaf.firestore.repositoryImplementations.AuthenticationRepositoryFirebase
-import com.kuts.klaf.firestore.repositoryImplementations.CardRepositoryFirestore
-import com.kuts.klaf.firestore.repositoryImplementations.CrashlyticsRepositoryFirebase
-import com.kuts.klaf.firestore.repositoryImplementations.DeckRepositoryFirestore
-import com.kuts.klaf.firestore.repositoryImplementations.StorageSaveVersionRepositoryFirestore
-import com.kuts.klaf.firestore.repositoryImplementations.WordAutocompleteFirestore
-import com.kuts.klaf.firestore.FirebaseAuthenticationSessionManager
-import com.kuts.klaf.networking.CardAudioPlayer
-import com.kuts.klaf.networking.gemini.GeminiHttpClientFactory
-import com.kuts.klaf.networking.gemini.GeminiWordMeaningInsightsProvider
+import com.kuts.klaf.firestore.AndroidFirebaseAuthenticationSessionManager
+import com.kuts.klaf.firestore.repositoryImplementations.AndroidAuthenticationRepositoryFirebase
+import com.kuts.klaf.firestore.repositoryImplementations.AndroidCardRepositoryFirestore
+import com.kuts.klaf.firestore.repositoryImplementations.AndroidCrashlyticsRepositoryFirebase
+import com.kuts.klaf.firestore.repositoryImplementations.AndroidDeckRepositoryFirestore
+import com.kuts.klaf.firestore.repositoryImplementations.AndroidStorageSaveVersionRepositoryFirestore
+import com.kuts.klaf.firestore.repositoryImplementations.AndroidWordAutocompleteFirestore
+import com.kuts.klaf.networking.AndroidCardAudioPlayer
+import com.kuts.klaf.networking.codexApp.AndroidCodexAppHttpClientFactory
+import com.kuts.klaf.networking.codexApp.CodexAppWordMeaningInsightsRepository
+import com.kuts.klaf.networking.codexApp.ICodexAppHttpClientFactory
+import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
+import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
+import com.kuts.klaf.networking.wordInsights.SwitchableWordMeaningInsightsRepository
+import com.kuts.klaf.networking.wordInsights.WordInsightsProviderManager
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
-import com.kuts.klaf.networking.yandexApi.YandexWordInfoProvider
+import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
 import com.lib.lokdroid.core.LoKdroid
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -71,7 +78,6 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 internal val dataModule = module {
-    includes(commonDataModule)
     androidRepositoryModule()
     infrastructureModule()
     dataManagerBindings()
@@ -82,7 +88,7 @@ private fun Module.androidRepositoryModule() {
     single<IDeckRepository>(
         qualifier = named(name = REMOTE_DECK_REPOSITORY),
     ) {
-        DeckRepositoryFirestore(
+        AndroidDeckRepositoryFirestore(
             firestore = get(),
             auth = get(),
         )
@@ -90,7 +96,7 @@ private fun Module.androidRepositoryModule() {
     single<ICardRepository>(
         qualifier = named(name = REMOTE_CARD_REPOSITORY),
     ) {
-        CardRepositoryFirestore(
+        AndroidCardRepositoryFirestore(
             firestore = get(),
             auth = get(),
         )
@@ -98,34 +104,60 @@ private fun Module.androidRepositoryModule() {
     single<IStorageSaveVersionRepository>(
         qualifier = named(name = REMOTE_STORAGE_SAVE_VERSION_REPOSITORY),
     ) {
-        StorageSaveVersionRepositoryFirestore(
+        AndroidStorageSaveVersionRepositoryFirestore(
             firestore = get(),
             auth = get(),
         )
     }
 
-    single<IDeckRepetitionInfoRepository> { DataStoreDeckRepetitionInfoRepository(dataStore = get()) }
-    single<IWordAutocompleteRepository> { WordAutocompleteFirestore(firestore = get()) }
-    single<ICrashlyticsRepository> { CrashlyticsRepositoryFirebase(firebaseCrashlytics = get()) }
+    single<IDeckRepetitionInfoRepository> {
+        DataStoreDeckRepetitionInfoRepository(
+            dataStore = get(qualifier = named(name = DECK_REPETITION_INFOS_DATA_STORE)),
+        )
+    }
+    single<IWordAutocompleteRepository> { AndroidWordAutocompleteFirestore(firestore = get()) }
+    single<ICrashlyticsRepository> { AndroidCrashlyticsRepositoryFirebase(firebaseCrashlytics = get()) }
     single<IAuthenticationRepository> {
-        AuthenticationRepositoryFirebase(
+        AndroidAuthenticationRepositoryFirebase(
             auth = get(),
             crashlytics = get(),
         )
     }
-    single<IAuthenticationSessionManager> { FirebaseAuthenticationSessionManager(auth = get()) }
+    single<IAuthenticationSessionManager> { AndroidFirebaseAuthenticationSessionManager(auth = get()) }
     single<IWordInfoRepository> {
-        YandexWordInfoProvider(
+        YandexWordInfoRepository(
             client = YandexSecureHttpClientFactory().create(),
         )
     }
+    single {
+        OpenAiWordMeaningInsightsRepository(
+            client = OpenAiHttpClientFactory().create(),
+        )
+    }
+    single {
+        WordInsightsProviderManager(
+            dataStore = get(qualifier = named(name = APP_PREFERENCES_DATA_STORE)),
+            codexClient = get(qualifier = named(name = CODEX_APP_HTTP_CLIENT)),
+            coroutineContextProvider = get(),
+            codexServerUrl = com.kuts.klaf.SecretConstants.CodexApp.appServerUrlOrNull().orEmpty(),
+            codexModel = com.kuts.klaf.SecretConstants.CodexApp.modelOrNull(),
+        )
+    }
+    single<IWordInsightsProviderManager> { get<WordInsightsProviderManager>() }
+    single {
+        CodexAppWordMeaningInsightsRepository(
+            manager = get(),
+        )
+    }
     single<IWordMeaningInsightsRepository> {
-        GeminiWordMeaningInsightsProvider(
-            client = GeminiHttpClientFactory().create(),
+        SwitchableWordMeaningInsightsRepository(
+            manager = get(),
+            openAiRepository = get(),
+            codexRepository = get(),
         )
     }
     single<IOldAppKlafDataTransferRepository> {
-        OldAppKlafDataTransferRepository(
+        AndroidOldAppKlafDataTransferRepository(
             context = androidContext(),
             deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
             cardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
@@ -137,14 +169,20 @@ private fun Module.infrastructureModule() {
     single<KlafRoomDatabase> { KlafRoomDatabaseProvider.getInstance(context = androidContext()) }
     single { WorkManager.getInstance(androidContext()) }
     single<ICoroutineContextProvider> { CoroutineContextProvider() }
+    single<ICodexAppHttpClientFactory> { AndroidCodexAppHttpClientFactory() }
+    single<HttpClient>(qualifier = named(name = CODEX_APP_HTTP_CLIENT)) {
+        get<ICodexAppHttpClientFactory>().create()
+    }
 
-    single<IDeckReviewScheduler> { DeckReviewingReminder(context = androidContext()) }
+    single<IDeckReviewScheduler> { AndroidDeckReviewingReminder(context = androidContext()) }
 
     single { FirebaseFirestore.getInstance() }
     single { FirebaseAuth.getInstance() }
     single<FirebaseCrashlytics> { Firebase.crashlytics }
 
-    single<DataStore<DeckRepetitionInfos>> {
+    single<DataStore<DeckRepetitionInfos>>(
+        qualifier = named(name = DECK_REPETITION_INFOS_DATA_STORE),
+    ) {
         DataStoreFactory.create(
             serializer = DeckRepetitionInfosSerializer,
             corruptionHandler = null,
@@ -162,7 +200,7 @@ private fun Module.infrastructureModule() {
     }
 
     single { CambridgeClient }
-    single<ICambridgeWordDataProvider> { CambridgeWordDataProvider(client = get()) }
+    single<ICambridgeWordDataProvider> { AndroidCambridgeWordDataProvider(client = get()) }
     single { LoKdroid }
 }
 
@@ -178,14 +216,14 @@ private fun Module.dataManagerBindings() {
     single { NetworkConnectivity(connectivityManager = get()) }
 
     single<IAppMaintenanceManager> {
-        AppMaintenanceManager(
+        AndroidAppMaintenanceManager(
             workManager = get(),
             notificationChannelInitializer = get(),
             networkConnectivity = get(),
         )
     }
 
-    factory<IAudioPlayerManager> { CardAudioPlayer(crashlytics = get()) }
+    factory<IAudioPlayerManager> { AndroidCardAudioPlayer(crashlytics = get()) }
 }
 
 private fun Module.workerModule() {

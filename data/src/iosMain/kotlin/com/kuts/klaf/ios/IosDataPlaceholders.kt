@@ -7,12 +7,15 @@ import com.kuts.domain.common.LoadingState
 import com.kuts.domain.entities.AuthenticationState
 import com.kuts.domain.entities.AutocompleteWord
 import com.kuts.domain.entities.DeckRepetitionInfo
+import com.kuts.domain.entities.WordInsightsProvider
+import com.kuts.domain.entities.WordInsightsProviderState
 import com.kuts.domain.entities.WordInfo
 import com.kuts.domain.entities.WordMeaningInsights
 import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
+import com.kuts.domain.managers.IWordInsightsProviderManager
 import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IDeckRepetitionInfoRepository
@@ -100,6 +103,14 @@ class IosNoOpWordAutocompleteRepository : IWordAutocompleteRepository {
 class IosNoOpWordMeaningInsightsRepository : IWordMeaningInsightsRepository {
     override suspend fun fetchWordMeaningInsights(word: String): WordMeaningInsights {
         return WordMeaningInsights.EMPTY
+    }
+}
+
+class IosNoOpWordInsightsProviderManager : IWordInsightsProviderManager {
+    override val state = MutableStateFlow(WordInsightsProviderState())
+
+    override suspend fun setSelectedProvider(provider: WordInsightsProvider) {
+        state.value = state.value.copy(selectedProvider = provider)
     }
 }
 

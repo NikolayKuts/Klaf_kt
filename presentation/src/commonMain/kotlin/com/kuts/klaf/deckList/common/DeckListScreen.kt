@@ -65,6 +65,7 @@ import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.common.ScheduledDateState
 import com.kuts.domain.common.isEven
 import com.kuts.domain.entities.Deck
+import com.kuts.domain.entities.WordInsightsProvider
 import com.kuts.klaf.authentication.AuthenticationActionResult
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.ContentHolder
@@ -249,6 +250,7 @@ internal fun DeckListScreen(
                         initial = DrawerViewState(
                             signedIn = false,
                             userEmail = null,
+                            wordInsightsProvider = WordInsightsProvider.OpenAi,
                         )
                     ).value,
                     onLogInClick = {
@@ -273,6 +275,9 @@ internal fun DeckListScreen(
                                 event = ToDrawerActionDialog(action = DrawerAction.DELETE_ACCOUNT)
                             )
                         }
+                    },
+                    onWordInsightsProviderChange = { provider ->
+                        viewModel.setWordInsightsProvider(provider = provider)
                     },
                 )
             },

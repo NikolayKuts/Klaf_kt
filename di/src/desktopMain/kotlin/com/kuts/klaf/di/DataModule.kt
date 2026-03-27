@@ -12,6 +12,7 @@ import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
+import com.kuts.domain.managers.IWordInsightsProviderManager
 import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.ICrashlyticsRepository
@@ -23,10 +24,18 @@ import com.kuts.domain.repositories.IWordAutocompleteRepository
 import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.repositories.IWordMeaningInsightsRepository
 import com.kuts.klaf.common.CoroutineContextProvider
+import com.kuts.klaf.networking.codexApp.CodexAppWordMeaningInsightsRepository
+import com.kuts.klaf.networking.codexApp.DesktopCodexAppHttpClientFactory
+import com.kuts.klaf.networking.codexApp.ICodexAppHttpClientFactory
+import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
+import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
+import com.kuts.klaf.networking.wordInsights.SwitchableWordMeaningInsightsRepository
+import com.kuts.klaf.networking.wordInsights.WordInsightsProviderManager
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
-import com.kuts.klaf.networking.yandexApi.YandexWordInfoProvider
+import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -37,7 +46,6 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 internal val dataModule = module {
-    includes(commonDataModule)
     desktopRepositoryModule()
     desktopInfrastructureModule()
     desktopManagerBindings()
@@ -66,26 +74,56 @@ private fun Module.desktopRepositoryModule() {
         DesktopAuthenticationSessionManager(authenticationRepository = get())
     }
     single<IWordInfoRepository> {
-        YandexWordInfoProvider(
+        YandexWordInfoRepository(
             client = YandexSecureHttpClientFactory().create(),
         )
     }
     single<IWordAutocompleteRepository> { DesktopWordAutocompleteRepository() }
-    single<IWordMeaningInsightsRepository> { DesktopWordMeaningInsightsRepository() }
-    single<IDeckRepetitionInfoRepository> { InMemoryDeckRepetitionInfoRepository() }
-    single<IOldAppKlafDataTransferRepository> { NoOpOldAppKlafDataTransferRepository() }
-    single<ICrashlyticsRepository> { NoOpCrashlyticsRepository() }
+    single {
+        OpenAiWordMeaningInsightsRepository(
+            client = OpenAiHttpClientFactory().create(),
+        )
+    }
+    single {
+        WordInsightsProviderManager(
+            dataStore = get(qualifier = named(name = APP_PREFERENCES_DATA_STORE)),
+            codexClient = get(qualifier = named(name = CODEX_APP_HTTP_CLIENT)),
+            coroutineContextProvider = get(),
+            codexServerUrl = com.kuts.klaf.SecretConstants.CodexApp.appServerUrlOrNull().orEmpty(),
+            codexModel = com.kuts.klaf.SecretConstants.CodexApp.modelOrNull(),
+        )
+    }
+    single<IWordInsightsProviderManager> { get<WordInsightsProviderManager>() }
+    single {
+        CodexAppWordMeaningInsightsRepository(
+            manager = get(),
+        )
+    }
+    single<IWordMeaningInsightsRepository> {
+        SwitchableWordMeaningInsightsRepository(
+            manager = get(),
+            openAiRepository = get(),
+            codexRepository = get(),
+        )
+    }
+    single<IDeckRepetitionInfoRepository> { DesktopInMemoryDeckRepetitionInfoRepository() }
+    single<IOldAppKlafDataTransferRepository> { DesktopNoOpOldAppKlafDataTransferRepository() }
+    single<ICrashlyticsRepository> { DesktopNoOpCrashlyticsRepository() }
 }
 
 private fun Module.desktopInfrastructureModule() {
     single<KlafRoomDatabase> { KlafRoomDatabaseProvider.getInstance() }
     single<ICoroutineContextProvider> { CoroutineContextProvider() }
+    single<ICodexAppHttpClientFactory> { DesktopCodexAppHttpClientFactory() }
+    single<HttpClient>(qualifier = named(name = CODEX_APP_HTTP_CLIENT)) {
+        get<ICodexAppHttpClientFactory>().create()
+    }
 }
 
 private fun Module.desktopManagerBindings() {
     single<IAppMaintenanceManager> { DesktopAppMaintenanceManager() }
-    factory<IAudioPlayerManager> { NoOpAudioPlayerManager() }
-    single<IDeckReviewScheduler> { NoOpDeckReviewScheduler() }
+    factory<IAudioPlayerManager> { DesktopNoOpAudioPlayerManager() }
+    single<IDeckReviewScheduler> { DesktopNoOpDeckReviewScheduler() }
 }
 
 private class DesktopAuthenticationRepository : IAuthenticationRepository {
@@ -147,7 +185,7 @@ private class DesktopWordMeaningInsightsRepository : IWordMeaningInsightsReposit
     }
 }
 
-private class InMemoryDeckRepetitionInfoRepository : IDeckRepetitionInfoRepository {
+private class DesktopInMemoryDeckRepetitionInfoRepository : IDeckRepetitionInfoRepository {
     private val source = MutableStateFlow<Map<Int, DeckRepetitionInfo>>(emptyMap())
 
     override fun fetchDeckRepetitionInfo(deckId: Int): Flow<DeckRepetitionInfo?> {
@@ -163,11 +201,11 @@ private class InMemoryDeckRepetitionInfoRepository : IDeckRepetitionInfoReposito
     }
 }
 
-private class NoOpOldAppKlafDataTransferRepository : IOldAppKlafDataTransferRepository {
+private class DesktopNoOpOldAppKlafDataTransferRepository : IOldAppKlafDataTransferRepository {
     override suspend fun transferOldData() = Unit
 }
 
-private class NoOpCrashlyticsRepository : ICrashlyticsRepository {
+private class DesktopNoOpCrashlyticsRepository : ICrashlyticsRepository {
     override fun report(exception: Throwable) = Unit
 }
 
@@ -189,7 +227,7 @@ private class DesktopAppMaintenanceManager : IAppMaintenanceManager {
     override fun scheduleDeckRepetitionChecking() = Unit
 }
 
-private class NoOpAudioPlayerManager : IAudioPlayerManager {
+private class DesktopNoOpAudioPlayerManager : IAudioPlayerManager {
     override val loadingState = MutableStateFlow<LoadingState<Unit, Unit>>(LoadingState.Non)
 
     override fun onCreate() = Unit
@@ -201,6 +239,6 @@ private class NoOpAudioPlayerManager : IAudioPlayerManager {
     override fun preparePronunciationAndPlay(word: String) = Unit
 }
 
-private class NoOpDeckReviewScheduler : IDeckReviewScheduler {
+private class DesktopNoOpDeckReviewScheduler : IDeckReviewScheduler {
     override fun schedule(deckName: String, deckId: Int, atTime: Long) = Unit
 }
