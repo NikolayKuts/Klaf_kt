@@ -49,18 +49,14 @@ class AndroidCardAudioPlayer(
     }
 
     override fun onCreate() {
-        logD {
-            message("onCreate() called")
-        }
+        logD("onCreate() called")
         coroutineScope.ifNull {
             coroutineScope = CoroutineScope(context = Dispatchers.IO + SupervisorJob())
         }
     }
 
     override fun onResume() {
-        logD {
-            message("onResume() called")
-        }
+        logD("onResume() called")
         mediaPlayer.ifNull { mediaPlayer = getNewPlayerInstance() }
 
         val word = wordForPreparing
@@ -71,9 +67,7 @@ class AndroidCardAudioPlayer(
     }
 
     override fun onStop() {
-        logD {
-            message("onStop() called")
-        }
+        logD("onStop() called")
         resetPreparingJob()
         isPrepared = false
         mediaPlayer?.release()
@@ -82,9 +76,7 @@ class AndroidCardAudioPlayer(
     }
 
     override fun onDestroy() {
-        logD {
-            message("onDestroy() called")
-        }
+        logD("onDestroy() called")
         coroutineScope?.cancel()
         coroutineScope = null
         onPronunciationPrepared = null

@@ -17,6 +17,9 @@ dependencies {
     implementation(libs.core.coroutines.swing)
     implementation(libs.core.datetime)
     implementation(compose.desktop.currentOs)
+
+    /** LoKdroid **/
+    implementation(libs.lokdroid)
 }
 
 compose.desktop {
