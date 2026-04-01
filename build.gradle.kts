@@ -10,7 +10,3 @@ plugins {
     alias(libs.plugins.android.lint) apply false
     alias(libs.plugins.room) apply false
 }
-
-//tasks.register('clean', Delete) {
-//    delete rootProject.buildDir
-//}

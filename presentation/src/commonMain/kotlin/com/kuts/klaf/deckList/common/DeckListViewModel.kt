@@ -26,13 +26,13 @@ import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.NavigationDestination
 import com.kuts.klaf.common.SecretConstants
-import com.kuts.klaf.common.logging.AppLogger
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
 import com.kuts.klaf.deckList.common.IDeckListNavigationDestination.DataSynchronizationDialog
 import com.kuts.klaf.deckList.common.IDeckListNavigationDestination.Unspecified
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent.*
 import com.kuts.klaf.deckList.drawer.DrawerViewState
+import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -128,11 +128,7 @@ class DeckListViewModel(
                         eventMessage.tryEmitAsPositive(resId = Res.string.deck_has_been_created)
                         emitNavigationEvent(value = ToPrevious)
                     }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, error ->
-                        AppLogger.e(
-                            tag = "DeckListViewModel",
-                            message = "Failed to create deck: \"$deckName\"",
-                            throwable = error,
-                        )
+                        logE( "Failed to create deck: \"$deckName\" $error")
                         eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_creating_deck)
                     }
                 }

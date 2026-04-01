@@ -38,10 +38,12 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Klaf"
-include(":app")
-include(":desktopApp")
+include(":Android")
+include(":Desktop")
 include(":domain")
-include(":shared")
 include(":data")
 include(":presentation")
 include(":di")
+
+project(":Android").projectDir = file("apps/Android")
+project(":Desktop").projectDir = file("apps/Desktop")

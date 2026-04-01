@@ -66,7 +66,7 @@ composeComiler = "1.5.14"
 composeMultiplatform = "1.10.1"
 
 # LoKdroid #
-lokdroid = "0.0.4-alpha"
+lokdroid = "0.1.1-alpha"
 
 # KSP #
 ksp = "2.2.20-2.0.4"

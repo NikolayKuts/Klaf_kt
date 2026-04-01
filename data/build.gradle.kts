@@ -41,6 +41,9 @@ kotlin {
                 implementation(libs.ktor.client.content.negotiation)
                 implementation(libs.room.runtime)
                 implementation(libs.sqlite.bundled)
+
+                /** LoKdroid **/
+                implementation(libs.lokdroid)
             }
         }
 
