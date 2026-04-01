@@ -250,7 +250,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd \"$SRCROOT/..\"\n./gradlew :di:embedAndSignAppleFrameworkForXcode\n";
+			shellScript = "cd \"$SRCROOT/../..\"\n./gradlew :di:embedAndSignAppleFrameworkForXcode\n\nif [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n  case \"$ARCHS\" in\n    *x86_64*) RESOURCE_TARGET=\"iosX64\" ;;\n    *) RESOURCE_TARGET=\"iosSimulatorArm64\" ;;\n  esac\nelif [ \"$PLATFORM_NAME\" = \"iphoneos\" ]; then\n  RESOURCE_TARGET=\"iosArm64\"\nelse\n  echo \"Unsupported PLATFORM_NAME=$PLATFORM_NAME\"\n  exit 1\nfi\n\n./gradlew \":presentation:${RESOURCE_TARGET}ProcessResources\"\n\nCOMPOSE_RESOURCES_SRC=\"$SRCROOT/../../presentation/build/processedResources/${RESOURCE_TARGET}/main/composeResources\"\nCOMPOSE_RESOURCES_DST=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/compose-resources\"\n\nmkdir -p \"$COMPOSE_RESOURCES_DST\"\nrm -rf \"$COMPOSE_RESOURCES_DST/composeResources\"\ncp -R \"$COMPOSE_RESOURCES_SRC\" \"$COMPOSE_RESOURCES_DST/\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
