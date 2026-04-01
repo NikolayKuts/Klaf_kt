@@ -41,7 +41,6 @@ rootProject.name = "Klaf"
 include(":Android")
 include(":Desktop")
 include(":domain")
-include(":shared")
 include(":data")
 include(":presentation")
 include(":di")
