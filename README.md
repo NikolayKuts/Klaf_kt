@@ -1,49 +1,98 @@
 <p align="center">
-  <img src="https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/Klaf_icon_128px.png?raw=true" alt="Sublime's custom image"/>
+  <img src="preview/Klaf_icon_128px.png" alt="Klaf app icon" />
 </p>
 
 # Klaf
 
-## Discription
+Klaf is a Kotlin Multiplatform vocabulary trainer focused on spaced repetition and mnemonic-based memorization.
 
-The application is designed to help you memorize foreign words using the mnemonic method. The method is based on working with decks of cards and repeating them at a certain interval.
-The application calculates the time until the next repetition and sends a notification to repeat the deck. If each subsequent repetition takes the same amount of time as the previous one, or less, the time interval until the next repetition will be increased. If the repetition takes longer, then the interval until the next reminder will be reduced.
-The application allows you to create cards with the automatic creation of a transcription template. And also it is possible to listen to the pronunciation of English words.
+The repository contains Android, Desktop, and iOS apps that share the same `domain`, `data`, `presentation`, and `di` layers.
 
-
-## Technology stack
-* The code is written with [_**Kotlin**_](https://kotlinlang.org/)
-* [_**MVVM**_](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93viewmodel), [_**MVI**_](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter)
-* [_**Clean Architecture**_](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) + _**Multi-Module**_
-* Access to local storage via [_**Room database**_](https://developer.android.com/jetpack/androidx/releases/room?gclid=Cj0KCQiA4aacBhCUARIsAI55maHsI2AXFdILFEuxiZANnj4osoCdiKzs8wbbReVJ94HUD4Mo_CS3k-UaAlj1EALw_wcB&gclsrc=aw.ds), [_**DataStore**_](https://developer.android.com/topic/libraries/architecture/datastore?gclid=Cj0KCQiA4aacBhCUARIsAI55maF8MzhHpnejUNKEjuWnHm3UNt1YOdiCIfE2Xe_yn37gLw7Ap5rV5r0aAjLfEALw_wcB&gclsrc=aw.ds)
-* Access to remote storage via [_**Firebase**_](https://firebase.google.com/)
-* User authentication via [_**Firebase Authentication**_](https://firebase.google.com/docs/auth?hl=en&authuser=0)
-* Crashlytics - [_**Firebase Crashlytics SDK**_](https://firebase.google.com/docs/crashlytics)
-* For asynchronous operations used [_**Coroutines**_](https://kotlinlang.org/docs/coroutines-overview.html) and [_**Coroutine flows**_](https://developer.android.com/kotlin/flow)
-* For Ui navigation used [_**Navigation component**_](https://developer.android.com/guide/navigation?gclid=Cj0KCQiA4aacBhCUARIsAI55maG6BEZpROClIXY-7nAHZaGsZe5It8jIBKkVyNfObruJf3uzhwVOVTwaAhXsEALw_wcB&gclsrc=aw.ds)
-* For dependency injection used [_**Koin**_](https://insert-koin.io/)
-* For Ui used [_**Jetpack Compose**_](https://developer.android.com/jetpack/compose?gclid=Cj0KCQiA4aacBhCUARIsAI55maGeOQkxRqFdEewf0v20hNqbvNWxj42X_bppURJRlGg6UtpjDgiM0JgaAoiVEALw_wcB&gclsrc=aw.ds) and [_**XML**_](https://developer.android.com/develop/ui/views/layout/declaring-layout)
-* For scheduling work used [_**Work Manager**_](https://developer.android.com/topic/libraries/architecture/workmanager?gclid=Cj0KCQiA4aacBhCUARIsAI55maFaZUX1X7MJBVufx-d4U0v-21CXkeivW3igzDQe5cXozmLN4wKd60MaAh_QEALw_wcB&gclsrc=aw.ds)
-* For testing used [_**MockK**_](https://mockk.io/) and [_**JUnit4**_](https://junit.org/junit4/)
-* For uploading and playing the pronunciation of words used [_**Media Player**_](https://developer.android.com/reference/android/media/MediaPlayer)
-* Single Activity pattern
-* Gradle - [_**Kotlin DSL**_](https://gradle.org/kotlin/), [_**Groovy**_](https://groovy-lang.org/)
+Android currently has the most complete platform integration. Desktop and iOS already reuse the shared UI and core logic, but some platform services are still stubbed or limited compared with Android.
 
 ## Features
-* Navigation to the app from [Smart Text Selection Menu](https://developer.android.com/about/versions/marshmallow/android-6.0-changes.html?hl=ru#behavior-text-selection)
-* Ability to listen to the pronunciation of English words
-* Autocomplete suggestions when typing foreign words in English
-* Deck repeat alert by notifications
-* Ability to save data on remote storage
-* Animated UI
-* Creation of transcriptions
-* Automatic creation of a transcription template
-* _**Theme**_: dark and light
+
+- Deck and card management for vocabulary study
+- Spaced repetition review flow
+- Word pronunciation playback
+- Word autocomplete suggestions
+- Dark and light themes
+- Shared Compose UI across platforms
+- Android-specific integrations for notifications, Firebase-backed services, and smart text selection
+
+## Project Structure
+
+- `apps/Android` - Android application module and Android resources
+- `apps/Desktop` - Compose Desktop launcher
+- `apps/iOS` - Xcode project and SwiftUI host for the iOS app
+- `domain` - core entities, use cases, and repository contracts
+- `data` - persistence, networking, and repository implementations
+- `presentation` - Compose Multiplatform UI, navigation, and view models
+- `di` - platform-specific dependency wiring
+- `build-logic` - custom Gradle plugins and build logic
+- `preview` - screenshots and GIF previews used in the README
+
+## Tech Stack
+
+- Kotlin Multiplatform
+- Compose Multiplatform for shared UI
+- Kotlin Coroutines and Flow
+- Koin for dependency injection
+- Room and DataStore for local persistence
+- Ktor and Kotlinx Serialization for networking
+- Firebase Authentication, Firestore, and Crashlytics on Android
+- WorkManager on Android
+- Gradle Kotlin DSL with included build logic in `build-logic`
+
+## Platform Status
+
+- Android is the primary app target and has the broadest platform integration.
+- Desktop reuses the shared UI and local data stack, but several platform services are development-oriented or no-op.
+- iOS runs the shared Compose UI through a SwiftUI host, but some integrations are still intentionally minimal.
+
+## Requirements
+
+- JDK 17
+- Android Studio or IntelliJ IDEA for Android/Desktop work
+- Xcode for iOS work
+- Android SDK for the Android app
+
+## Run
+
+### Android
+
+Use Android Studio, or run:
+
+```bash
+./gradlew :Android:installDebug
+```
+
+### Desktop
+
+Run the desktop app with:
+
+```bash
+./gradlew :Desktop:run
+```
+
+### iOS
+
+Open the Xcode project and run the `iOS` scheme:
+
+```text
+apps/iOS/iosApp.xcodeproj
+```
 
 ## Compatibility
-From API level 21 to 33
 
-### Old version
+- Android `minSdk`: 26
+- Android `targetSdk`: 33
+- Desktop: JVM 17
+
+## Legacy Version
+
+The pre-Kotlin-Multiplatform version of the project is available here:
+
 https://github.com/NikolayKuts/Klaf
 
 ## Animation samples
