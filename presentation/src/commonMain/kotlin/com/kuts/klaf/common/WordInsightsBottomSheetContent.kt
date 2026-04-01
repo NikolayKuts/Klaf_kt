@@ -63,7 +63,7 @@ internal fun WordInsightsBottomSheetContent(
     canApplyRefreshedInsights: Boolean = false,
     onRequestRefreshedInsights: (() -> Unit)? = null,
     onApplyRefreshedInsights: (() -> Unit)? = null,
-    onYouGlishClick: () -> Unit = {},
+    onYouGlishClmmick: () -> Unit = {},
 ) {
     val isRefreshingAvailable =
         onRequestRefreshedInsights != null && onApplyRefreshedInsights != null
