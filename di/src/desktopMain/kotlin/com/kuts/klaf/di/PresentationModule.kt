@@ -6,7 +6,7 @@ import com.kuts.klaf.desktop.DesktopNoOpCambridgeWordDataProvider
 import com.kuts.klaf.desktop.DesktopNoOpDeckReviewNotifier
 import org.koin.dsl.module
 
-internal val presentationModule = module {
+internal val desktopPresentationModule = module {
     single<IAppPreferencesDataStoreFactory> { DesktopAppPreferencesDataStoreFactory() }
     factory<IDeckReviewStateStoreFactory> { DesktopDeckReviewStateStoreFactory() }
     single<IDeckReviewNotifierManager> { DesktopNoOpDeckReviewNotifier() }

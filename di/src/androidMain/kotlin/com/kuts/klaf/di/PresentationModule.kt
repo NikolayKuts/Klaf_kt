@@ -8,7 +8,7 @@ import com.kuts.klaf.common.permissions.AndroidMokoNotificationPermissionManager
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
-internal val presentationModule = module {
+internal val androidPresentationModule = module {
     single<IAppPreferencesDataStoreFactory> {
         AndroidAppPreferencesDataStoreFactory(context = androidContext())
     }

@@ -37,7 +37,7 @@ import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
-internal val dataModule = module {
+internal val iosDataModule = module {
     iosRepositoryModule()
     iosInfrastructureModule()
     iosManagerBindings()
