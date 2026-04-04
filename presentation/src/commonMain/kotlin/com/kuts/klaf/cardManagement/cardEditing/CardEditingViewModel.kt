@@ -26,6 +26,8 @@ import com.kuts.klaf.cardManagement.common.toTextFieldValueIpaHolder
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
 import com.kuts.klaf.presentation.resources.*
+import com.lib.lokdroid.core.logD
+import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -63,6 +65,7 @@ class CardEditingViewModel(
     val insightsUiState = _insightsUiState.asStateFlow()
 
     init {
+        logD("card editing view model created, cardId=$cardId, deckId=$deckId")
         fetchCardAndConfigureStates(cardId = cardId)
     }
 
@@ -140,13 +143,25 @@ class CardEditingViewModel(
     fun requestRefreshedInsights() {
         val foreignWord = cardManagementState.value.foreignWordFieldValue.text.trim()
 
-        if (foreignWord.isEmpty()) return
-        if (!_insightsUiState.value.canRequestRefreshedInsights) return
+        if (foreignWord.isEmpty()) {
+            logD("refresh skipped: foreign word is blank")
+            return
+        }
+        if (!_insightsUiState.value.canRequestRefreshedInsights) {
+            logD(
+                "refresh skipped: request is not allowed right now, " +
+                    "status=${_insightsUiState.value.status}"
+            )
+            return
+        }
 
         if (!foreignWord.isValidWordFormat()) {
+            logD("refresh rejected: invalid word format, word=${foreignWord.asLogWord()}")
             setRefreshedInsightsError(errorMessageResId = Res.string.word_insights_invalid_word_format)
             return
         }
+
+        logD("refresh started for word=${foreignWord.asLogWord()}")
 
         _insightsUiState.update { state ->
             state.copy(
@@ -159,6 +174,9 @@ class CardEditingViewModel(
         viewModelScope.launchWithState(coroutineContextProvider.io) {
             val refreshedInsights = sanitizeInsights(insights = fetchWordMeaningInsights(word = foreignWord))
             val refreshedMeanings = refreshedInsights.meanings
+            logD(
+                "refresh completed for word=${foreignWord.asLogWord()}, meanings=${refreshedMeanings.size}"
+            )
 
             _insightsUiState.update { state ->
                 state.copy(
@@ -168,7 +186,9 @@ class CardEditingViewModel(
                 )
             }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-            // logE("Failed to refresh insights\n${throwable.stackTraceToString()}")
+            logE(
+                "refresh failed for word=${foreignWord.asLogWord()}\n${throwable.stackTraceToString()}"
+            )
             setRefreshedInsightsError(errorMessageResId = Res.string.word_insights_request_failed)
         }
     }
@@ -177,6 +197,7 @@ class CardEditingViewModel(
         val refreshedMeanings = _insightsUiState.value.refreshedMeanings
 
         if (refreshedMeanings.isEmpty()) {
+            logD("apply refresh skipped: there are no refreshed meanings")
             setRefreshedInsightsError(errorMessageResId = Res.string.word_insights_no_refreshed_data)
             return
         }
@@ -205,24 +226,44 @@ class CardEditingViewModel(
                 isSheetVisible = state.isSheetVisible && candidateInsights.meanings.isNotEmpty(),
             )
         }
+
+        logD(
+            "refreshed insights applied for word=${candidateInsights.word.asLogWord()}, " +
+                "meanings=${candidateInsights.meanings.size}"
+        )
     }
 
     private fun fetchCardAndConfigureStates(cardId: Int) {
         setInsightsLoading()
+        logD("card editing init: fetching cardId=$cardId, deckId=$deckId")
 
         viewModelScope.launchWithState {
             fetchCard(cardId = cardId)
                 .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
-                    // logE("Failed to fetch card flow for editing\n${throwable.stackTraceToString()}")
+                    logE(
+                        "failed to observe card flow for cardId=$cardId\n${throwable.stackTraceToString()}"
+                    )
                     eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_card)
                 }.firstOrNull()
                 ?.let { card: Card? ->
                     originalCardState.value = card
 
                     if (card != null) {
+                        logD(
+                            "card loaded: cardId=${card.id}, word=${card.foreignWord.asLogWord()}, " +
+                                "storedInsights=${card.wordMeaningInsights.meanings.size}"
+                        )
                         if (card.hasValidInsightsForCurrentWord()) {
+                            logD(
+                                "using stored insights for cardId=${card.id}, " +
+                                    "word=${card.foreignWord.asLogWord()}"
+                            )
                             updateInsightsUiState(insights = card.wordMeaningInsights)
                         } else {
+                            logD(
+                                "stored insights missing or stale for cardId=${card.id}, " +
+                                    "word=${card.foreignWord.asLogWord()}"
+                            )
                             setInsightsIdle(word = card.foreignWord)
                         }
                         audioPlayer.preparePronunciation(word = card.foreignWord)
@@ -235,27 +276,48 @@ class CardEditingViewModel(
                         nativeWordFieldValueState.value = TextFieldValue(text = card.nativeWord)
                         requestAndStoreWordInsightsIfMissing(card = card)
                     } else {
+                        logD("card fetch completed with null result for cardId=$cardId")
                         setInsightsIdle()
                     }
-                } ?: setInsightsIdle()
+                } ?: run {
+                    logD("card flow produced no first value for cardId=$cardId")
+                    setInsightsIdle()
+                }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-            // logE("Failed to fetch card for editing\n${throwable.stackTraceToString()}")
+            logE(
+                "failed to fetch card for editing, cardId=$cardId\n${throwable.stackTraceToString()}"
+            )
             setInsightsIdle()
             eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_card)
         }
     }
 
     private fun requestAndStoreWordInsightsIfMissing(card: Card) {
-        if (card.hasValidInsightsForCurrentWord()) return
+        if (card.hasValidInsightsForCurrentWord()) {
+            logD(
+                "auto-load skipped: cardId=${card.id} already has valid insights for " +
+                    "word=${card.foreignWord.asLogWord()}"
+            )
+            return
+        }
         val foreignWord = card.foreignWord.trim()
         if (foreignWord.isEmpty()) {
+            logD("auto-load skipped: cardId=${card.id} has blank foreign word")
             setInsightsIdle()
             return
         }
+
+        logD(
+            "auto-load started for cardId=${card.id}, word=${foreignWord.asLogWord()}"
+        )
         setInsightsLoading(word = foreignWord)
 
         viewModelScope.launchWithState(coroutineContextProvider.io) {
             if (!foreignWord.isValidWordFormat()) {
+                logD(
+                    "auto-load rejected: invalid word format, cardId=${card.id}, " +
+                        "word=${foreignWord.asLogWord()}"
+                )
                 setInsightsError(
                     word = foreignWord,
                     errorMessageResId = Res.string.word_insights_invalid_word_format,
@@ -264,18 +326,26 @@ class CardEditingViewModel(
             }
 
             val insights = fetchWordMeaningInsights(word = foreignWord)
+            logD(
+                "auto-load fetched insights for cardId=${card.id}, " +
+                    "word=${foreignWord.asLogWord()}, meanings=${insights.meanings.size}"
+            )
             val latestCard = fetchCard(cardId = card.id).firstOrNull() ?: return@launchWithState
 
             if (latestCard.hasValidInsightsForCurrentWord()) {
+                logD(
+                    "auto-load cancelled: latest card already contains valid insights, " +
+                        "cardId=${card.id}, word=${latestCard.foreignWord.asLogWord()}"
+                )
                 originalCardState.value = latestCard
                 updateInsightsUiState(insights = latestCard.wordMeaningInsights)
                 return@launchWithState
             }
             if (latestCard.foreignWord != foreignWord) {
-                // logD(
-                //     "Word insights skipping auto-save because foreign word changed. " +
-                //         "initial=$foreignWord, latest=${latestCard.foreignWord}"
-                // )
+                logD(
+                    "auto-save skipped: foreign word changed, cardId=${card.id}, " +
+                        "initial=${foreignWord.asLogWord()}, latest=${latestCard.foreignWord.asLogWord()}"
+                )
                 setInsightsIdle(word = latestCard.foreignWord)
                 return@launchWithState
             }
@@ -285,9 +355,15 @@ class CardEditingViewModel(
             originalCardState.value = updatedCard
             updateInsightsUiState(insights = updatedCard.wordMeaningInsights)
 
-            // logD("Word insights were auto-saved for cardId=${card.id}, foreignWord=$foreignWord")
+            logD(
+                "auto-save completed for cardId=${card.id}, " +
+                    "word=${foreignWord.asLogWord()}, meanings=${updatedCard.wordMeaningInsights.meanings.size}"
+            )
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-            // logE("Failed to auto-load word insights\n${throwable.stackTraceToString()}")
+            logE(
+                "auto-load failed for cardId=${card.id}, word=${foreignWord.asLogWord()}\n" +
+                    throwable.stackTraceToString()
+            )
             setInsightsError(word = foreignWord, errorMessageResId = Res.string.word_insights_request_failed)
         }
     }
@@ -487,5 +563,9 @@ class CardEditingViewModel(
         if (lettersOnly.length >= 4 && lettersOnly.toSet().size == 1) return false
 
         return true
+    }
+
+    private fun String.asLogWord(): String {
+        return trim().ifEmpty { "<blank>" }
     }
 }

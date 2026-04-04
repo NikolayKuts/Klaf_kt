@@ -102,8 +102,23 @@ class WebContentViewModel(
             trimmedUrl.startsWith(prefix = "http://", ignoreCase = true) && config.allowHttp -> trimmedUrl
             trimmedUrl.startsWith(prefix = "http://", ignoreCase = true) ->
                 "https://${trimmedUrl.substring(startIndex = "http://".length)}"
+            trimmedUrl.hasUnsupportedSchemePrefix() -> null
             "://" in trimmedUrl -> null
             else -> "https://$trimmedUrl"
         }
+    }
+}
+
+private fun String.hasUnsupportedSchemePrefix(): Boolean {
+    return listOf(
+        "javascript:",
+        "about:",
+        "blob:",
+        "data:",
+        "file:",
+        "mailto:",
+        "tel:",
+    ).any { prefix ->
+        startsWith(prefix = prefix, ignoreCase = true)
     }
 }
