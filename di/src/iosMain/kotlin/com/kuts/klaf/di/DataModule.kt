@@ -16,26 +16,28 @@ import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IWordAutocompleteRepository
 import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.repositories.IWordMeaningInsightsRepository
-import com.kuts.klaf.ios.IosAppMaintenanceManager
+import com.kuts.klaf.common.IosAppMaintenanceManager
+import com.kuts.klaf.common.IosCoroutineContextProvider
+import com.kuts.klaf.dataStore.implementations.IosInMemoryDeckRepetitionInfoRepository
 import com.kuts.klaf.ios.IosAuthenticationRepository
 import com.kuts.klaf.ios.IosAuthenticationSessionManager
-import com.kuts.klaf.ios.IosCoroutineContextProvider
-import com.kuts.klaf.ios.IosInMemoryDeckRepetitionInfoRepository
 import com.kuts.klaf.ios.IosNoOpAudioPlayerManager
 import com.kuts.klaf.ios.IosNoOpCrashlyticsRepository
 import com.kuts.klaf.ios.IosNoOpDeckReviewScheduler
 import com.kuts.klaf.ios.IosNoOpOldAppKlafDataTransferRepository
 import com.kuts.klaf.ios.IosNoOpWordAutocompleteRepository
-import com.kuts.klaf.ios.IosNoOpWordInfoRepository
 import com.kuts.klaf.ios.IosNoOpWordInsightsProviderManager
-import com.kuts.klaf.ios.IosNoOpWordMeaningInsightsRepository
+import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
+import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
+import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
+import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
-internal val dataModule = module {
+internal val iosDataModule = module {
     iosRepositoryModule()
     iosInfrastructureModule()
     iosManagerBindings()
@@ -63,9 +65,13 @@ private fun Module.iosRepositoryModule() {
     single<IAuthenticationSessionManager> {
         IosAuthenticationSessionManager(authenticationRepository = get())
     }
-    single<IWordInfoRepository> { IosNoOpWordInfoRepository() }
+    single<IWordInfoRepository> {
+        YandexWordInfoRepository(client = YandexSecureHttpClientFactory().create())
+    }
     single<IWordAutocompleteRepository> { IosNoOpWordAutocompleteRepository() }
-    single<IWordMeaningInsightsRepository> { IosNoOpWordMeaningInsightsRepository() }
+    single<IWordMeaningInsightsRepository> {
+        OpenAiWordMeaningInsightsRepository(client = OpenAiHttpClientFactory().create())
+    }
     single<IWordInsightsProviderManager> { IosNoOpWordInsightsProviderManager() }
     single<IDeckRepetitionInfoRepository> { IosInMemoryDeckRepetitionInfoRepository() }
     single<IOldAppKlafDataTransferRepository> { IosNoOpOldAppKlafDataTransferRepository() }

@@ -33,6 +33,7 @@ import com.kuts.klaf.deckList.common.IDeckListNavigationDestination.Unspecified
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent.*
 import com.kuts.klaf.deckList.drawer.DrawerViewState
 import com.lib.lokdroid.core.logE
+import com.lib.lokdroid.core.logV
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -90,6 +91,9 @@ class DeckListViewModel(
     override val drawerActionLoadingState = MutableStateFlow(value = false)
 
     init {
+        logV {
+            "INIT LIST"()
+        }
         appMaintenanceManager.initialize()
         viewModelScope.launchWithState { createInterimDeck() }
             .onException { _, throwable ->

@@ -17,6 +17,7 @@ import com.kuts.klaf.di.appModules
 import com.kuts.klaf.navigation.DesktopKlafNavHost
 import com.kuts.klaf.theme.MainTheme
 import com.lib.lokdroid.core.LoKdroid
+import com.lib.lokdroid.core.log
 import com.lib.lokdroid.data.default_implementation.FormatterBuilder
 import org.koin.core.context.startKoin
 
@@ -31,6 +32,11 @@ fun main() = application {
             .message()
             .build()
     )
+
+    log {
+        "init"()
+        "Desktop"(I)
+    }
 
     Window(
         onCloseRequest = ::exitApplication,

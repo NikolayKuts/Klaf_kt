@@ -6,7 +6,7 @@ import com.kuts.klaf.ios.IosNoOpCambridgeWordDataProvider
 import com.kuts.klaf.ios.IosNoOpDeckReviewNotifier
 import org.koin.dsl.module
 
-internal val presentationModule = module {
+internal val iosPresentationModule = module {
     single<IAppPreferencesDataStoreFactory> { IosAppPreferencesDataStoreFactory() }
     factory<IDeckReviewStateStoreFactory> { IosDeckReviewStateStoreFactory() }
     single<IDeckReviewNotifierManager> { IosNoOpDeckReviewNotifier() }
