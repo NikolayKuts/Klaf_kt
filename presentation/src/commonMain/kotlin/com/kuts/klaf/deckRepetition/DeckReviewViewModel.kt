@@ -200,14 +200,13 @@ class DeckReviewViewModel(
     }
 
     override fun startRepeating() {
-        // logD("startRepeating() called")
-
         val currentScreenState = screenState.replayCache.firstOrNull() ?: StartState
 
         viewModelScope.launch(coroutineContextProvider.io) {
             if (cardsToReview.value.isEmpty()) {
                 eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_cards)
             } else if (currentScreenState is StartState || currentScreenState is FinishState) {
+                resetCurrentRepetitionSessionState()
                 stateStore.startRepetitionCard = currentCard.replayCache.first()
                 stateStore.lastRepetitionCard = cardsToReview.value.last()
                 screenState.emit(RepetitionState)
@@ -218,6 +217,7 @@ class DeckReviewViewModel(
                     stateStore.startRepetitionCard?.id?.let { setOf(it) }
                         ?: emptySet()
                 }
+                saveRepetitionProgress(cards = cardsToReview.value)
             }
         }
     }
@@ -354,15 +354,24 @@ class DeckReviewViewModel(
                 return@onEach
             }
 
-            val shouldResetToStartState = currentScreenState !is StartState &&
-                        receivedCards.size != cardsToReview.value.size
+            val shouldResetToStartState = currentScreenState is RepetitionState
+                    && hasCardSetChanged(receivedCards = receivedCards)
 
             if (shouldResetToStartState) {
-                screenState.emit(StartState)
-                timer.stopCounting()
+                resetRepetitionToStartState()
             }
 
-            cardsToReview.value = getCardsByProgress(receivedCards = receivedCards.shuffled())
+            cardsToReview.value = when {
+                currentScreenState is RepetitionState && !shouldResetToStartState -> {
+                    getReceivedCardsWithCurrentOrder(receivedCards = receivedCards)
+                }
+
+                else -> getCardsByProgress(receivedCards = receivedCards.shuffled())
+            }
+
+            if (currentScreenState is RepetitionState && !shouldResetToStartState) {
+                saveRepetitionProgress(cards = cardsToReview.value)
+            }
         }.launchIn(scope = viewModelScope, context = coroutineContextProvider.io)
     }
 
@@ -438,6 +447,25 @@ class DeckReviewViewModel(
         }
     }
 
+    private fun resetCurrentRepetitionSessionState() {
+        goodeCardsIds.clear()
+        hardCardsIds.clear()
+        stateStore.isAllCardsRepeated = false
+        stateStore.isWaitingForFinish = false
+        stateStore.startRepetitionCard = null
+        stateStore.lastRepetitionCard = null
+        reviewedCardIds.value = emptySet()
+        cardSide.value = FRONT
+    }
+
+    private suspend fun resetRepetitionToStartState() {
+        resetCurrentRepetitionSessionState()
+        clearRepetitionProgress()
+        mainButtonState.value = ButtonState.UNPRESSED
+        timer.stopCounting()
+        screenState.emit(StartState)
+    }
+
     private fun clearRepetitionProgress() {
         stateStore.savedProgressCards.value = emptyList()
     }
@@ -496,6 +524,18 @@ class DeckReviewViewModel(
         stateStore.savedProgressCards.value = cards.toList()
     }
 
+    private fun hasCardSetChanged(receivedCards: List<Card>): Boolean {
+        return cardsToReview.value.map { it.id }.toSet() != receivedCards.map { it.id }.toSet()
+    }
+
+    private fun getReceivedCardsWithCurrentOrder(receivedCards: List<Card>): List<Card> {
+        val receivedCardsById = receivedCards.associateBy(Card::id)
+
+        return cardsToReview.value.mapNotNull { currentCard ->
+            receivedCardsById[currentCard.id]
+        }
+    }
+
     private fun getCardsByProgress(receivedCards: List<Card>): List<Card> {
         val savedProgressCards = stateStore.savedProgressCards.value
         val result = mutableListOf<Card>()
@@ -504,7 +544,7 @@ class DeckReviewViewModel(
             if (savedProgressCards.size < receivedCards.size) {
 
                 receivedCards.forEach { receivedCard ->
-                    if (!savedProgressCards.contains(receivedCard)) {
+                    if (savedProgressCards.none { savedCard -> savedCard.id == receivedCard.id }) {
                         add(receivedCard)
                     }
                 }

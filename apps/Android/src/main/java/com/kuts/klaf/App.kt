@@ -1,7 +1,7 @@
 package com.kuts.klaf
 
 import android.app.Application
-import com.kuts.klaf.di.appModules
+import com.kuts.klaf.di.androidAppModules
 import com.lib.lokdroid.core.LoKdroid
 import com.lib.lokdroid.data.default_implementation.FormatterBuilder
 import org.koin.android.ext.koin.androidContext
@@ -16,7 +16,7 @@ class App : Application() {
         startKoin {
             androidContext(this@App)
             workManagerFactory()
-            modules(appModules)
+            modules(androidAppModules)
         }
 
         LoKdroid.initialize(

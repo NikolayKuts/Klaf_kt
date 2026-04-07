@@ -53,6 +53,7 @@ fun CardManagementView(
     textFieldValueIpaHolders: List<TextFieldValueIpaHolder>,
     autocompleteState: AutocompleteState,
     pronunciationLoadingState: LoadingState<Unit, Unit>,
+    isConfirmationEnabled: Boolean,
     cambridgeDataAvailable: Boolean,
     ipaKeyboardState: IpaKeyboardState,
     onBottomSheetAction: () -> Unit,
@@ -82,6 +83,11 @@ fun CardManagementView(
             parentHeightPx = parentHeightPx,
             minContentHeightPx = density.run { minContentHeightDp.toPx() },
         )
+        val confirmationButtonBackground = if (isConfirmationEnabled) {
+            MainTheme.colors.common.positiveDialogButton
+        } else {
+            MainTheme.colors.common.separator.copy(alpha = 0.75f)
+        }
 
         Column(
             modifier = Modifier
@@ -159,8 +165,9 @@ fun CardManagementView(
                                         end = confirmationButtonPadding,
                                         bottom = confirmationButtonPadding,
                                     ),
-                                background = MainTheme.colors.common.positiveDialogButton,
+                                background = confirmationButtonBackground,
                                 iconRes = Res.drawable.ic_confirmation_24,
+                                enabled = isConfirmationEnabled,
                                 onClick = {
                                     keyboardController?.hide()
                                     onConfirmClick()

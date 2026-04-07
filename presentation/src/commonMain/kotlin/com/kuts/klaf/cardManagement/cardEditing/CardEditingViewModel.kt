@@ -21,6 +21,7 @@ import com.kuts.domain.useCases.UpdateCardUseCase
 import com.kuts.klaf.cardManagement.common.CardManagementState
 import com.kuts.klaf.cardManagement.common.CardManagementViewModel
 import com.kuts.klaf.cardManagement.common.ICambridgeWordDataProvider
+import com.kuts.klaf.cardManagement.common.TextFieldValueIpaHolder
 import com.kuts.klaf.cardManagement.common.toDomainEntity
 import com.kuts.klaf.cardManagement.common.toTextFieldValueIpaHolder
 import com.kuts.klaf.common.tryEmitAsNegative
@@ -28,9 +29,13 @@ import com.kuts.klaf.common.tryEmitAsPositive
 import com.kuts.klaf.presentation.resources.*
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import org.jetbrains.compose.resources.StringResource
 
@@ -60,9 +65,35 @@ class CardEditingViewModel(
     coroutineContextProvider = coroutineContextProvider,
 ) {
 
+    private companion object {
+
+        val COMMA_SPACING_REGEX = Regex("\\s*,\\s*")
+    }
+
     private val originalCardState = MutableStateFlow<Card?>(value = null)
     private val _insightsUiState = MutableStateFlow(CardEditingInsightsUiState())
     val insightsUiState = _insightsUiState.asStateFlow()
+    val isConfirmationEnabled: StateFlow<Boolean> = combine(
+        originalCardState,
+        nativeWordFieldValueState,
+        foreignWordFieldValueState,
+        textFieldValueIpaHoldersState,
+        insightsUiState,
+    ) { originalCard, nativeWordFieldValue, foreignWordFieldValue, ipaHolders, insightsUiState ->
+        originalCard?.let { card ->
+            hasCardChanged(
+                originalCard = card,
+                nativeWord = nativeWordFieldValue.text,
+                foreignWord = foreignWordFieldValue.text,
+                ipaHolders = ipaHolders,
+                insightsUiState = insightsUiState,
+            )
+        } ?: false
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = false,
+    )
 
     init {
         logD("card editing view model created, cardId=$cardId, deckId=$deckId")
@@ -84,30 +115,17 @@ class CardEditingViewModel(
         val deckId = deck.replayCache.first()?.id ?: return
         val nativeWord = cardManagementState.value.nativeWordFieldValue.text
         val foreignWord = cardManagementState.value.foreignWordFieldValue.text
-        val trimmedTextFieldValueIpaHoldersState = cardManagementState.value
-            .textFieldValueIpaHolders.map { textFieldValueIpaHolder ->
-                val trimmedText = textFieldValueIpaHolder.ipaTextFieldValue.text.trim()
-                val trimmedTextFieldValue =
-                    textFieldValueIpaHolder.ipaTextFieldValue.copy(text = trimmedText)
-
-                textFieldValueIpaHolder.copy(ipaTextFieldValue = trimmedTextFieldValue)
-            }
 
         if (nativeWord.isEmpty() || foreignWord.isEmpty()) {
             eventMessage.tryEmitAsNegative(resId = Res.string.native_and_foreign_words_must_be_filled)
         } else {
-            val isForeignWordChanged = foreignWord != originalCard.foreignWord
-            val insightsForSaving = resolveInsightsForSaving(
+            val updatedCard = createUpdatedCard(
                 originalCard = originalCard,
-                foreignWord = foreignWord,
-                isForeignWordChanged = isForeignWordChanged,
-            )
-            val updatedCard = originalCard.copy(
                 deckId = deckId,
                 nativeWord = nativeWord,
                 foreignWord = foreignWord,
-                ipa = trimmedTextFieldValueIpaHoldersState.map { it.toDomainEntity() },
-                wordMeaningInsights = insightsForSaving,
+                ipaHolders = cardManagementState.value.textFieldValueIpaHolders,
+                insightsUiState = _insightsUiState.value,
             )
 
             when {
@@ -115,7 +133,7 @@ class CardEditingViewModel(
                     eventMessage.tryEmitAsNegative(resId = Res.string.native_and_foreign_words_must_be_filled)
                 }
 
-                updatedCard == originalCard -> {
+                areCardsEquivalentForEditing(first = originalCard, second = updatedCard) -> {
                     eventMessage.tryEmitAsNegative(resId = Res.string.card_has_not_been_changed)
                 }
 
@@ -206,6 +224,7 @@ class CardEditingViewModel(
         val candidateInsights = sanitizeInsights(
             insights = WordMeaningInsights(
                 word = currentForeignWord.ifBlank { _insightsUiState.value.word },
+                language = _insightsUiState.value.language,
                 meanings = refreshedMeanings,
             ),
         )
@@ -246,8 +265,6 @@ class CardEditingViewModel(
                     eventMessage.tryEmitAsNegative(resId = Res.string.problem_with_fetching_card)
                 }.firstOrNull()
                 ?.let { card: Card? ->
-                    originalCardState.value = card
-
                     if (card != null) {
                         logD(
                             "card loaded: cardId=${card.id}, word=${card.foreignWord.asLogWord()}, " +
@@ -274,6 +291,7 @@ class CardEditingViewModel(
                             it.toTextFieldValueIpaHolder()
                         }
                         nativeWordFieldValueState.value = TextFieldValue(text = card.nativeWord)
+                        originalCardState.value = card
                         requestAndStoreWordInsightsIfMissing(card = card)
                     } else {
                         logD("card fetch completed with null result for cardId=$cardId")
@@ -337,8 +355,8 @@ class CardEditingViewModel(
                     "auto-load cancelled: latest card already contains valid insights, " +
                         "cardId=${card.id}, word=${latestCard.foreignWord.asLogWord()}"
                 )
-                originalCardState.value = latestCard
                 updateInsightsUiState(insights = latestCard.wordMeaningInsights)
+                originalCardState.value = latestCard
                 return@launchWithState
             }
             if (latestCard.foreignWord != foreignWord) {
@@ -352,8 +370,8 @@ class CardEditingViewModel(
 
             val updatedCard = latestCard.copy(wordMeaningInsights = insights)
             updateCard.invoke(newCard = updatedCard)
-            originalCardState.value = updatedCard
             updateInsightsUiState(insights = updatedCard.wordMeaningInsights)
+            originalCardState.value = updatedCard
 
             logD(
                 "auto-save completed for cardId=${card.id}, " +
@@ -403,12 +421,13 @@ class CardEditingViewModel(
         originalCard: Card,
         foreignWord: String,
         isForeignWordChanged: Boolean,
+        insightsUiState: CardEditingInsightsUiState,
     ): WordMeaningInsights {
-        val uiState = _insightsUiState.value
         val candidateInsights = sanitizeInsights(
             insights = WordMeaningInsights(
-                word = uiState.word.ifBlank { foreignWord.trim() },
-                meanings = uiState.meanings,
+                word = insightsUiState.word.ifBlank { foreignWord.trim() },
+                language = insightsUiState.language,
+                meanings = insightsUiState.meanings,
             ),
         )
         val isCandidateForCurrentWord =
@@ -421,6 +440,70 @@ class CardEditingViewModel(
             return candidateInsights
         }
         return originalCard.wordMeaningInsights
+    }
+
+    private fun createUpdatedCard(
+        originalCard: Card,
+        deckId: Int,
+        nativeWord: String,
+        foreignWord: String,
+        ipaHolders: List<TextFieldValueIpaHolder>,
+        insightsUiState: CardEditingInsightsUiState,
+    ): Card {
+        val trimmedIpaHolders = ipaHolders.map { textFieldValueIpaHolder ->
+            val trimmedText = textFieldValueIpaHolder.ipaTextFieldValue.text.trim()
+            val trimmedTextFieldValue =
+                textFieldValueIpaHolder.ipaTextFieldValue.copy(text = trimmedText)
+
+            textFieldValueIpaHolder.copy(ipaTextFieldValue = trimmedTextFieldValue)
+        }
+        val isForeignWordChanged = foreignWord != originalCard.foreignWord
+        val insightsForSaving = resolveInsightsForSaving(
+            originalCard = originalCard,
+            foreignWord = foreignWord,
+            isForeignWordChanged = isForeignWordChanged,
+            insightsUiState = insightsUiState,
+        )
+
+        return originalCard.copy(
+            deckId = deckId,
+            nativeWord = nativeWord,
+            foreignWord = foreignWord,
+            ipa = trimmedIpaHolders.map { it.toDomainEntity() },
+            wordMeaningInsights = insightsForSaving,
+        )
+    }
+
+    private fun hasCardChanged(
+        originalCard: Card,
+        nativeWord: String,
+        foreignWord: String,
+        ipaHolders: List<TextFieldValueIpaHolder>,
+        insightsUiState: CardEditingInsightsUiState,
+    ): Boolean {
+        val updatedCard = createUpdatedCard(
+            originalCard = originalCard,
+            deckId = originalCard.deckId,
+            nativeWord = nativeWord,
+            foreignWord = foreignWord,
+            ipaHolders = ipaHolders,
+            insightsUiState = insightsUiState,
+        )
+
+        return !areCardsEquivalentForEditing(first = originalCard, second = updatedCard)
+    }
+
+    private fun areCardsEquivalentForEditing(first: Card, second: Card): Boolean {
+        return normalizeCardForEditing(card = first) == normalizeCardForEditing(card = second)
+    }
+
+    private fun normalizeCardForEditing(card: Card): Card {
+        return card.copy(
+            nativeWord = card.nativeWord.normalizeWordForEditing(),
+            foreignWord = card.foreignWord.normalizeWordForEditing(),
+            ipa = card.ipa.map { ipaHolder -> ipaHolder.copy(ipa = ipaHolder.ipa.trim()) },
+            wordMeaningInsights = sanitizeInsights(insights = card.wordMeaningInsights),
+        )
     }
 
     private suspend fun performUpdatingCard(updatedCard: Card) {
@@ -436,6 +519,7 @@ class CardEditingViewModel(
         _insightsUiState.update { state ->
             state.copy(
                 word = sanitizedInsights.word.trim(),
+                language = sanitizedInsights.language.trim(),
                 meanings = sanitizedInsights.meanings,
                 status = if (hasSanitizedMeanings) {
                     CardEditingInsightsStatus.Success
@@ -469,6 +553,7 @@ class CardEditingViewModel(
 
         return insights.copy(
             word = insights.word.trim(),
+            language = insights.language.trim(),
             meanings = sanitizedMeanings,
         )
     }
@@ -567,5 +652,9 @@ class CardEditingViewModel(
 
     private fun String.asLogWord(): String {
         return trim().ifEmpty { "<blank>" }
+    }
+
+    private fun String.normalizeWordForEditing(): String {
+        return trim().replace(regex = COMMA_SPACING_REGEX, replacement = ", ")
     }
 }

@@ -99,12 +99,14 @@ private fun CardEditingContent(
     onYouGlishClick: (String) -> Unit,
 ) {
     val insightsUiState by viewModel.insightsUiState.collectAsState()
+    val isConfirmationEnabled by viewModel.isConfirmationEnabled.collectAsState()
     val sheetState = rememberModalBottomSheetState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         CardManagementContent(
             viewModel = viewModel,
             isCambridgeBottomSheetEnabled = false,
+            isConfirmationEnabled = isConfirmationEnabled,
         )
 
         InsightsSheetHandle(
