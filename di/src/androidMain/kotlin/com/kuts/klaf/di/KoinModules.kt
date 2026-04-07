@@ -1,6 +1,6 @@
 package com.kuts.klaf.di
 
-val appModules = buildAppModules(
+val androidAppModules = buildAppModules(
     androidDataModule,
     androidPresentationModule,
 )

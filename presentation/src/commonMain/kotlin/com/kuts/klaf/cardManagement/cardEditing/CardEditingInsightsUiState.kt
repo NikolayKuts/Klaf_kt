@@ -12,6 +12,7 @@ enum class CardEditingInsightsStatus {
 
 data class CardEditingInsightsUiState(
     val word: String = "",
+    val language: String = "",
     val meanings: List<WordMeaningItem> = emptyList(),
     val status: CardEditingInsightsStatus = CardEditingInsightsStatus.Idle,
     val errorMessageResId: StringResource? = null,

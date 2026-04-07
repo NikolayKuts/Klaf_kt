@@ -83,6 +83,7 @@ internal fun CardAdditionScreen(
 internal fun CardManagementContent(
     viewModel: BaseCardManagementViewModel,
     isCambridgeBottomSheetEnabled: Boolean = true,
+    isConfirmationEnabled: Boolean = false,
 ) {
     val deck = viewModel.deck.collectAsState(initial = null)
     val cardState by viewModel.cardManagementState.collectAsState()
@@ -110,6 +111,7 @@ internal fun CardManagementContent(
             textFieldValueIpaHolders = textFieldValueIpaHolders,
             autocompleteState = autocompleteState,
             pronunciationLoadingState = pronunciationLoadingState,
+            isConfirmationEnabled = isConfirmationEnabled,
             nativeWordSuggestionsState = nativeWordSuggestionsState,
             cambridgeDataAvailable = isCambridgeBottomSheetEnabled
                 && cambridgeDataState is ICambridgeDataState.Fetched,

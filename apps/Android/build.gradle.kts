@@ -57,6 +57,7 @@ dependencies {
     /** Modules **/
     implementation(project(Modules.Di))
     implementation(project(Modules.Presentation))
+    implementation(project(Modules.Domain))
 
     /** Core **/
     implementation(libs.core.kotlin.stdlib)
@@ -65,6 +66,7 @@ dependencies {
     /** Tests **/
     testImplementation(libs.tests.junit.core)
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.tests.coroutine)
     androidTestImplementation(libs.tests.junit.android)
     androidTestImplementation(libs.tests.espresso)
 
