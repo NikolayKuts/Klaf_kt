@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.android.serialization)
     alias(libs.plugins.room)
+    id("lokdroid-callsite-index") version "0.1.2-alpha9"
 }
 
 kotlin {

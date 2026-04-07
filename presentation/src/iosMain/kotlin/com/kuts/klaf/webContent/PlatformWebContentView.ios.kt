@@ -7,6 +7,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
+import com.lib.lokdroid.core.logD
+import com.lib.lokdroid.core.logE
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCSignatureOverride
 import platform.CoreGraphics.CGRectMake
@@ -70,6 +72,11 @@ actual fun PlatformWebContentView(
     UIKitView(
         modifier = modifier,
         factory = {
+            logD(
+                "Creating iOS web view, url=$url, " +
+                    "javaScriptEnabled=${config.javaScriptEnabled}, " +
+                    "cachePolicy=${config.cachePolicy}"
+            )
             WKWebView(
                 frame = CGRectMake(0.0, 0.0, 0.0, 0.0),
                 configuration = createConfiguration(config = config),
@@ -83,7 +90,13 @@ actual fun PlatformWebContentView(
                 buildRequest(
                     url = url,
                     cachePolicy = config.cachePolicy,
-                )?.let(::loadRequest) ?: currentOnPageLoadError.value("Invalid URL")
+                )?.let { request ->
+                    logD("Loading initial web content url=$url")
+                    loadRequest(request)
+                } ?: run {
+                    logE("Failed to build initial web request for url=$url")
+                    currentOnPageLoadError.value("Invalid URL")
+                }
             }
         },
         update = { webView ->
@@ -95,14 +108,22 @@ actual fun PlatformWebContentView(
             webView.configuration.preferences.javaScriptCanOpenWindowsAutomatically = false
 
             if (webViewDelegate.lastLoadedUrl != url) {
+                logD(
+                    "Updating iOS web view url from ${webViewDelegate.lastLoadedUrl} to $url, " +
+                        "cachePolicy=${config.cachePolicy}"
+                )
                 webViewDelegate.lastLoadedUrl = url
                 buildRequest(
                     url = url,
                     cachePolicy = config.cachePolicy,
-                )?.let(webView::loadRequest) ?: currentOnPageLoadError.value("Invalid URL")
+                )?.let(webView::loadRequest) ?: run {
+                    logE("Failed to build updated web request for url=$url")
+                    currentOnPageLoadError.value("Invalid URL")
+                }
             }
         },
         onRelease = { webView ->
+            logD("Releasing iOS web view, lastLoadedUrl=${webViewDelegate.lastLoadedUrl}")
             if (webViewDelegate.webView === webView) {
                 webViewDelegate.webView = null
             }
@@ -167,6 +188,7 @@ private class SimpleWebViewNavigationDelegate : NSObject(), WKNavigationDelegate
     ) {
         val requestedUrl = decidePolicyForNavigationAction.request.URL?.absoluteString
         if (requestedUrl == null) {
+            logD("Navigation request has null url, allowing")
             decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyAllow)
             return
         }
@@ -174,24 +196,31 @@ private class SimpleWebViewNavigationDelegate : NSObject(), WKNavigationDelegate
         val validatedUrl = onNavigationRequest(requestedUrl)
         when {
             validatedUrl == null -> {
+                logD("Blocking navigation request, requestedUrl=$requestedUrl")
                 decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyCancel)
             }
 
             decidePolicyForNavigationAction.targetFrame == null || validatedUrl != requestedUrl -> {
+                logD(
+                    "Rerouting navigation request from $requestedUrl to $validatedUrl, " +
+                        "targetFrameIsNull=${decidePolicyForNavigationAction.targetFrame == null}"
+                )
                 lastLoadedUrl = validatedUrl
                 val request = buildRequest(
-                        url = validatedUrl,
-                        cachePolicy = currentConfig.cachePolicy,
+                    url = validatedUrl,
+                    cachePolicy = currentConfig.cachePolicy,
                 )
                 if (request != null) {
                     webView.loadRequest(request = request)
                 } else {
+                    logE("Failed to build rerouted web request for url=$validatedUrl")
                     onPageLoadError("Invalid URL")
                 }
                 decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyCancel)
             }
 
             else -> {
+                logD("Allowing navigation request, url=$requestedUrl")
                 lastLoadedUrl = requestedUrl
                 decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyAllow)
             }
@@ -204,6 +233,7 @@ private class SimpleWebViewNavigationDelegate : NSObject(), WKNavigationDelegate
         didStartProvisionalNavigation: WKNavigation?,
     ) {
         val currentUrl = webView.URL?.absoluteString ?: lastLoadedUrl
+        logD("Web content load started, url=$currentUrl")
         onPageLoadStarted(currentUrl)
         onPageLoadProgressChanged(0)
     }
@@ -214,6 +244,7 @@ private class SimpleWebViewNavigationDelegate : NSObject(), WKNavigationDelegate
         didFinishNavigation: WKNavigation?,
     ) {
         val currentUrl = webView.URL?.absoluteString ?: lastLoadedUrl
+        logD("Web content load finished, url=$currentUrl")
         lastLoadedUrl = currentUrl
         onPageLoadProgressChanged(100)
         onPageLoadFinished(currentUrl)
@@ -242,10 +273,15 @@ private class SimpleWebViewNavigationDelegate : NSObject(), WKNavigationDelegate
         error: NSError,
     ) {
         if (error.code == NSURLErrorCancelled) {
+            logD("Ignoring cancelled web navigation, code=${error.code}")
             return
         }
 
         val currentUrl = webView.URL?.absoluteString ?: lastLoadedUrl
+        logE(
+            "Web content load failed, url=$currentUrl, code=${error.code}, " +
+                "domain=${error.domain}, description=${error.localizedDescription}"
+        )
         onPageLoadStarted(currentUrl)
         onPageLoadError(error.localizedDescription)
     }

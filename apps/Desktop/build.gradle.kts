@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.jvm)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
+    id("lokdroid-callsite-index") version "0.1.2-alpha9"
 }
 
 kotlin {

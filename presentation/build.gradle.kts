@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.android.serialization)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
+    id("lokdroid-callsite-index") version "0.1.2-alpha9"
 }
 
 kotlin {
@@ -81,8 +82,6 @@ kotlin {
                 implementation(libs.compose.ui.tooling)
                 implementation(libs.compose.activity)
                 implementation(libs.compose.ui.tooling.preview)
-
-                implementation(libs.lokdroid)
             }
         }
     }

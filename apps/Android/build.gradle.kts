@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.telegramAppDistribution)
     alias(libs.plugins.compose.compiler)
     id("extensions-plugin")
+    id("lokdroid-callsite-index") version "0.1.2-alpha9"
 }
 
 android {
