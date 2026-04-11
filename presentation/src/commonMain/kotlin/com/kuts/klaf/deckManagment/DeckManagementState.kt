@@ -12,6 +12,10 @@ data class DeckManagementState(
         pointer = "scheduledDateInterval",
         value = DateData()
     ),
+    val scheduledReview: StatePair<Long?> = StatePair(
+        pointer = "scheduled review",
+        value = null
+    ),
     val repetitionQuantity: StatePair<String> = StatePair(
         pointer = "repetitionQuantity",
         value = ""
@@ -34,7 +38,8 @@ data class DeckManagementState(
         value = ""
     ),
     val id: StatePair<String> = StatePair(pointer = "id", value = ""),
-    val scheduledDateIntervalChangeState: IScheduledDataIntervalChangeState = IScheduledDataIntervalChangeState.NotRequired,
+    val scheduledDateIntervalChangeState: IDateDataChangeState = IDateDataChangeState.NotRequired,
+    val scheduledReviewChangeState: IDateDataChangeState = IDateDataChangeState.NotRequired,
 )
 
 data class StatePair<T>(
@@ -42,11 +47,11 @@ data class StatePair<T>(
     val value: T,
 )
 
-sealed interface IScheduledDataIntervalChangeState {
+sealed interface IDateDataChangeState {
 
-    data object NotRequired : IScheduledDataIntervalChangeState
+    data object NotRequired : IDateDataChangeState
 
-    data class Required(val dateData: DateData) : IScheduledDataIntervalChangeState
+    data class Required(val dateData: DateData) : IDateDataChangeState
 }
 
 class DateDataValidator {

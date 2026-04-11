@@ -83,6 +83,8 @@ internal val commonPresentationModule = module {
             deckId = params.get(),
             fetchDeckById = get(),
             updateDeck = get(),
+            deckReviewScheduler = get(),
+            deckReviewNotifier = get(),
             crashlytics = get(),
             coroutineContextProvider = get(),
         )

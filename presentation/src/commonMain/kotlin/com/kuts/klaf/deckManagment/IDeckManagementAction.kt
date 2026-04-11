@@ -15,4 +15,15 @@ sealed interface IDeckManagementAction {
         val buttonAction: IDraggableButtonAction,
     ) : IDeckManagementAction
 
+    data object ScheduledReviewChangeRequested : IDeckManagementAction
+
+    data object DismissScheduledReviewDialog : IDeckManagementAction
+
+    data object ScheduledReviewChangeConfirmed : IDeckManagementAction
+
+    data class ScheduledReviewChanged(
+        val dateUnit: DateUnit,
+        val buttonAction: IDraggableButtonAction,
+    ) : IDeckManagementAction
+
 }

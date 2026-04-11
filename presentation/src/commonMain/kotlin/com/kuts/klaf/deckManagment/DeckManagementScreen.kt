@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.kuts.domain.common.DateData
 import com.kuts.domain.common.DateUnit
+import com.kuts.domain.common.getCurrentDateAsLong
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.ClosingButton
 import com.kuts.klaf.common.ConfirmationButton
@@ -36,6 +37,7 @@ import com.kuts.klaf.common.DialogAppLabel
 import com.kuts.klaf.common.FullBackgroundDialog
 import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.asFormattedDate
+import com.kuts.klaf.common.calculateDetailedScheduledRange
 import com.kuts.klaf.common.asString
 import com.kuts.klaf.common.toLabelRes
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
@@ -89,6 +91,15 @@ private fun DeckManagementContent(
                         sendAction(IDeckManagementAction.ScheduledDateIntervalChangeRequested)
                     }
                 )
+                StateItem(
+                    pair = StatePair(
+                        pointer = scheduledReview.pointer,
+                        value = scheduledReview.value.asScheduledReviewString()
+                    ),
+                    onLongClick = {
+                        sendAction(IDeckManagementAction.ScheduledReviewChangeRequested)
+                    }
+                )
                 StateItem(pair = repetitionQuantity)
                 StateItem(pair = cardQuantity)
                 StateItem(pair = lastFirstRepetitionDuration)
@@ -99,59 +110,93 @@ private fun DeckManagementContent(
 
             val scheduledDateIntervalChangeState =
                 deckManagementState.scheduledDateIntervalChangeState
-            if (scheduledDateIntervalChangeState is IScheduledDataIntervalChangeState.Required) {
+            if (scheduledDateIntervalChangeState is IDateDataChangeState.Required) {
+                DateDataChangeDialog(
+                    title = "Change the scheduled date interval",
+                    currentValue = scheduledDateInterval.value.asString(),
+                    currentValueLabel = "Current interval: ",
+                    dateData = scheduledDateIntervalChangeState.dateData,
+                    onDateDataChange = { dateUnit, action ->
+                        sendAction(
+                            IDeckManagementAction.ScheduledDateIntervalChanged(
+                                dateUnit = dateUnit,
+                                buttonAction = action,
+                            )
+                        )
+                    },
+                    onConfirm = {
+                        sendAction(IDeckManagementAction.ScheduledDateIntervalChangeConfirmed)
+                    },
+                    onDismiss = {
+                        sendAction(IDeckManagementAction.DismissScheduledDateIntervalDialog)
+                    },
+                )
+            }
 
-                Dialog(
-                    onDismissRequest = { sendAction(IDeckManagementAction.DismissScheduledDateIntervalDialog) }
-                ) {
-                    FullBackgroundDialog(
-                        onBackgroundClick = {
-                            sendAction(IDeckManagementAction.DismissScheduledDateIntervalDialog)
-                        },
-                        topContent = ContentHolder(size = DIALOG_APP_LABEL_SIZE.dp) { DialogAppLabel() },
-                        mainContent = {
-                            Column {
-                                DialogTitle()
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(text = "Current interval: ")
-                                    Text(
-                                        text = scheduledDateInterval.value.asString()
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(16.dp))
-                                DialogContent(
-                                    dateData = scheduledDateIntervalChangeState.dateData,
-                                    onDateDataChange = { dateUnit, action ->
-                                        sendAction(
-                                            IDeckManagementAction.ScheduledDateIntervalChanged(
-                                                dateUnit = dateUnit,
-                                                buttonAction = action,
-                                            )
-                                        )
-                                    }
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(16.dp))
-                        },
-                        bottomContent = {
-                            ConfirmationButton(
-                                onClick = {
-                                    sendAction(IDeckManagementAction.ScheduledDateIntervalChangeConfirmed)
-                                }
+            val scheduledReviewChangeState = deckManagementState.scheduledReviewChangeState
+            if (scheduledReviewChangeState is IDateDataChangeState.Required) {
+                DateDataChangeDialog(
+                    title = "Change the scheduled review",
+                    currentValue = scheduledReview.value.asScheduledReviewDialogString(),
+                    currentValueLabel = "Current review: ",
+                    dateData = scheduledReviewChangeState.dateData,
+                    onDateDataChange = { dateUnit, action ->
+                        sendAction(
+                            IDeckManagementAction.ScheduledReviewChanged(
+                                dateUnit = dateUnit,
+                                buttonAction = action,
                             )
-                            ClosingButton(
-                                onClick = {
-                                    sendAction(IDeckManagementAction.DismissScheduledDateIntervalDialog)
-                                }
-                            )
-                        }
-                    )
-                }
+                        )
+                    },
+                    onConfirm = {
+                        sendAction(IDeckManagementAction.ScheduledReviewChangeConfirmed)
+                    },
+                    onDismiss = {
+                        sendAction(IDeckManagementAction.DismissScheduledReviewDialog)
+                    },
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun DateDataChangeDialog(
+    title: String,
+    currentValue: String,
+    currentValueLabel: String,
+    dateData: DateData,
+    onDateDataChange: (dateUnit: DateUnit, action: IDraggableButtonAction) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        FullBackgroundDialog(
+            onBackgroundClick = onDismiss,
+            topContent = ContentHolder(size = DIALOG_APP_LABEL_SIZE.dp) { DialogAppLabel() },
+            mainContent = {
+                Column {
+                    DialogTitle(title = title)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = currentValueLabel)
+                        Text(text = currentValue)
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    DialogContent(
+                        dateData = dateData,
+                        onDateDataChange = onDateDataChange,
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            },
+            bottomContent = {
+                ConfirmationButton(onClick = onConfirm)
+                ClosingButton(onClick = onDismiss)
+            }
+        )
     }
 }
 
@@ -226,13 +271,46 @@ private fun StateItem(pair: StatePair<*>, onLongClick: () -> Unit = {}) {
 }
 
 @Composable
-private fun DialogTitle() {
+private fun DialogTitle(title: String) {
     Text(
         style = MainTheme.typographies.dialogTextStyle,
         text = buildAnnotatedString {
             withStyle(style = SpanStyle()) {
-                append(text = "Change the scheduled date interval")
+                append(text = title)
             }
         }
     )
+}
+
+@Composable
+private fun Long?.asScheduledReviewString(): String {
+    if (this == null || this <= 0L) return "not scheduled"
+
+    return when {
+        isToday() -> "today ${asFormattedDate(pattern = DateFormatPattern.FULL).substringAfter(' ')}"
+        this < getCurrentDateAsLong() -> calculateDetailedScheduledRange()
+        else -> "in ${calculateDetailedScheduledRange()}"
+    }
+}
+
+@Composable
+private fun Long?.asScheduledReviewDialogString(): String {
+    if (this == null || this <= 0L) return "not scheduled"
+
+    val relativeValue = when {
+        isToday() -> "today"
+        this < getCurrentDateAsLong() -> calculateDetailedScheduledRange()
+        else -> "in ${calculateDetailedScheduledRange()}"
+    }
+
+    return "${asFormattedDate(pattern = DateFormatPattern.FULL)} ($relativeValue)"
+}
+
+private fun Long.isToday(): Boolean {
+    val today = getCurrentDateAsLong().asFormattedDate(pattern = DateFormatPattern.FULL)
+        .substringBefore(' ')
+    val scheduledDay = asFormattedDate(pattern = DateFormatPattern.FULL)
+        .substringBefore(' ')
+
+    return scheduledDay == today
 }

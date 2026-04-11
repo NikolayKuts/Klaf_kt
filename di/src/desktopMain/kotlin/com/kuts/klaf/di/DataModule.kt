@@ -241,4 +241,5 @@ private class DesktopNoOpAudioPlayerManager : IAudioPlayerManager {
 
 private class DesktopNoOpDeckReviewScheduler : IDeckReviewScheduler {
     override fun schedule(deckName: String, deckId: Int, atTime: Long) = Unit
+    override fun cancel(deckId: Int) = Unit
 }
