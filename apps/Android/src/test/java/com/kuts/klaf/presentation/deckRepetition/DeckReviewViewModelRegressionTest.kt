@@ -188,6 +188,7 @@ private class FakeAudioPlayerManager : IAudioPlayerManager {
 private class FakeDeckReviewScheduler : IDeckReviewScheduler {
 
     override fun schedule(deckName: String, deckId: Int, atTime: Long) = Unit
+    override fun cancel(deckId: Int) = Unit
 }
 
 private class FakeDeckReviewNotifierManager : IDeckReviewNotifierManager {

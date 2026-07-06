@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -97,6 +98,16 @@ abstract class CardManagementViewModel(
     protected val textFieldValueIpaHoldersState =
         MutableStateFlow<List<TextFieldValueIpaHolder>>(value = emptyList())
     protected val letterInfosState = MutableStateFlow<List<LetterInfo>>(value = emptyList())
+    override val isConfirmationEnabled: StateFlow<Boolean> = combine(
+        nativeWordFieldValueState,
+        foreignWordFieldValueState,
+    ) { nativeWordFieldValue, foreignWordFieldValue ->
+        nativeWordFieldValue.text.isNotBlank() && foreignWordFieldValue.text.isNotBlank()
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = false,
+    )
 
     override val cambridgeDataState = MutableStateFlow<ICambridgeDataState>(
         value = ICambridgeDataState.Empty

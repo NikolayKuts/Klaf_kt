@@ -49,18 +49,24 @@ class AndroidDeckReviewingReminder(
         val intent = Intent(context, DeckReviewReceiver::class.java)
             .prepare(deckName = deckName, deckId = deckId)
 
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            deckId,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val pendingIntent = intent.toPendingIntent(deckId = deckId)
 
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             atTime,
             pendingIntent
         )
+    }
+
+    override fun cancel(deckId: Int) {
+        val alarmManager = context.getSystemService(AlarmManager::class.java)
+        val intent = Intent(context, DeckReviewReceiver::class.java).apply {
+            action = ACTION
+        }
+        val pendingIntent = intent.toPendingIntent(deckId = deckId)
+
+        alarmManager.cancel(pendingIntent)
+        pendingIntent.cancel()
     }
 
     private fun Intent.prepare(
@@ -70,6 +76,15 @@ class AndroidDeckReviewingReminder(
         action = ACTION
         putExtra(DECK_ID_EXTRA_KEY, deckId)
         putExtra(DECK_NAME_EXTRA_KEY, deckName)
+    }
+
+    private fun Intent.toPendingIntent(deckId: Int): PendingIntent {
+        return PendingIntent.getBroadcast(
+            context,
+            deckId,
+            this,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
     }
 }
 

@@ -7,7 +7,10 @@ import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.common.calculateDetailedScheduledInterval
 import com.kuts.domain.common.calculateDetailedScheduledIntervalAsLong
 import com.kuts.domain.common.catchWithCrashlyticsReport
+import com.kuts.domain.common.getCurrentDateAsLong
 import com.kuts.domain.entities.Deck
+import com.kuts.domain.managers.IDeckReviewNotifierManager
+import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.UpdateDeckUseCase
@@ -21,10 +24,15 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 
+private const val SCHEDULED_REVIEW_UPDATE_SUCCESS = "Scheduled review has been updated"
+private const val SCHEDULED_REVIEW_UPDATE_FAILURE = "Scheduled review was not updated"
+
 class DeckManagementViewModel(
     private val deckId: Int,
     private val fetchDeckById: FetchDeckByIdUseCase,
     private val updateDeck: UpdateDeckUseCase,
+    private val deckReviewScheduler: IDeckReviewScheduler,
+    private val deckReviewNotifier: IDeckReviewNotifierManager,
     private val crashlytics: ICrashlyticsRepository,
     private val coroutineContextProvider: ICoroutineContextProvider,
 ) : BaseDeckManagementViewModel() {
@@ -63,6 +71,7 @@ class DeckManagementViewModel(
                 repetitionIterationDates = it.repetitionIterationDates,
                 scheduledIterationDates = it.scheduledIterationDates,
                 scheduledDateInterval = it.scheduledDateInterval.copy(value = deck.scheduledDateInterval.calculateDetailedScheduledInterval()),
+                scheduledReview = it.scheduledReview.copy(value = deck.scheduledDate),
                 repetitionQuantity = it.repetitionQuantity.copy(value = deck.reviewCount.toString()),
                 cardQuantity = it.cardQuantity.copy(value = deck.cardQuantity.toString()),
                 lastFirstRepetitionDuration = it.lastFirstRepetitionDuration.copy(value = deck.lastFirstReviewDuration.toString()),
@@ -81,7 +90,7 @@ class DeckManagementViewModel(
             is IDeckManagementAction.ScheduledDateIntervalChangeRequested -> {
                 deckManagementState.update { managementState ->
                     managementState.copy(
-                        scheduledDateIntervalChangeState = IScheduledDataIntervalChangeState.Required(
+                        scheduledDateIntervalChangeState = IDateDataChangeState.Required(
                             dateData = managementState.scheduledDateInterval.value
                         )
                     )
@@ -90,7 +99,7 @@ class DeckManagementViewModel(
 
             is IDeckManagementAction.DismissScheduledDateIntervalDialog -> {
                 deckManagementState.update { state ->
-                    state.copy(scheduledDateIntervalChangeState = IScheduledDataIntervalChangeState.NotRequired)
+                    state.copy(scheduledDateIntervalChangeState = IDateDataChangeState.NotRequired)
                 }
             }
 
@@ -98,7 +107,7 @@ class DeckManagementViewModel(
                 val scheduledDateIntervalChangeState =
                     deckManagementState.value.scheduledDateIntervalChangeState
 
-                if (scheduledDateIntervalChangeState is IScheduledDataIntervalChangeState.Required) {
+                if (scheduledDateIntervalChangeState is IDateDataChangeState.Required) {
                     val validatedDateData = DateDataValidator().validateForSaving(
                         dateData = scheduledDateIntervalChangeState.dateData
                     )
@@ -115,7 +124,7 @@ class DeckManagementViewModel(
                         updateDeck(updatedDeck = deck.value!!.copy(scheduledDateInterval = interval))
                         deckManagementState.update { managementState ->
                             managementState.copy(
-                                scheduledDateIntervalChangeState = IScheduledDataIntervalChangeState.NotRequired
+                                scheduledDateIntervalChangeState = IDateDataChangeState.NotRequired
                             )
                         }
                     }.onException { _, throwable ->
@@ -129,7 +138,7 @@ class DeckManagementViewModel(
                 val scheduledDateIntervalChangeState =
                     deckManagementState.value.scheduledDateIntervalChangeState
 
-                if (scheduledDateIntervalChangeState is IScheduledDataIntervalChangeState.Required) {
+                if (scheduledDateIntervalChangeState is IDateDataChangeState.Required) {
                     deckManagementState.update { managementState ->
                         val sourceDateDate = scheduledDateIntervalChangeState.dateData
 
@@ -139,7 +148,7 @@ class DeckManagementViewModel(
                             buttonAction = action.buttonAction
                         )
                         val updatedScheduledDateIntervalChangeState =
-                            IScheduledDataIntervalChangeState.Required(dateData = updatedDateData)
+                            IDateDataChangeState.Required(dateData = updatedDateData)
 
                         managementState.copy(
                             scheduledDateIntervalChangeState = updatedScheduledDateIntervalChangeState
@@ -147,6 +156,133 @@ class DeckManagementViewModel(
                     }
                 }
             }
+
+            IDeckManagementAction.ScheduledReviewChangeRequested -> {
+                val scheduledDate = deck.value?.scheduledDate ?: return
+                val currentTime = getCurrentDateAsLong()
+                if (scheduledDate < currentTime) return
+
+                deckManagementState.update { managementState ->
+                    managementState.copy(
+                        scheduledReviewChangeState = IDateDataChangeState.Required(
+                            dateData = (scheduledDate - currentTime)
+                                .calculateDetailedScheduledInterval()
+                        )
+                    )
+                }
+            }
+
+            IDeckManagementAction.DismissScheduledReviewDialog -> {
+                deckManagementState.update { state ->
+                    state.copy(scheduledReviewChangeState = IDateDataChangeState.NotRequired)
+                }
+            }
+
+            IDeckManagementAction.ScheduledReviewChangeConfirmed -> {
+                val scheduledReviewChangeState = deckManagementState.value.scheduledReviewChangeState
+
+                if (scheduledReviewChangeState is IDateDataChangeState.Required) {
+                    val validatedDateData = DateDataValidator().validateForSaving(
+                        dateData = scheduledReviewChangeState.dateData
+                    )
+
+                    viewModelScope.launchWithState(coroutineContextProvider.io) {
+                        val sourceDeck = deck.value ?: run {
+                            emitScheduledReviewUpdateFailure()
+                            return@launchWithState
+                        }
+                        val sourceScheduledDate = sourceDeck.scheduledDate ?: run {
+                            emitScheduledReviewUpdateFailure()
+                            return@launchWithState
+                        }
+                        val currentTime = getCurrentDateAsLong()
+                        if (sourceScheduledDate < currentTime) {
+                            emitScheduledReviewUpdateFailure()
+                            return@launchWithState
+                        }
+
+                        val scheduledDate = currentTime +
+                            validatedDateData.calculateDetailedScheduledIntervalAsLong()
+                        val updatedDeck = sourceDeck.copy(
+                            scheduledReviewDates = sourceDeck.scheduledReviewDates.replaceLast(
+                                value = scheduledDate
+                            )
+                        )
+
+                        updateDeck(updatedDeck = updatedDeck)
+                        deckReviewScheduler.cancel(deckId = sourceDeck.id)
+                        deckReviewNotifier.removeNotificationFromNotificationBar(deckId = sourceDeck.id)
+                        if (scheduledDate >= currentTime) {
+                            deckReviewScheduler.schedule(
+                                deckName = sourceDeck.name,
+                                deckId = sourceDeck.id,
+                                atTime = scheduledDate,
+                            )
+                        }
+                        emitScheduledReviewUpdateSuccess()
+                        deckManagementState.update { managementState ->
+                            managementState.copy(
+                                scheduledReviewChangeState = IDateDataChangeState.NotRequired
+                            )
+                        }
+                    }.onException { _, throwable ->
+                        // logE("Exception: ${throwable.stackTraceToString()}")
+                        emitScheduledReviewUpdateFailure()
+                        deckManagementState.update { managementState ->
+                            managementState.copy(
+                                scheduledReviewChangeState = IDateDataChangeState.NotRequired
+                            )
+                        }
+                    }
+                }
+            }
+
+            is IDeckManagementAction.ScheduledReviewChanged -> {
+                val scheduledReviewChangeState = deckManagementState.value.scheduledReviewChangeState
+
+                if (scheduledReviewChangeState is IDateDataChangeState.Required) {
+                    deckManagementState.update { managementState ->
+                        val updatedDateData = ButtonActionHandler().handle(
+                            dateData = scheduledReviewChangeState.dateData,
+                            dataUnit = action.dateUnit,
+                            buttonAction = action.buttonAction,
+                        )
+
+                        managementState.copy(
+                            scheduledReviewChangeState = IDateDataChangeState.Required(
+                                dateData = updatedDateData
+                            )
+                        )
+                    }
+                }
+            }
         }
+    }
+
+    private fun List<Long>.replaceLast(value: Long): List<Long> {
+        if (isEmpty()) return this
+
+        return toMutableList().apply {
+            this[lastIndex] = value
+        }
+    }
+
+    private fun emitScheduledReviewUpdateSuccess() {
+        eventMessage.tryEmit(
+            value = EventMessage(
+                value = SCHEDULED_REVIEW_UPDATE_SUCCESS,
+                type = EventMessage.Type.Positive,
+            )
+        )
+    }
+
+    private fun emitScheduledReviewUpdateFailure() {
+        eventMessage.tryEmit(
+            value = EventMessage(
+                value = SCHEDULED_REVIEW_UPDATE_FAILURE,
+                type = EventMessage.Type.Negative,
+                duration = EventMessage.Duration.Long,
+            )
+        )
     }
 }

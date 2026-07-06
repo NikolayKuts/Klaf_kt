@@ -83,9 +83,9 @@ internal fun CardAdditionScreen(
 internal fun CardManagementContent(
     viewModel: BaseCardManagementViewModel,
     isCambridgeBottomSheetEnabled: Boolean = true,
-    isConfirmationEnabled: Boolean = false,
 ) {
     val deck = viewModel.deck.collectAsState(initial = null)
+    val isConfirmationEnabled by viewModel.isConfirmationEnabled.collectAsState()
     val cardState by viewModel.cardManagementState.collectAsState()
     val letterInfos = cardState.letterInfos
     val foreignWordFieldValue = cardState.foreignWordFieldValue

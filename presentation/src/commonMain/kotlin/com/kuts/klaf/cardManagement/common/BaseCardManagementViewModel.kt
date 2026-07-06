@@ -16,6 +16,7 @@ abstract class BaseCardManagementViewModel(
 ) : ViewModel(), IEventMessageSource {
 
     abstract val deck: SharedFlow<Deck?>
+    abstract val isConfirmationEnabled: StateFlow<Boolean>
     abstract val autocompleteState: StateFlow<AutocompleteState>
     abstract val pronunciationLoadingState: StateFlow<LoadingState<Unit, Unit>>
     abstract val nativeWordSuggestionsState: StateFlow<NativeWordSuggestionsState>

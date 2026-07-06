@@ -7,4 +7,6 @@ interface IDeckReviewScheduler {
         deckId: Int,
         atTime: Long = 0L,
     )
+
+    fun cancel(deckId: Int)
 }
