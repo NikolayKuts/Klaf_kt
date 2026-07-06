@@ -27,6 +27,7 @@ buildSrc/build/tmp/jar/MANIFEST.MF
 /apps/Android/src/main/java/com/kuts/klaf/common/SecretConstants.kt
 /data/src/commonMain/kotlin/com/kuts/klaf/SecretConstants.kt
 /presentation/src/androidMain/kotlin/com/kuts/klaf/common/SecretConstants.kt
+/presentation/src/commonMain/kotlin/com/kuts/klaf/common/SecretConstants.kt
 
 # Android Studio/Gradle problem report
 /build/reports/problems/problems-report.html

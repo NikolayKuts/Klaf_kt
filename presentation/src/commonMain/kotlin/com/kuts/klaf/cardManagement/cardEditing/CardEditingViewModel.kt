@@ -73,7 +73,7 @@ class CardEditingViewModel(
     private val originalCardState = MutableStateFlow<Card?>(value = null)
     private val _insightsUiState = MutableStateFlow(CardEditingInsightsUiState())
     val insightsUiState = _insightsUiState.asStateFlow()
-    val isConfirmationEnabled: StateFlow<Boolean> = combine(
+    private val hasEditableContentChanges: StateFlow<Boolean> = combine(
         originalCardState,
         nativeWordFieldValueState,
         foreignWordFieldValueState,
@@ -89,6 +89,17 @@ class CardEditingViewModel(
                 insightsUiState = insightsUiState,
             )
         } ?: false
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = false,
+    )
+
+    override val isConfirmationEnabled: StateFlow<Boolean> = combine(
+        super.isConfirmationEnabled,
+        hasEditableContentChanges,
+    ) { hasRequiredFields, hasEditableContentChanges ->
+        hasRequiredFields && hasEditableContentChanges
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
