@@ -112,6 +112,7 @@ internal val commonPresentationModule = module {
             cardId = params.get(),
             fetchCard = get(),
             updateCard = get(),
+            fetchMnemonicAssociation = get(),
             fetchWordMeaningInsights = get(),
             checkIfWordExists = get(),
             audioPlayer = get(),

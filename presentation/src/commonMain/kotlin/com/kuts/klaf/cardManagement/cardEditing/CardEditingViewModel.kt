@@ -14,6 +14,7 @@ import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.FetchCardUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
+import com.kuts.domain.useCases.FetchMnemonicAssociationUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.domain.useCases.FetchWordMeaningInsightsUseCase
@@ -24,6 +25,7 @@ import com.kuts.klaf.cardManagement.common.ICambridgeWordDataProvider
 import com.kuts.klaf.cardManagement.common.TextFieldValueIpaHolder
 import com.kuts.klaf.cardManagement.common.toDomainEntity
 import com.kuts.klaf.cardManagement.common.toTextFieldValueIpaHolder
+import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
 import com.kuts.klaf.presentation.resources.*
@@ -44,6 +46,7 @@ class CardEditingViewModel(
     cardId: Int,
     private val fetchCard: FetchCardUseCase,
     private val updateCard: UpdateCardUseCase,
+    private val fetchMnemonicAssociation: FetchMnemonicAssociationUseCase,
     private val fetchWordMeaningInsights: FetchWordMeaningInsightsUseCase,
     checkIfWordExists: CheckIfCardExistsUseCase,
     audioPlayer: IAudioPlayerManager,
@@ -304,6 +307,7 @@ class CardEditingViewModel(
                         nativeWordFieldValueState.value = TextFieldValue(text = card.nativeWord)
                         originalCardState.value = card
                         requestAndStoreWordInsightsIfMissing(card = card)
+                        requestMnemonicAssociationOnScreenEntry(card = card)
                     } else {
                         logD("card fetch completed with null result for cardId=$cardId")
                         setInsightsIdle()
@@ -394,6 +398,49 @@ class CardEditingViewModel(
                     throwable.stackTraceToString()
             )
             setInsightsError(word = foreignWord, errorMessageResId = Res.string.word_insights_request_failed)
+        }
+    }
+
+    private fun requestMnemonicAssociationOnScreenEntry(card: Card) {
+        val foreignWord = card.foreignWord.trim()
+
+        if (foreignWord.isEmpty()) {
+            logD("mnemonic auto-request skipped: cardId=${card.id} has blank foreign word")
+            return
+        }
+
+        if (!foreignWord.isValidWordFormat()) {
+            logD(
+                "mnemonic auto-request skipped: invalid word format, " +
+                    "cardId=${card.id}, word=${foreignWord.asLogWord()}"
+            )
+            eventMessage.tryEmitAsNegative(resId = Res.string.mnemonic_association_request_failed)
+            return
+        }
+
+        logD("mnemonic auto-request started for cardId=${card.id}, word=${foreignWord.asLogWord()}")
+
+        viewModelScope.launchWithState(coroutineContextProvider.io) {
+            val mnemonicAssociation = fetchMnemonicAssociation(word = foreignWord)
+
+            logD(
+                "mnemonic auto-request completed for cardId=${card.id}, " +
+                    "word=${foreignWord.asLogWord()}, candidates=${mnemonicAssociation.candidates.size}"
+            )
+            eventMessage.tryEmitAsPositive(resId = Res.string.mnemonic_association_received)
+        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
+            logE(
+                "mnemonic auto-request failed for cardId=${card.id}, " +
+                    "word=${foreignWord.asLogWord()}\n${throwable.stackTraceToString()}"
+            )
+
+            eventMessage.tryEmit(
+                value = EventMessage(
+                    resId = Res.string.mnemonic_association_request_failed,
+                    type = EventMessage.Type.Negative,
+                    duration = EventMessage.Duration.Long,
+                ),
+            )
         }
     }
 

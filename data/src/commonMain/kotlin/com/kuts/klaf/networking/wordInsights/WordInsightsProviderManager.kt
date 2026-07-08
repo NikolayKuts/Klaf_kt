@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -65,6 +66,7 @@ class WordInsightsProviderManager(
 
     internal suspend fun fetchCodexWordMeaningInsights(word: String): WordMeaningInsights {
         initialSelectionLoaded.await()
+        ensureCodexObserverReadyForFetch()
 
         return sessionMutex.withLock {
             val selectedProvider = state.value.selectedProvider
@@ -87,6 +89,28 @@ class WordInsightsProviderManager(
                     "CodeX Observer request failed. ${throwable.toShortCodexMessage()}",
                     throwable,
                 )
+            }
+        }
+    }
+
+    private suspend fun ensureCodexObserverReadyForFetch() {
+        while (true) {
+            val selectedProvider = state.value.selectedProvider
+            require(value = selectedProvider == WordInsightsProvider.CodexObserver) {
+                "CodeX Observer is disabled."
+            }
+
+            when (state.value.codexObserverSessionState) {
+                CodexObserverSessionState.Ready -> return
+                CodexObserverSessionState.Connecting -> {
+                    state
+                        .map { providerState -> providerState.codexObserverSessionState }
+                        .first { sessionState -> sessionState != CodexObserverSessionState.Connecting }
+                }
+
+                CodexObserverSessionState.Disconnected,
+                is CodexObserverSessionState.Error,
+                -> activateCodexObserver()
             }
         }
     }

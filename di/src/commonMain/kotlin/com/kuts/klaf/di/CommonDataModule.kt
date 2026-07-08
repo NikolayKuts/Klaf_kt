@@ -18,6 +18,7 @@ import com.kuts.domain.useCases.FetchCardsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.FetchDeckRepetitionInfoUseCase
 import com.kuts.domain.useCases.FetchDeckSourceUseCase
+import com.kuts.domain.useCases.FetchMnemonicAssociationUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.domain.useCases.FetchWordMeaningInsightsUseCase
@@ -166,6 +167,12 @@ private fun Module.commonUseCaseModule() {
     factory {
         FetchDeckSourceUseCase(
             deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
+        )
+    }
+    factory {
+        FetchMnemonicAssociationUseCase(
+            mnemonicAssociationRepository = get(),
+            coroutineContextProvider = get(),
         )
     }
     factory {

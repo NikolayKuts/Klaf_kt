@@ -11,11 +11,13 @@ import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IDeckRepetitionInfoRepository
 import com.kuts.domain.repositories.IDeckRepository
+import com.kuts.domain.repositories.IMnemonicAssociationRepository
 import com.kuts.domain.repositories.IOldAppKlafDataTransferRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IWordAutocompleteRepository
 import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.repositories.IWordMeaningInsightsRepository
+import com.kuts.domain.entities.MnemonicAssociation
 import com.kuts.klaf.common.IosAppMaintenanceManager
 import com.kuts.klaf.common.IosCoroutineContextProvider
 import com.kuts.klaf.dataStore.implementations.IosInMemoryDeckRepetitionInfoRepository
@@ -72,6 +74,7 @@ private fun Module.iosRepositoryModule() {
     single<IWordMeaningInsightsRepository> {
         OpenAiWordMeaningInsightsRepository(client = OpenAiHttpClientFactory().create())
     }
+    single<IMnemonicAssociationRepository> { IosNoOpMnemonicAssociationRepository() }
     single<IWordInsightsProviderManager> { IosNoOpWordInsightsProviderManager() }
     single<IDeckRepetitionInfoRepository> { IosInMemoryDeckRepetitionInfoRepository() }
     single<IOldAppKlafDataTransferRepository> { IosNoOpOldAppKlafDataTransferRepository() }
@@ -87,4 +90,10 @@ private fun Module.iosManagerBindings() {
     single<IAppMaintenanceManager> { IosAppMaintenanceManager() }
     factory<IAudioPlayerManager> { IosNoOpAudioPlayerManager() }
     single<IDeckReviewScheduler> { IosNoOpDeckReviewScheduler() }
+}
+
+private class IosNoOpMnemonicAssociationRepository : IMnemonicAssociationRepository {
+    override suspend fun fetchMnemonicAssociation(word: String): MnemonicAssociation {
+        throw UnsupportedOperationException("Mnemonic association requests are unavailable on iOS.")
+    }
 }

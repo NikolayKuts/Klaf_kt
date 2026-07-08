@@ -29,6 +29,8 @@
     <string name="word_insights_loading_error_message">Unable to load insights for this word.</string>
     <string name="word_insights_unknown_request_error">Unknown request error.</string>
     <string name="word_insights_request_failed">Word insights request failed.</string>
+    <string name="mnemonic_association_received">Mnemonic association received.</string>
+    <string name="mnemonic_association_request_failed">Mnemonic association request failed.</string>
     <string name="word_insights_invalid_word_format">The word format is invalid. Please enter a real English word.</string>
     <string name="word_insights_no_refreshed_data">There is no refreshed insights data to apply.</string>
     <string name="drawer_word_insights_source_label">Word insights source</string>

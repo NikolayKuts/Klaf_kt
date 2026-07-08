@@ -18,6 +18,7 @@ import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IDeckRepetitionInfoRepository
 import com.kuts.domain.repositories.IDeckRepository
+import com.kuts.domain.repositories.IMnemonicAssociationRepository
 import com.kuts.domain.repositories.IOldAppKlafDataTransferRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IWordAutocompleteRepository
@@ -25,6 +26,7 @@ import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.repositories.IWordMeaningInsightsRepository
 import com.kuts.klaf.common.CoroutineContextProvider
 import com.kuts.klaf.networking.codexApp.CodexAppWordMeaningInsightsRepository
+import com.kuts.klaf.networking.codexApp.CodexAppMnemonicAssociationRepository
 import com.kuts.klaf.networking.codexApp.DesktopCodexAppHttpClientFactory
 import com.kuts.klaf.networking.codexApp.ICodexAppHttpClientFactory
 import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
@@ -97,6 +99,13 @@ private fun Module.desktopRepositoryModule() {
     single {
         CodexAppWordMeaningInsightsRepository(
             manager = get(),
+        )
+    }
+    single<IMnemonicAssociationRepository> {
+        CodexAppMnemonicAssociationRepository(
+            client = get(qualifier = named(name = CODEX_APP_HTTP_CLIENT)),
+            codexServerUrl = com.kuts.klaf.SecretConstants.CodexApp.appServerUrlOrNull().orEmpty(),
+            codexModel = com.kuts.klaf.SecretConstants.CodexApp.modelOrNull(),
         )
     }
     single<IWordMeaningInsightsRepository> {
