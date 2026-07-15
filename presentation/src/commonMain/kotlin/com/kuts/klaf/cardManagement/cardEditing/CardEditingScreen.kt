@@ -27,6 +27,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,8 +58,16 @@ internal fun CardEditingScreen(
     deckId: Int,
     cardId: Int,
 ) {
+    val owner = remember(backStackEntry) {
+        navController.getBackStackEntry(
+            route = AppDestination.CardEditing(
+                deckId = deckId,
+                cardId = cardId,
+            ),
+        )
+    }
     val viewModel: CardEditingViewModel = koinViewModel(
-        viewModelStoreOwner = backStackEntry,
+        viewModelStoreOwner = owner,
         parameters = { parametersOf(deckId, cardId) },
     )
 
@@ -80,6 +89,14 @@ internal fun CardEditingScreen(
     Surface {
         CardEditingContent(
             viewModel = viewModel,
+            onOpenMnemonicManagement = {
+                navController.navigate(
+                    route = AppDestination.CardEditingMnemonicManagement(
+                        deckId = deckId,
+                        cardId = cardId,
+                    ),
+                )
+            },
             onYouGlishClick = { word ->
                 viewModel.hideInsightsSheet()
                 navController.navigate(
@@ -96,6 +113,7 @@ internal fun CardEditingScreen(
 @Composable
 private fun CardEditingContent(
     viewModel: CardEditingViewModel,
+    onOpenMnemonicManagement: () -> Unit,
     onYouGlishClick: (String) -> Unit,
 ) {
     val insightsUiState by viewModel.insightsUiState.collectAsState()
@@ -105,6 +123,8 @@ private fun CardEditingContent(
         CardManagementContent(
             viewModel = viewModel,
             isCambridgeBottomSheetEnabled = false,
+            onOpenMnemonicManagement = onOpenMnemonicManagement,
+            onClearMnemonic = viewModel::clearMnemonicSelection,
         )
 
         InsightsSheetHandle(

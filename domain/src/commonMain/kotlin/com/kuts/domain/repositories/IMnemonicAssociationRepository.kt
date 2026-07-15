@@ -4,5 +4,9 @@ import com.kuts.domain.entities.MnemonicAssociation
 
 interface IMnemonicAssociationRepository {
 
-    suspend fun fetchMnemonicAssociation(word: String): MnemonicAssociation
+    suspend fun fetchMnemonicAssociation(
+        word: String,
+        comment: String? = null,
+        excludedSoundAnchors: List<String> = emptyList(),
+    ): MnemonicAssociation
 }

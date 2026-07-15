@@ -19,6 +19,8 @@ import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IDeckRepetitionInfoRepository
 import com.kuts.domain.repositories.IDeckRepository
 import com.kuts.domain.repositories.IMnemonicAssociationRepository
+import com.kuts.domain.repositories.IMnemonicImageAssetRepository
+import com.kuts.domain.repositories.IMnemonicImageRepository
 import com.kuts.domain.repositories.IOldAppKlafDataTransferRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IWordAutocompleteRepository
@@ -27,8 +29,10 @@ import com.kuts.domain.repositories.IWordMeaningInsightsRepository
 import com.kuts.klaf.common.CoroutineContextProvider
 import com.kuts.klaf.networking.codexApp.CodexAppWordMeaningInsightsRepository
 import com.kuts.klaf.networking.codexApp.CodexAppMnemonicAssociationRepository
+import com.kuts.klaf.networking.codexApp.CodexAppMnemonicImageRepository
 import com.kuts.klaf.networking.codexApp.DesktopCodexAppHttpClientFactory
 import com.kuts.klaf.networking.codexApp.ICodexAppHttpClientFactory
+import com.kuts.klaf.mnemonic.DesktopMnemonicImageAssetRepository
 import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
 import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
 import com.kuts.klaf.networking.wordInsights.SwitchableWordMeaningInsightsRepository
@@ -108,6 +112,13 @@ private fun Module.desktopRepositoryModule() {
             codexModel = com.kuts.klaf.SecretConstants.CodexApp.modelOrNull(),
         )
     }
+    single<IMnemonicImageRepository> {
+        CodexAppMnemonicImageRepository(
+            client = get(qualifier = named(name = CODEX_APP_HTTP_CLIENT)),
+            codexServerUrl = com.kuts.klaf.SecretConstants.CodexApp.appServerUrlOrNull().orEmpty(),
+        )
+    }
+    single<IMnemonicImageAssetRepository> { DesktopMnemonicImageAssetRepository() }
     single<IWordMeaningInsightsRepository> {
         SwitchableWordMeaningInsightsRepository(
             manager = get(),
@@ -130,7 +141,7 @@ private fun Module.desktopInfrastructureModule() {
 }
 
 private fun Module.desktopManagerBindings() {
-    single<IAppMaintenanceManager> { DesktopAppMaintenanceManager() }
+    single<IAppMaintenanceManager> { DesktopAppMaintenanceManager(mnemonicImageAssetRepository = get()) }
     factory<IAudioPlayerManager> { DesktopNoOpAudioPlayerManager() }
     single<IDeckReviewScheduler> { DesktopNoOpDeckReviewScheduler() }
 }
@@ -218,10 +229,14 @@ private class DesktopNoOpCrashlyticsRepository : ICrashlyticsRepository {
     override fun report(exception: Throwable) = Unit
 }
 
-private class DesktopAppMaintenanceManager : IAppMaintenanceManager {
+private class DesktopAppMaintenanceManager(
+    private val mnemonicImageAssetRepository: IMnemonicImageAssetRepository,
+) : IAppMaintenanceManager {
     private val state = MutableStateFlow<IDataSynchronizationState>(IDataSynchronizationState.Initial)
 
-    override fun initialize() = Unit
+    override suspend fun initialize() {
+        mnemonicImageAssetRepository.clearAllDraftImages()
+    }
 
     override fun isNetworkConnected(): Boolean = true
 

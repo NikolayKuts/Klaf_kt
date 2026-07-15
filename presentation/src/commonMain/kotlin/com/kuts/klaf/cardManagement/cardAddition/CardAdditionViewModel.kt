@@ -9,9 +9,12 @@ import com.kuts.domain.entities.Card
 import com.kuts.domain.ipa.toRowInfos
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.repositories.ICrashlyticsRepository
+import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.domain.useCases.AddNewCardIntoDeckUseCase
 import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
+import com.kuts.domain.useCases.FetchMnemonicAssociationUseCase
+import com.kuts.domain.useCases.FetchMnemonicImageUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.klaf.presentation.resources.*
@@ -19,7 +22,7 @@ import com.kuts.klaf.cardManagement.common.ICardManagementAction
 import com.kuts.klaf.cardManagement.common.ICambridgeWordDataProvider
 import com.kuts.klaf.cardManagement.common.CardManagementState
 import com.kuts.klaf.cardManagement.common.CardManagementViewModel
-import com.kuts.klaf.cardManagement.common.toDomainEntity
+import com.kuts.klaf.cardManagement.common.toTrimmedDomainEntities
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
 
@@ -30,6 +33,9 @@ class CardAdditionViewModel(
     checkIfWordExists: CheckIfCardExistsUseCase,
     audioPlayer: IAudioPlayerManager,
     cambridgeWordDataProvider: ICambridgeWordDataProvider,
+    fetchMnemonicAssociation: FetchMnemonicAssociationUseCase,
+    fetchMnemonicImage: FetchMnemonicImageUseCase,
+    mnemonicImageAssetRepository: IMnemonicImageAssetRepository,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
     crashlytics: ICrashlyticsRepository,
@@ -39,6 +45,9 @@ class CardAdditionViewModel(
     deckId = deckId,
     audioPlayer = audioPlayer,
     cambridgeWordDataProvider = cambridgeWordDataProvider,
+    fetchMnemonicAssociation = fetchMnemonicAssociation,
+    fetchMnemonicImage = fetchMnemonicImage,
+    mnemonicImageAssetRepository = mnemonicImageAssetRepository,
     fetchWordAutocomplete = fetchWordAutocomplete,
     fetchWordInfo = fetchWordInfo,
     crashlytics = crashlytics,
@@ -69,25 +78,35 @@ class CardAdditionViewModel(
         if (nativeWord.isEmpty() || foreignWord.isEmpty()) {
             eventMessage.tryEmitAsNegative(resId = Res.string.native_and_foreign_words_must_be_filled)
         } else {
-            val ipaHolders = textFieldIpaHoldersState.map { textFieldValueIpaHolder ->
-                textFieldValueIpaHolder.toDomainEntity()
-                    .copy(ipa = textFieldValueIpaHolder.ipaTextFieldValue.text.trim())
-            }
-            val newCard = Card(
-                deckId = deckId,
-                nativeWord = nativeWord,
-                foreignWord = foreignWord,
-                ipa = ipaHolders
-            )
-
             viewModelScope.launchWithState(coroutineContextProvider.io) {
+                val ipaHolders = textFieldIpaHoldersState.toTrimmedDomainEntities()
                 val decksWithSameForeignWord = checkIfWordExists.invoke(foreignWord = foreignWord)
 
                 if (decksWithSameForeignWord.isEmpty()) {
-                    addNewCardIntoDeck(card = newCard)
-                    finishAddingState()
-                    audioPlayer.preparePronunciation(word = "")
-                    eventMessage.tryEmitAsPositive(resId = Res.string.card_has_been_added)
+                    val preparedMnemonic = materializeCurrentMnemonicForSaving(
+                        foreignWord = foreignWord,
+                    )
+                    val newCard = Card(
+                        deckId = deckId,
+                        nativeWord = nativeWord,
+                        foreignWord = foreignWord,
+                        ipa = ipaHolders,
+                        mnemonic = preparedMnemonic.mnemonic,
+                    )
+
+                    try {
+                        addNewCardIntoDeck(card = newCard)
+                        finalizeMnemonicSaveSuccess(
+                            retainedSavedAssetId = preparedMnemonic.retainedSavedAssetId,
+                            previousSavedAssetId = null,
+                        )
+                        finishAddingState()
+                        audioPlayer.preparePronunciation(word = "")
+                        eventMessage.tryEmitAsPositive(resId = Res.string.card_has_been_added)
+                    } catch (error: Throwable) {
+                        rollbackPreparedMnemonicSave(preparedSave = preparedMnemonic)
+                        throw error
+                    }
                 } else {
                     val deckNamesAsString = decksWithSameForeignWord.joinToString(", ") { it.name }
 

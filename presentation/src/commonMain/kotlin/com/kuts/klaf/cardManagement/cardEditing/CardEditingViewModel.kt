@@ -7,14 +7,17 @@ import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCras
 import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.entities.Card
+import com.kuts.domain.entities.CardMnemonic
 import com.kuts.domain.entities.WordMeaningInsights
 import com.kuts.domain.ipa.toLetterInfos
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.repositories.ICrashlyticsRepository
+import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.FetchCardUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.FetchMnemonicAssociationUseCase
+import com.kuts.domain.useCases.FetchMnemonicImageUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.domain.useCases.FetchWordMeaningInsightsUseCase
@@ -22,17 +25,29 @@ import com.kuts.domain.useCases.UpdateCardUseCase
 import com.kuts.klaf.cardManagement.common.CardManagementState
 import com.kuts.klaf.cardManagement.common.CardManagementViewModel
 import com.kuts.klaf.cardManagement.common.ICambridgeWordDataProvider
+import com.kuts.klaf.cardManagement.common.MnemonicManagementUiState
+import com.kuts.klaf.cardManagement.common.PreparedMnemonicSave
 import com.kuts.klaf.cardManagement.common.TextFieldValueIpaHolder
+import com.kuts.klaf.cardManagement.common.toCardMnemonicPreview
 import com.kuts.klaf.cardManagement.common.toDomainEntity
 import com.kuts.klaf.cardManagement.common.toTextFieldValueIpaHolder
-import com.kuts.klaf.common.EventMessage
+import com.kuts.klaf.cardManagement.common.withTrimmedIpaText
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
-import com.kuts.klaf.presentation.resources.*
+import com.kuts.klaf.presentation.resources.Res
+import com.kuts.klaf.presentation.resources.card_has_been_changed
+import com.kuts.klaf.presentation.resources.card_has_not_been_changed
+import com.kuts.klaf.presentation.resources.foreign_word_already_exists
+import com.kuts.klaf.presentation.resources.native_and_foreign_words_must_be_filled
+import com.kuts.klaf.presentation.resources.problem_with_fetching_card
+import com.kuts.klaf.presentation.resources.problem_with_updating_card
+import com.kuts.klaf.presentation.resources.word_insights_invalid_word_format
+import com.kuts.klaf.presentation.resources.word_insights_no_refreshed_data
+import com.kuts.klaf.presentation.resources.word_insights_request_failed
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -46,11 +61,13 @@ class CardEditingViewModel(
     cardId: Int,
     private val fetchCard: FetchCardUseCase,
     private val updateCard: UpdateCardUseCase,
-    private val fetchMnemonicAssociation: FetchMnemonicAssociationUseCase,
     private val fetchWordMeaningInsights: FetchWordMeaningInsightsUseCase,
     checkIfWordExists: CheckIfCardExistsUseCase,
     audioPlayer: IAudioPlayerManager,
     cambridgeWordDataProvider: ICambridgeWordDataProvider,
+    fetchMnemonicAssociation: FetchMnemonicAssociationUseCase,
+    fetchMnemonicImage: FetchMnemonicImageUseCase,
+    mnemonicImageAssetRepository: IMnemonicImageAssetRepository,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
     crashlytics: ICrashlyticsRepository,
@@ -60,6 +77,9 @@ class CardEditingViewModel(
     deckId = deckId,
     audioPlayer = audioPlayer,
     cambridgeWordDataProvider = cambridgeWordDataProvider,
+    fetchMnemonicAssociation = fetchMnemonicAssociation,
+    fetchMnemonicImage = fetchMnemonicImage,
+    mnemonicImageAssetRepository = mnemonicImageAssetRepository,
     fetchWordAutocomplete = fetchWordAutocomplete,
     fetchWordInfo = fetchWordInfo,
     crashlytics = crashlytics,
@@ -67,6 +87,14 @@ class CardEditingViewModel(
     checkIfWordExists = checkIfWordExists,
     coroutineContextProvider = coroutineContextProvider,
 ) {
+
+    private data class EditableCardSnapshot(
+        val originalCard: Card?,
+        val nativeWordFieldValue: TextFieldValue,
+        val foreignWordFieldValue: TextFieldValue,
+        val ipaHolders: List<TextFieldValueIpaHolder>,
+        val insightsUiState: CardEditingInsightsUiState,
+    )
 
     private companion object {
 
@@ -76,20 +104,33 @@ class CardEditingViewModel(
     private val originalCardState = MutableStateFlow<Card?>(value = null)
     private val _insightsUiState = MutableStateFlow(CardEditingInsightsUiState())
     val insightsUiState = _insightsUiState.asStateFlow()
-    private val hasEditableContentChanges: StateFlow<Boolean> = combine(
+    private val editableCardSnapshot = combine(
         originalCardState,
         nativeWordFieldValueState,
         foreignWordFieldValueState,
         textFieldValueIpaHoldersState,
         insightsUiState,
     ) { originalCard, nativeWordFieldValue, foreignWordFieldValue, ipaHolders, insightsUiState ->
-        originalCard?.let { card ->
+        EditableCardSnapshot(
+            originalCard = originalCard,
+            nativeWordFieldValue = nativeWordFieldValue,
+            foreignWordFieldValue = foreignWordFieldValue,
+            ipaHolders = ipaHolders,
+            insightsUiState = insightsUiState,
+        )
+    }
+    private val hasEditableContentChanges: StateFlow<Boolean> = combine(
+        editableCardSnapshot,
+        mnemonicManagementState,
+    ) { snapshot, mnemonicState ->
+        snapshot.originalCard?.let { card ->
             hasCardChanged(
                 originalCard = card,
-                nativeWord = nativeWordFieldValue.text,
-                foreignWord = foreignWordFieldValue.text,
-                ipaHolders = ipaHolders,
-                insightsUiState = insightsUiState,
+                nativeWord = snapshot.nativeWordFieldValue.text,
+                foreignWord = snapshot.foreignWordFieldValue.text,
+                ipaHolders = snapshot.ipaHolders,
+                insightsUiState = snapshot.insightsUiState,
+                mnemonicManagementState = mnemonicState,
             )
         } ?: false
     }.stateIn(
@@ -306,8 +347,8 @@ class CardEditingViewModel(
                         }
                         nativeWordFieldValueState.value = TextFieldValue(text = card.nativeWord)
                         originalCardState.value = card
+                        initializeMnemonicManagementState(mnemonic = card.mnemonic)
                         requestAndStoreWordInsightsIfMissing(card = card)
-                        requestMnemonicAssociationOnScreenEntry(card = card)
                     } else {
                         logD("card fetch completed with null result for cardId=$cardId")
                         setInsightsIdle()
@@ -401,64 +442,21 @@ class CardEditingViewModel(
         }
     }
 
-    private fun requestMnemonicAssociationOnScreenEntry(card: Card) {
-        val foreignWord = card.foreignWord.trim()
-
-        if (foreignWord.isEmpty()) {
-            logD("mnemonic auto-request skipped: cardId=${card.id} has blank foreign word")
-            return
-        }
-
-        if (!foreignWord.isValidWordFormat()) {
-            logD(
-                "mnemonic auto-request skipped: invalid word format, " +
-                    "cardId=${card.id}, word=${foreignWord.asLogWord()}"
-            )
-            eventMessage.tryEmitAsNegative(resId = Res.string.mnemonic_association_request_failed)
-            return
-        }
-
-        logD("mnemonic auto-request started for cardId=${card.id}, word=${foreignWord.asLogWord()}")
-
-        viewModelScope.launchWithState(coroutineContextProvider.io) {
-            val mnemonicAssociation = fetchMnemonicAssociation(word = foreignWord)
-
-            logD(
-                "mnemonic auto-request completed for cardId=${card.id}, " +
-                    "word=${foreignWord.asLogWord()}, candidates=${mnemonicAssociation.candidates.size}"
-            )
-            eventMessage.tryEmitAsPositive(resId = Res.string.mnemonic_association_received)
-        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-            logE(
-                "mnemonic auto-request failed for cardId=${card.id}, " +
-                    "word=${foreignWord.asLogWord()}\n${throwable.stackTraceToString()}"
-            )
-
-            eventMessage.tryEmit(
-                value = EventMessage(
-                    resId = Res.string.mnemonic_association_request_failed,
-                    type = EventMessage.Type.Negative,
-                    duration = EventMessage.Duration.Long,
-                ),
-            )
-        }
-    }
-
     private fun manageUpdatingCard(
         originalCard: Card,
         updatedCard: Card,
         foreignWord: String,
     ) {
         viewModelScope.launchWithState {
-            if (updatedCard.foreignWord == originalCard.foreignWord) {
-                performUpdatingCard(updatedCard = updatedCard)
+            val canUpdateCard = if (updatedCard.foreignWord == originalCard.foreignWord) {
+                true
             } else {
                 val decksWithSameForeignWord = checkIfWordExists.invoke(
                     foreignWord = foreignWord
                 )
 
                 if (decksWithSameForeignWord.isEmpty()) {
-                    performUpdatingCard(updatedCard = updatedCard)
+                    true
                 } else {
                     val deckNamesAsString =
                         decksWithSameForeignWord.joinToString(", ") { it.name }
@@ -467,7 +465,28 @@ class CardEditingViewModel(
                         resId = Res.string.foreign_word_already_exists,
                         args = arrayOf(foreignWord, deckNamesAsString),
                     )
+                    false
                 }
+            }
+
+            if (!canUpdateCard) return@launchWithState
+
+            val preparedMnemonic = materializeMnemonicForSaving(
+                originalCard = originalCard,
+                foreignWord = foreignWord,
+                isForeignWordChanged = updatedCard.foreignWord != originalCard.foreignWord,
+            )
+            val finalCard = updatedCard.copy(mnemonic = preparedMnemonic.mnemonic)
+
+            try {
+                performUpdatingCard(updatedCard = finalCard)
+                finalizeMnemonicSaveSuccess(
+                    retainedSavedAssetId = preparedMnemonic.retainedSavedAssetId,
+                    previousSavedAssetId = originalCard.mnemonic.selectedIllustration?.imageAssetId,
+                )
+            } catch (error: Throwable) {
+                rollbackPreparedMnemonicSave(preparedSave = preparedMnemonic)
+                throw error
             }
         }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
             // logE("Failed to update card\n${throwable.stackTraceToString()}")
@@ -507,20 +526,21 @@ class CardEditingViewModel(
         foreignWord: String,
         ipaHolders: List<TextFieldValueIpaHolder>,
         insightsUiState: CardEditingInsightsUiState,
+        mnemonicManagementState: MnemonicManagementUiState = this.mnemonicManagementState.value,
     ): Card {
-        val trimmedIpaHolders = ipaHolders.map { textFieldValueIpaHolder ->
-            val trimmedText = textFieldValueIpaHolder.ipaTextFieldValue.text.trim()
-            val trimmedTextFieldValue =
-                textFieldValueIpaHolder.ipaTextFieldValue.copy(text = trimmedText)
-
-            textFieldValueIpaHolder.copy(ipaTextFieldValue = trimmedTextFieldValue)
-        }
+        val trimmedIpaHolders = ipaHolders.withTrimmedIpaText()
         val isForeignWordChanged = foreignWord != originalCard.foreignWord
         val insightsForSaving = resolveInsightsForSaving(
             originalCard = originalCard,
             foreignWord = foreignWord,
             isForeignWordChanged = isForeignWordChanged,
             insightsUiState = insightsUiState,
+        )
+        val mnemonicForSaving = resolveMnemonicPreviewForSaving(
+            originalCard = originalCard,
+            foreignWord = foreignWord,
+            isForeignWordChanged = isForeignWordChanged,
+            mnemonicManagementState = mnemonicManagementState,
         )
 
         return originalCard.copy(
@@ -529,6 +549,7 @@ class CardEditingViewModel(
             foreignWord = foreignWord,
             ipa = trimmedIpaHolders.map { it.toDomainEntity() },
             wordMeaningInsights = insightsForSaving,
+            mnemonic = mnemonicForSaving,
         )
     }
 
@@ -538,6 +559,7 @@ class CardEditingViewModel(
         foreignWord: String,
         ipaHolders: List<TextFieldValueIpaHolder>,
         insightsUiState: CardEditingInsightsUiState,
+        mnemonicManagementState: MnemonicManagementUiState,
     ): Boolean {
         val updatedCard = createUpdatedCard(
             originalCard = originalCard,
@@ -546,6 +568,7 @@ class CardEditingViewModel(
             foreignWord = foreignWord,
             ipaHolders = ipaHolders,
             insightsUiState = insightsUiState,
+            mnemonicManagementState = mnemonicManagementState,
         )
 
         return !areCardsEquivalentForEditing(first = originalCard, second = updatedCard)
@@ -561,6 +584,58 @@ class CardEditingViewModel(
             foreignWord = card.foreignWord.normalizeWordForEditing(),
             ipa = card.ipa.map { ipaHolder -> ipaHolder.copy(ipa = ipaHolder.ipa.trim()) },
             wordMeaningInsights = sanitizeInsights(insights = card.wordMeaningInsights),
+        )
+    }
+
+    private fun resolveMnemonicPreviewForSaving(
+        originalCard: Card,
+        foreignWord: String,
+        isForeignWordChanged: Boolean,
+        mnemonicManagementState: MnemonicManagementUiState,
+    ): CardMnemonic {
+        if (mnemonicManagementState.isExplicitlyCleared) {
+            return CardMnemonic.EMPTY
+        }
+
+        val currentMnemonic = mnemonicManagementState.selectedVariant
+            ?.takeIf { selectedVariant ->
+                selectedVariant.selection.word.trim()
+                    .equals(foreignWord.trim(), ignoreCase = true)
+            }
+            ?.toCardMnemonicPreview()
+            ?: CardMnemonic.EMPTY
+
+        if (currentMnemonic.selectedAssociation != null) {
+            return currentMnemonic
+        }
+
+        if (isForeignWordChanged) {
+            return CardMnemonic.EMPTY
+        }
+
+        return originalCard.mnemonic
+    }
+
+    private suspend fun materializeMnemonicForSaving(
+        originalCard: Card,
+        foreignWord: String,
+        isForeignWordChanged: Boolean,
+    ): PreparedMnemonicSave {
+        if (mnemonicManagementState.value.isExplicitlyCleared) {
+            return PreparedMnemonicSave(mnemonic = CardMnemonic.EMPTY)
+        }
+
+        if (hasCurrentMnemonicSelectionForWord(foreignWord = foreignWord)) {
+            return materializeCurrentMnemonicForSaving(foreignWord = foreignWord)
+        }
+
+        if (isForeignWordChanged) {
+            return PreparedMnemonicSave(mnemonic = CardMnemonic.EMPTY)
+        }
+
+        return PreparedMnemonicSave(
+            mnemonic = originalCard.mnemonic,
+            retainedSavedAssetId = originalCard.mnemonic.selectedIllustration?.imageAssetId,
         )
     }
 

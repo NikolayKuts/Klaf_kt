@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -36,12 +37,14 @@ import com.kuts.domain.common.LoadingState
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.klaf.cardManagement.cardAddition.AutocompleteState
 import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionsState
+import com.kuts.klaf.cardManagement.mnemonic.MnemonicImagePreview
 import com.kuts.klaf.common.Pointer
 import com.kuts.klaf.common.RoundButton
 import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.noRippleClickable
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun CardManagementView(
@@ -56,6 +59,9 @@ fun CardManagementView(
     isConfirmationEnabled: Boolean,
     cambridgeDataAvailable: Boolean,
     ipaKeyboardState: IpaKeyboardState,
+    mnemonicManagementState: MnemonicManagementUiState,
+    onOpenMnemonicManagement: (() -> Unit)?,
+    onClearMnemonic: (() -> Unit)?,
     onBottomSheetAction: () -> Unit,
     closeAutocompletePopupMenu: () -> Unit,
     onLetterClick: (index: Int, letterInfo: LetterInfo) -> Unit,
@@ -140,6 +146,15 @@ fun CardManagementView(
                 onConfirmSuggestionsSelection = onConfirmSuggestionsSelection,
                 onClearSelectionClick = onClearNativeWordSuggestionsSelectionClick,
                 onIpaTextFieldFocusChanged = onIpaTextFieldFocusChanged,
+                mnemonicContent = {
+                    if (onOpenMnemonicManagement != null) {
+                        MnemonicSummarySection(
+                            mnemonicManagementState = mnemonicManagementState,
+                            onOpenMnemonicManagement = onOpenMnemonicManagement,
+                            onClearMnemonic = onClearMnemonic,
+                        )
+                    }
+                },
                 confirmationButtonSection = {
                     Column(modifier = Modifier.align(Alignment.BottomCenter)) {
                         Row(
@@ -185,6 +200,102 @@ fun CardManagementView(
                 },
             )
         }
+    }
+}
+
+@Composable
+private fun MnemonicSummarySection(
+    mnemonicManagementState: MnemonicManagementUiState,
+    onOpenMnemonicManagement: () -> Unit,
+    onClearMnemonic: (() -> Unit)?,
+) {
+    val selectedVariant = mnemonicManagementState.selectedVariant
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(MainTheme.colors.common.separator.copy(alpha = 0.12f))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(Res.string.mnemonic_summary_title),
+                style = MainTheme.typographies.dialogTextStyle,
+            )
+            MnemonicSummaryActions(
+                hasSelection = selectedVariant != null,
+                onOpenMnemonicManagement = onOpenMnemonicManagement,
+                onClearMnemonic = onClearMnemonic,
+            )
+        }
+
+        if (selectedVariant == null) {
+            Text(
+                text = stringResource(Res.string.mnemonic_summary_empty),
+                color = MainTheme.colors.common.separator,
+            )
+        } else {
+            MnemonicSummaryContent(selectedVariant = selectedVariant)
+        }
+    }
+}
+
+@Composable
+private fun MnemonicSummaryActions(
+    hasSelection: Boolean,
+    onOpenMnemonicManagement: () -> Unit,
+    onClearMnemonic: (() -> Unit)?,
+) {
+    val actionIcon = if (hasSelection) Res.drawable.ic_edit_24 else Res.drawable.ic_add_24
+    val actionBackground = if (hasSelection) {
+        MainTheme.colors.common.separator.copy(alpha = 0.24f)
+    } else {
+        MainTheme.colors.common.positiveDialogButton
+    }
+
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (hasSelection && onClearMnemonic != null) {
+            RoundButton(
+                background = MainTheme.colors.deckRepetitionScreen.deleteButton,
+                iconRes = Res.drawable.ic_delete_24,
+                onClick = onClearMnemonic,
+                size = 40.dp,
+            )
+        }
+        RoundButton(
+            background = actionBackground,
+            iconRes = actionIcon,
+            onClick = onOpenMnemonicManagement,
+            size = 40.dp,
+        )
+    }
+}
+
+@Composable
+private fun MnemonicSummaryContent(
+    selectedVariant: MnemonicVariantUiState,
+) {
+    Text(text = "${stringResource(Res.string.mnemonic_summary_form)}: ${selectedVariant.selection.candidate.associationForm}")
+    Text(text = "${stringResource(Res.string.mnemonic_summary_scene)}: ${selectedVariant.selection.candidate.scene}")
+    Text(text = "${stringResource(Res.string.mnemonic_summary_sound)}: ${selectedVariant.selection.candidate.soundMapping}")
+    Text(text = "${stringResource(Res.string.mnemonic_summary_meaning)}: ${selectedVariant.selection.candidate.meaningMapping}")
+
+    selectedVariant.selectedImage?.let { imageVariant ->
+        Text(text = stringResource(Res.string.mnemonic_summary_image))
+        MnemonicImagePreview(
+            imagePath = imageVariant.imagePath,
+            modifier = Modifier
+                .size(width = 180.dp, height = 180.dp)
+                .clip(RoundedCornerShape(12.dp)),
+        )
     }
 }
 

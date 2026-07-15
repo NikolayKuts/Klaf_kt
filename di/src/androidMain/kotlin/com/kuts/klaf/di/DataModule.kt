@@ -26,6 +26,8 @@ import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IDeckRepetitionInfoRepository
 import com.kuts.domain.repositories.IDeckRepository
 import com.kuts.domain.repositories.IMnemonicAssociationRepository
+import com.kuts.domain.repositories.IMnemonicImageAssetRepository
+import com.kuts.domain.repositories.IMnemonicImageRepository
 import com.kuts.domain.repositories.IOldAppKlafDataTransferRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IWordAutocompleteRepository
@@ -58,8 +60,10 @@ import com.kuts.klaf.firestore.repositoryImplementations.AndroidWordAutocomplete
 import com.kuts.klaf.networking.AndroidCardAudioPlayer
 import com.kuts.klaf.networking.codexApp.AndroidCodexAppHttpClientFactory
 import com.kuts.klaf.networking.codexApp.CodexAppMnemonicAssociationRepository
+import com.kuts.klaf.networking.codexApp.CodexAppMnemonicImageRepository
 import com.kuts.klaf.networking.codexApp.CodexAppWordMeaningInsightsRepository
 import com.kuts.klaf.networking.codexApp.ICodexAppHttpClientFactory
+import com.kuts.klaf.mnemonic.AndroidMnemonicImageAssetRepository
 import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
 import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
 import com.kuts.klaf.networking.wordInsights.SwitchableWordMeaningInsightsRepository
@@ -158,6 +162,15 @@ private fun Module.androidRepositoryModule() {
             codexModel = com.kuts.klaf.SecretConstants.CodexApp.modelOrNull(),
         )
     }
+    single<IMnemonicImageRepository> {
+        CodexAppMnemonicImageRepository(
+            client = get(qualifier = named(name = CODEX_APP_HTTP_CLIENT)),
+            codexServerUrl = com.kuts.klaf.SecretConstants.CodexApp.appServerUrlOrNull().orEmpty(),
+        )
+    }
+    single<IMnemonicImageAssetRepository> {
+        AndroidMnemonicImageAssetRepository(context = androidContext())
+    }
     single<IWordMeaningInsightsRepository> {
         SwitchableWordMeaningInsightsRepository(
             manager = get(),
@@ -229,6 +242,7 @@ private fun Module.dataManagerBindings() {
             workManager = get(),
             notificationChannelInitializer = get(),
             networkConnectivity = get(),
+            mnemonicImageAssetRepository = get(),
         )
     }
 

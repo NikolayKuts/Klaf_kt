@@ -7,6 +7,8 @@ import com.kuts.klaf.authentication.AuthenticationActionResult
 import com.kuts.klaf.authentication.AuthenticationScreen
 import com.kuts.klaf.cardManagement.cardAddition.CardAdditionScreen
 import com.kuts.klaf.cardManagement.cardEditing.CardEditingScreen
+import com.kuts.klaf.cardManagement.mnemonic.CardAdditionMnemonicManagementScreen
+import com.kuts.klaf.cardManagement.mnemonic.CardEditingMnemonicManagementScreen
 import com.kuts.klaf.cardTransferring.cardDeleting.CardTransferringDeletingDialog
 import com.kuts.klaf.cardTransferring.common.CardTransferringScreen
 import com.kuts.klaf.cardTransferring.deckChoosing.CardMovingDialog
@@ -119,6 +121,7 @@ internal fun NavGraphBuilder.registerAppDestinations(
 
     buildComposable<AppDestination.CardAddition> { backStackEntry, route ->
         CardAdditionScreen(
+            navController = navController,
             backStackEntry = backStackEntry,
             sharedViewModel = sharedViewModel,
             externalAppActions = externalAppActions,
@@ -128,6 +131,25 @@ internal fun NavGraphBuilder.registerAppDestinations(
 
     buildComposable<AppDestination.CardEditing> { backStackEntry, route ->
         CardEditingScreen(
+            navController = navController,
+            backStackEntry = backStackEntry,
+            sharedViewModel = sharedViewModel,
+            deckId = route.deckId,
+            cardId = route.cardId,
+        )
+    }
+
+    buildComposable<AppDestination.CardAdditionMnemonicManagement> { backStackEntry, route ->
+        CardAdditionMnemonicManagementScreen(
+            navController = navController,
+            backStackEntry = backStackEntry,
+            sharedViewModel = sharedViewModel,
+            deckId = route.deckId,
+        )
+    }
+
+    buildComposable<AppDestination.CardEditingMnemonicManagement> { backStackEntry, route ->
+        CardEditingMnemonicManagementScreen(
             navController = navController,
             backStackEntry = backStackEntry,
             sharedViewModel = sharedViewModel,

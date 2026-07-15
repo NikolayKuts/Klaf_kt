@@ -10,9 +10,17 @@ class FetchMnemonicAssociationUseCase(
     private val coroutineContextProvider: ICoroutineContextProvider,
 ) {
 
-    suspend operator fun invoke(word: String): MnemonicAssociation = withContext(
+    suspend operator fun invoke(
+        word: String,
+        comment: String? = null,
+        excludedSoundAnchors: List<String> = emptyList(),
+    ): MnemonicAssociation = withContext(
         context = coroutineContextProvider.io,
     ) {
-        mnemonicAssociationRepository.fetchMnemonicAssociation(word = word)
+        mnemonicAssociationRepository.fetchMnemonicAssociation(
+            word = word,
+            comment = comment,
+            excludedSoundAnchors = excludedSoundAnchors,
+        )
     }
 }

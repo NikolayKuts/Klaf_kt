@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavHostController
 import com.kuts.klaf.cardManagement.common.BaseCardManagementViewModel
 import com.kuts.klaf.cardManagement.common.CambridgeMeaning
 import com.kuts.klaf.cardManagement.common.CambridgePartOfSpeech
@@ -39,6 +40,7 @@ import com.kuts.klaf.cardManagement.common.ICambridgeDataState
 import com.kuts.klaf.cardManagement.common.ICardManagementAction
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.externalActions.IExternalAppActions
+import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.navigation.ObserveAudioLifecycle
 import kotlinx.coroutines.launch
@@ -47,15 +49,19 @@ import org.koin.core.parameter.parametersOf
 
 @Composable
 internal fun CardAdditionScreen(
+    navController: NavHostController,
     backStackEntry: NavBackStackEntry,
     sharedViewModel: BaseMainViewModel,
     externalAppActions: IExternalAppActions,
     deckId: Int,
 ) {
     val smartSelectedWord = remember { externalAppActions.consumeProcessTextWord() }
+    val owner = remember(backStackEntry) {
+        navController.getBackStackEntry(route = AppDestination.CardAddition(deckId = deckId))
+    }
 
     val viewModel: CardAdditionViewModel = koinViewModel(
-        viewModelStoreOwner = backStackEntry,
+        viewModelStoreOwner = owner,
         parameters = {
             parametersOf(
                 deckId,
@@ -74,7 +80,15 @@ internal fun CardAdditionScreen(
     CollectFlowWithLifecycle(flow = viewModel.eventMessage, onEach = sharedViewModel::notify)
 
     Surface {
-        CardManagementContent(viewModel = viewModel)
+        CardManagementContent(
+            viewModel = viewModel,
+            onOpenMnemonicManagement = {
+                navController.navigate(
+                    route = AppDestination.CardAdditionMnemonicManagement(deckId = deckId),
+                )
+            },
+            onClearMnemonic = viewModel::clearMnemonicSelection,
+        )
     }
 }
 
@@ -83,6 +97,8 @@ internal fun CardAdditionScreen(
 internal fun CardManagementContent(
     viewModel: BaseCardManagementViewModel,
     isCambridgeBottomSheetEnabled: Boolean = true,
+    onOpenMnemonicManagement: (() -> Unit)? = null,
+    onClearMnemonic: (() -> Unit)? = null,
 ) {
     val deck = viewModel.deck.collectAsState(initial = null)
     val isConfirmationEnabled by viewModel.isConfirmationEnabled.collectAsState()
@@ -96,6 +112,7 @@ internal fun CardManagementContent(
     val nativeWordSuggestionsState by viewModel.nativeWordSuggestionsState.collectAsState()
     val transcription by viewModel.transcriptionState.collectAsState()
     val cambridgeDataState by viewModel.cambridgeDataState.collectAsState()
+    val mnemonicManagementState by viewModel.mnemonicManagementState.collectAsState()
     val scope = rememberCoroutineScope()
     val ipaKeyboardState by viewModel.ipaKeyboardState.collectAsState()
     val scaffoldState = rememberModalBottomSheetState()
@@ -116,6 +133,9 @@ internal fun CardManagementContent(
             cambridgeDataAvailable = isCambridgeBottomSheetEnabled
                 && cambridgeDataState is ICambridgeDataState.Fetched,
             ipaKeyboardState = ipaKeyboardState,
+            mnemonicManagementState = mnemonicManagementState,
+            onOpenMnemonicManagement = onOpenMnemonicManagement,
+            onClearMnemonic = onClearMnemonic,
             onIpaTextFieldFocusChanged = { focusList ->
                 viewModel.sendAction(
                     action = ICardManagementAction.IpaTextFieldFocusChanged(focusList = focusList)

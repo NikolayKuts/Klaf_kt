@@ -63,6 +63,17 @@ internal sealed interface AppDestination {
     ) : AppDestination
 
     @Serializable
+    data class CardAdditionMnemonicManagement(
+        val deckId: Int,
+    ) : AppDestination
+
+    @Serializable
+    data class CardEditingMnemonicManagement(
+        val deckId: Int,
+        val cardId: Int,
+    ) : AppDestination
+
+    @Serializable
     data class CardViewing(
         val deckId: Int,
         val deckName: String,

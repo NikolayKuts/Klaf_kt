@@ -14,6 +14,8 @@ data class RoomCard (
     val ipa: String,
     @ColumnInfo(name = "wordMeaningInsightsJson")
     val wordMeaningInsights: WordMeaningInsights,
+    @ColumnInfo(name = "mnemonicJson")
+    val mnemonicJson: String,
     @PrimaryKey(autoGenerate = true) val id: Int = 0
 ) {
 

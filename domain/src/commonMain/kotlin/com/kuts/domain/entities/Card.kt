@@ -10,5 +10,6 @@ data class Card(
     val foreignWord: String,
     val ipa: List<IpaHolder>,
     val wordMeaningInsights: WordMeaningInsights = WordMeaningInsights.EMPTY,
+    val mnemonic: CardMnemonic = CardMnemonic.EMPTY,
     val id: Int = 0
 )

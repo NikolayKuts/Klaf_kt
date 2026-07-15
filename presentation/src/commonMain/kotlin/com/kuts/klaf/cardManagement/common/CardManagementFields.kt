@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -80,6 +81,7 @@ fun CardManagementFields(
     autocompleteState: AutocompleteState,
     loadingState: LoadingState<Unit, Unit>,
     modifier: Modifier = Modifier,
+    mnemonicContent: @Composable () -> Unit = {},
     confirmationButtonSection: @Composable BoxScope.() -> Unit,
     onIpaTextFieldFocusChanged: (List<IpaTextFieldFocusState>) -> Unit,
     onForeignWordTextFieldClick: () -> Unit,
@@ -132,7 +134,8 @@ fun CardManagementFields(
             textFieldValueIpaHolders = textFieldValueIpaHolders,
             onIpaTextFieldValueChange = onIpaTextFieldValueChange,
             confirmationButtonSection = confirmationButtonSection,
-            onIpaTextFieldFocusChanged = onIpaTextFieldFocusChanged
+            onIpaTextFieldFocusChanged = onIpaTextFieldFocusChanged,
+            footerContent = mnemonicContent,
         )
     }
 }
@@ -318,6 +321,7 @@ private fun IpaSection(
     onIpaTextFieldValueChange: (letterGroupIndex: Int, ipaTextFieldValue: TextFieldValue) -> Unit,
     onIpaTextFieldFocusChanged: (List<IpaTextFieldFocusState>) -> Unit,
     confirmationButtonSection: @Composable BoxScope.() -> Unit,
+    footerContent: @Composable () -> Unit = {},
 ) {
     var parentWidthPx by rememberAsMutableStateOf(value = 0F)
     val cellShape = RoundedCornerShape(size = 6.dp)
@@ -418,6 +422,10 @@ private fun IpaSection(
                         textStyle = MainTheme.typographies.cardManagementViewTextStyles.ipaValue,
                     )
                 }
+            }
+
+            item {
+                footerContent()
             }
         }
 

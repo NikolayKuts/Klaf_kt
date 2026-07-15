@@ -27,8 +27,16 @@ class CodexAppMnemonicAssociationRepository(
         explicitNulls = false
     }
 
-    override suspend fun fetchMnemonicAssociation(word: String): MnemonicAssociation {
+    override suspend fun fetchMnemonicAssociation(
+        word: String,
+        comment: String?,
+        excludedSoundAnchors: List<String>,
+    ): MnemonicAssociation {
         val requestedWord = word.trim()
+        val trimmedComment = comment?.trim()?.ifBlank { null }
+        val normalizedExcludedAnchors = excludedSoundAnchors
+            .mapNotNull { anchor -> anchor.trim().ifBlank { null } }
+            .distinctBy(String::toMnemonicKey)
 
         require(value = requestedWord.isNotBlank()) { "Mnemonic request word must not be blank." }
 
@@ -39,6 +47,8 @@ class CodexAppMnemonicAssociationRepository(
                     serializer = MnemonicAssociationRequestPayload.serializer(),
                     value = MnemonicAssociationRequestPayload(
                         word = requestedWord,
+                        comment = trimmedComment,
+                        excludedSoundAnchors = normalizedExcludedAnchors,
                         model = codexModel?.trim()?.ifBlank { null },
                     ),
                 ),
@@ -118,6 +128,7 @@ private fun MnemonicAssociationPayload.validateForRequestedWord(requestedWord: S
 }
 
 private fun String.toWordKey(): String = trim().lowercase()
+private fun String.toMnemonicKey(): String = trim().lowercase()
 
 private fun String.toSingleLineMessage(): String {
     return lineSequence()

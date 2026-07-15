@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class IosAppMaintenanceManager : IAppMaintenanceManager {
     private val state = MutableStateFlow<IDataSynchronizationState>(IDataSynchronizationState.Initial)
 
-    override fun initialize() = Unit
+    override suspend fun initialize() = Unit
 
     override fun isNetworkConnected(): Boolean = true
 

@@ -94,8 +94,10 @@ class DeckListViewModel(
         logV {
             "INIT LIST"()
         }
-        appMaintenanceManager.initialize()
-        viewModelScope.launchWithState { createInterimDeck() }
+        viewModelScope.launchWithState {
+            appMaintenanceManager.initialize()
+            createInterimDeck()
+        }
             .onException { _, throwable ->
                 // logE("Failed to create interim deck\n${throwable.stackTraceToString()}")
                 crashlytics.report(exception = throwable)

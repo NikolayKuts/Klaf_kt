@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface IAppMaintenanceManager {
 
-    fun initialize()
+    suspend fun initialize()
 
     fun isNetworkConnected(): Boolean
 

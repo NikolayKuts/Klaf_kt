@@ -19,7 +19,8 @@ object KlafRoomDatabaseProvider {
             .addMigrations(
                 Migrations.from3To4,
                 Migrations.from4To5,
-                Migrations.from5To6
+                Migrations.from5To6,
+                Migrations.from6To7,
             )
             .setDriver(BundledSQLiteDriver())
             .setQueryCoroutineContext(context = Dispatchers.IO)

@@ -1,5 +1,6 @@
 package com.kuts.klaf.cardManagement.common
 
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.entities.Deck
@@ -24,6 +25,15 @@ abstract class BaseCardManagementViewModel(
     abstract val cardManagementState: StateFlow<CardManagementState>
     abstract val cambridgeDataState: StateFlow<ICambridgeDataState>
     abstract val ipaKeyboardState: StateFlow<IpaKeyboardState>
+    abstract val mnemonicManagementState: StateFlow<MnemonicManagementUiState>
 
     abstract fun sendAction(action: ICardManagementAction)
+    abstract fun updateMnemonicRequestComment(value: TextFieldValue)
+    abstract fun updateMnemonicImageRequestComment(value: TextFieldValue)
+    abstract fun requestMnemonicAssociation()
+    abstract fun requestMnemonicImage()
+    abstract fun selectMnemonicVariant(variantId: String)
+    abstract fun selectMnemonicImageVariant(variantId: String, imageId: String)
+    abstract fun clearMnemonicSelection()
+    abstract fun restoreMnemonicManagementState(snapshot: MnemonicManagementUiState)
 }

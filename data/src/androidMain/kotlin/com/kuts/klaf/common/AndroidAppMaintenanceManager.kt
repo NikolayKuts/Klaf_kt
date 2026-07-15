@@ -3,6 +3,7 @@ package com.kuts.klaf.common
 import androidx.work.WorkManager
 import com.kuts.domain.common.IDataSynchronizationState
 import com.kuts.domain.managers.IAppMaintenanceManager
+import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.klaf.common.IDataSynchronizationState.Failed
 import com.kuts.klaf.common.IDataSynchronizationState.Initial
 import com.kuts.klaf.common.IDataSynchronizationState.Synchronizing
@@ -15,14 +16,17 @@ import com.kuts.klaf.common.DeckRepetitionReminderChecker.Companion.scheduleDeck
 import com.kuts.klaf.common.notifications.NotificationChannelInitializer
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+
 class AndroidAppMaintenanceManager(
     private val workManager: WorkManager,
     private val notificationChannelInitializer: NotificationChannelInitializer,
     private val networkConnectivity: NetworkConnectivity,
+    private val mnemonicImageAssetRepository: IMnemonicImageAssetRepository,
 ) : IAppMaintenanceManager {
 
-    override fun initialize() {
+    override suspend fun initialize() {
         notificationChannelInitializer.initialize()
+        mnemonicImageAssetRepository.clearAllDraftImages()
     }
 
     override fun isNetworkConnected(): Boolean {

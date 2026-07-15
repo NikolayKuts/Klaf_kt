@@ -9,9 +9,9 @@ class AndroidCodexAppHttpClientFactory : ICodexAppHttpClientFactory {
 
     companion object {
 
-        private const val REQUEST_TIMEOUT = 90_000L
+        private const val REQUEST_TIMEOUT = 180_000L
         private const val CONNECT_TIMEOUT = 20_000L
-        private const val SOCKET_TIMEOUT = 90_000L
+        private const val SOCKET_TIMEOUT = 180_000L
     }
 
     override fun create(): HttpClient {

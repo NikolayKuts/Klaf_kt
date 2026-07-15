@@ -6,5 +6,6 @@ data class FirestoreCard(
     val foreignWord: String = DEFAULT_STRING_VALUE,
     val ipa: String = DEFAULT_STRING_VALUE,
     val wordMeaningInsights: FirestoreWordMeaningInsights? = null,
+    val mnemonicJson: String = DEFAULT_STRING_VALUE,
     val id: Int = DEFAULT_INT_VALUE
 )

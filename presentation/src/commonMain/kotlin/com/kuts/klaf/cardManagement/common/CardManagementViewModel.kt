@@ -1,8 +1,9 @@
 package com.kuts.klaf.cardManagement.common
 
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import androidx.lifecycle.viewModelScope
+import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.DebouncedMutableStateFlow
 import com.kuts.domain.common.ICoroutineContextProvider
@@ -11,15 +12,23 @@ import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.common.generateLetterInfos
 import com.kuts.domain.common.ifTrue
 import com.kuts.domain.common.updatedAt
+import com.kuts.domain.entities.CardMnemonic
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.ipa.LetterInfo
+import com.kuts.domain.entities.MnemonicIllustration
+import com.kuts.domain.entities.MnemonicImageAsset
+import com.kuts.domain.entities.MnemonicImageAssetStorage
+import com.kuts.domain.entities.toSelections
 import com.kuts.domain.ipa.toRowIpaItemHolders
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.repositories.ICrashlyticsRepository
+import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.repositories.IWordInfoRepository.IWordInfoLoadingError
 import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
+import com.kuts.domain.useCases.FetchMnemonicAssociationUseCase
+import com.kuts.domain.useCases.FetchMnemonicImageUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.klaf.presentation.resources.*
@@ -28,6 +37,7 @@ import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionItem
 import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionsState
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.tryEmitAsNegative
+import com.kuts.klaf.common.tryEmitAsPositive
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -48,11 +58,15 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 abstract class CardManagementViewModel(
     deckId: Int,
     audioPlayer: IAudioPlayerManager,
     cambridgeWordDataProvider: ICambridgeWordDataProvider,
+    private val fetchMnemonicAssociation: FetchMnemonicAssociationUseCase,
+    private val fetchMnemonicImage: FetchMnemonicImageUseCase,
+    protected val mnemonicImageAssetRepository: IMnemonicImageAssetRepository,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     private val fetchWordInfo: FetchWordInfoUseCase,
     protected val crashlytics: ICrashlyticsRepository,
@@ -65,6 +79,9 @@ abstract class CardManagementViewModel(
 ) {
 
     companion object {
+
+        private const val MNEMONIC_VARIANT_ID_PREFIX = "mnemonic_variant_"
+        private const val MNEMONIC_IMAGE_ID_PREFIX = "mnemonic_image_"
 
         private val ipaKeys = listOf(
             "θ", "ð", "ʃ", "ʒ", "ŋ", "tʃ", "dʒ", "ʔ", "ɹ",
@@ -114,6 +131,9 @@ abstract class CardManagementViewModel(
     )
 
     override val ipaKeyboardState = MutableStateFlow(value = IpaKeyboardState(keys = ipaKeys))
+    override val mnemonicManagementState = MutableStateFlow(MnemonicManagementUiState())
+    private var nextMnemonicVariantId = 0L
+    private var nextMnemonicImageVariantId = 0L
 
     init {
         combineAndObserveCardManagementChanges()
@@ -195,6 +215,111 @@ abstract class CardManagementViewModel(
             ICardManagementAction.CloseNativeWordSuggestionsMenu -> {
                 nativeWordSuggestionsState.update { it.copy(isActive = false) }
             }
+        }
+    }
+
+    override fun updateMnemonicRequestComment(value: TextFieldValue) {
+        mnemonicManagementState.update { state -> state.copy(requestComment = value) }
+    }
+
+    override fun updateMnemonicImageRequestComment(value: TextFieldValue) {
+        mnemonicManagementState.update { state -> state.copy(imageRequestComment = value) }
+    }
+
+    override fun requestMnemonicAssociation() {
+        val requestedWord = foreignWordFieldValueState.value.text.trim()
+
+        if (!requestedWord.isValidMnemonicWordFormat()) {
+            eventMessage.tryEmitAsNegative(resId = Res.string.mnemonic_association_invalid_word_format)
+            return
+        }
+
+        mnemonicManagementState.update { state -> state.startAssociationLoading() }
+
+        viewModelScope.launchWithState(coroutineContextProvider.io) {
+            val requestComment = mnemonicManagementState.value.associationRequestCommentOrNull()
+            val excludedSoundAnchors = mnemonicManagementState.value.excludedSoundAnchors()
+            val association = fetchMnemonicAssociation(
+                word = requestedWord,
+                comment = requestComment,
+                excludedSoundAnchors = excludedSoundAnchors,
+            )
+            val newVariants = association.toSelections().map { selection ->
+                createMnemonicVariant(
+                    selection = selection,
+                    requestComment = requestComment.orEmpty(),
+                )
+            }
+
+            mnemonicManagementState.update { state ->
+                state.appendVariants(newVariants).stopAssociationLoading()
+            }
+            eventMessage.tryEmitAsPositive(resId = Res.string.mnemonic_association_received)
+        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+            mnemonicManagementState.update { state -> state.stopAssociationLoading() }
+            eventMessage.tryEmitAsNegative(
+                resId = Res.string.mnemonic_association_request_failed,
+                duration = EventMessage.Duration.Long,
+            )
+        }
+    }
+
+    override fun requestMnemonicImage() {
+        val selectedVariant = mnemonicManagementState.value.selectedVariant
+
+        if (selectedVariant == null) {
+            eventMessage.tryEmitAsNegative(resId = Res.string.mnemonic_image_variant_not_selected)
+            return
+        }
+
+        mnemonicManagementState.update { state -> state.startImageLoading() }
+
+        viewModelScope.launchWithState(coroutineContextProvider.io) {
+            val requestComment = mnemonicManagementState.value.imageRequestCommentOrNull()
+            val imageBytes = fetchMnemonicImage(
+                selection = selectedVariant.selection,
+                comment = requestComment,
+            )
+            val storedDraftImage = mnemonicImageAssetRepository.createDraftImage(imageBytes = imageBytes)
+            val newImageVariant = createMnemonicImageVariant(storedDraftImage = storedDraftImage)
+
+            mnemonicManagementState.update { state ->
+                state.appendImageVariant(
+                    variantId = selectedVariant.id,
+                    imageVariant = newImageVariant,
+                ).stopImageLoading()
+            }
+            eventMessage.tryEmitAsPositive(resId = Res.string.mnemonic_image_received)
+        }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, _ ->
+            mnemonicManagementState.update { state -> state.stopImageLoading() }
+            eventMessage.tryEmitAsNegative(
+                resId = Res.string.mnemonic_image_request_failed,
+                duration = EventMessage.Duration.Long,
+            )
+        }
+    }
+
+    override fun selectMnemonicVariant(variantId: String) {
+        mnemonicManagementState.update { state ->
+            state.selectVariantIfPresent(variantId = variantId)
+        }
+    }
+
+    override fun selectMnemonicImageVariant(variantId: String, imageId: String) {
+        mnemonicManagementState.update { state ->
+            state.selectImageIfPresent(
+                variantId = variantId,
+                imageId = imageId,
+            )
+        }
+    }
+
+    override fun clearMnemonicSelection() {
+        val draftAssetIdsToDelete = currentDraftImageAssetIds()
+
+        deleteDraftImagesAsync(assetIds = draftAssetIdsToDelete)
+        mnemonicManagementState.update { state ->
+            state.resetGeneratedContent(markExplicitlyCleared = true)
         }
     }
 
@@ -340,6 +465,7 @@ abstract class CardManagementViewModel(
                 letterInfosState.value = word.generateLetterInfos()
                 nativeWordFieldValueState.value = TextFieldValue()
                 textFieldValueIpaHoldersState.value = emptyList()
+                clearMnemonicDraftForWordChange(newWord = word)
 
                 autocompleteState.launchUpdateWithState(
                     scope = viewModelScope,
@@ -360,6 +486,214 @@ abstract class CardManagementViewModel(
                 duration = EventMessage.Duration.Long
             )
         }
+    }
+
+    override fun restoreMnemonicManagementState(snapshot: MnemonicManagementUiState) {
+        val draftAssetIdsToKeep = snapshot.draftAssetIds()
+        val draftAssetIdsToDelete = currentDraftImageAssetIds()
+            .filterNot { assetId -> assetId in draftAssetIdsToKeep }
+
+        deleteDraftImagesAsync(assetIds = draftAssetIdsToDelete)
+
+        mnemonicManagementState.value = snapshot
+    }
+
+    protected fun initializeMnemonicManagementState(mnemonic: CardMnemonic) {
+        if (mnemonicManagementState.value.variants.isNotEmpty()) return
+
+        val selectedAssociation = mnemonic.selectedAssociation ?: return
+        val variantId = nextMnemonicVariantId()
+
+        viewModelScope.launch(coroutineContextProvider.io) {
+            val selectedImage = mnemonic.selectedIllustration?.imageAssetId
+                ?.takeIf(String::isNotBlank)
+                ?.let { imageAssetId -> mnemonicImageAssetRepository.resolveSavedImage(assetId = imageAssetId) }
+                ?.let { storedImage -> createMnemonicImageVariant(storedDraftImage = storedImage) }
+            val selectedImageId = selectedImage?.id
+
+            mnemonicManagementState.value = mnemonicManagementState.value.copy(
+                variants = listOf(
+                    MnemonicVariantUiState(
+                        id = variantId,
+                        selection = selectedAssociation,
+                        imageVariants = selectedImage?.let(::listOf).orEmpty(),
+                        selectedImageId = selectedImageId,
+                    ),
+                ),
+                selectedVariantId = variantId,
+                isExplicitlyCleared = false,
+            )
+        }
+    }
+
+    protected fun currentMnemonicPreviewForSaving(foreignWord: String): CardMnemonic {
+        if (mnemonicManagementState.value.isExplicitlyCleared) return CardMnemonic.EMPTY
+
+        val selectedVariant = mnemonicManagementState.value.selectedVariant ?: return CardMnemonic.EMPTY
+        return if (selectedVariant.selection.word.toWordKey() == foreignWord.toWordKey()) {
+            selectedVariant.toCardMnemonicPreview()
+        } else {
+            CardMnemonic.EMPTY
+        }
+    }
+
+    protected suspend fun materializeCurrentMnemonicForSaving(
+        foreignWord: String,
+    ): PreparedMnemonicSave {
+        if (mnemonicManagementState.value.isExplicitlyCleared) {
+            return PreparedMnemonicSave(mnemonic = CardMnemonic.EMPTY)
+        }
+
+        val selectedVariant = mnemonicManagementState.value.selectedVariant
+            ?: return PreparedMnemonicSave(mnemonic = CardMnemonic.EMPTY)
+
+        if (selectedVariant.selection.word.toWordKey() != foreignWord.toWordKey()) {
+            return PreparedMnemonicSave(mnemonic = CardMnemonic.EMPTY)
+        }
+
+        val selectedImage = selectedVariant.selectedImage
+        val retainedSavedAssetId: String?
+        val newlyCreatedSavedAssetId: String?
+
+        when (selectedImage?.storage) {
+            MnemonicImageAssetStorage.Draft -> {
+                val savedCopy = mnemonicImageAssetRepository.createSavedCopyFromDraft(
+                    draftAssetId = selectedImage.assetId,
+                )
+                retainedSavedAssetId = savedCopy.assetId
+                newlyCreatedSavedAssetId = savedCopy.assetId
+            }
+
+            MnemonicImageAssetStorage.Saved -> {
+                val savedAsset = mnemonicImageAssetRepository.resolveSavedImage(
+                    assetId = selectedImage.assetId,
+                ) ?: throw IllegalStateException("Selected mnemonic image file is missing.")
+                retainedSavedAssetId = savedAsset.assetId
+                newlyCreatedSavedAssetId = null
+            }
+
+            null -> {
+                retainedSavedAssetId = null
+                newlyCreatedSavedAssetId = null
+            }
+        }
+
+        return PreparedMnemonicSave(
+            mnemonic = CardMnemonic(
+                selectedAssociation = selectedVariant.selection,
+                selectedIllustration = retainedSavedAssetId?.let { imageAssetId ->
+                    MnemonicIllustration(imageAssetId = imageAssetId)
+                },
+            ),
+            retainedSavedAssetId = retainedSavedAssetId,
+            newlyCreatedSavedAssetId = newlyCreatedSavedAssetId,
+        )
+    }
+
+    protected fun hasCurrentMnemonicSelectionForWord(foreignWord: String): Boolean {
+        return currentMnemonicPreviewForSaving(foreignWord = foreignWord).selectedAssociation != null
+    }
+
+    protected suspend fun finalizeMnemonicSaveSuccess(
+        retainedSavedAssetId: String?,
+        previousSavedAssetId: String?,
+    ) {
+        deleteDraftImages(assetIds = currentDraftImageAssetIds())
+
+        if (!previousSavedAssetId.isNullOrBlank() && previousSavedAssetId != retainedSavedAssetId) {
+            mnemonicImageAssetRepository.deleteSavedImage(assetId = previousSavedAssetId)
+        }
+    }
+
+    protected suspend fun rollbackPreparedMnemonicSave(preparedSave: PreparedMnemonicSave) {
+        preparedSave.newlyCreatedSavedAssetId?.let { assetId ->
+            mnemonicImageAssetRepository.deleteSavedImage(assetId = assetId)
+        }
+    }
+
+    private fun clearMnemonicDraftForWordChange(newWord: String) {
+        val newWordKey = newWord.toWordKey()
+        val hasVariantsForAnotherWord = mnemonicManagementState.value.variants.any { variant ->
+            variant.selection.word.toWordKey() != newWordKey
+        }
+        if (!hasVariantsForAnotherWord) return
+
+        val draftAssetIdsToDelete = currentDraftImageAssetIds()
+        deleteDraftImagesAsync(assetIds = draftAssetIdsToDelete)
+        mnemonicManagementState.update { state -> state.resetGeneratedContent(markExplicitlyCleared = false) }
+    }
+
+    private fun nextMnemonicVariantId(): String =
+        "$MNEMONIC_VARIANT_ID_PREFIX${nextMnemonicVariantId++}"
+
+    private fun nextMnemonicImageVariantId(): String =
+        "$MNEMONIC_IMAGE_ID_PREFIX${nextMnemonicImageVariantId++}"
+
+    private fun currentDraftImageAssetIds(): List<String> {
+        return mnemonicManagementState.value.draftAssetIds().toList()
+    }
+
+    private fun createMnemonicVariant(
+        selection: com.kuts.domain.entities.MnemonicSelection,
+        requestComment: String,
+    ): MnemonicVariantUiState {
+        return MnemonicVariantUiState(
+            id = nextMnemonicVariantId(),
+            selection = selection,
+            requestComment = requestComment,
+        )
+    }
+
+    private fun createMnemonicImageVariant(
+        storedDraftImage: MnemonicImageAsset,
+    ): MnemonicImageVariantUiState {
+        return MnemonicImageVariantUiState(
+            id = nextMnemonicImageVariantId(),
+            assetId = storedDraftImage.assetId,
+            imagePath = storedDraftImage.filePath,
+            storage = storedDraftImage.storage,
+        )
+    }
+
+    private fun deleteDraftImagesAsync(assetIds: Collection<String>) {
+        if (assetIds.isEmpty()) return
+
+        viewModelScope.launch(coroutineContextProvider.io) {
+            deleteDraftImages(assetIds = assetIds.toList())
+        }
+    }
+
+    private suspend fun deleteDraftImages(assetIds: List<String>) {
+        assetIds.forEach { assetId ->
+            mnemonicImageAssetRepository.deleteDraftImage(assetId = assetId)
+        }
+    }
+
+    private fun String.toWordKey(): String = trim().lowercase()
+
+    private fun String.isValidMnemonicWordFormat(): Boolean {
+        val trimmedWord = trim()
+        if (trimmedWord.isEmpty()) return false
+
+        val hasOnlyAllowedCharacters = trimmedWord.all { symbol ->
+            symbol.isLetter() || symbol == '\'' || symbol == '-'
+        }
+        if (!hasOnlyAllowedCharacters) return false
+
+        val lettersOnly = trimmedWord.filter { symbol -> symbol.isLetter() }.lowercase()
+        if (lettersOnly.isEmpty()) return false
+        if (lettersOnly.length >= 4 && lettersOnly.toSet().size == 1) return false
+
+        return true
+    }
+
+    override fun onCleared() {
+        runCatching {
+            runBlocking {
+                deleteDraftImages(assetIds = currentDraftImageAssetIds())
+            }
+        }
+        super.onCleared()
     }
 
     private fun updateDataOnAutocompleteSelected(word: String) {
@@ -471,3 +805,9 @@ abstract class CardManagementViewModel(
         }
     }
 }
+
+data class PreparedMnemonicSave(
+    val mnemonic: CardMnemonic,
+    val retainedSavedAssetId: String? = null,
+    val newlyCreatedSavedAssetId: String? = null,
+)

@@ -1,13 +1,20 @@
 package com.kuts.klaf.room
 
+import com.kuts.domain.entities.Card
+import com.kuts.domain.entities.CardMnemonic
+import com.kuts.domain.entities.Deck
+import com.kuts.domain.entities.StorageSaveVersion
 import com.kuts.klaf.room.entities.RoomCard
 import com.kuts.klaf.room.entities.RoomDeck
 import com.kuts.klaf.room.entities.RoomStorageSaveVersion
-import com.kuts.domain.entities.Card
-import com.kuts.domain.entities.Deck
-import com.kuts.domain.entities.StorageSaveVersion
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+
+private val cardJson = Json {
+    ignoreUnknownKeys = true
+    isLenient = true
+    explicitNulls = false
+}
 
 fun RoomDeck.toDomainEntity(): Deck = Deck(
     name = name,
@@ -44,8 +51,9 @@ fun RoomCard.toDomainEntity(): Card = Card(
     deckId = deckId,
     nativeWord = nativeWord,
     foreignWord = foreignWord,
-    ipa = Json.decodeFromString(string = ipa),
+    ipa = cardJson.decodeFromString(string = ipa),
     wordMeaningInsights = wordMeaningInsights,
+    mnemonic = mnemonicJson.toCardMnemonic(),
     id = id
 )
 
@@ -53,8 +61,9 @@ fun Card.toRoomEntity(): RoomCard = RoomCard(
     deckId = deckId,
     nativeWord = nativeWord,
     foreignWord = foreignWord,
-    ipa = Json.encodeToString(value = ipa),
+    ipa = cardJson.encodeToString(value = ipa),
     wordMeaningInsights = wordMeaningInsights,
+    mnemonicJson = cardJson.encodeToString(value = mnemonic),
     id = id
 )
 
@@ -65,3 +74,11 @@ fun StorageSaveVersion.toRoomEntity(): RoomStorageSaveVersion = RoomStorageSaveV
 fun RoomStorageSaveVersion.toDomainEntity(): StorageSaveVersion = StorageSaveVersion(
     version = version
 )
+
+private fun String.toCardMnemonic(): CardMnemonic {
+    if (isBlank()) return CardMnemonic.EMPTY
+
+    return runCatching {
+        cardJson.decodeFromString<CardMnemonic>(this)
+    }.getOrDefault(defaultValue = CardMnemonic.EMPTY)
+}

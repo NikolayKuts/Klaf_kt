@@ -19,6 +19,7 @@ import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.FetchDeckRepetitionInfoUseCase
 import com.kuts.domain.useCases.FetchDeckSourceUseCase
 import com.kuts.domain.useCases.FetchMnemonicAssociationUseCase
+import com.kuts.domain.useCases.FetchMnemonicImageUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.domain.useCases.FetchWordMeaningInsightsUseCase
@@ -172,6 +173,12 @@ private fun Module.commonUseCaseModule() {
     factory {
         FetchMnemonicAssociationUseCase(
             mnemonicAssociationRepository = get(),
+            coroutineContextProvider = get(),
+        )
+    }
+    factory {
+        FetchMnemonicImageUseCase(
+            mnemonicImageRepository = get(),
             coroutineContextProvider = get(),
         )
     }

@@ -12,6 +12,8 @@ import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IDeckRepetitionInfoRepository
 import com.kuts.domain.repositories.IDeckRepository
 import com.kuts.domain.repositories.IMnemonicAssociationRepository
+import com.kuts.domain.repositories.IMnemonicImageAssetRepository
+import com.kuts.domain.repositories.IMnemonicImageRepository
 import com.kuts.domain.repositories.IOldAppKlafDataTransferRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IWordAutocompleteRepository
@@ -33,6 +35,7 @@ import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
 import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
+import com.kuts.klaf.mnemonic.IosNoOpMnemonicImageAssetRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
 import org.koin.core.module.Module
@@ -75,6 +78,8 @@ private fun Module.iosRepositoryModule() {
         OpenAiWordMeaningInsightsRepository(client = OpenAiHttpClientFactory().create())
     }
     single<IMnemonicAssociationRepository> { IosNoOpMnemonicAssociationRepository() }
+    single<IMnemonicImageRepository> { IosNoOpMnemonicImageRepository() }
+    single<IMnemonicImageAssetRepository> { IosNoOpMnemonicImageAssetRepository() }
     single<IWordInsightsProviderManager> { IosNoOpWordInsightsProviderManager() }
     single<IDeckRepetitionInfoRepository> { IosInMemoryDeckRepetitionInfoRepository() }
     single<IOldAppKlafDataTransferRepository> { IosNoOpOldAppKlafDataTransferRepository() }
@@ -93,7 +98,20 @@ private fun Module.iosManagerBindings() {
 }
 
 private class IosNoOpMnemonicAssociationRepository : IMnemonicAssociationRepository {
-    override suspend fun fetchMnemonicAssociation(word: String): MnemonicAssociation {
+    override suspend fun fetchMnemonicAssociation(
+        word: String,
+        comment: String?,
+        excludedSoundAnchors: List<String>,
+    ): MnemonicAssociation {
         throw UnsupportedOperationException("Mnemonic association requests are unavailable on iOS.")
+    }
+}
+
+private class IosNoOpMnemonicImageRepository : IMnemonicImageRepository {
+    override suspend fun fetchMnemonicImage(
+        selection: com.kuts.domain.entities.MnemonicSelection,
+        comment: String?,
+    ): ByteArray {
+        throw UnsupportedOperationException("Mnemonic image requests are unavailable on iOS.")
     }
 }

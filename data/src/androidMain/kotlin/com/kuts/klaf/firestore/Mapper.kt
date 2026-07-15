@@ -1,21 +1,28 @@
 package com.kuts.klaf.firestore
 
+import com.kuts.domain.entities.AutocompleteWord
+import com.kuts.domain.entities.Card
+import com.kuts.domain.entities.CardMnemonic
+import com.kuts.domain.entities.CefrLevel
+import com.kuts.domain.entities.Deck
+import com.kuts.domain.entities.StorageSaveVersion
+import com.kuts.domain.entities.WordMeaningInsights
+import com.kuts.domain.entities.WordMeaningItem
 import com.kuts.klaf.firestore.entities.FirestoreAutocompleteWord
 import com.kuts.klaf.firestore.entities.FirestoreCard
 import com.kuts.klaf.firestore.entities.FirestoreDeck
 import com.kuts.klaf.firestore.entities.FirestoreStorageSaveVersion
 import com.kuts.klaf.firestore.entities.FirestoreWordMeaningInsights
 import com.kuts.klaf.firestore.entities.FirestoreWordMeaningItem
-import com.kuts.domain.entities.AutocompleteWord
-import com.kuts.domain.entities.CefrLevel
-import com.kuts.domain.entities.Card
-import com.kuts.domain.entities.Deck
-import com.kuts.domain.entities.StorageSaveVersion
-import com.kuts.domain.entities.WordMeaningInsights
-import com.kuts.domain.entities.WordMeaningItem
 import com.lib.lokdroid.core.logE
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+
+private val firestoreCardJson = Json {
+    ignoreUnknownKeys = true
+    isLenient = true
+    explicitNulls = false
+}
 
 fun FirestoreDeck.toDomainEntity(): Deck = Deck(
     name = name,
@@ -51,8 +58,9 @@ fun FirestoreCard.toDomainEntity(): Card = Card(
     deckId = deckId,
     nativeWord = nativeWord,
     foreignWord = foreignWord,
-    ipa = Json.decodeFromString(string = ipa),
+    ipa = firestoreCardJson.decodeFromString(string = ipa),
     wordMeaningInsights = wordMeaningInsights?.toDomainEntity() ?: WordMeaningInsights.EMPTY,
+    mnemonic = mnemonicJson.toCardMnemonic(),
     id = id
 )
 
@@ -60,8 +68,9 @@ fun Card.toFirestoreEntity(): FirestoreCard = FirestoreCard(
     deckId = deckId,
     nativeWord = nativeWord,
     foreignWord = foreignWord,
-    ipa = Json.encodeToString(value = ipa),
+    ipa = firestoreCardJson.encodeToString(value = ipa),
     wordMeaningInsights = wordMeaningInsights.toFirestoreEntityOrNull(),
+    mnemonicJson = firestoreCardJson.encodeToString(value = mnemonic),
     id = id
 )
 
@@ -133,4 +142,12 @@ private fun String.toCefrLevelOrDefault(): CefrLevel {
     }.onFailure { error ->
         logE("Failed to parse CEFR level from '$this'\n${error.stackTraceToString()}")
     }.getOrDefault(defaultValue = CefrLevel.A1)
+}
+
+private fun String.toCardMnemonic(): CardMnemonic {
+    if (isBlank()) return CardMnemonic.EMPTY
+
+    return runCatching {
+        firestoreCardJson.decodeFromString<CardMnemonic>(this)
+    }.getOrDefault(defaultValue = CardMnemonic.EMPTY)
 }
