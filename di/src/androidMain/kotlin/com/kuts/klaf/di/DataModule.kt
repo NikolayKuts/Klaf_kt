@@ -13,6 +13,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.entities.DeckRepetitionInfos
 import com.kuts.domain.managers.IAppMaintenanceManager
@@ -28,6 +29,7 @@ import com.kuts.domain.repositories.IDeckRepository
 import com.kuts.domain.repositories.IMnemonicAssociationRepository
 import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.domain.repositories.IMnemonicImageRepository
+import com.kuts.domain.repositories.IMnemonicImageRemoteRepository
 import com.kuts.domain.repositories.IOldAppKlafDataTransferRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IWordAutocompleteRepository
@@ -50,6 +52,7 @@ import com.kuts.klaf.common.notifications.NotificationChannelInitializer
 import com.kuts.klaf.dataStore.DECK_REPETITION_INFO_FILE_NAME
 import com.kuts.klaf.dataStore.DeckRepetitionInfosSerializer
 import com.kuts.klaf.dataStore.implementations.DataStoreDeckRepetitionInfoRepository
+import com.kuts.klaf.firebaseStorage.AndroidMnemonicImageRemoteRepository
 import com.kuts.klaf.firestore.AndroidFirebaseAuthenticationSessionManager
 import com.kuts.klaf.firestore.repositoryImplementations.AndroidAuthenticationRepositoryFirebase
 import com.kuts.klaf.firestore.repositoryImplementations.AndroidCardRepositoryFirestore
@@ -171,6 +174,12 @@ private fun Module.androidRepositoryModule() {
     single<IMnemonicImageAssetRepository> {
         AndroidMnemonicImageAssetRepository(context = androidContext())
     }
+    single<IMnemonicImageRemoteRepository> {
+        AndroidMnemonicImageRemoteRepository(
+            storage = get(),
+            auth = get(),
+        )
+    }
     single<IWordMeaningInsightsRepository> {
         SwitchableWordMeaningInsightsRepository(
             manager = get(),
@@ -200,6 +209,7 @@ private fun Module.infrastructureModule() {
 
     single { FirebaseFirestore.getInstance() }
     single { FirebaseAuth.getInstance() }
+    single { FirebaseStorage.getInstance() }
     single<FirebaseCrashlytics> { Firebase.crashlytics }
 
     single<DataStore<DeckRepetitionInfos>>(

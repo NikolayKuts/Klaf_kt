@@ -139,6 +139,7 @@ firebase-analytics-kts = { group = "com.google.firebase", name = "firebase-analy
 firebase-rirestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 firebase-authentication = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthenticationKtx" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx", version.ref = "firebaseCrashlyticsKtx" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage-ktx" }
 
 # Compose #
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }

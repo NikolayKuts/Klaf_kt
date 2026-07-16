@@ -4,6 +4,7 @@ import com.kuts.domain.common.DataSynchronizationValidator
 import com.kuts.domain.interactors.AuthenticationInteractor
 import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.IDeckRepository
+import com.kuts.domain.repositories.IMnemonicImageRemoteRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IStorageTransactionRepository
 import com.kuts.domain.useCases.AddNewCardIntoDeckUseCase
@@ -97,12 +98,13 @@ private fun Module.commonUseCaseModule() {
             localStorageSaveVersionRepository = get(
                 qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
+            localMnemonicImageAssetRepository = get(),
             remoteDeckRepository = get(qualifier = named(name = REMOTE_DECK_REPOSITORY)),
             remoteCardRepository = get(qualifier = named(name = REMOTE_CARD_REPOSITORY)),
             remoteStorageSaveVersionRepository = get(
                 qualifier = named(name = REMOTE_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
-            dataSynchronizationValidator = get(),
+            remoteMnemonicImageRepository = get(),
             coroutineContextProvider = get(),
         )
     }
@@ -254,11 +256,13 @@ private fun Module.commonUseCaseModule() {
             localStorageSaveVersionRepository = get(
                 qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
+            localMnemonicImageAssetRepository = get(),
             remoteDeckRepository = get(qualifier = named(name = REMOTE_DECK_REPOSITORY)),
             remoteCardRepository = get(qualifier = named(name = REMOTE_CARD_REPOSITORY)),
             remoteStorageSaveVersionRepository = get(
                 qualifier = named(name = REMOTE_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
+            remoteMnemonicImageRepository = get<IMnemonicImageRemoteRepository>(),
             dataSynchronizationValidator = get(),
             coroutineContextProvider = get(),
         )

@@ -12,7 +12,13 @@ class IosNoOpMnemonicImageAssetRepository : IMnemonicImageAssetRepository {
         throw UnsupportedOperationException("Mnemonic image storage is unavailable on iOS.")
     }
 
+    override suspend fun importSavedImage(assetId: String, imageBytes: ByteArray): MnemonicImageAsset {
+        throw UnsupportedOperationException("Mnemonic image storage is unavailable on iOS.")
+    }
+
     override suspend fun resolveSavedImage(assetId: String): MnemonicImageAsset? = null
+
+    override suspend fun readSavedImageBytes(assetId: String): ByteArray? = null
 
     override suspend fun deleteDraftImage(assetId: String) = Unit
 

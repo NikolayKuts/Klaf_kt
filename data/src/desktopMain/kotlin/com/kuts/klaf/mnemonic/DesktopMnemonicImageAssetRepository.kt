@@ -45,12 +45,34 @@ class DesktopMnemonicImageAssetRepository : IMnemonicImageAssetRepository {
         )
     }
 
+    override suspend fun importSavedImage(assetId: String, imageBytes: ByteArray): MnemonicImageAsset {
+        findSavedFile(assetId = assetId)?.delete()
+
+        val targetFile = savedFile(
+            assetId = assetId,
+            imageExtension = detectImageExtension(imageBytes = imageBytes),
+        )
+
+        targetFile.writeBytes(imageBytes)
+
+        return targetFile.toMnemonicImageAsset(
+            assetId = assetId,
+            storage = MnemonicImageAssetStorage.Saved,
+        )
+    }
+
     override suspend fun resolveSavedImage(assetId: String): MnemonicImageAsset? {
         val targetFile = findSavedFile(assetId = assetId)
         return targetFile?.takeIf { file -> file.exists() }?.toMnemonicImageAsset(
             assetId = assetId,
             storage = MnemonicImageAssetStorage.Saved,
         )
+    }
+
+    override suspend fun readSavedImageBytes(assetId: String): ByteArray? {
+        return findSavedFile(assetId = assetId)
+            ?.takeIf { file -> file.exists() }
+            ?.readBytes()
     }
 
     override suspend fun deleteDraftImage(assetId: String) {

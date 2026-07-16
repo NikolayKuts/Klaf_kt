@@ -74,6 +74,7 @@ kotlin {
                 implementation(libs.firebase.authentication)
                 implementation(libs.firebase.coroutine.play.services)
                 implementation(libs.firebase.crashlytics)
+                implementation(libs.firebase.storage)
 
                 implementation(libs.work.manager)
 
@@ -106,6 +107,8 @@ android {
 }
 
 dependencies {
+    add("androidMainImplementation", platform(libs.firebase.bom))
+
     setOf(
         "kspCommonMainMetadata",
         "kspDesktop",

@@ -21,6 +21,7 @@ import com.kuts.domain.repositories.IDeckRepository
 import com.kuts.domain.repositories.IMnemonicAssociationRepository
 import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.domain.repositories.IMnemonicImageRepository
+import com.kuts.domain.repositories.IMnemonicImageRemoteRepository
 import com.kuts.domain.repositories.IOldAppKlafDataTransferRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IWordAutocompleteRepository
@@ -32,6 +33,7 @@ import com.kuts.klaf.networking.codexApp.CodexAppMnemonicAssociationRepository
 import com.kuts.klaf.networking.codexApp.CodexAppMnemonicImageRepository
 import com.kuts.klaf.networking.codexApp.DesktopCodexAppHttpClientFactory
 import com.kuts.klaf.networking.codexApp.ICodexAppHttpClientFactory
+import com.kuts.klaf.mnemonic.DesktopNoOpMnemonicImageRemoteRepository
 import com.kuts.klaf.mnemonic.DesktopMnemonicImageAssetRepository
 import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
 import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
@@ -119,6 +121,7 @@ private fun Module.desktopRepositoryModule() {
         )
     }
     single<IMnemonicImageAssetRepository> { DesktopMnemonicImageAssetRepository() }
+    single<IMnemonicImageRemoteRepository> { DesktopNoOpMnemonicImageRemoteRepository() }
     single<IWordMeaningInsightsRepository> {
         SwitchableWordMeaningInsightsRepository(
             manager = get(),

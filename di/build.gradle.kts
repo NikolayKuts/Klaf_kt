@@ -69,6 +69,7 @@ kotlin {
                 implementation(libs.firebase.rirestore.ktx)
                 implementation(libs.firebase.authentication)
                 implementation(libs.firebase.crashlytics)
+                implementation(libs.firebase.storage)
 
                 implementation(libs.cambridge.dictionary.client)
                 implementation(libs.cambridge.dictionary.core)
