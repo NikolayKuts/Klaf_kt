@@ -8,8 +8,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -37,6 +39,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -66,6 +69,7 @@ import com.kuts.domain.common.DeckRepetitionState
 import com.kuts.domain.common.ifTrue
 import com.kuts.domain.entities.Card
 import com.kuts.domain.entities.CefrLevel
+import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.domain.entities.WordMeaningInsights
 import com.kuts.domain.entities.WordMeaningItem
 import com.kuts.domain.enums.DifficultyRecallingLevel.EASY
@@ -86,6 +90,7 @@ import com.kuts.klaf.common.RepetitionTimerState
 import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.TimerCountingState
 import com.kuts.klaf.common.WordInsightsBottomSheetContent
+import com.kuts.klaf.cardManagement.mnemonic.MnemonicImagePreview
 import com.kuts.klaf.common.timeAsString
 import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent.Non
 import com.kuts.klaf.navigation.AppDestination
@@ -97,6 +102,7 @@ import com.kuts.klaf.webContent.WebContentSource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -254,6 +260,13 @@ private fun DeckRepetitionContent(
     val minContentHeightPx = density.run { 400.dp.toPx() }
     val currentCard = deckRepetitionState.card
     val insightsSheetState = rememberModalBottomSheetState()
+    var isMnemonicImageVisible by remember(
+        currentCard?.id,
+        deckRepetitionState.side,
+        deckRepetitionState.repetitionOrder,
+    ) {
+        mutableStateOf(false)
+    }
 
     ScrollableBox { parentHeightPx ->
         val contentHeight = when {
@@ -323,6 +336,8 @@ private fun DeckRepetitionContent(
                         .weight(1f)
                         .padding(vertical = 8.dp),
                     deckRepetitionState = deckRepetitionState,
+                    isMnemonicImageVisible = isMnemonicImageVisible,
+                    onMnemonicImageVisibilityChange = { isMnemonicImageVisible = it },
                     onWordClick = onWordClick,
                 )
 
@@ -370,7 +385,7 @@ private fun DeckRepetitionContent(
         )
     }
 
-    val shouldPauseTimer = showExitDialog || isInsightsSheetVisible
+    val shouldPauseTimer = showExitDialog || isInsightsSheetVisible || isMnemonicImageVisible
 
     LaunchedEffect(key1 = shouldPauseTimer) {
         if (shouldPauseTimer) {
@@ -586,10 +601,15 @@ private fun DeckRepetitionContentPreviewContent(darkTheme: Boolean) {
 @Composable
 private fun DeckCard(
     deckRepetitionState: DeckRepetitionState,
+    isMnemonicImageVisible: Boolean,
+    onMnemonicImageVisibilityChange: (Boolean) -> Unit,
     onWordClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val card = deckRepetitionState.card ?: return
+    val mnemonicImageAssetId = card.mnemonic.selectedIllustration?.imageAssetId?.takeIf(String::isNotBlank)
+    val mnemonicImagePath = rememberSavedMnemonicImagePath(imageAssetId = mnemonicImageAssetId)
+    val isForeignWordVisible = deckRepetitionState.isForeignWordVisible()
     val word: String
     var ipaPrompt = emptyList<LetterInfo>()
 
@@ -653,6 +673,78 @@ private fun DeckCard(
                 )
             }
         }
+
+        mnemonicImagePath?.let { imagePath ->
+            MnemonicImageHolder(
+                imagePath = imagePath,
+                isContentVisible = isForeignWordVisible && isMnemonicImageVisible,
+                canRevealContent = isForeignWordVisible,
+                onClick = {
+                    if (isForeignWordVisible) {
+                        onMnemonicImageVisibilityChange(isMnemonicImageVisible.not())
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth(0.58f)
+                    .aspectRatio(0.78f)
+                    .padding(top = 12.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun MnemonicImageHolder(
+    imagePath: String,
+    isContentVisible: Boolean,
+    canRevealContent: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val backgroundColor = MainTheme.colors.common.dialogBackground.copy(alpha = 0.42f)
+    val borderColor = MainTheme.colors.common.separator.copy(alpha = 0.55f)
+    val iconRes = if (isContentVisible) Res.drawable.ic_visibility_off else Res.drawable.ic_visibility
+
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(18.dp))
+            .border(width = 1.dp, color = borderColor, shape = RoundedCornerShape(18.dp))
+            .background(backgroundColor)
+            .clickable(enabled = canRevealContent, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (isContentVisible) {
+            MnemonicImagePreview(
+                imagePath = imagePath,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+            )
+        } else {
+            Icon(
+                painter = painterResource(resource = iconRes),
+                contentDescription = null,
+                tint = MainTheme.colors.common.separator,
+            )
+        }
+    }
+}
+
+@Composable
+private fun rememberSavedMnemonicImagePath(imageAssetId: String?): String? {
+    if (imageAssetId == null) return null
+
+    val imageRepository = koinInject<IMnemonicImageAssetRepository>()
+    val imagePath by produceState<String?>(initialValue = null, key1 = imageAssetId, key2 = imageRepository) {
+        value = imageRepository.resolveSavedImage(assetId = imageAssetId)?.filePath
+    }
+
+    return imagePath
+}
+
+private fun DeckRepetitionState.isForeignWordVisible(): Boolean {
+    return when (repetitionOrder) {
+        CardRepetitionOrder.NATIVE_TO_FOREIGN -> side == CardSide.BACK
+        CardRepetitionOrder.FOREIGN_TO_NATIVE -> side == CardSide.FRONT
     }
 }
 
