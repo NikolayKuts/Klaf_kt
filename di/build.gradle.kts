@@ -20,12 +20,13 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_17)
         }
     }
-    val iosX64 = iosX64()
+    // iosX64 (Intel simulator) dropped with Compose Multiplatform 1.11: it is no longer
+    // published for that target. Apple Silicon uses iosSimulatorArm64.
     val iosArm64 = iosArm64()
     val iosSimulatorArm64 = iosSimulatorArm64()
 
     val frameworkName = "KlafAppKit"
-    listOf(iosX64, iosArm64, iosSimulatorArm64).forEach { iosTarget ->
+    listOf(iosArm64, iosSimulatorArm64).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = frameworkName
         }
@@ -49,7 +50,6 @@ kotlin {
                 implementation(libs.koin.compose.viewmodel)
             }
         }
-        val iosX64Main by getting { dependsOn(iosMain) }
         val iosArm64Main by getting { dependsOn(iosMain) }
         val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
 
@@ -71,8 +71,11 @@ kotlin {
                 implementation(libs.firebase.crashlytics)
                 implementation(libs.firebase.storage)
 
-                implementation(libs.cambridge.dictionary.client)
-                implementation(libs.cambridge.dictionary.core)
+                // Cambridge dictionary is off the classpath entirely, not merely unused: it is
+                // built against Ktor 2, and its reference to a class Ktor 3 removed crashed the app
+                // wherever it was touched. Ktor 3 is required by the AgentDriver client SDK, so the
+                // library has to be rebuilt before it can come back. See
+                // AndroidNoOpCambridgeWordDataProvider.
                 implementation(libs.lokdroid)
 
                 implementation(libs.koin.android)

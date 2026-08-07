@@ -19,5 +19,10 @@ gradlePlugin {
 dependencies {
     implementation(libs.agp)
     implementation(libs.kotlin.gradle.plugin)
-    implementation(libs.bundles.ktor)
+
+    // Deliberately not libs.bundles.ktor, which follows the app. This module is `kotlin-dsl`, so it
+    // compiles at the Kotlin API version Gradle embeds, and cannot read a Ktor built with a newer
+    // one. The upload plugin only posts a file, so it takes its own pinned client instead.
+    implementation(libs.buildLogic.ktor.client.core)
+    implementation(libs.buildLogic.ktor.client.okhttp)
 }

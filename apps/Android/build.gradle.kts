@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import com.example.klaf.di.dependencies.*
 
 plugins {
@@ -40,9 +41,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+    // kotlinOptions.jvmTarget became an error in Kotlin 2.3; the compilerOptions DSL replaces it.
 
     buildFeatures {
         viewBinding = true
@@ -50,6 +49,12 @@ android {
     }
 
     namespace = "com.kuts.klaf"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
 }
 
 dependencies {

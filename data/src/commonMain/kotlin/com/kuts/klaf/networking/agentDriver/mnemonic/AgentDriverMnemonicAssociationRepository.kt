@@ -1,23 +1,20 @@
-package com.kuts.klaf.networking.codexApp
+package com.kuts.klaf.networking.agentDriver.mnemonic
 
 import com.kuts.domain.entities.MnemonicAssociation
 import com.kuts.domain.repositories.IMnemonicAssociationRepository
 import com.kuts.klaf.common.MnemonicAssociationPayload
-import com.kuts.klaf.common.MnemonicAssociationRequestPayload
 import com.kuts.klaf.common.toDomainEntity
-import io.ktor.client.HttpClient
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
-import io.ktor.http.isSuccess
+import com.kuts.klaf.networking.agentDriver.AgentDriverSession
+import com.kuts.klaf.networking.agentDriver.toShortAgentDriverMessage
+import com.lib.lokdroid.core.logD
+import com.lib.lokdroid.core.logE
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
+import org.agentdriver.project.protocol.TextGenerationRequest
 
-class CodexAppMnemonicAssociationRepository(
-    private val client: HttpClient,
-    private val codexServerUrl: String,
-    private val codexModel: String? = null,
+/** Asks the assistant for a mnemonic association, and checks that the answer is one. */
+class AgentDriverMnemonicAssociationRepository(
+    private val agentDriverSession: AgentDriverSession,
 ) : IMnemonicAssociationRepository {
 
     @Suppress("OPT_IN_USAGE")
@@ -33,70 +30,45 @@ class CodexAppMnemonicAssociationRepository(
         excludedSoundAnchors: List<String>,
     ): MnemonicAssociation {
         val requestedWord = word.trim()
-        val trimmedComment = comment?.trim()?.ifBlank { null }
-        val normalizedExcludedAnchors = excludedSoundAnchors
-            .mapNotNull { anchor -> anchor.trim().ifBlank { null } }
-            .distinctBy(String::toMnemonicKey)
-
         require(value = requestedWord.isNotBlank()) { "Mnemonic request word must not be blank." }
 
-        val response = client.post(urlString = resolveMnemonicTextUrl(codexServerUrl)) {
-            contentType(ContentType.Application.Json)
-            setBody(
-                body = json.encodeToString(
-                    serializer = MnemonicAssociationRequestPayload.serializer(),
-                    value = MnemonicAssociationRequestPayload(
-                        word = requestedWord,
-                        comment = trimmedComment,
-                        excludedSoundAnchors = normalizedExcludedAnchors,
-                        model = codexModel?.trim()?.ifBlank { null },
-                    ),
+        val (prompt, responseSchema) = MnemonicPromptFactory.buildTextPrompt(
+            word = requestedWord,
+            comment = comment?.trim()?.ifBlank { null },
+            excludedSoundAnchors = excludedSoundAnchors
+                .mapNotNull { anchor -> anchor.trim().ifBlank { null } }
+                .distinctBy(String::toMnemonicKey),
+        )
+
+        val rawResponse = try {
+            agentDriverSession.generateText(
+                request = TextGenerationRequest(
+                    prompt = prompt,
+                    responseSchema = responseSchema,
                 ),
-            )
-        }
-
-        val responseBody = response.bodyAsText().trim()
-        if (!response.status.isSuccess()) {
+            ).also { response ->
+                logD("Mnemonic association for \"$requestedWord\": ${response.length} characters")
+            }
+        } catch (cancellationException: CancellationException) {
+            throw cancellationException
+        } catch (throwable: Throwable) {
+            logE("Mnemonic association request failed: ${throwable::class.simpleName} -- $throwable")
             throw IllegalArgumentException(
-                responseBody.ifBlank { "Mnemonic association request failed." }.toSingleLineMessage()
+                "Mnemonic association request failed. ${throwable.toShortAgentDriverMessage()}",
+                throwable,
             )
         }
 
+        // Plain JSON, no code fence to strip: the request carried a response schema, and an answer
+        // to one arrives as the object it describes.
         val payload = json.decodeFromString(
             deserializer = MnemonicAssociationPayload.serializer(),
-            string = responseBody.unwrapMarkdownCodeFence(),
+            string = rawResponse,
         )
         payload.validateForRequestedWord(requestedWord = requestedWord)
         return payload.toDomainEntity()
     }
 }
-
-private fun resolveMnemonicTextUrl(serverUrl: String): String {
-    val normalizedServerUrl = serverUrl.trim()
-    require(value = normalizedServerUrl.isNotBlank()) {
-        "Codex App server URL is not configured."
-    }
-
-    val httpBaseUrl = when {
-        normalizedServerUrl.startsWith(prefix = "ws://") -> {
-            "http://${normalizedServerUrl.removePrefix(prefix = "ws://").trimEnd('/')}"
-        }
-
-        normalizedServerUrl.startsWith(prefix = "wss://") -> {
-            "https://${normalizedServerUrl.removePrefix(prefix = "wss://").trimEnd('/')}"
-        }
-
-        else -> normalizedServerUrl.trimEnd('/')
-    }
-
-    return "$httpBaseUrl/mnemonic/text"
-}
-
-private fun String.unwrapMarkdownCodeFence(): String = trim()
-    .removePrefix("```json")
-    .removePrefix("```")
-    .removeSuffix("```")
-    .trim()
 
 private fun MnemonicAssociationPayload.validateForRequestedWord(requestedWord: String) {
     require(word.toWordKey() == requestedWord.toWordKey()) {
@@ -129,11 +101,3 @@ private fun MnemonicAssociationPayload.validateForRequestedWord(requestedWord: S
 
 private fun String.toWordKey(): String = trim().lowercase()
 private fun String.toMnemonicKey(): String = trim().lowercase()
-
-private fun String.toSingleLineMessage(): String {
-    return lineSequence()
-        .firstOrNull()
-        ?.trim()
-        .orEmpty()
-        .ifBlank { "Mnemonic association request failed." }
-}

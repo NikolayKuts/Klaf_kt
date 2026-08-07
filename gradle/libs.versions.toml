@@ -1,14 +1,21 @@
 [versions] # =======================================================================================
 kotlinCompilerExtension = "1.5.9"
 googleServices = "4.4.2"
-agp = "8.9.1"
-kotlin = "2.2.20"
+agp = "8.13.2"
+kotlin = "2.3.21"
 firevaseCrashlyticsPlugin = "3.0.2"
 androidMinSdk = "26"
 androidCompileSdk = "36"
 
 # Ktor #
-ktor = "2.3.10"
+ktor = "3.5.1"
+
+# Ktor for build-logic, pinned apart from the app's.
+#
+# build-logic is a `kotlin-dsl` project, so it compiles at the Kotlin API version Gradle embeds --
+# older than the one the app uses. A Ktor built with a newer Kotlin is unreadable there, and the
+# APK-upload plugin only needs an HTTP client, so nothing is gained by keeping the two in step.
+ktorBuildLogic = "2.3.10"
 
 # DataStore #
 dataStore = "1.1.1"
@@ -63,13 +70,16 @@ firebaseCrashlyticsKtx = "19.0.3"
 # Compose #
 composeBom = "2024.06.00"
 composeComiler = "1.5.14"
-composeMultiplatform = "1.10.1"
+composeMultiplatform = "1.11.1"
 
 # LoKdroid #
 lokdroid = "0.1.2-alpha"
 
+# AgentDriver SDK #
+agentdriver = "0.6.0-SNAPSHOT"
+
 # KSP #
-ksp = "2.2.20-2.0.4"
+ksp = "2.3.11"
 
 # Cambridge Lib #
 cambridgeLib = "1.0.0"
@@ -170,6 +180,10 @@ datastore-preferences-android = { group = "androidx.datastore", name = "datastor
 
 # Ktor #
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+
+# build-logic only -- see ktorBuildLogic #
+buildLogic-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorBuildLogic" }
+buildLogic-ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktorBuildLogic" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
@@ -179,6 +193,9 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 
 # LoKdroid #
 lokdroid = { group = "io.github.nikolaykuts", name = "lokdroid", version.ref = "lokdroid" }
+
+# AgentDriver SDK -- the assistant client that replaced the hand-written Codex JSON-RPC bridge #
+agentdriver-client = { group = "io.github.nikolaykuts", name = "client", version.ref = "agentdriver" }
 
 # Cambridge Lib #
 cambridge-dictionary-core  = { group = "com.cambridge.dictionary", name = "core", version.ref = "cambridgeLib" }
@@ -199,7 +216,7 @@ androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
 ktor = ["ktor-client-okhttp", "ktor-client-core", "ktor-client-cio", "ktor-client-content-negotiation", "ktor-serialization-kotlinx-json"]
 
 [plugins] # ========================================================================================
-android-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerializationPlugin" }
+android-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
@@ -207,7 +224,7 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firevaseCrashlyticsPlugin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 telegramAppDistribution = { id = "telegram-app-distribution-plugin" }
-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
+jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 # Compose
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }

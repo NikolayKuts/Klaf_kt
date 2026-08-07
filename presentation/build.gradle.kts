@@ -14,12 +14,13 @@ kotlin {
     jvm("desktop")
 
     androidTarget()
-    val iosX64 = iosX64()
+    // iosX64 (Intel simulator) dropped with Compose Multiplatform 1.11: it is no longer
+    // published for that target. Apple Silicon uses iosSimulatorArm64.
     val iosArm64 = iosArm64()
     val iosSimulatorArm64 = iosSimulatorArm64()
 
     val frameworkName = "PresentationKit"
-    listOf(iosX64, iosArm64, iosSimulatorArm64).forEach { iosTarget ->
+    listOf(iosArm64, iosSimulatorArm64).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = frameworkName
         }
@@ -73,7 +74,9 @@ kotlin {
 
                 implementation(libs.firebase.authentication)
 
-                implementation(platform(libs.compose.bom.get()))
+                // KT-58759: a source set's own platform(Any) became an error in Kotlin 2.3, and
+                // Gradle's typed one has to be reached through `dependencies` from in here.
+                implementation(dependencies.platform(libs.compose.bom))
                 implementation(libs.compose.runtime)
                 implementation(libs.compose.ui)
                 implementation(libs.compose.foundation)

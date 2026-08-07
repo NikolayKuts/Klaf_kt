@@ -28,22 +28,20 @@ import com.kuts.domain.repositories.IWordAutocompleteRepository
 import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.repositories.IWordMeaningInsightsRepository
 import com.kuts.klaf.common.CoroutineContextProvider
-import com.kuts.klaf.networking.codexApp.CodexAppWordMeaningInsightsRepository
-import com.kuts.klaf.networking.codexApp.CodexAppMnemonicAssociationRepository
-import com.kuts.klaf.networking.codexApp.CodexAppMnemonicImageRepository
-import com.kuts.klaf.networking.codexApp.DesktopCodexAppHttpClientFactory
-import com.kuts.klaf.networking.codexApp.ICodexAppHttpClientFactory
+import com.kuts.klaf.networking.agentDriver.AgentDriverWordMeaningInsightsRepository
+import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicAssociationRepository
+import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicImageRepository
 import com.kuts.klaf.mnemonic.DesktopNoOpMnemonicImageRemoteRepository
 import com.kuts.klaf.mnemonic.DesktopMnemonicImageAssetRepository
 import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
 import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
 import com.kuts.klaf.networking.wordInsights.SwitchableWordMeaningInsightsRepository
+import com.kuts.klaf.networking.agentDriver.AgentDriverSession
 import com.kuts.klaf.networking.wordInsights.WordInsightsProviderManager
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
-import io.ktor.client.HttpClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -95,30 +93,30 @@ private fun Module.desktopRepositoryModule() {
     single {
         WordInsightsProviderManager(
             dataStore = get(qualifier = named(name = APP_PREFERENCES_DATA_STORE)),
-            codexClient = get(qualifier = named(name = CODEX_APP_HTTP_CLIENT)),
+            agentDriverSession = get(),
             coroutineContextProvider = get(),
-            codexServerUrl = com.kuts.klaf.SecretConstants.CodexApp.appServerUrlOrNull().orEmpty(),
-            codexModel = com.kuts.klaf.SecretConstants.CodexApp.modelOrNull(),
+        )
+    }
+    // One connection to the AgentDriver server for the whole app: every feature that asks the
+    // assistant anything shares this session rather than opening its own.
+    single {
+        AgentDriverSession(
+            serverHost = com.kuts.klaf.SecretConstants.AgentDriver.serverHostOrNull().orEmpty(),
+            cloudflareAccessClientId = com.kuts.klaf.SecretConstants.AgentDriver.CLIENT_ID,
+            cloudflareAccessClientSecret = com.kuts.klaf.SecretConstants.AgentDriver.CLIENT_SECRET,
         )
     }
     single<IWordInsightsProviderManager> { get<WordInsightsProviderManager>() }
     single {
-        CodexAppWordMeaningInsightsRepository(
+        AgentDriverWordMeaningInsightsRepository(
             manager = get(),
         )
     }
     single<IMnemonicAssociationRepository> {
-        CodexAppMnemonicAssociationRepository(
-            client = get(qualifier = named(name = CODEX_APP_HTTP_CLIENT)),
-            codexServerUrl = com.kuts.klaf.SecretConstants.CodexApp.appServerUrlOrNull().orEmpty(),
-            codexModel = com.kuts.klaf.SecretConstants.CodexApp.modelOrNull(),
-        )
+        AgentDriverMnemonicAssociationRepository(agentDriverSession = get())
     }
     single<IMnemonicImageRepository> {
-        CodexAppMnemonicImageRepository(
-            client = get(qualifier = named(name = CODEX_APP_HTTP_CLIENT)),
-            codexServerUrl = com.kuts.klaf.SecretConstants.CodexApp.appServerUrlOrNull().orEmpty(),
-        )
+        AgentDriverMnemonicImageRepository(agentDriverSession = get())
     }
     single<IMnemonicImageAssetRepository> { DesktopMnemonicImageAssetRepository() }
     single<IMnemonicImageRemoteRepository> { DesktopNoOpMnemonicImageRemoteRepository() }
@@ -126,7 +124,7 @@ private fun Module.desktopRepositoryModule() {
         SwitchableWordMeaningInsightsRepository(
             manager = get(),
             openAiRepository = get(),
-            codexRepository = get(),
+            agentDriverRepository = get(),
         )
     }
     single<IDeckRepetitionInfoRepository> { DesktopInMemoryDeckRepetitionInfoRepository() }
@@ -137,10 +135,6 @@ private fun Module.desktopRepositoryModule() {
 private fun Module.desktopInfrastructureModule() {
     single<KlafRoomDatabase> { KlafRoomDatabaseProvider.getInstance() }
     single<ICoroutineContextProvider> { CoroutineContextProvider() }
-    single<ICodexAppHttpClientFactory> { DesktopCodexAppHttpClientFactory() }
-    single<HttpClient>(qualifier = named(name = CODEX_APP_HTTP_CLIENT)) {
-        get<ICodexAppHttpClientFactory>().create()
-    }
 }
 
 private fun Module.desktopManagerBindings() {

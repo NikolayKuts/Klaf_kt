@@ -23,7 +23,8 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_17)
         }
     }
-    iosX64()
+    // iosX64 (Intel simulator) dropped with Compose Multiplatform 1.11: it is no longer
+    // published for that target. Apple Silicon uses iosSimulatorArm64.
     iosArm64()
     iosSimulatorArm64()
 
@@ -44,6 +45,13 @@ kotlin {
 
                 /** LoKdroid **/
                 implementation(libs.lokdroid)
+
+                /**
+                 * AgentDriver client SDK. Replaces the hand-written Codex app-server JSON-RPC
+                 * session and its reconnect state machine: connecting, resuming, and turning a
+                 * turn's deltas back into an answer are the SDK's job now.
+                 */
+                api(libs.agentdriver.client)
             }
         }
 
@@ -53,7 +61,6 @@ kotlin {
                 implementation(libs.ktor.client.darwin)
             }
         }
-        val iosX64Main by getting { dependsOn(iosMain) }
         val iosArm64Main by getting { dependsOn(iosMain) }
         val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
 
@@ -113,7 +120,6 @@ dependencies {
         "kspCommonMainMetadata",
         "kspDesktop",
         "kspAndroid",
-        "kspIosX64",
         "kspIosArm64",
         "kspIosSimulatorArm64",
     ).forEach { configName ->

@@ -16,7 +16,8 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_17)
         }
     }
-    iosX64()
+    // iosX64 (Intel simulator) dropped with Compose Multiplatform 1.11: it is no longer
+    // published for that target. Apple Silicon uses iosSimulatorArm64.
     iosArm64()
     iosSimulatorArm64()
 

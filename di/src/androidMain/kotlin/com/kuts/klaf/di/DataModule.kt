@@ -7,7 +7,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
 import androidx.work.WorkManager
-import com.cambridge.dictionary.client.CambridgeClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.crashlytics.ktx.crashlytics
@@ -61,11 +60,10 @@ import com.kuts.klaf.firestore.repositoryImplementations.AndroidDeckRepositoryFi
 import com.kuts.klaf.firestore.repositoryImplementations.AndroidStorageSaveVersionRepositoryFirestore
 import com.kuts.klaf.firestore.repositoryImplementations.AndroidWordAutocompleteFirestore
 import com.kuts.klaf.networking.AndroidCardAudioPlayer
-import com.kuts.klaf.networking.codexApp.AndroidCodexAppHttpClientFactory
-import com.kuts.klaf.networking.codexApp.CodexAppMnemonicAssociationRepository
-import com.kuts.klaf.networking.codexApp.CodexAppMnemonicImageRepository
-import com.kuts.klaf.networking.codexApp.CodexAppWordMeaningInsightsRepository
-import com.kuts.klaf.networking.codexApp.ICodexAppHttpClientFactory
+import com.kuts.klaf.networking.agentDriver.AgentDriverSession
+import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicAssociationRepository
+import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicImageRepository
+import com.kuts.klaf.networking.agentDriver.AgentDriverWordMeaningInsightsRepository
 import com.kuts.klaf.mnemonic.AndroidMnemonicImageAssetRepository
 import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
 import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
@@ -76,7 +74,6 @@ import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
 import com.lib.lokdroid.core.LoKdroid
-import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -143,33 +140,33 @@ private fun Module.androidRepositoryModule() {
             client = OpenAiHttpClientFactory().create(),
         )
     }
+    // One connection to the AgentDriver server for the whole app: every feature that asks the
+    // assistant anything shares this session rather than opening its own.
+    single {
+        AgentDriverSession(
+            serverHost = com.kuts.klaf.SecretConstants.AgentDriver.serverHostOrNull().orEmpty(),
+            cloudflareAccessClientId = com.kuts.klaf.SecretConstants.AgentDriver.CLIENT_ID,
+            cloudflareAccessClientSecret = com.kuts.klaf.SecretConstants.AgentDriver.CLIENT_SECRET,
+        )
+    }
     single {
         WordInsightsProviderManager(
             dataStore = get(qualifier = named(name = APP_PREFERENCES_DATA_STORE)),
-            codexClient = get(qualifier = named(name = CODEX_APP_HTTP_CLIENT)),
+            agentDriverSession = get(),
             coroutineContextProvider = get(),
-            codexServerUrl = com.kuts.klaf.SecretConstants.CodexApp.appServerUrlOrNull().orEmpty(),
-            codexModel = com.kuts.klaf.SecretConstants.CodexApp.modelOrNull(),
         )
     }
     single<IWordInsightsProviderManager> { get<WordInsightsProviderManager>() }
     single {
-        CodexAppWordMeaningInsightsRepository(
+        AgentDriverWordMeaningInsightsRepository(
             manager = get(),
         )
     }
     single<IMnemonicAssociationRepository> {
-        CodexAppMnemonicAssociationRepository(
-            client = get(qualifier = named(name = CODEX_APP_HTTP_CLIENT)),
-            codexServerUrl = com.kuts.klaf.SecretConstants.CodexApp.appServerUrlOrNull().orEmpty(),
-            codexModel = com.kuts.klaf.SecretConstants.CodexApp.modelOrNull(),
-        )
+        AgentDriverMnemonicAssociationRepository(agentDriverSession = get())
     }
     single<IMnemonicImageRepository> {
-        CodexAppMnemonicImageRepository(
-            client = get(qualifier = named(name = CODEX_APP_HTTP_CLIENT)),
-            codexServerUrl = com.kuts.klaf.SecretConstants.CodexApp.appServerUrlOrNull().orEmpty(),
-        )
+        AgentDriverMnemonicImageRepository(agentDriverSession = get())
     }
     single<IMnemonicImageAssetRepository> {
         AndroidMnemonicImageAssetRepository(context = androidContext())
@@ -184,7 +181,7 @@ private fun Module.androidRepositoryModule() {
         SwitchableWordMeaningInsightsRepository(
             manager = get(),
             openAiRepository = get(),
-            codexRepository = get(),
+            agentDriverRepository = get(),
         )
     }
     single<IOldAppKlafDataTransferRepository> {
@@ -200,11 +197,6 @@ private fun Module.infrastructureModule() {
     single<KlafRoomDatabase> { KlafRoomDatabaseProvider.getInstance(context = androidContext()) }
     single { WorkManager.getInstance(androidContext()) }
     single<ICoroutineContextProvider> { CoroutineContextProvider() }
-    single<ICodexAppHttpClientFactory> { AndroidCodexAppHttpClientFactory() }
-    single<HttpClient>(qualifier = named(name = CODEX_APP_HTTP_CLIENT)) {
-        get<ICodexAppHttpClientFactory>().create()
-    }
-
     single<IDeckReviewScheduler> { AndroidDeckReviewingReminder(context = androidContext()) }
 
     single { FirebaseFirestore.getInstance() }
@@ -231,8 +223,10 @@ private fun Module.infrastructureModule() {
         androidContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 
-    single { CambridgeClient }
-    single<ICambridgeWordDataProvider> { AndroidCambridgeWordDataProvider(client = get()) }
+    // The Cambridge client is out of action until it is rebuilt against Ktor 3 -- see
+    // AndroidNoOpCambridgeWordDataProvider. Creating it crashed the app on any screen that
+    // resolved it, so it is not constructed at all.
+    single<ICambridgeWordDataProvider> { AndroidNoOpCambridgeWordDataProvider() }
     single { LoKdroid }
 }
 

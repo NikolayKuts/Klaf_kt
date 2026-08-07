@@ -6,14 +6,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class MnemonicAssociationRequestPayload(
-    val word: String = "",
-    val comment: String? = null,
-    val excludedSoundAnchors: List<String> = emptyList(),
-    val model: String? = null,
-)
-
-@Serializable
 internal data class MnemonicAssociationPayload(
     val word: String = "",
     val transcription: String = "",
