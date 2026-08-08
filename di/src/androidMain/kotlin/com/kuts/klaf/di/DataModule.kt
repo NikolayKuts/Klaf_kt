@@ -145,8 +145,7 @@ private fun Module.androidRepositoryModule() {
     single {
         AgentDriverSession(
             serverHost = com.kuts.klaf.SecretConstants.AgentDriver.serverHostOrNull().orEmpty(),
-            cloudflareAccessClientId = com.kuts.klaf.SecretConstants.AgentDriver.CLIENT_ID,
-            cloudflareAccessClientSecret = com.kuts.klaf.SecretConstants.AgentDriver.CLIENT_SECRET,
+            clientToken = com.kuts.klaf.SecretConstants.AgentDriver.clientTokenOrNull().orEmpty(),
         )
     }
     single {

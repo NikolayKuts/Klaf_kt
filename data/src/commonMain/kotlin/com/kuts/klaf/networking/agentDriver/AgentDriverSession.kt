@@ -27,8 +27,7 @@ import org.agentdriver.project.protocol.TextGenerationRequest
  */
 class AgentDriverSession(
     serverHost: String,
-    cloudflareAccessClientId: String,
-    cloudflareAccessClientSecret: String,
+    clientToken: String,
 ) {
 
     companion object {
@@ -43,10 +42,9 @@ class AgentDriverSession(
             port = CLOUDFLARE_HTTPS_PORT,
             secure = true,
         ),
-        authentication = ClientAuthentication.CloudflareAccess(
-            clientId = cloudflareAccessClientId.trim(),
-            clientSecret = cloudflareAccessClientSecret.trim(),
-        ),
+        // The AgentDriver server issued this and checks it itself, so the tunnel in front only has
+        // to carry the connection rather than decide who may open one.
+        authentication = ClientAuthentication.BearerToken(token = clientToken.trim()),
     )
 
     val connectionState: StateFlow<AssistantClientConnectionState> get() = client.connectionState
