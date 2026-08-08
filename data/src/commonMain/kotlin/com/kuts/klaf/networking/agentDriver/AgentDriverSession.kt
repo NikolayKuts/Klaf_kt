@@ -7,7 +7,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.agentdriver.project.ktorclient.external.AssistantClientConnectionState
 import org.agentdriver.project.ktorclient.external.AssistantClientEndpoint
-import org.agentdriver.project.ktorclient.external.ConnectionCredentials
+import org.agentdriver.project.ktorclient.external.ClientAuthentication
 import org.agentdriver.project.ktorclient.external.IAssistantClient
 import org.agentdriver.project.ktorclient.external.KtorAssistantClient
 import org.agentdriver.project.protocol.ImageGenerationRequest
@@ -43,7 +43,7 @@ class AgentDriverSession(
             port = CLOUDFLARE_HTTPS_PORT,
             secure = true,
         ),
-        credentials = ConnectionCredentials.CloudflareAccessServiceToken(
+        authentication = ClientAuthentication.CloudflareAccess(
             clientId = cloudflareAccessClientId.trim(),
             clientSecret = cloudflareAccessClientSecret.trim(),
         ),
