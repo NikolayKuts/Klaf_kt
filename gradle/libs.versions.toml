@@ -73,7 +73,7 @@ composeComiler = "1.5.14"
 composeMultiplatform = "1.11.1"
 
 # LoKdroid #
-lokdroid = "0.1.2-alpha"
+lokdroid = "0.2.0-alpha"
 
 # AgentDriver SDK #
 agentdriver = "0.10.0-SNAPSHOT"
