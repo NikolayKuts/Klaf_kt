@@ -12,12 +12,14 @@ import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.common.generateLetterInfos
 import com.kuts.domain.common.ifTrue
 import com.kuts.domain.common.updatedAt
+import com.kuts.domain.entities.AgentDriverConnectionState
 import com.kuts.domain.entities.CardMnemonic
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.entities.MnemonicIllustration
 import com.kuts.domain.entities.MnemonicImageAsset
 import com.kuts.domain.entities.MnemonicImageAssetStorage
+import com.kuts.domain.entities.canSendRequests
 import com.kuts.domain.entities.toSelections
 import com.kuts.domain.ipa.toRowIpaItemHolders
 import com.kuts.domain.managers.IAudioPlayerManager
@@ -31,6 +33,7 @@ import com.kuts.domain.useCases.FetchMnemonicAssociationUseCase
 import com.kuts.domain.useCases.FetchMnemonicImageUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
+import com.kuts.domain.useCases.ObserveAgentDriverConnectionStateUseCase
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.cardManagement.cardAddition.AutocompleteState
 import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionItem
@@ -69,6 +72,7 @@ abstract class CardManagementViewModel(
     protected val mnemonicImageAssetRepository: IMnemonicImageAssetRepository,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     private val fetchWordInfo: FetchWordInfoUseCase,
+    observeAgentDriverConnectionState: ObserveAgentDriverConnectionStateUseCase,
     protected val crashlytics: ICrashlyticsRepository,
     protected val checkIfWordExists: CheckIfCardExistsUseCase,
     protected val coroutineContextProvider: ICoroutineContextProvider,
@@ -132,6 +136,8 @@ abstract class CardManagementViewModel(
 
     override val ipaKeyboardState = MutableStateFlow(value = IpaKeyboardState(keys = ipaKeys))
     override val mnemonicManagementState = MutableStateFlow(MnemonicManagementUiState())
+    override val agentDriverConnectionState: StateFlow<AgentDriverConnectionState> =
+        observeAgentDriverConnectionState()
     private var nextMnemonicVariantId = 0L
     private var nextMnemonicImageVariantId = 0L
 
@@ -234,6 +240,8 @@ abstract class CardManagementViewModel(
             return
         }
 
+        if (!canStartAgentDriverRequest()) return
+
         mnemonicManagementState.update { state -> state.startAssociationLoading() }
 
         viewModelScope.launchWithState(coroutineContextProvider.io) {
@@ -271,6 +279,8 @@ abstract class CardManagementViewModel(
             eventMessage.tryEmitAsNegative(resId = Res.string.mnemonic_image_variant_not_selected)
             return
         }
+
+        if (!canStartAgentDriverRequest()) return
 
         mnemonicManagementState.update { state -> state.startImageLoading() }
 
@@ -685,6 +695,13 @@ abstract class CardManagementViewModel(
         if (lettersOnly.length >= 4 && lettersOnly.toSet().size == 1) return false
 
         return true
+    }
+
+    private fun canStartAgentDriverRequest(): Boolean {
+        if (agentDriverConnectionState.value.canSendRequests) return true
+
+        eventMessage.tryEmitAsNegative(resId = Res.string.data_synchronization_network_connection_warning)
+        return false
     }
 
     override fun onCleared() {

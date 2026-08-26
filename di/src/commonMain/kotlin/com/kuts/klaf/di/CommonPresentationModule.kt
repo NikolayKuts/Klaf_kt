@@ -105,6 +105,7 @@ internal val commonPresentationModule = module {
             fetchWordInfo = get(),
             crashlytics = get(),
             fetchDeckById = get(),
+            observeAgentDriverConnectionState = get(),
             coroutineContextProvider = get(),
         )
     }
@@ -126,6 +127,7 @@ internal val commonPresentationModule = module {
             fetchWordInfo = get(),
             crashlytics = get(),
             fetchDeckById = get(),
+            observeAgentDriverConnectionState = get(),
             coroutineContextProvider = get(),
         )
     }

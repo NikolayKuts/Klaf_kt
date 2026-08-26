@@ -154,6 +154,76 @@ class SynchronizeLocalAndRemoteDataUseCaseTest {
             assertEquals(0L, remoteVersionRepository.currentVersion?.version)
         }
 
+    @Test
+    fun `newer local data skips image upload and local image reads when remote images are disabled`() =
+        runTest {
+            val localDeck = testDeck(id = 1, cardQuantity = 1)
+            val localCard = testCard(id = 1, deckId = 1, imageAssetId = "missing-local-asset")
+            val remoteCard = testCard(id = 2, deckId = 2, imageAssetId = "obsolete-remote-asset")
+            val remoteCardRepository = TestCardRepository(cards = listOf(remoteCard))
+            val localVersionRepository = TestStorageSaveVersionRepository(initialVersion = 1)
+            val remoteVersionRepository = TestStorageSaveVersionRepository(initialVersion = 0)
+            val localAssetRepository = TestMnemonicImageAssetRepository()
+            val remoteImageRepository = TestMnemonicImageRemoteRepository(isEnabled = false)
+            val useCase = createUseCase(
+                localDeckRepository = TestDeckRepository(decks = listOf(localDeck)),
+                localCardRepository = TestCardRepository(cards = listOf(localCard)),
+                localStorageSaveVersionRepository = localVersionRepository,
+                localMnemonicImageAssetRepository = localAssetRepository,
+                remoteDeckRepository = TestDeckRepository(decks = listOf(testDeck(id = 2))),
+                remoteCardRepository = remoteCardRepository,
+                remoteStorageSaveVersionRepository = remoteVersionRepository,
+                remoteMnemonicImageRepository = remoteImageRepository,
+                io = UnconfinedTestDispatcher(testScheduler),
+            )
+
+            useCase.invoke().toList()
+
+            assertEquals(listOf(localCard), remoteCardRepository.fetchAllCards())
+            assertTrue(localAssetRepository.readSavedImageAssetIds.isEmpty())
+            assertTrue(remoteImageRepository.defaultUploadCalls.isEmpty())
+            assertTrue(remoteImageRepository.deletedAssetIds.isEmpty())
+            assertEquals(1L, localVersionRepository.currentVersion?.version)
+            assertEquals(1L, remoteVersionRepository.currentVersion?.version)
+        }
+
+    @Test
+    fun `newer remote data skips image download when remote images are disabled`() = runTest {
+        val remoteDeck = testDeck(id = 1, cardQuantity = 1)
+        val remoteCard = testCard(id = 1, deckId = 1, imageAssetId = "remote-asset")
+        val localCard = testCard(id = 9, deckId = 9, imageAssetId = "obsolete-local-asset")
+        val localAssetRepository = TestMnemonicImageAssetRepository(
+            initialSavedImages = mapOf("obsolete-local-asset" to byteArrayOf(9, 9)),
+        )
+        val localCardRepository = TestCardRepository(cards = listOf(localCard))
+        val remoteImageRepository = TestMnemonicImageRemoteRepository(
+            initialImages = mapOf("remote-asset" to byteArrayOf(1, 2, 3)),
+            isEnabled = false,
+        )
+        val localVersionRepository = TestStorageSaveVersionRepository(initialVersion = 1)
+        val remoteVersionRepository = TestStorageSaveVersionRepository(initialVersion = 5)
+        val useCase = createUseCase(
+            localDeckRepository = TestDeckRepository(decks = listOf(testDeck(id = 9))),
+            localCardRepository = localCardRepository,
+            localStorageSaveVersionRepository = localVersionRepository,
+            localMnemonicImageAssetRepository = localAssetRepository,
+            remoteDeckRepository = TestDeckRepository(decks = listOf(remoteDeck)),
+            remoteCardRepository = TestCardRepository(cards = listOf(remoteCard)),
+            remoteStorageSaveVersionRepository = remoteVersionRepository,
+            remoteMnemonicImageRepository = remoteImageRepository,
+            io = UnconfinedTestDispatcher(testScheduler),
+        )
+
+        useCase.invoke().toList()
+
+        assertEquals(listOf(remoteCard), localCardRepository.fetchAllCards())
+        assertTrue(remoteImageRepository.downloadCalls.isEmpty())
+        assertTrue(localAssetRepository.importedSavedAssetIds.isEmpty())
+        assertEquals(listOf("obsolete-local-asset"), localAssetRepository.deletedSavedAssetIds)
+        assertEquals(5L, localVersionRepository.currentVersion?.version)
+        assertEquals(5L, remoteVersionRepository.currentVersion?.version)
+    }
+
     private fun createUseCase(
         localDeckRepository: TestDeckRepository,
         localCardRepository: TestCardRepository,

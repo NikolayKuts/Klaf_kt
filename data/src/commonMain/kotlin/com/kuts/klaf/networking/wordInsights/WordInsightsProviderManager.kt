@@ -6,16 +6,17 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.kuts.domain.common.ICoroutineContextProvider
+import com.kuts.domain.entities.AgentDriverConnectionState
 import com.kuts.domain.entities.CodexObserverSessionState
 import com.kuts.domain.entities.WordInsightsProvider
 import com.kuts.domain.entities.WordInsightsProviderState
 import com.kuts.domain.entities.WordMeaningInsights
+import com.kuts.domain.managers.IAgentDriverConnectionManager
 import com.kuts.domain.managers.IWordInsightsProviderManager
 import com.kuts.klaf.common.WordMeaningInsightsPayload
 import com.kuts.klaf.common.toDomainEntity
 import com.kuts.klaf.networking.agentDriver.AgentDriverSession
 import com.kuts.klaf.networking.agentDriver.describeChainForLog
-import com.kuts.klaf.networking.agentDriver.isFault
 import com.kuts.klaf.networking.agentDriver.toShortAgentDriverMessage
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
@@ -30,8 +31,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import org.agentdriver.project.ktorclient.external.AssistantClientConnectionState
-import org.agentdriver.project.ktorclient.external.AssistantClientDisconnectCause
 import org.agentdriver.project.protocol.TextGenerationRequest
 
 /**
@@ -44,6 +43,7 @@ import org.agentdriver.project.protocol.TextGenerationRequest
 class WordInsightsProviderManager(
     private val dataStore: DataStore<Preferences>,
     private val agentDriverSession: AgentDriverSession,
+    private val agentDriverConnectionManager: IAgentDriverConnectionManager,
     coroutineContextProvider: ICoroutineContextProvider,
 ) : IWordInsightsProviderManager {
 
@@ -69,7 +69,7 @@ class WordInsightsProviderManager(
 
     init {
         observeSelectedProvider()
-        observeAgentDriverConnection()
+        observeAgentDriverConnectionState()
     }
 
     override suspend fun setSelectedProvider(provider: WordInsightsProvider) {
@@ -150,12 +150,12 @@ class WordInsightsProviderManager(
                     when (provider) {
                         WordInsightsProvider.CodexObserver -> {
                             logD("Assistant switched on")
-                            applySwitch { agentDriverSession.switchOn() }
+                            applySwitch { agentDriverConnectionManager.switchOn() }
                         }
 
                         WordInsightsProvider.OpenAi -> {
                             logD("Assistant switched off")
-                            applySwitch { agentDriverSession.switchOff() }
+                            applySwitch { agentDriverConnectionManager.switchOff() }
                         }
                     }
                 }
@@ -178,51 +178,14 @@ class WordInsightsProviderManager(
         }
     }
 
-    private fun observeAgentDriverConnection() {
+    private fun observeAgentDriverConnectionState() {
         scope.launch {
-            agentDriverSession.connectionState.collectLatest { connectionState ->
-                // Every transition, not just the ones a user action caused. The SDK reconnects on
-                // its own schedule, so without this a connection that drops and comes back leaves
-                // no trace at all -- and one that never comes back leaves nothing to read either.
-                logD("AgentDriver connection: ${connectionState.describeForLog()}")
-
+            agentDriverConnectionManager.state.collectLatest { connectionState ->
                 state.value = state.value.copy(
                     codexObserverSessionState = connectionState.toCodexObserverSessionState(),
                 )
             }
         }
-    }
-
-    /**
-     * The connection state with its reason attached.
-     *
-     * The SDK says why it is not connected, not merely that it is not; printing the state alone
-     * would throw away the part that says what to fix.
-     */
-    private fun AssistantClientConnectionState.describeForLog(): String = when (this) {
-        is AssistantClientConnectionState.Connected ->
-            "Connected (provider=${session.provider}, model=${session.modelId.value}, " +
-                "capabilities=${session.capabilities.map { it.wireName }})"
-
-        is AssistantClientConnectionState.Connecting ->
-            "Connecting (attempt=$attempt, resuming=$resuming)"
-
-        is AssistantClientConnectionState.ResumeAvailable -> "ResumeAvailable, cause=$cause"
-
-        is AssistantClientConnectionState.Disconnected ->
-            "Disconnected, cause=${cause.describeForLog()}, willRetry=${cause.allowsAutomaticReconnect}"
-    }
-
-    /**
-     * A disconnect cause with the whole chain behind it.
-     *
-     * `TransportFailure` alone says only that the socket did not open; what actually went wrong --
-     * a name that would not resolve, a handshake the server refused, a certificate the device would
-     * not trust -- is in the exception it wraps, sometimes several levels down.
-     */
-    private fun AssistantClientDisconnectCause.describeForLog(): String = when (this) {
-        is AssistantClientDisconnectCause.OpenFailed -> "OpenFailed(${failure.describeChainForLog()})"
-        else -> toString()
     }
 
     /**
@@ -233,21 +196,12 @@ class WordInsightsProviderManager(
      * a server that is not running, a gateway answering 502, a certificate the device refuses --
      * behind a status that never changes and never explains itself.
      */
-    private fun AssistantClientConnectionState.toCodexObserverSessionState(): CodexObserverSessionState {
+    private fun AgentDriverConnectionState.toCodexObserverSessionState(): CodexObserverSessionState {
         return when (this) {
-            is AssistantClientConnectionState.Connected -> CodexObserverSessionState.Ready
-            is AssistantClientConnectionState.Connecting -> CodexObserverSessionState.Connecting
-            is AssistantClientConnectionState.ResumeAvailable -> cause.toCodexObserverSessionState()
-            is AssistantClientConnectionState.Disconnected -> cause.toCodexObserverSessionState()
-        }
-    }
-
-    private fun AssistantClientDisconnectCause.toCodexObserverSessionState(): CodexObserverSessionState {
-        return when {
-            isFault -> CodexObserverSessionState.Error(message = toShortAgentDriverMessage())
-
-            // Not connected on purpose -- never started, or the user switched the assistant off.
-            else -> CodexObserverSessionState.Disconnected
+            AgentDriverConnectionState.Ready -> CodexObserverSessionState.Ready
+            is AgentDriverConnectionState.Reconnecting -> CodexObserverSessionState.Connecting
+            AgentDriverConnectionState.Disconnected -> CodexObserverSessionState.Disconnected
+            is AgentDriverConnectionState.Error -> CodexObserverSessionState.Error(message = message)
         }
     }
 

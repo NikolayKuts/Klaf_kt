@@ -98,4 +98,37 @@ class BackupDataUseCaseTest {
         assertTrue(remoteDeckRepository.insertedDecksAtPath.isEmpty())
         assertTrue(remoteVersionRepository.insertedVersionsAtPath.isEmpty())
     }
+
+    @Test
+    fun `backup skips image upload and local image reads when remote images are disabled`() = runTest {
+        val backupPath = "backup@example.com"
+        val localCard = testCard(id = 1, deckId = 1, imageAssetId = "missing-asset")
+        val localDeck = testDeck(id = 1, cardQuantity = 1)
+        val localAssetRepository = TestMnemonicImageAssetRepository()
+        val remoteDeckRepository = TestDeckRepository()
+        val remoteCardRepository = TestCardRepository()
+        val remoteVersionRepository = TestStorageSaveVersionRepository()
+        val remoteImageRepository = TestMnemonicImageRemoteRepository(isEnabled = false)
+        val useCase = BackupDataUseCase(
+            localDeckRepository = TestDeckRepository(decks = listOf(localDeck)),
+            localCardRepository = TestCardRepository(cards = listOf(localCard)),
+            localStorageSaveVersionRepository = TestStorageSaveVersionRepository(initialVersion = 2),
+            localMnemonicImageAssetRepository = localAssetRepository,
+            remoteDeckRepository = remoteDeckRepository,
+            remoteCardRepository = remoteCardRepository,
+            remoteStorageSaveVersionRepository = remoteVersionRepository,
+            remoteMnemonicImageRepository = remoteImageRepository,
+            coroutineContextProvider = TestCoroutineContextProvider(
+                io = UnconfinedTestDispatcher(testScheduler),
+            ),
+        )
+
+        useCase.invoke(backupPath = backupPath)
+
+        assertTrue(localAssetRepository.readSavedImageAssetIds.isEmpty())
+        assertTrue(remoteImageRepository.scopedUploadCalls.isEmpty())
+        assertEquals(listOf(localCard), requireNotNull(remoteCardRepository.insertedCardsAtPath[backupPath]))
+        assertEquals(listOf(localDeck), requireNotNull(remoteDeckRepository.insertedDecksAtPath[backupPath]))
+        assertEquals(2L, remoteVersionRepository.insertedVersionsAtPath[backupPath]?.single()?.version)
+    }
 }

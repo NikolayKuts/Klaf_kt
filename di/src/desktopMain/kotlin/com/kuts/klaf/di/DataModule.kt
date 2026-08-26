@@ -8,6 +8,7 @@ import com.kuts.domain.entities.AuthenticationState
 import com.kuts.domain.entities.AutocompleteWord
 import com.kuts.domain.entities.DeckRepetitionInfo
 import com.kuts.domain.entities.WordMeaningInsights
+import com.kuts.domain.managers.IAgentDriverConnectionManager
 import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
@@ -28,6 +29,7 @@ import com.kuts.domain.repositories.IWordAutocompleteRepository
 import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.repositories.IWordMeaningInsightsRepository
 import com.kuts.klaf.common.CoroutineContextProvider
+import com.kuts.klaf.networking.agentDriver.AgentDriverConnectionManager
 import com.kuts.klaf.networking.agentDriver.AgentDriverWordMeaningInsightsRepository
 import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicAssociationRepository
 import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicImageRepository
@@ -94,6 +96,7 @@ private fun Module.desktopRepositoryModule() {
         WordInsightsProviderManager(
             dataStore = get(qualifier = named(name = APP_PREFERENCES_DATA_STORE)),
             agentDriverSession = get(),
+            agentDriverConnectionManager = get(),
             coroutineContextProvider = get(),
         )
     }
@@ -103,6 +106,12 @@ private fun Module.desktopRepositoryModule() {
         AgentDriverSession(
             serverHost = com.kuts.klaf.SecretConstants.AgentDriver.serverHostOrNull().orEmpty(),
             clientToken = com.kuts.klaf.SecretConstants.AgentDriver.clientTokenOrNull().orEmpty(),
+        )
+    }
+    single<IAgentDriverConnectionManager> {
+        AgentDriverConnectionManager(
+            agentDriverSession = get(),
+            coroutineContextProvider = get(),
         )
     }
     single<IWordInsightsProviderManager> { get<WordInsightsProviderManager>() }

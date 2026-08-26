@@ -3,6 +3,7 @@ package com.kuts.klaf.cardManagement.common
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import com.kuts.domain.common.LoadingState
+import com.kuts.domain.entities.AgentDriverConnectionState
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.klaf.cardManagement.cardAddition.AutocompleteState
@@ -26,6 +27,7 @@ abstract class BaseCardManagementViewModel(
     abstract val cambridgeDataState: StateFlow<ICambridgeDataState>
     abstract val ipaKeyboardState: StateFlow<IpaKeyboardState>
     abstract val mnemonicManagementState: StateFlow<MnemonicManagementUiState>
+    abstract val agentDriverConnectionState: StateFlow<AgentDriverConnectionState>
 
     abstract fun sendAction(action: ICardManagementAction)
     abstract fun updateMnemonicRequestComment(value: TextFieldValue)

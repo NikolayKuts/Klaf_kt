@@ -17,6 +17,7 @@ import com.kuts.domain.useCases.FetchMnemonicAssociationUseCase
 import com.kuts.domain.useCases.FetchMnemonicImageUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
+import com.kuts.domain.useCases.ObserveAgentDriverConnectionStateUseCase
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.cardManagement.common.ICardManagementAction
 import com.kuts.klaf.cardManagement.common.ICambridgeWordDataProvider
@@ -38,6 +39,7 @@ class CardAdditionViewModel(
     mnemonicImageAssetRepository: IMnemonicImageAssetRepository,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
+    observeAgentDriverConnectionState: ObserveAgentDriverConnectionStateUseCase,
     crashlytics: ICrashlyticsRepository,
     fetchDeckById: FetchDeckByIdUseCase,
     coroutineContextProvider: ICoroutineContextProvider,
@@ -50,6 +52,7 @@ class CardAdditionViewModel(
     mnemonicImageAssetRepository = mnemonicImageAssetRepository,
     fetchWordAutocomplete = fetchWordAutocomplete,
     fetchWordInfo = fetchWordInfo,
+    observeAgentDriverConnectionState = observeAgentDriverConnectionState,
     crashlytics = crashlytics,
     fetchDeckById = fetchDeckById,
     checkIfWordExists = checkIfWordExists,

@@ -15,6 +15,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.entities.DeckRepetitionInfos
+import com.kuts.domain.managers.IAgentDriverConnectionManager
 import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
@@ -60,6 +61,7 @@ import com.kuts.klaf.firestore.repositoryImplementations.AndroidDeckRepositoryFi
 import com.kuts.klaf.firestore.repositoryImplementations.AndroidStorageSaveVersionRepositoryFirestore
 import com.kuts.klaf.firestore.repositoryImplementations.AndroidWordAutocompleteFirestore
 import com.kuts.klaf.networking.AndroidCardAudioPlayer
+import com.kuts.klaf.networking.agentDriver.AgentDriverConnectionManager
 import com.kuts.klaf.networking.agentDriver.AgentDriverSession
 import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicAssociationRepository
 import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicImageRepository
@@ -148,10 +150,17 @@ private fun Module.androidRepositoryModule() {
             clientToken = com.kuts.klaf.SecretConstants.AgentDriver.clientTokenOrNull().orEmpty(),
         )
     }
+    single<IAgentDriverConnectionManager> {
+        AgentDriverConnectionManager(
+            agentDriverSession = get(),
+            coroutineContextProvider = get(),
+        )
+    }
     single {
         WordInsightsProviderManager(
             dataStore = get(qualifier = named(name = APP_PREFERENCES_DATA_STORE)),
             agentDriverSession = get(),
+            agentDriverConnectionManager = get(),
             coroutineContextProvider = get(),
         )
     }

@@ -4,6 +4,8 @@ import com.kuts.domain.repositories.IMnemonicImageRemoteRepository
 
 class DesktopNoOpMnemonicImageRemoteRepository : IMnemonicImageRemoteRepository {
 
+    override val isEnabled = false
+
     override suspend fun uploadImage(assetId: String, imageBytes: ByteArray) = Unit
 
     override suspend fun uploadImageAtPath(

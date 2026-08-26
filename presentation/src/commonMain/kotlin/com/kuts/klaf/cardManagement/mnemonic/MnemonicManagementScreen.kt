@@ -25,6 +25,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -43,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +54,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
+import com.kuts.domain.entities.AgentDriverConnectionState
+import com.kuts.domain.entities.canSendRequests
 import com.kuts.klaf.cardManagement.cardAddition.CardAdditionViewModel
 import com.kuts.klaf.cardManagement.cardEditing.CardEditingViewModel
 import com.kuts.klaf.cardManagement.common.BaseCardManagementViewModel
@@ -145,6 +149,7 @@ private fun MnemonicManagementContent(
 ) {
     val mnemonicState by viewModel.mnemonicManagementState.collectAsState()
     val cardManagementState by viewModel.cardManagementState.collectAsState()
+    val connectionState by viewModel.agentDriverConnectionState.collectAsState()
     val selectedVariant = mnemonicState.selectedVariant
     val foreignWord = cardManagementState.foreignWordFieldValue.text.trim()
     val initialSnapshot = remember { mnemonicState }
@@ -196,6 +201,7 @@ private fun MnemonicManagementContent(
 
         MnemonicAssociationRequestSection(
             mnemonicState = mnemonicState,
+            connectionState = connectionState,
             onCommentChange = viewModel::updateMnemonicRequestComment,
             onRequest = viewModel::requestMnemonicAssociation,
         )
@@ -210,6 +216,7 @@ private fun MnemonicManagementContent(
             selectedVariant?.let { variant ->
                 MnemonicImageRequestSection(
                     mnemonicState = mnemonicState,
+                    connectionState = connectionState,
                     selectedVariant = variant,
                     onCommentChange = viewModel::updateMnemonicImageRequestComment,
                     onRequestImage = viewModel::requestMnemonicImage,
@@ -267,6 +274,7 @@ private fun MnemonicManagementHeader(
 @Composable
 private fun MnemonicAssociationRequestSection(
     mnemonicState: MnemonicManagementUiState,
+    connectionState: AgentDriverConnectionState,
     onCommentChange: (androidx.compose.ui.text.input.TextFieldValue) -> Unit,
     onRequest: () -> Unit,
 ) {
@@ -280,6 +288,7 @@ private fun MnemonicAssociationRequestSection(
     MnemonicActionButton(
         label = stringResource(Res.string.mnemonic_management_request_action),
         isLoading = mnemonicState.isAssociationLoading,
+        connectionState = connectionState,
         onClick = onRequest,
     )
 }
@@ -322,6 +331,7 @@ private fun MnemonicVariantsSection(
 @Composable
 private fun MnemonicImageRequestSection(
     mnemonicState: MnemonicManagementUiState,
+    connectionState: AgentDriverConnectionState,
     selectedVariant: MnemonicVariantUiState,
     onCommentChange: (androidx.compose.ui.text.input.TextFieldValue) -> Unit,
     onRequestImage: () -> Unit,
@@ -337,6 +347,7 @@ private fun MnemonicImageRequestSection(
     MnemonicActionButton(
         label = stringResource(Res.string.mnemonic_image_request_action),
         isLoading = mnemonicState.isImageLoading,
+        connectionState = connectionState,
         onClick = onRequestImage,
     )
 
@@ -355,11 +366,20 @@ private fun MnemonicImageRequestSection(
 private fun MnemonicActionButton(
     label: String,
     isLoading: Boolean,
+    connectionState: AgentDriverConnectionState,
     onClick: () -> Unit,
 ) {
+    val isConnectionReady = connectionState.canSendRequests
     Button(
         onClick = onClick,
-        enabled = !isLoading,
+        enabled = !isLoading && isConnectionReady,
+        colors = ButtonDefaults.buttonColors(
+            disabledContainerColor = disabledMnemonicActionButtonColor(
+                isLoading = isLoading,
+                connectionState = connectionState,
+            ),
+            disabledContentColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
+        ),
     ) {
         if (isLoading) {
             CircularProgressIndicator(
@@ -370,6 +390,22 @@ private fun MnemonicActionButton(
             )
         }
         Text(text = label)
+    }
+}
+
+@Composable
+private fun disabledMnemonicActionButtonColor(
+    isLoading: Boolean,
+    connectionState: AgentDriverConnectionState,
+): Color {
+    return when {
+        isLoading -> MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
+        else -> when (connectionState) {
+            is AgentDriverConnectionState.Error -> MainTheme.colors.common.negativeDialogButton
+            is AgentDriverConnectionState.Reconnecting -> MainTheme.colors.common.agentDriverReconnectingButton
+            AgentDriverConnectionState.Disconnected -> MainTheme.colors.common.agentDriverDisconnectedButton
+            AgentDriverConnectionState.Ready -> MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
+        }
     }
 }
 

@@ -24,6 +24,7 @@ import com.kuts.domain.useCases.FetchMnemonicImageUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.domain.useCases.FetchWordMeaningInsightsUseCase
+import com.kuts.domain.useCases.ObserveAgentDriverConnectionStateUseCase
 import com.kuts.domain.useCases.ObserveWordInsightsProviderStateUseCase
 import com.kuts.domain.useCases.RemoveDeckUseCase
 import com.kuts.domain.useCases.RenameDeckUseCase
@@ -203,6 +204,7 @@ private fun Module.commonUseCaseModule() {
         )
     }
     factory { ObserveWordInsightsProviderStateUseCase(wordInsightsProviderManager = get()) }
+    factory { ObserveAgentDriverConnectionStateUseCase(agentDriverConnectionManager = get()) }
     factory {
         RemoveDeckUseCase(
             deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),

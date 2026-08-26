@@ -28,18 +28,20 @@ class BackupDataUseCase(
             val localCards = localCardRepository.fetchAllCards()
             val localVersion = localStorageSaveVersionRepository.fetchVersion()
 
-            for (assetId in localCards.referencedMnemonicImageAssetIds()) {
-                val imageBytes = requireNotNull(
-                    localMnemonicImageAssetRepository.readSavedImageBytes(assetId = assetId)
-                ) {
-                    "Mnemonic image asset is missing locally. assetId=$assetId"
-                }
+            if (remoteMnemonicImageRepository.isEnabled) {
+                for (assetId in localCards.referencedMnemonicImageAssetIds()) {
+                    val imageBytes = requireNotNull(
+                        localMnemonicImageAssetRepository.readSavedImageBytes(assetId = assetId)
+                    ) {
+                        "Mnemonic image asset is missing locally. assetId=$assetId"
+                    }
 
-                remoteMnemonicImageRepository.uploadImageAtPath(
-                    assetId = assetId,
-                    imageBytes = imageBytes,
-                    rootEmailPath = backupPath,
-                )
+                    remoteMnemonicImageRepository.uploadImageAtPath(
+                        assetId = assetId,
+                        imageBytes = imageBytes,
+                        rootEmailPath = backupPath,
+                    )
+                }
             }
 
             for (deck in localDecks) {

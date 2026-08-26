@@ -13,11 +13,16 @@ import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.domain.repositories.IMnemonicImageRemoteRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+
+private const val MAX_PARALLEL_SYNC_OPERATIONS = 8
 
 class SynchronizeLocalAndRemoteDataUseCase(
     private val localDeckRepository: IDeckRepository,
@@ -194,7 +199,7 @@ class SynchronizeLocalAndRemoteDataUseCase(
         notContainedDecks: List<Deck>,
         olderSaveVersionDeckRepository: IDeckRepository,
     ) {
-        notContainedDecks.forEach { deck ->
+        notContainedDecks.forEachParallel { deck ->
             olderSaveVersionDeckRepository.removeDeck(deckId = deck.id)
             send(deck.name)
         }
@@ -204,7 +209,7 @@ class SynchronizeLocalAndRemoteDataUseCase(
         newerVersionDecks: List<Deck>,
         olderSaveVersionDeckRepository: IDeckRepository,
     ) {
-        newerVersionDecks.forEach { deck ->
+        newerVersionDecks.forEachParallel { deck ->
             olderSaveVersionDeckRepository.insertDeck(deck = deck)
             send(deck.name)
         }
@@ -220,7 +225,7 @@ class SynchronizeLocalAndRemoteDataUseCase(
 
         olderVersionCards.filter { card ->
             card.id !in newerVersionCards.map { it.id } || card.deckId in notContainedDeckIds
-        }.forEach { cardForDeleting ->
+        }.forEachParallel { cardForDeleting ->
             olderSaveVersionCardRepository.deleteCard(cardId = cardForDeleting.id)
             send(cardForDeleting.nativeWord)
         }
@@ -230,14 +235,16 @@ class SynchronizeLocalAndRemoteDataUseCase(
         newerVersionCards: List<Card>,
         olderSaveVersionCardRepository: ICardRepository,
     ) {
-        newerVersionCards.forEach { card ->
+        newerVersionCards.forEachParallel { card ->
             olderSaveVersionCardRepository.insertCard(card = card)
             send(card.nativeWord)
         }
     }
 
     private suspend fun uploadReferencedMnemonicImages(cards: List<Card>) {
-        cards.referencedMnemonicImageAssetIds().forEach { assetId ->
+        if (!remoteMnemonicImageRepository.isEnabled) return
+
+        cards.referencedMnemonicImageAssetIds().forEachParallel { assetId ->
             val imageBytes = requireNotNull(
                 localMnemonicImageAssetRepository.readSavedImageBytes(assetId = assetId)
             ) {
@@ -252,17 +259,20 @@ class SynchronizeLocalAndRemoteDataUseCase(
     }
 
     private suspend fun downloadReferencedMnemonicImages(cards: List<Card>) {
-        cards.referencedMnemonicImageAssetIds().forEach { assetId ->
+        if (!remoteMnemonicImageRepository.isEnabled) return
+
+        cards.referencedMnemonicImageAssetIds().forEachParallel { assetId ->
             val existingAsset = localMnemonicImageAssetRepository.resolveSavedImage(assetId = assetId)
 
             if (existingAsset == null) {
                 val imageBytes = remoteMnemonicImageRepository.downloadImage(assetId = assetId)
-                    ?: return@forEach
 
-                localMnemonicImageAssetRepository.importSavedImage(
-                    assetId = assetId,
-                    imageBytes = imageBytes,
-                )
+                if (imageBytes != null) {
+                    localMnemonicImageAssetRepository.importSavedImage(
+                        assetId = assetId,
+                        imageBytes = imageBytes,
+                    )
+                }
             }
         }
     }
@@ -274,7 +284,7 @@ class SynchronizeLocalAndRemoteDataUseCase(
         val obsoleteAssetIds = olderCards.referencedMnemonicImageAssetIds() -
             newerCards.referencedMnemonicImageAssetIds()
 
-        obsoleteAssetIds.forEach { assetId ->
+        obsoleteAssetIds.forEachParallel { assetId ->
             localMnemonicImageAssetRepository.deleteSavedImage(assetId = assetId)
         }
     }
@@ -286,7 +296,9 @@ class SynchronizeLocalAndRemoteDataUseCase(
         val obsoleteAssetIds = olderCards.referencedMnemonicImageAssetIds() -
             newerCards.referencedMnemonicImageAssetIds()
 
-        obsoleteAssetIds.forEach { assetId ->
+        if (!remoteMnemonicImageRepository.isEnabled) return
+
+        obsoleteAssetIds.forEachParallel { assetId ->
             remoteMnemonicImageRepository.deleteImage(assetId = assetId)
         }
     }
@@ -308,4 +320,18 @@ private fun List<Card>.referencedMnemonicImageAssetIds(): Set<String> {
             imageAssetId.isNotBlank()
         }
     }.toSet()
+}
+
+private suspend fun <T> Iterable<T>.forEachParallel(action: suspend (T) -> Unit) {
+    coroutineScope {
+        val semaphore = Semaphore(permits = MAX_PARALLEL_SYNC_OPERATIONS)
+
+        map { item ->
+            async {
+                semaphore.withPermit {
+                    action(item)
+                }
+            }
+        }.awaitAll()
+    }
 }

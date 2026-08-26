@@ -2,11 +2,13 @@ package com.kuts.klaf.ios
 
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.common.LoadingState
+import com.kuts.domain.entities.AgentDriverConnectionState
 import com.kuts.domain.entities.AuthenticationState
 import com.kuts.domain.entities.AutocompleteWord
 import com.kuts.domain.entities.WordInsightsProvider
 import com.kuts.domain.entities.WordInsightsProviderState
 import com.kuts.domain.managers.IAudioPlayerManager
+import com.kuts.domain.managers.IAgentDriverConnectionManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.managers.IWordInsightsProviderManager
@@ -77,6 +79,16 @@ class IosNoOpWordInsightsProviderManager : IWordInsightsProviderManager {
     override suspend fun setSelectedProvider(provider: WordInsightsProvider) {
         state.value = WordInsightsProviderState(selectedProvider = WordInsightsProvider.OpenAi)
     }
+}
+
+class IosNoOpAgentDriverConnectionManager : IAgentDriverConnectionManager {
+    override val state = MutableStateFlow<AgentDriverConnectionState>(
+        value = AgentDriverConnectionState.Disconnected,
+    )
+
+    override suspend fun switchOn() = Unit
+
+    override suspend fun switchOff() = Unit
 }
 
 class IosNoOpOldAppKlafDataTransferRepository : IOldAppKlafDataTransferRepository {

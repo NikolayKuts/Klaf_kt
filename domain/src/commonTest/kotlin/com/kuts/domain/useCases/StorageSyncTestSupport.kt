@@ -147,6 +147,7 @@ internal class TestMnemonicImageAssetRepository(
     val savedImages = initialSavedImages.mapValues { (_, bytes) -> bytes.copyOf() }.toMutableMap()
     val importedSavedAssetIds = mutableListOf<String>()
     val deletedSavedAssetIds = mutableListOf<String>()
+    val readSavedImageAssetIds = mutableListOf<String>()
 
     override suspend fun createDraftImage(imageBytes: ByteArray): MnemonicImageAsset {
         val assetId = "draft-${draftImages.size + 1}"
@@ -192,6 +193,7 @@ internal class TestMnemonicImageAssetRepository(
     }
 
     override suspend fun readSavedImageBytes(assetId: String): ByteArray? {
+        readSavedImageAssetIds += assetId
         return savedImages[assetId]?.copyOf()
     }
 
@@ -212,6 +214,7 @@ internal class TestMnemonicImageAssetRepository(
 internal class TestMnemonicImageRemoteRepository(
     initialImages: Map<String, ByteArray> = emptyMap(),
     private val failingUploadAssetIds: Set<String> = emptySet(),
+    override val isEnabled: Boolean = true,
 ) : IMnemonicImageRemoteRepository {
 
     val remoteImages = initialImages.mapValues { (_, bytes) -> bytes.copyOf() }.toMutableMap()
