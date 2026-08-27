@@ -3,6 +3,7 @@ package com.kuts.klaf.networking.agentDriver.mnemonic
 import com.kuts.domain.entities.MnemonicSelection
 import com.kuts.domain.repositories.IMnemonicImageRepository
 import com.kuts.klaf.networking.agentDriver.AgentDriverSession
+import com.kuts.klaf.networking.agentDriver.describeAgentDriverFailureForLog
 import com.kuts.klaf.networking.agentDriver.toShortAgentDriverMessage
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
@@ -40,7 +41,10 @@ class AgentDriverMnemonicImageRepository(
         } catch (cancellationException: CancellationException) {
             throw cancellationException
         } catch (throwable: Throwable) {
-            logE("Mnemonic image request failed: ${throwable::class.simpleName} -- $throwable")
+            logE(
+                "Mnemonic image request failed: " +
+                    throwable.describeAgentDriverFailureForLog()
+            )
             throw IllegalArgumentException(
                 "Mnemonic image request failed. ${throwable.toShortAgentDriverMessage()}",
                 throwable,

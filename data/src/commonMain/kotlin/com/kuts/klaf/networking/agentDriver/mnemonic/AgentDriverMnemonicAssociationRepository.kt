@@ -5,6 +5,7 @@ import com.kuts.domain.repositories.IMnemonicAssociationRepository
 import com.kuts.klaf.common.MnemonicAssociationPayload
 import com.kuts.klaf.common.toDomainEntity
 import com.kuts.klaf.networking.agentDriver.AgentDriverSession
+import com.kuts.klaf.networking.agentDriver.describeAgentDriverFailureForLog
 import com.kuts.klaf.networking.agentDriver.toShortAgentDriverMessage
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
@@ -52,7 +53,10 @@ class AgentDriverMnemonicAssociationRepository(
         } catch (cancellationException: CancellationException) {
             throw cancellationException
         } catch (throwable: Throwable) {
-            logE("Mnemonic association request failed: ${throwable::class.simpleName} -- $throwable")
+            logE(
+                "Mnemonic association request failed: " +
+                    throwable.describeAgentDriverFailureForLog()
+            )
             throw IllegalArgumentException(
                 "Mnemonic association request failed. ${throwable.toShortAgentDriverMessage()}",
                 throwable,
