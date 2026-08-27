@@ -19,6 +19,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.EventMessageView
 import com.kuts.klaf.common.MainViewModel
+import com.kuts.klaf.common.permissions.IMicrophonePermissionBinder
 import com.kuts.klaf.common.permissions.INotificationPermissionBinder
 import com.kuts.klaf.common.permissions.INotificationPermissionManager
 import com.kuts.klaf.common.permissions.NotificationPermissionDialogs
@@ -33,6 +34,7 @@ class MainActivity : AppCompatActivity() {
 
     private val sharedViewModel: BaseMainViewModel by viewModels<MainViewModel>()
     private val notificationPermissionBinder: INotificationPermissionBinder by inject()
+    private val microphonePermissionBinder: IMicrophonePermissionBinder by inject()
     private val notificationPermissionManager: INotificationPermissionManager by inject()
     private var shouldCheckNotificationPermission by mutableStateOf(false)
 
@@ -49,6 +51,7 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         notificationPermissionBinder.bind(activity = this)
+        microphonePermissionBinder.bind(activity = this)
 
         setContent {
             MainTheme {

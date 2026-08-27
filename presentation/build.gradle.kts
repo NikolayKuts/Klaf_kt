@@ -57,6 +57,13 @@ kotlin {
             }
         }
 
+        val commonTest by getting {
+            dependencies {
+                implementation(libs.tests.kotlin)
+                implementation(libs.tests.coroutine)
+            }
+        }
+
         val androidMain by getting {
             dependencies {
                 implementation(libs.core.android.ktx)
@@ -71,6 +78,7 @@ kotlin {
                 implementation(libs.koin.android)
                 implementation(libs.moko.permissions)
                 implementation(libs.moko.permissions.notifications)
+                implementation(libs.moko.permissions.microphone)
 
                 implementation(libs.firebase.authentication)
 

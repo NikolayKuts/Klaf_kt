@@ -20,6 +20,7 @@ import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
+import com.kuts.domain.managers.ISpeechRecognitionManager
 import com.kuts.domain.managers.IWordInsightsProviderManager
 import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.ICardRepository
@@ -75,6 +76,7 @@ import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
+import com.kuts.klaf.speech.AndroidSpeechRecognitionManager
 import com.lib.lokdroid.core.LoKdroid
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -259,6 +261,9 @@ private fun Module.dataManagerBindings() {
     }
 
     factory<IAudioPlayerManager> { AndroidCardAudioPlayer(crashlytics = get()) }
+    factory<ISpeechRecognitionManager> {
+        AndroidSpeechRecognitionManager(context = androidContext())
+    }
 }
 
 private fun Module.workerModule() {

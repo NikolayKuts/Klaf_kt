@@ -27,11 +27,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,6 +51,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -59,8 +63,10 @@ import com.kuts.domain.entities.canSendRequests
 import com.kuts.klaf.cardManagement.cardAddition.CardAdditionViewModel
 import com.kuts.klaf.cardManagement.cardEditing.CardEditingViewModel
 import com.kuts.klaf.cardManagement.common.BaseCardManagementViewModel
+import com.kuts.klaf.cardManagement.common.MnemonicCommentField
 import com.kuts.klaf.cardManagement.common.MnemonicImageVariantUiState
 import com.kuts.klaf.cardManagement.common.MnemonicManagementUiState
+import com.kuts.klaf.cardManagement.common.MnemonicSpeechInputUiState
 import com.kuts.klaf.cardManagement.common.MnemonicVariantUiState
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.ContentHolder
@@ -68,11 +74,14 @@ import com.kuts.klaf.common.DIALOG_APP_LABEL_SIZE
 import com.kuts.klaf.common.DialogAppLabel
 import com.kuts.klaf.common.FullBackgroundDialog
 import com.kuts.klaf.common.RoundButton
+import com.kuts.klaf.common.SpeechInputButton
 import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.presentation.resources.Res
+import com.kuts.klaf.presentation.resources.ic_close_24
 import com.kuts.klaf.presentation.resources.ic_confirmation_24
 import com.kuts.klaf.presentation.resources.ic_logout_24
+import com.kuts.klaf.presentation.resources.mnemonic_comment_clear_action
 import com.kuts.klaf.presentation.resources.mnemonic_image_comment_label
 import com.kuts.klaf.presentation.resources.mnemonic_image_request_action
 import com.kuts.klaf.presentation.resources.mnemonic_management_comment_label
@@ -82,6 +91,7 @@ import com.kuts.klaf.presentation.resources.mnemonic_management_request_action
 import com.kuts.klaf.presentation.resources.mnemonic_management_title
 import com.kuts.klaf.presentation.resources.mnemonic_management_variants_title
 import com.kuts.klaf.theme.MainTheme
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -178,6 +188,12 @@ private fun MnemonicManagementContent(
         }
     }
 
+    // The view model outlives this screen, so a session left running would keep the microphone
+    // open after the user has already navigated away.
+    DisposableEffect(viewModel) {
+        onDispose { viewModel.cancelMnemonicCommentDictation() }
+    }
+
     LaunchedEffect(selectedVariant?.id, selectedVariantImageCount, mnemonicState.isImageLoading) {
         if (!mnemonicState.isImageLoading && selectedVariantImageCount > previousImageCount) {
             scrollState.animateScrollTo(scrollState.maxValue)
@@ -203,7 +219,10 @@ private fun MnemonicManagementContent(
             mnemonicState = mnemonicState,
             connectionState = connectionState,
             onCommentChange = viewModel::updateMnemonicRequestComment,
+            onClearComment = viewModel::clearMnemonicComment,
+            onDictateComment = viewModel::startMnemonicCommentDictation,
             onRequest = viewModel::requestMnemonicAssociation,
+            onCancelRequest = viewModel::cancelMnemonicAssociationRequest,
         )
 
         if (mnemonicState.variants.isNotEmpty()) {
@@ -219,7 +238,10 @@ private fun MnemonicManagementContent(
                     connectionState = connectionState,
                     selectedVariant = variant,
                     onCommentChange = viewModel::updateMnemonicImageRequestComment,
+                    onClearComment = viewModel::clearMnemonicComment,
+                    onDictateComment = viewModel::startMnemonicCommentDictation,
                     onRequestImage = viewModel::requestMnemonicImage,
+                    onCancelRequestImage = viewModel::cancelMnemonicImageRequest,
                     onSelectImage = { imageId ->
                         viewModel.selectMnemonicImageVariant(
                             variantId = variant.id,
@@ -275,22 +297,42 @@ private fun MnemonicManagementHeader(
 private fun MnemonicAssociationRequestSection(
     mnemonicState: MnemonicManagementUiState,
     connectionState: AgentDriverConnectionState,
-    onCommentChange: (androidx.compose.ui.text.input.TextFieldValue) -> Unit,
+    onCommentChange: (TextFieldValue) -> Unit,
+    onClearComment: (MnemonicCommentField) -> Unit,
+    onDictateComment: (MnemonicCommentField) -> Unit,
     onRequest: () -> Unit,
+    onCancelRequest: () -> Unit,
 ) {
-    OutlinedTextField(
-        modifier = Modifier.fillMaxWidth(),
+    MnemonicCommentInput(
+        field = MnemonicCommentField.ASSOCIATION,
         value = mnemonicState.requestComment,
+        label = stringResource(Res.string.mnemonic_management_comment_label),
+        speechInput = mnemonicState.speechInput,
         onValueChange = onCommentChange,
-        label = { Text(text = stringResource(Res.string.mnemonic_management_comment_label)) },
+        onClear = onClearComment,
+        onDictate = onDictateComment,
     )
 
-    MnemonicActionButton(
-        label = stringResource(Res.string.mnemonic_management_request_action),
-        isLoading = mnemonicState.isAssociationLoading,
-        connectionState = connectionState,
-        onClick = onRequest,
-    )
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        MnemonicActionButton(
+            label = stringResource(Res.string.mnemonic_management_request_action),
+            isLoading = mnemonicState.isAssociationLoading,
+            connectionState = connectionState,
+            onClick = onRequest,
+        )
+
+        if (mnemonicState.isAssociationLoading) {
+            RoundButton(
+                background = MainTheme.colors.common.negativeDialogButton,
+                iconRes = Res.drawable.ic_close_24,
+                onClick = onCancelRequest,
+                size = 40.dp,
+            )
+        }
+    }
 }
 
 @Composable
@@ -333,23 +375,43 @@ private fun MnemonicImageRequestSection(
     mnemonicState: MnemonicManagementUiState,
     connectionState: AgentDriverConnectionState,
     selectedVariant: MnemonicVariantUiState,
-    onCommentChange: (androidx.compose.ui.text.input.TextFieldValue) -> Unit,
+    onCommentChange: (TextFieldValue) -> Unit,
+    onClearComment: (MnemonicCommentField) -> Unit,
+    onDictateComment: (MnemonicCommentField) -> Unit,
     onRequestImage: () -> Unit,
+    onCancelRequestImage: () -> Unit,
     onSelectImage: (String) -> Unit,
 ) {
-    OutlinedTextField(
-        modifier = Modifier.fillMaxWidth(),
+    MnemonicCommentInput(
+        field = MnemonicCommentField.IMAGE,
         value = mnemonicState.imageRequestComment,
+        label = stringResource(Res.string.mnemonic_image_comment_label),
+        speechInput = mnemonicState.speechInput,
         onValueChange = onCommentChange,
-        label = { Text(text = stringResource(Res.string.mnemonic_image_comment_label)) },
+        onClear = onClearComment,
+        onDictate = onDictateComment,
     )
 
-    MnemonicActionButton(
-        label = stringResource(Res.string.mnemonic_image_request_action),
-        isLoading = mnemonicState.isImageLoading,
-        connectionState = connectionState,
-        onClick = onRequestImage,
-    )
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        MnemonicActionButton(
+            label = stringResource(Res.string.mnemonic_image_request_action),
+            isLoading = mnemonicState.isImageLoading,
+            connectionState = connectionState,
+            onClick = onRequestImage,
+        )
+
+        if (mnemonicState.isImageLoading) {
+            RoundButton(
+                background = MainTheme.colors.common.negativeDialogButton,
+                iconRes = Res.drawable.ic_close_24,
+                onClick = onCancelRequestImage,
+                size = 40.dp,
+            )
+        }
+    }
 
     if (selectedVariant.imageVariants.isEmpty()) {
         Text(text = stringResource(Res.string.mnemonic_management_image_empty_state))
@@ -359,6 +421,54 @@ private fun MnemonicImageRequestSection(
             selectedImageId = selectedVariant.selectedImageId,
             onSelectImage = onSelectImage,
         )
+    }
+}
+
+/**
+ * A comment field with its own clear button inside the field and a dictation button beside it.
+ * Both microphone buttons are disabled while any session runs, because only one can run at a time.
+ */
+@Composable
+private fun MnemonicCommentInput(
+    field: MnemonicCommentField,
+    value: TextFieldValue,
+    label: String,
+    speechInput: MnemonicSpeechInputUiState,
+    onValueChange: (TextFieldValue) -> Unit,
+    onClear: (MnemonicCommentField) -> Unit,
+    onDictate: (MnemonicCommentField) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OutlinedTextField(
+            modifier = Modifier.weight(1f),
+            value = value,
+            onValueChange = onValueChange,
+            label = { Text(text = label) },
+            trailingIcon = {
+                if (value.text.isNotEmpty()) {
+                    IconButton(onClick = { onClear(field) }) {
+                        Icon(
+                            painter = painterResource(resource = Res.drawable.ic_close_24),
+                            contentDescription = stringResource(
+                                resource = Res.string.mnemonic_comment_clear_action,
+                            ),
+                        )
+                    }
+                }
+            },
+        )
+
+        if (speechInput.isAvailable) {
+            SpeechInputButton(
+                isBusy = speechInput.isBusyFor(field = field),
+                enabled = !speechInput.isBusy,
+                onClick = { onDictate(field) },
+            )
+        }
     }
 }
 

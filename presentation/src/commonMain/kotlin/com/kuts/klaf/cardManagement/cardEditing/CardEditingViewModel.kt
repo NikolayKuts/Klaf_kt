@@ -11,6 +11,7 @@ import com.kuts.domain.entities.CardMnemonic
 import com.kuts.domain.entities.WordMeaningInsights
 import com.kuts.domain.ipa.toLetterInfos
 import com.kuts.domain.managers.IAudioPlayerManager
+import com.kuts.domain.managers.ISpeechRecognitionManager
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.domain.useCases.CheckIfCardExistsUseCase
@@ -33,6 +34,7 @@ import com.kuts.klaf.cardManagement.common.toCardMnemonicPreview
 import com.kuts.klaf.cardManagement.common.toDomainEntity
 import com.kuts.klaf.cardManagement.common.toTextFieldValueIpaHolder
 import com.kuts.klaf.cardManagement.common.withTrimmedIpaText
+import com.kuts.klaf.common.permissions.IMicrophonePermissionManager
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
 import com.kuts.klaf.presentation.resources.Res
@@ -71,6 +73,8 @@ class CardEditingViewModel(
     mnemonicImageAssetRepository: IMnemonicImageAssetRepository,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
+    speechRecognitionManager: ISpeechRecognitionManager,
+    microphonePermissionManager: IMicrophonePermissionManager,
     observeAgentDriverConnectionState: ObserveAgentDriverConnectionStateUseCase,
     crashlytics: ICrashlyticsRepository,
     fetchDeckById: FetchDeckByIdUseCase,
@@ -84,6 +88,8 @@ class CardEditingViewModel(
     mnemonicImageAssetRepository = mnemonicImageAssetRepository,
     fetchWordAutocomplete = fetchWordAutocomplete,
     fetchWordInfo = fetchWordInfo,
+    speechRecognitionManager = speechRecognitionManager,
+    microphonePermissionManager = microphonePermissionManager,
     observeAgentDriverConnectionState = observeAgentDriverConnectionState,
     crashlytics = crashlytics,
     fetchDeckById = fetchDeckById,

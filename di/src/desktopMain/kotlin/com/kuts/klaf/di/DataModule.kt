@@ -13,7 +13,10 @@ import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
+import com.kuts.domain.managers.ISpeechRecognitionManager
 import com.kuts.domain.managers.IWordInsightsProviderManager
+import com.kuts.domain.managers.SpeechRecognitionResult
+import com.kuts.domain.managers.SpeechRecognitionState
 import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.ICrashlyticsRepository
@@ -45,6 +48,7 @@ import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -148,6 +152,7 @@ private fun Module.desktopInfrastructureModule() {
 private fun Module.desktopManagerBindings() {
     single<IAppMaintenanceManager> { DesktopAppMaintenanceManager(mnemonicImageAssetRepository = get()) }
     factory<IAudioPlayerManager> { DesktopNoOpAudioPlayerManager() }
+    factory<ISpeechRecognitionManager> { DesktopNoOpSpeechRecognitionManager() }
     single<IDeckReviewScheduler> { DesktopNoOpDeckReviewScheduler() }
 }
 
@@ -271,4 +276,15 @@ private class DesktopNoOpAudioPlayerManager : IAudioPlayerManager {
 private class DesktopNoOpDeckReviewScheduler : IDeckReviewScheduler {
     override fun schedule(deckName: String, deckId: Int, atTime: Long) = Unit
     override fun cancel(deckId: Int) = Unit
+}
+
+private class DesktopNoOpSpeechRecognitionManager : ISpeechRecognitionManager {
+    override val isSupported: Boolean = false
+    override val state = MutableStateFlow<SpeechRecognitionState>(SpeechRecognitionState.Unsupported)
+    override val recognizedText = MutableSharedFlow<SpeechRecognitionResult>()
+
+    override fun startRecognition(targetId: String) = Unit
+    override fun stopRecognition() = Unit
+    override fun cancelRecognition() = Unit
+    override fun release() = Unit
 }

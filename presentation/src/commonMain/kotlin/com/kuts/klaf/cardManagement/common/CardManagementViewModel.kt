@@ -23,6 +23,7 @@ import com.kuts.domain.entities.canSendRequests
 import com.kuts.domain.entities.toSelections
 import com.kuts.domain.ipa.toRowIpaItemHolders
 import com.kuts.domain.managers.IAudioPlayerManager
+import com.kuts.domain.managers.ISpeechRecognitionManager
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.domain.repositories.IWordInfoRepository
@@ -39,6 +40,7 @@ import com.kuts.klaf.cardManagement.cardAddition.AutocompleteState
 import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionItem
 import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionsState
 import com.kuts.klaf.common.EventMessage
+import com.kuts.klaf.common.permissions.IMicrophonePermissionManager
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -60,6 +62,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -72,6 +77,8 @@ abstract class CardManagementViewModel(
     protected val mnemonicImageAssetRepository: IMnemonicImageAssetRepository,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     private val fetchWordInfo: FetchWordInfoUseCase,
+    speechRecognitionManager: ISpeechRecognitionManager,
+    microphonePermissionManager: IMicrophonePermissionManager,
     observeAgentDriverConnectionState: ObserveAgentDriverConnectionStateUseCase,
     protected val crashlytics: ICrashlyticsRepository,
     protected val checkIfWordExists: CheckIfCardExistsUseCase,
@@ -140,11 +147,20 @@ abstract class CardManagementViewModel(
         observeAgentDriverConnectionState()
     private var nextMnemonicVariantId = 0L
     private var nextMnemonicImageVariantId = 0L
+    private var mnemonicAssociationRequestJob: Job? = null
+    private var mnemonicImageRequestJob: Job? = null
+
+    private val speechInputCoordinator = MnemonicSpeechInputCoordinator(
+        speechRecognitionManager = speechRecognitionManager,
+        microphonePermissionManager = microphonePermissionManager,
+        scope = viewModelScope,
+    )
 
     init {
         combineAndObserveCardManagementChanges()
         observeForeignWordChanges()
         observeTextFieldValueIpaHoldersState()
+        observeMnemonicSpeechInput()
     }
 
     protected open suspend fun onForeignWordChanged(word: String) {
@@ -232,7 +248,21 @@ abstract class CardManagementViewModel(
         mnemonicManagementState.update { state -> state.copy(imageRequestComment = value) }
     }
 
+    override fun clearMnemonicComment(field: MnemonicCommentField) {
+        mnemonicManagementState.update { state -> state.clearComment(field = field) }
+    }
+
+    override fun startMnemonicCommentDictation(field: MnemonicCommentField) {
+        speechInputCoordinator.start(field = field)
+    }
+
+    override fun cancelMnemonicCommentDictation() {
+        speechInputCoordinator.cancel()
+    }
+
     override fun requestMnemonicAssociation() {
+        if (mnemonicAssociationRequestJob?.isActive == true) return
+
         val requestedWord = foreignWordFieldValueState.value.text.trim()
 
         if (!requestedWord.isValidMnemonicWordFormat()) {
@@ -244,7 +274,7 @@ abstract class CardManagementViewModel(
 
         mnemonicManagementState.update { state -> state.startAssociationLoading() }
 
-        viewModelScope.launchWithState(coroutineContextProvider.io) {
+        val requestJob = viewModelScope.launchWithState(coroutineContextProvider.io) {
             val requestComment = mnemonicManagementState.value.associationRequestCommentOrNull()
             val excludedSoundAnchors = mnemonicManagementState.value.excludedSoundAnchors()
             val association = fetchMnemonicAssociation(
@@ -270,9 +300,24 @@ abstract class CardManagementViewModel(
                 duration = EventMessage.Duration.Long,
             )
         }
+
+        mnemonicAssociationRequestJob = requestJob
+        requestJob.invokeOnCompletion {
+            if (mnemonicAssociationRequestJob == requestJob) {
+                mnemonicAssociationRequestJob = null
+            }
+        }
+    }
+
+    override fun cancelMnemonicAssociationRequest() {
+        mnemonicAssociationRequestJob?.cancel()
+        mnemonicAssociationRequestJob = null
+        mnemonicManagementState.update { state -> state.stopAssociationLoading() }
     }
 
     override fun requestMnemonicImage() {
+        if (mnemonicImageRequestJob?.isActive == true) return
+
         val selectedVariant = mnemonicManagementState.value.selectedVariant
 
         if (selectedVariant == null) {
@@ -284,13 +329,22 @@ abstract class CardManagementViewModel(
 
         mnemonicManagementState.update { state -> state.startImageLoading() }
 
-        viewModelScope.launchWithState(coroutineContextProvider.io) {
+        val requestJob = viewModelScope.launchWithState(coroutineContextProvider.io) {
             val requestComment = mnemonicManagementState.value.imageRequestCommentOrNull()
             val imageBytes = fetchMnemonicImage(
                 selection = selectedVariant.selection,
                 comment = requestComment,
             )
             val storedDraftImage = mnemonicImageAssetRepository.createDraftImage(imageBytes = imageBytes)
+
+            // The bytes are on disk before the variant reaches the state, and a cancel landing in
+            // that window would leave a file nothing references: the draft ids are derived from
+            // the state, so neither clearing the mnemonic nor onCleared would ever find it again.
+            if (!currentCoroutineContext().isActive) {
+                deleteDraftImagesAsync(assetIds = setOf(storedDraftImage.assetId))
+                return@launchWithState
+            }
+
             val newImageVariant = createMnemonicImageVariant(storedDraftImage = storedDraftImage)
 
             mnemonicManagementState.update { state ->
@@ -307,6 +361,19 @@ abstract class CardManagementViewModel(
                 duration = EventMessage.Duration.Long,
             )
         }
+
+        mnemonicImageRequestJob = requestJob
+        requestJob.invokeOnCompletion {
+            if (mnemonicImageRequestJob == requestJob) {
+                mnemonicImageRequestJob = null
+            }
+        }
+    }
+
+    override fun cancelMnemonicImageRequest() {
+        mnemonicImageRequestJob?.cancel()
+        mnemonicImageRequestJob = null
+        mnemonicManagementState.update { state -> state.stopImageLoading() }
     }
 
     override fun selectMnemonicVariant(variantId: String) {
@@ -346,6 +413,40 @@ abstract class CardManagementViewModel(
                 }
             }
         }
+    }
+
+    private fun observeMnemonicSpeechInput() {
+        speechInputCoordinator.state
+            .onEach { speechInputState ->
+                mnemonicManagementState.update { state -> state.copy(speechInput = speechInputState) }
+            }.launchIn(viewModelScope)
+
+        speechInputCoordinator.recognizedText
+            .onEach { recognized ->
+                mnemonicManagementState.update { state ->
+                    state.appendRecognizedText(
+                        field = recognized.field,
+                        recognizedText = recognized.text,
+                    )
+                }
+            }.launchIn(viewModelScope)
+
+        speechInputCoordinator.failures
+            .onEach { failure -> eventMessage.tryEmitAsNegative(resId = failure.toMessageResource()) }
+            .launchIn(viewModelScope)
+    }
+
+    private fun MnemonicSpeechInputFailure.toMessageResource() = when (this) {
+        MnemonicSpeechInputFailure.UNSUPPORTED -> Res.string.speech_input_unsupported
+        MnemonicSpeechInputFailure.PERMISSION_DENIED -> Res.string.speech_input_permission_denied
+        MnemonicSpeechInputFailure.PERMISSION_DENIED_ALWAYS -> {
+            Res.string.speech_input_permission_denied_always
+        }
+
+        MnemonicSpeechInputFailure.NO_SPEECH_DETECTED -> Res.string.speech_input_no_speech_detected
+        MnemonicSpeechInputFailure.NETWORK -> Res.string.speech_input_network_error
+        MnemonicSpeechInputFailure.BUSY -> Res.string.speech_input_busy
+        MnemonicSpeechInputFailure.UNKNOWN -> Res.string.speech_input_failed
     }
 
     private fun combineAndObserveCardManagementChanges() {
@@ -505,7 +606,13 @@ abstract class CardManagementViewModel(
 
         deleteDraftImagesAsync(assetIds = draftAssetIdsToDelete)
 
-        mnemonicManagementState.value = snapshot
+        // The snapshot restores generated content, not the microphone. Speech input describes what
+        // the device can do and what a session is doing right now, and writing a stale copy of it
+        // back can hide the dictation buttons for good: the coordinator only pushes its state when
+        // that state changes, so it would never correct the overwrite.
+        mnemonicManagementState.update { state ->
+            snapshot.copy(speechInput = state.speechInput)
+        }
     }
 
     protected fun initializeMnemonicManagementState(mnemonic: CardMnemonic) {
@@ -705,6 +812,7 @@ abstract class CardManagementViewModel(
     }
 
     override fun onCleared() {
+        speechInputCoordinator.release()
         runCatching {
             runBlocking {
                 deleteDraftImages(assetIds = currentDraftImageAssetIds())

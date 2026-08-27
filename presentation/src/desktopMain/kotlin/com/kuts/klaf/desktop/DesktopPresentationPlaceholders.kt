@@ -9,6 +9,8 @@ import com.kuts.domain.managers.IDeckReviewNotifierManager
 import com.kuts.klaf.cardManagement.common.CambridgeWordData
 import com.kuts.klaf.cardManagement.common.ICambridgeWordDataProvider
 import com.kuts.klaf.common.ButtonState
+import com.kuts.klaf.common.permissions.IMicrophonePermissionManager
+import com.kuts.klaf.common.permissions.MicrophonePermissionRequestResult
 import com.kuts.klaf.deckRepetition.DeckReviewState
 import com.kuts.klaf.deckRepetition.IDeckReviewStateStore
 import com.kuts.klaf.deckRepetition.RepetitionScreenState
@@ -49,4 +51,11 @@ class DesktopInMemoryDeckReviewStateStore : IDeckReviewStateStore {
     override var isWaitingForFinish: Boolean = false
     override val savedProgressCards = MutableStateFlow<List<Card>>(emptyList())
     override var timerTime: Long = 0L
+}
+
+class DesktopNoOpMicrophonePermissionManager : IMicrophonePermissionManager {
+
+    override suspend fun requestPermissionIfNeeded(): MicrophonePermissionRequestResult {
+        return MicrophonePermissionRequestResult.DENIED
+    }
 }

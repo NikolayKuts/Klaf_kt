@@ -76,7 +76,7 @@ composeMultiplatform = "1.11.1"
 lokdroid = "0.2.0-alpha"
 
 # AgentDriver SDK #
-agentdriver = "0.10.0-SNAPSHOT"
+agentdriver = "0.10.2-SNAPSHOT"
 
 # KSP #
 ksp = "2.3.11"
@@ -141,6 +141,7 @@ koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmo
 # Moko Permissions #
 moko-permissions = { group = "dev.icerock.moko", name = "permissions", version.ref = "mokoPermissions" }
 moko-permissions-notifications = { group = "dev.icerock.moko", name = "permissions-notifications", version.ref = "mokoPermissions" }
+moko-permissions-microphone = { group = "dev.icerock.moko", name = "permissions-microphone", version.ref = "mokoPermissions" }
 
 # Firebase #
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }

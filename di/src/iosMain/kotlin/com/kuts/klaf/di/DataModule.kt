@@ -6,7 +6,10 @@ import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAgentDriverConnectionManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
+import com.kuts.domain.managers.ISpeechRecognitionManager
 import com.kuts.domain.managers.IWordInsightsProviderManager
+import com.kuts.domain.managers.SpeechRecognitionResult
+import com.kuts.domain.managers.SpeechRecognitionState
 import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.ICrashlyticsRepository
@@ -42,6 +45,8 @@ import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -100,6 +105,7 @@ private fun Module.iosInfrastructureModule() {
 private fun Module.iosManagerBindings() {
     single<IAppMaintenanceManager> { IosAppMaintenanceManager() }
     factory<IAudioPlayerManager> { IosNoOpAudioPlayerManager() }
+    factory<ISpeechRecognitionManager> { IosNoOpSpeechRecognitionManager() }
     single<IDeckReviewScheduler> { IosNoOpDeckReviewScheduler() }
 }
 
@@ -120,4 +126,15 @@ private class IosNoOpMnemonicImageRepository : IMnemonicImageRepository {
     ): ByteArray {
         throw UnsupportedOperationException("Mnemonic image requests are unavailable on iOS.")
     }
+}
+
+private class IosNoOpSpeechRecognitionManager : ISpeechRecognitionManager {
+    override val isSupported: Boolean = false
+    override val state = MutableStateFlow<SpeechRecognitionState>(SpeechRecognitionState.Unsupported)
+    override val recognizedText = MutableSharedFlow<SpeechRecognitionResult>()
+
+    override fun startRecognition(targetId: String) = Unit
+    override fun stopRecognition() = Unit
+    override fun cancelRecognition() = Unit
+    override fun release() = Unit
 }

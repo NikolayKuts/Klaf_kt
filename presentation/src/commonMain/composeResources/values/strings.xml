@@ -53,6 +53,15 @@
     <string name="mnemonic_image_comment_label">Comment for image generation</string>
     <string name="mnemonic_image_request_action">Generate Image</string>
     <string name="mnemonic_management_image_empty_state">No image variants for this mnemonic yet.</string>
+    <string name="mnemonic_comment_clear_action">Clear comment</string>
+    <string name="mnemonic_comment_dictate_action">Dictate comment</string>
+    <string name="speech_input_unsupported">Voice input is not available on this device.</string>
+    <string name="speech_input_permission_denied">Microphone access is needed for voice input.</string>
+    <string name="speech_input_permission_denied_always">Microphone access is blocked. Allow it in the app settings to use voice input.</string>
+    <string name="speech_input_no_speech_detected">Nothing was recognized. Please try again.</string>
+    <string name="speech_input_network_error">Voice input needs a network connection right now.</string>
+    <string name="speech_input_busy">Voice input is busy. Please try again in a moment.</string>
+    <string name="speech_input_failed">Voice input failed. Please try again.</string>
     <string name="word_insights_invalid_word_format">The word format is invalid. Please enter a real English word.</string>
     <string name="word_insights_no_refreshed_data">There is no refreshed insights data to apply.</string>
     <string name="drawer_word_insights_source_label">Word insights source</string>

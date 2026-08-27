@@ -8,6 +8,7 @@ import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.entities.Card
 import com.kuts.domain.ipa.toRowInfos
 import com.kuts.domain.managers.IAudioPlayerManager
+import com.kuts.domain.managers.ISpeechRecognitionManager
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.domain.useCases.AddNewCardIntoDeckUseCase
@@ -24,6 +25,7 @@ import com.kuts.klaf.cardManagement.common.ICambridgeWordDataProvider
 import com.kuts.klaf.cardManagement.common.CardManagementState
 import com.kuts.klaf.cardManagement.common.CardManagementViewModel
 import com.kuts.klaf.cardManagement.common.toTrimmedDomainEntities
+import com.kuts.klaf.common.permissions.IMicrophonePermissionManager
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
 
@@ -39,6 +41,8 @@ class CardAdditionViewModel(
     mnemonicImageAssetRepository: IMnemonicImageAssetRepository,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
+    speechRecognitionManager: ISpeechRecognitionManager,
+    microphonePermissionManager: IMicrophonePermissionManager,
     observeAgentDriverConnectionState: ObserveAgentDriverConnectionStateUseCase,
     crashlytics: ICrashlyticsRepository,
     fetchDeckById: FetchDeckByIdUseCase,
@@ -52,6 +56,8 @@ class CardAdditionViewModel(
     mnemonicImageAssetRepository = mnemonicImageAssetRepository,
     fetchWordAutocomplete = fetchWordAutocomplete,
     fetchWordInfo = fetchWordInfo,
+    speechRecognitionManager = speechRecognitionManager,
+    microphonePermissionManager = microphonePermissionManager,
     observeAgentDriverConnectionState = observeAgentDriverConnectionState,
     crashlytics = crashlytics,
     fetchDeckById = fetchDeckById,

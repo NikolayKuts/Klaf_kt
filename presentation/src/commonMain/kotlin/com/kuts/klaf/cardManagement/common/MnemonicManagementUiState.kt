@@ -1,5 +1,6 @@
 package com.kuts.klaf.cardManagement.common
 
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.kuts.domain.entities.CardMnemonic
 import com.kuts.domain.entities.MnemonicImageAssetStorage
@@ -14,6 +15,7 @@ data class MnemonicManagementUiState(
     val isExplicitlyCleared: Boolean = false,
     val isAssociationLoading: Boolean = false,
     val isImageLoading: Boolean = false,
+    val speechInput: MnemonicSpeechInputUiState = MnemonicSpeechInputUiState(),
 ) {
     val selectedVariant: MnemonicVariantUiState?
         get() = variants.firstOrNull { variant -> variant.id == selectedVariantId }
@@ -46,6 +48,45 @@ internal fun MnemonicManagementUiState.associationRequestCommentOrNull(): String
 
 internal fun MnemonicManagementUiState.imageRequestCommentOrNull(): String? {
     return imageRequestComment.text.trim().ifBlank { null }
+}
+
+internal fun MnemonicManagementUiState.clearComment(
+    field: MnemonicCommentField,
+): MnemonicManagementUiState = when (field) {
+    MnemonicCommentField.ASSOCIATION -> copy(requestComment = TextFieldValue())
+    MnemonicCommentField.IMAGE -> copy(imageRequestComment = TextFieldValue())
+}
+
+/**
+ * Dictation adds to a comment instead of replacing it, so several phrases can be spoken one after
+ * another and typing already done is never lost.
+ */
+internal fun MnemonicManagementUiState.appendRecognizedText(
+    field: MnemonicCommentField,
+    recognizedText: String,
+): MnemonicManagementUiState = when (field) {
+    MnemonicCommentField.ASSOCIATION -> {
+        copy(requestComment = requestComment.withAppendedText(addition = recognizedText))
+    }
+
+    MnemonicCommentField.IMAGE -> {
+        copy(imageRequestComment = imageRequestComment.withAppendedText(addition = recognizedText))
+    }
+}
+
+internal fun TextFieldValue.withAppendedText(addition: String): TextFieldValue {
+    val trimmedAddition = addition.trim()
+
+    if (trimmedAddition.isEmpty()) return this
+
+    val currentText = text.trimEnd()
+    val updatedText = if (currentText.isEmpty()) {
+        trimmedAddition
+    } else {
+        "$currentText $trimmedAddition"
+    }
+
+    return TextFieldValue(text = updatedText, selection = TextRange(index = updatedText.length))
 }
 
 internal fun MnemonicManagementUiState.excludedSoundAnchors(): List<String> {
