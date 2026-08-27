@@ -10,8 +10,12 @@ import org.agentdriver.project.ktorclient.external.AssistantClientEndpoint
 import org.agentdriver.project.ktorclient.external.ClientAuthentication
 import org.agentdriver.project.ktorclient.external.IAssistantClient
 import org.agentdriver.project.ktorclient.external.KtorAssistantClient
+import org.agentdriver.project.ktorclient.external.KtorAssistantClientEvent
+import org.agentdriver.project.ktorclient.external.KtorAssistantClientEventListener
 import org.agentdriver.project.protocol.ImageGenerationRequest
 import org.agentdriver.project.protocol.TextGenerationRequest
+import com.lib.lokdroid.core.logD
+import com.lib.lokdroid.core.logE
 
 /**
  * The app's connection to the assistant.
@@ -45,9 +49,23 @@ class AgentDriverSession(
         // The AgentDriver server issued this and checks it itself, so the tunnel in front only has
         // to carry the connection rather than decide who may open one.
         authentication = ClientAuthentication.BearerToken(token = clientToken.trim()),
+        eventListener = KtorAssistantClientEventListener { event ->
+            when (event) {
+                is KtorAssistantClientEvent.RequestSendFailed ->
+                    logE("Agent Driver SDK failed to send ${event.messageType}: ${event.failure.describeForLog()}")
+
+                is KtorAssistantClientEvent.MonitorConnectionFailed ->
+                    logE("Agent Driver SDK connection monitor failed: ${event.failure.describeForLog()}")
+
+                else -> logD("Agent Driver SDK event: $event")
+            }
+        },
     )
 
     val connectionState: StateFlow<AssistantClientConnectionState> get() = client.connectionState
+
+    /** Where this client connects. Fixed for its lifetime, and part of what a session log states. */
+    val endpoint: AssistantClientEndpoint get() = client.endpoint
 
     private val switchedOn = MutableStateFlow(value = false)
     private val connectMutex = Mutex()
@@ -93,12 +111,15 @@ class AgentDriverSession(
                 // second attempt, which the SDK would refuse anyway.
                 is AssistantClientConnectionState.Connecting -> Unit
 
-                is AssistantClientConnectionState.Disconnected,
-                is AssistantClientConnectionState.ResumeAvailable,
-                -> {
+                is AssistantClientConnectionState.Disconnected -> {
                     client.connect()
                     return
                 }
+
+                // ResumeAvailable is an automatic reconnect hand-off. The SDK has already
+                // scheduled the resume attempt, so calling connect() here would cancel that
+                // attempt and race it with a fresh session. Wait for the SDK to finish instead.
+                is AssistantClientConnectionState.ResumeAvailable -> Unit
             }
         }
 
