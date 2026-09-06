@@ -82,7 +82,9 @@ internal class MnemonicSpeechInputCoordinator(
             } catch (cancellation: CancellationException) {
                 throw cancellation
             } catch (throwable: Throwable) {
-                logE("Microphone permission request failed\n${throwable.stackTraceToString()}")
+                runCatching {
+                    logE("Microphone permission request failed\n${throwable.stackTraceToString()}")
+                }
                 isAwaitingPermission = false
                 resetSession()
                 _failures.tryEmit(value = MnemonicSpeechInputFailure.UNKNOWN)

@@ -1,8 +1,10 @@
 package com.kuts.klaf.cardManagement.mnemonic
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -16,8 +18,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
@@ -40,6 +44,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -91,11 +96,20 @@ import com.kuts.klaf.presentation.resources.mnemonic_management_request_action
 import com.kuts.klaf.presentation.resources.mnemonic_management_title
 import com.kuts.klaf.presentation.resources.mnemonic_management_variants_title
 import com.kuts.klaf.theme.MainTheme
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.math.absoluteValue
+
+private const val MNEMONIC_TAB_COLLAPSED_LENGTH = 3
+private const val MNEMONIC_TAB_COLLAPSED_SUFFIX = "..."
+
+private data class MnemonicDetailSectionUi(
+    val title: String,
+    val contentLines: List<String>,
+)
 
 @Composable
 internal fun CardAdditionMnemonicManagementScreen(
@@ -341,6 +355,24 @@ private fun MnemonicVariantsSection(
     selectedVariant: MnemonicVariantUiState?,
     onSelectVariant: (String) -> Unit,
 ) {
+    val variantsListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val selectedVariantIndex = mnemonicState.variants.indexOfFirst { variant ->
+        variant.id == mnemonicState.selectedVariantId
+    }
+
+    fun scrollToVariant(variantId: String) {
+        coroutineScope.launch {
+            variantsListState.animateSelectedVariantIntoView(variantId = variantId)
+        }
+    }
+
+    LaunchedEffect(mnemonicState.selectedVariantId, mnemonicState.variants.size) {
+        if (selectedVariantIndex >= 0) {
+            variantsListState.animateScrollToItem(index = selectedVariantIndex)
+        }
+    }
+
     Text(
         text = stringResource(Res.string.mnemonic_management_variants_title),
         fontWeight = FontWeight.SemiBold,
@@ -348,6 +380,7 @@ private fun MnemonicVariantsSection(
 
     Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
         LazyRow(
+            state = variantsListState,
             modifier = Modifier.zIndex(1f),
             contentPadding = PaddingValues(horizontal = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -357,6 +390,11 @@ private fun MnemonicVariantsSection(
                     variant = variant,
                     isSelected = mnemonicState.selectedVariantId == variant.id,
                     onClick = { onSelectVariant(variant.id) },
+                    onSizeAnimationFinished = {
+                        if (mnemonicState.selectedVariantId == variant.id) {
+                            scrollToVariant(variant.id)
+                        }
+                    },
                 )
             }
         }
@@ -367,6 +405,26 @@ private fun MnemonicVariantsSection(
                 modifier = Modifier.offset(y = (-2).dp),
             )
         }
+    }
+}
+
+private suspend fun LazyListState.animateSelectedVariantIntoView(
+    variantId: String,
+) {
+    val selectedItem = layoutInfo.visibleItemsInfo.firstOrNull { item ->
+        item.key == variantId
+    } ?: return
+    val viewportStart = layoutInfo.viewportStartOffset
+    val viewportEnd = layoutInfo.viewportEndOffset
+    val itemEnd = selectedItem.offset + selectedItem.size
+    val scrollDelta = when {
+        selectedItem.offset < viewportStart -> selectedItem.offset - viewportStart
+        itemEnd > viewportEnd -> itemEnd - viewportEnd
+        else -> 0
+    }
+
+    if (scrollDelta != 0) {
+        animateScrollBy(value = scrollDelta.toFloat())
     }
 }
 
@@ -479,10 +537,10 @@ private fun MnemonicActionButton(
     connectionState: AgentDriverConnectionState,
     onClick: () -> Unit,
 ) {
-    val isConnectionReady = connectionState.canSendRequests
+    val isEnabled = !isLoading && connectionState.canSendRequests
     Button(
-        onClick = onClick,
-        enabled = !isLoading && isConnectionReady,
+        onClick = { if (isEnabled) onClick() },
+        enabled = isEnabled,
         colors = ButtonDefaults.buttonColors(
             disabledContainerColor = disabledMnemonicActionButtonColor(
                 isLoading = isLoading,
@@ -554,7 +612,17 @@ private fun VariantChip(
     variant: MnemonicVariantUiState,
     isSelected: Boolean,
     onClick: () -> Unit,
+    onSizeAnimationFinished: () -> Unit,
 ) {
+    val associationForm = variant.selection.candidate.associationForm.trim()
+    val tabLabel = if (isSelected) {
+        associationForm
+    } else {
+        associationForm.take(MNEMONIC_TAB_COLLAPSED_LENGTH)
+            .takeIf(String::isNotEmpty)
+            ?.plus(MNEMONIC_TAB_COLLAPSED_SUFFIX)
+            ?: MNEMONIC_TAB_COLLAPSED_SUFFIX
+    }
     val activeColor = MainTheme.colors.common.separator.copy(alpha = 0.08f)
     val inactiveColor = MainTheme.colors.common.separator.copy(alpha = 0.05f)
     val borderColor = MainTheme.colors.common.separator.copy(alpha = 0.32f)
@@ -588,12 +656,21 @@ private fun VariantChip(
                 shape = if (isSelected) selectedShape else unselectedShape,
             )
             .clickable(onClick = onClick)
+            .animateContentSize(
+                finishedListener = { _, _ ->
+                    if (isSelected) {
+                        onSizeAnimationFinished()
+                    }
+                },
+            )
             .padding(horizontal = 16.dp, vertical = 9.dp),
     ) {
         Text(
-            text = variant.selection.candidate.associationForm,
+            text = tabLabel,
             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
             color = MaterialTheme.colorScheme.onBackground,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
 
         if (isSelected) {
@@ -865,8 +942,3 @@ private fun MnemonicDetailSection(
         }
     }
 }
-
-private data class MnemonicDetailSectionUi(
-    val title: String,
-    val contentLines: List<String>,
-)

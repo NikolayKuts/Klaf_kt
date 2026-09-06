@@ -37,8 +37,8 @@ class AgentDriverConnectionManager(
     private fun observeConnectionState() {
         scope.launch {
             agentDriverSession.connectionState.collect { connectionState ->
-                connectionState.logTransition()
                 state.value = connectionState.toAgentDriverConnectionState()
+                connectionState.logTransition()
             }
         }
     }
