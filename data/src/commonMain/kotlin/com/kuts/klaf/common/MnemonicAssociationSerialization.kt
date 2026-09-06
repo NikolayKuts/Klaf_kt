@@ -37,9 +37,19 @@ internal data class MnemonicAssociationCandidatePayload(
     val associationForm: String = "",
     val scene: String = "",
     @SerialName("sound_mapping")
-    val soundMapping: String = "",
+    val soundMapping: List<MnemonicSoundMappingPayload> = emptyList(),
     @SerialName("meaning_mapping")
     val meaningMapping: String = "",
+)
+
+@Serializable
+internal data class MnemonicSoundMappingPayload(
+    @SerialName("english_fragment")
+    val englishFragment: String = "",
+    @SerialName("russian_sound_fragment")
+    val russianSoundFragment: String = "",
+    @SerialName("sound_anchor")
+    val soundAnchor: String = "",
 )
 
 internal fun MnemonicAssociationPayload.toDomainEntity(): MnemonicAssociation {
@@ -64,7 +74,10 @@ private fun MnemonicAssociationCandidatePayload.toDomainEntity(): MnemonicAssoci
         fingerMethodUsed = fingerMethodUsed,
         associationForm = associationForm,
         scene = scene,
-        soundMapping = soundMapping,
+        soundMapping = soundMapping.joinToString(separator = "; ") { mapping ->
+            "${mapping.englishFragment.trim()} [${mapping.russianSoundFragment.trim()}] -> " +
+                mapping.soundAnchor.trim()
+        },
         meaningMapping = meaningMapping,
     )
 }

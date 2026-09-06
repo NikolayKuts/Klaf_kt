@@ -26,14 +26,14 @@ Caller-priority rule
 - Keep only the minimum hard requirements needed for a valid structured response and for basic phonetic anchoring.
 - If the caller explicitly names a preferred Russian figure, persona, object, anchor, or character, build the mnemonic directly around that requested figure.
 - In that case, do not satisfy the comment only indirectly through mood, background flavor, or a side detail.
-- The requested figure should appear explicitly in the returned mnemonic itself, especially in the scene, and normally in the primary anchor or association form whenever feasible.
+- The requested figure should appear explicitly in the returned mnemonic itself, especially in the scene, and in the primary sound anchor or association form only when it is itself a valid sound anchor.
 - If the caller requests a specific named figure such as a mafia boss, do not replace that request with a different unrelated anchor just because the different anchor matches the pronunciation more conveniently.
 
 Language rules
 - Keep the input word itself in English.
 - Keep the `usage example` in English.
 - Write all mnemonic-description content in Russian.
-- Use Cyrillic for Russian text in translations, target meaning, sound anchors, association form, scene, sound mapping, and meaning mapping.
+- Use Cyrillic for Russian text in translations, target meaning, sound anchors, association form, scene, `russian_sound_fragment`, and meaning mapping; keep `english_fragment` in English.
 - Use literal Unicode characters for IPA and Russian text.
 - Do not emit `\u` escape sequences inside JSON string values when literal Unicode characters can be written directly.
 
@@ -87,8 +87,30 @@ Definitions
 - Reject anchors like status labels or role words if the learner would need costume, stereotype, story context, or cultural knowledge to guess what kind of figure is meant.
 - Prefer a concrete object or creature over a title-like person label when sound similarity is comparable.
 - If a real Russian anchor is still potentially ambiguous for ordinary Russian readers, you may add one very short parenthetical clarification.
-- Keep the raw `sound_anchor` itself minimal, but you may place the clarification in `association_form` and on the first relevant mention in the scene if that helps the user understand the intended referent immediately.
+- Keep the raw `sound_anchor` itself minimal, but you may place a very short clarification of a genuinely ambiguous sound anchor in `association_form` and on the first relevant mention in the scene if that helps the user understand the intended referent immediately.
 - Use this only for real lexical ambiguity, for example `лук (овощ)` versus `лук (оружие)`, not as a habit for every anchor.
+
+Association-form rules
+- `association_form` is a compact display of the sound association only.
+- It must contain only the primary `sound_anchor` and, when present, the `secondary_sound_anchor`, joined with ` + `.
+- Never add `target_translation`, any other translation, a synonym, a definition, or the English word to `association_form`.
+- Never append the target meaning after the sound anchor, such as `АБСЕНТ + ПРЕГРАДА` or `ОБСТРЕЛ + ПРЕГРАДА`.
+- Put the target meaning in `target_translation`, `scene`, and `meaning_mapping`, not in `association_form`.
+- For one sound anchor, return only that anchor, for example `ПОМПА`.
+- For two sound anchors, return only the two anchors, for example `ЭФИР + ТОРТ`.
+- A parenthetical clarification is allowed only when it clarifies an ambiguous sound anchor itself; it must not add the target meaning.
+
+Sound-mapping rules
+- `sound_mapping` explains exactly which part of the English word is assigned to each sound anchor and which smaller sound sequence actually supports that anchor.
+- Render each mapping as `english_fragment [russian_sound_fragment] -> sound_anchor`.
+- `english_fragment` is the complete, contiguous part of the original English word covered by that mapping, preserving the original spelling.
+- When there is one mapping, `english_fragment` must be the complete input word, even when only part of its pronunciation supports the anchor.
+- When there are two mappings, their `english_fragment` values must be consecutive, non-overlapping parts that reconstruct the complete input word in their original order.
+- `russian_sound_fragment` is a concise Cyrillic rendering of only the actual sound sequence that supports the Russian anchor, not automatically the pronunciation of the complete `english_fragment`.
+- When the anchor matches only the beginning of the encoded part, append `...` to `russian_sound_fragment` to make the partial match explicit, for example `emeter [ем...] -> аммиак`.
+- Do not use `...` when the complete encoded part materially supports the sound anchor.
+- Never claim that the whole `english_fragment` supports an anchor when the association is based on only a shorter initial sound sequence.
+- Keep square brackets out of the raw `russian_sound_fragment`; the client adds them when rendering the mapping.
 
 Phonetic rules
 - Prioritize real sound similarity over spelling similarity.
@@ -269,7 +291,13 @@ Output rules
 - Follow the supplied structured output schema exactly when one is provided.
 - When the structured schema includes `secondary_sound_anchor` and `secondary_matched_pronunciation_fragment`, always return both keys.
 - If no secondary anchor is used, return `null` for both of those fields instead of inventing a weak or fake secondary anchor.
-- In structured output mode, keep `translations`, `target_translation`, `sound_anchor`, `secondary_sound_anchor`, `association_form`, `scene`, `sound_mapping`, and `meaning_mapping` in Russian.
+- In structured output mode, keep `translations`, `target_translation`, `sound_anchor`, `secondary_sound_anchor`, `association_form`, `scene`, `russian_sound_fragment`, and `meaning_mapping` in Russian; keep each `english_fragment` in English.
+- In structured output mode, `association_form` must contain only the sound anchor(s), never the target meaning or its translation.
+- In structured output mode, return `sound_mapping` as an array of one or two mapping objects, one object for each encoded pronunciation part.
+- Each `sound_mapping` object must contain `english_fragment`, `russian_sound_fragment`, and `sound_anchor`.
+- Use the complete input word as `english_fragment` when there is one mapping. With two mappings, the two `english_fragment` values must reconstruct the complete input word in order.
+- Keep `russian_sound_fragment` as raw Cyrillic text without square brackets. It must show only the sound sequence that actually supports the anchor; append `...` when the match covers only the beginning of `english_fragment`.
+- Do not add labels such as `начальное` or `начальная часть`; the client renders each object as `english_fragment [russian_sound_fragment] -> sound_anchor`.
 - In structured output mode, keep `transcription` as literal IPA inside square brackets, not as malformed escape text.
 - Do not add markdown, headings, or extra commentary unless the caller explicitly asks for formatted prose instead of structured output.
 - In formatted prose mode, prefer the result itself over meta-commentary about the result.
@@ -290,7 +318,11 @@ Return only the final JSON object that satisfies the provided output schema.
 Do not return markdown, explanations, comments, code fences, or extra keys.
 Do not use tools, shell commands, file reads, web search, MCP, plugins, or external actions.
 Use literal Unicode characters for IPA and Russian text.
-Keep all mnemonic-description fields in Russian except for the English input word and the English usage example.
+Keep all mnemonic-description fields in Russian except for the English input word, the English usage example, and each `english_fragment` inside `sound_mapping`.
+Treat the association-form rule as a hard output constraint: `association_form` may contain only the sound anchor(s), never the target meaning or any translation of it.
+Return `sound_mapping` as an array of mapping objects with exactly `english_fragment`, `russian_sound_fragment`, and `sound_anchor`; keep `english_fragment` in English, keep the other two fields in Russian, and do not return a formatted string.
+For one mapping, `english_fragment` must equal the complete input word. For two mappings, their `english_fragment` values must reconstruct the complete input word in order.
+In `russian_sound_fragment`, return only the Cyrillic sound sequence that actually supports the anchor and append `...` when only the beginning of the corresponding `english_fragment` supports it.
 """
 
     /** The JSON Schema the answer must satisfy, sent as a [org.agentdriver.project.protocol.ResponseSchema]. */
@@ -401,15 +433,40 @@ Keep all mnemonic-description fields in Russian except for the English input wor
           },
           "association_form": {
             "type": "string",
-            "description": "The display form of the mnemonic association itself, written in Russian Cyrillic, for example `ЭФИР + ТОРТ`, `ТУФЛЯ + ПИКА`, or `ПОМПА`. When the chosen anchor is genuinely ambiguous for ordinary Russian readers, you may add one very short parenthetical clarification such as `ДОН (титул)`."
+            "description": "A compact display of the sound association only, written in Russian Cyrillic. Include only the primary sound anchor and, when present, the secondary sound anchor, joined with ` + `, for example `ЭФИР + ТОРТ`, `ТУФЛЯ + ПИКА`, or `ПОМПА`. Never include the target translation, a synonym, a definition, or the English word. A very short parenthetical clarification is allowed only when it clarifies an ambiguous sound anchor itself, such as `ДОН (титул)`."
           },
           "scene": {
             "type": "string",
             "description": "A concise visual mnemonic scene written in Russian. Usually build it around two core interacting elements. Prefer external physical contact over containment or nesting. Prefer natural, plausible real-world action over arbitrary or forced interaction. Prefer direct object-to-object connection over mediated interaction through a helper object. Do not use printed words, labels, captions, or inscriptions as a substitute for the sound-anchor object. Do not relegate the sound anchor to historical scenery, background atmosphere, or period-setting context. If the chosen anchor is genuinely ambiguous, you may clarify the first mention with one very short parenthetical gloss. This field should be directly reusable for a later image-generation stage."
           },
           "sound_mapping": {
-            "type": "string",
-            "description": "A short factual pronunciation mapping written in Russian-readable form, without praise or evaluation, for example `effort -> эфир-т`."
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "description": "One object for each complete, contiguous encoded part of the English word, in original word order. One object must cover the complete word; two objects must reconstruct the complete word when their english_fragment values are concatenated.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "english_fragment",
+                "russian_sound_fragment",
+                "sound_anchor"
+              ],
+              "properties": {
+                "english_fragment": {
+                  "type": "string",
+                  "description": "The complete, contiguous part of the original English word assigned to this mapping, preserving its spelling. Use the complete input word when there is one mapping. With two mappings, both values must reconstruct the complete input word in order."
+                },
+                "russian_sound_fragment": {
+                  "type": "string",
+                  "description": "A concise Cyrillic rendering of only the sound sequence that actually supports the Russian anchor, without square brackets. Append ... when the anchor is based only on the beginning of english_fragment; omit ... when the complete encoded part supports the anchor."
+                },
+                "sound_anchor": {
+                  "type": "string",
+                  "description": "The Russian sound-anchor word represented by this pronunciation fragment."
+                }
+              }
+            }
           },
           "meaning_mapping": {
             "type": "string",

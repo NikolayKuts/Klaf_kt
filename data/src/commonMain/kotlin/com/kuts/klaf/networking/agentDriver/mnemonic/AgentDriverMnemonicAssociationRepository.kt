@@ -96,7 +96,38 @@ private fun MnemonicAssociationPayload.validateForRequestedWord(requestedWord: S
             "Mnemonic association form must not be blank."
         }
         require(candidate.scene.isNotBlank()) { "Mnemonic scene must not be blank." }
-        require(candidate.soundMapping.isNotBlank()) { "Mnemonic sound mapping must not be blank." }
+        require(candidate.soundMapping.isNotEmpty()) { "Mnemonic sound mapping must not be empty." }
+        require(candidate.soundMapping.size == if (candidate.secondarySoundAnchor == null) 1 else 2) {
+            "Mnemonic sound mapping count must match the number of sound anchors."
+        }
+        require(
+            candidate.soundMapping.joinToString(separator = "") { mapping ->
+                mapping.englishFragment.trim()
+            }.toWordKey() == requestedWord.toWordKey()
+        ) {
+            "Mnemonic sound mapping English fragments must reconstruct the requested word."
+        }
+        val expectedSoundAnchors = listOfNotNull(
+            candidate.soundAnchor,
+            candidate.secondarySoundAnchor,
+        )
+        candidate.soundMapping.forEachIndexed { index, mapping ->
+            require(mapping.englishFragment.isNotBlank()) {
+                "Mnemonic sound mapping[$index] English fragment must not be blank."
+            }
+            require(mapping.russianSoundFragment.isNotBlank()) {
+                "Mnemonic sound mapping[$index] Russian sound fragment must not be blank."
+            }
+            require('[' !in mapping.russianSoundFragment && ']' !in mapping.russianSoundFragment) {
+                "Mnemonic sound mapping[$index] Russian sound fragment must not contain brackets."
+            }
+            require(mapping.soundAnchor.isNotBlank()) {
+                "Mnemonic sound mapping[$index] sound anchor must not be blank."
+            }
+            require(mapping.soundAnchor.toMnemonicKey() == expectedSoundAnchors[index].toMnemonicKey()) {
+                "Mnemonic sound mapping[$index] sound anchor must match its candidate sound anchor."
+            }
+        }
         require(candidate.meaningMapping.isNotBlank()) {
             "Mnemonic meaning mapping must not be blank."
         }
