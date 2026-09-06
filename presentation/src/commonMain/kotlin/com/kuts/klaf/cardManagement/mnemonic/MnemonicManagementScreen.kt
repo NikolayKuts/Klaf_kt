@@ -104,7 +104,7 @@ import org.koin.core.parameter.parametersOf
 import kotlin.math.absoluteValue
 
 private const val MNEMONIC_TAB_COLLAPSED_LENGTH = 3
-private const val MNEMONIC_TAB_COLLAPSED_SUFFIX = "..."
+private const val MNEMONIC_TAB_COLLAPSED_SUFFIX = ".."
 
 private data class MnemonicDetailSectionUi(
     val title: String,
