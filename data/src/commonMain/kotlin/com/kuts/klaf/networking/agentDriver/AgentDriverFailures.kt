@@ -37,12 +37,14 @@ internal fun Throwable.toShortAgentDriverMessage(): String = when (this) {
 }
 
 /** The provider's own reason for refusing a request, in one short phrase. */
-internal fun AssistantError.toShortMessage(): String = when (this) {
+internal fun AssistantError.toShortMessage(): String =  when (this) {
     is AssistantError.PermissionDenied -> "permission denied (${action.name})"
     is AssistantError.SessionBusy -> "session is busy with another request"
     is AssistantError.RateLimitExceeded -> "rate limit, retry in ${retryAfter.value} ms"
     is AssistantError.InvalidMediaType -> "invalid media (${issue.name})"
     is AssistantError.UnsupportedRequestOption -> "unsupported option (${option.name})"
+    is AssistantError.ProviderOperationFailed -> "${operation.wireName} failed (${reason.name})"
+    is AssistantError.RequestTimeout -> "${operation.wireName} timed out"
     AssistantError.Unknown -> "provider reported an unknown error"
 }
 
