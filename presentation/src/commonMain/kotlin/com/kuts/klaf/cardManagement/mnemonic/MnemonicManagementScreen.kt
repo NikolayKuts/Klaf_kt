@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
@@ -59,11 +58,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.kuts.domain.entities.AgentDriverConnectionState
+import com.kuts.domain.entities.MnemonicAssociationCandidate
+import com.kuts.domain.entities.MnemonicSelection
 import com.kuts.domain.entities.canSendRequests
 import com.kuts.klaf.cardManagement.cardAddition.CardAdditionViewModel
 import com.kuts.klaf.cardManagement.cardEditing.CardEditingViewModel
@@ -357,6 +359,7 @@ private fun MnemonicVariantsSection(
 ) {
     val variantsListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val variantSurfaceColor = MainTheme.colors.common.separator.copy(alpha = 0.16f)
     val selectedVariantIndex = mnemonicState.variants.indexOfFirst { variant ->
         variant.id == mnemonicState.selectedVariantId
     }
@@ -389,6 +392,7 @@ private fun MnemonicVariantsSection(
                 VariantChip(
                     variant = variant,
                     isSelected = mnemonicState.selectedVariantId == variant.id,
+                    selectedBackgroundColor = variantSurfaceColor,
                     onClick = { onSelectVariant(variant.id) },
                     onSizeAnimationFinished = {
                         if (mnemonicState.selectedVariantId == variant.id) {
@@ -402,7 +406,7 @@ private fun MnemonicVariantsSection(
         selectedVariant?.let { variant ->
             MnemonicVariantDetails(
                 variant = variant,
-                modifier = Modifier.offset(y = (-2).dp),
+                backgroundColor = variantSurfaceColor,
             )
         }
     }
@@ -611,6 +615,7 @@ private fun MnemonicLeaveDialog(
 private fun VariantChip(
     variant: MnemonicVariantUiState,
     isSelected: Boolean,
+    selectedBackgroundColor: Color,
     onClick: () -> Unit,
     onSizeAnimationFinished: () -> Unit,
 ) {
@@ -623,9 +628,7 @@ private fun VariantChip(
             ?.plus(MNEMONIC_TAB_COLLAPSED_SUFFIX)
             ?: MNEMONIC_TAB_COLLAPSED_SUFFIX
     }
-    val activeColor = MainTheme.colors.common.separator.copy(alpha = 0.08f)
     val inactiveColor = MainTheme.colors.common.separator.copy(alpha = 0.05f)
-    val borderColor = MainTheme.colors.common.separator.copy(alpha = 0.32f)
     val selectedShape = RoundedCornerShape(
         topStart = 14.dp,
         topEnd = 14.dp,
@@ -640,19 +643,8 @@ private fun VariantChip(
     )
     Box(
         modifier = Modifier
-            .then(
-                if (isSelected) {
-                    Modifier.border(
-                        width = 1.dp,
-                        color = borderColor,
-                        shape = selectedShape,
-                    )
-                } else {
-                    Modifier
-                },
-            )
             .background(
-                color = if (isSelected) activeColor else inactiveColor,
+                color = if (isSelected) selectedBackgroundColor else inactiveColor,
                 shape = if (isSelected) selectedShape else unselectedShape,
             )
             .clickable(onClick = onClick)
@@ -672,17 +664,6 @@ private fun VariantChip(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-
-        if (isSelected) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(horizontal = 1.dp)
-                    .fillMaxWidth()
-                    .height(2.dp)
-                    .background(color = activeColor),
-            )
-        }
     }
 }
 
@@ -787,11 +768,10 @@ private fun MnemonicImageCarousel(
 @Composable
 private fun MnemonicVariantDetails(
     variant: MnemonicVariantUiState,
+    backgroundColor: Color,
     modifier: Modifier = Modifier,
 ) {
     val selection = variant.selection
-    val outerBorderColor = MainTheme.colors.common.separator.copy(alpha = 0.32f)
-    val outerShape = RoundedCornerShape(16.dp)
     val sections = buildList {
         add(
             MnemonicDetailSectionUi(
@@ -848,41 +828,32 @@ private fun MnemonicVariantDetails(
         }
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = outerBorderColor,
-                shape = outerShape,
-            ),
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            sections.forEachIndexed { index, section ->
-                MnemonicDetailSection(
-                    section = section,
-                    shape = when (index) {
-                        0 -> RoundedCornerShape(
-                            topStart = 16.dp,
-                            topEnd = 16.dp,
-                            bottomStart = 2.dp,
-                            bottomEnd = 2.dp,
-                        )
+        sections.forEachIndexed { index, section ->
+            MnemonicDetailSection(
+                section = section,
+                backgroundColor = backgroundColor,
+                shape = when (index) {
+                    0 -> RoundedCornerShape(
+                        topStart = 16.dp,
+                        topEnd = 16.dp,
+                        bottomStart = 2.dp,
+                        bottomEnd = 2.dp,
+                    )
 
-                        sections.lastIndex -> RoundedCornerShape(
-                            topStart = 2.dp,
-                            topEnd = 2.dp,
-                            bottomStart = 16.dp,
-                            bottomEnd = 16.dp,
-                        )
+                    sections.lastIndex -> RoundedCornerShape(
+                        topStart = 2.dp,
+                        topEnd = 2.dp,
+                        bottomStart = 16.dp,
+                        bottomEnd = 16.dp,
+                    )
 
-                        else -> RoundedCornerShape(2.dp)
-                    },
-                )
-            }
+                    else -> RoundedCornerShape(2.dp)
+                },
+            )
         }
     }
 }
@@ -890,13 +861,14 @@ private fun MnemonicVariantDetails(
 @Composable
 private fun MnemonicDetailSection(
     section: MnemonicDetailSectionUi,
+    backgroundColor: Color,
     shape: RoundedCornerShape,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = MainTheme.colors.common.separator.copy(alpha = 0.08f),
+                color = backgroundColor,
                 shape = shape,
             )
             .padding(horizontal = 12.dp, vertical = 10.dp),
@@ -937,6 +909,93 @@ private fun MnemonicDetailSection(
                         MaterialTheme.typography.bodyMedium
                     },
                     color = MaterialTheme.colorScheme.onBackground,
+                )
+            }
+        }
+    }
+}
+
+@Preview(
+    name = "Mnemonic container - Light",
+    showBackground = true,
+    backgroundColor = 0xFFF4F0E8,
+    widthDp = 380,
+    heightDp = 720,
+)
+@Composable
+private fun MnemonicVariantContainerPreview() {
+    MnemonicVariantContainerPreviewContent(darkTheme = false)
+}
+
+@Preview(
+    name = "Mnemonic container - Dark",
+    showBackground = true,
+    backgroundColor = 0xFF1B1B1F,
+    widthDp = 380,
+    heightDp = 720,
+)
+@Composable
+private fun MnemonicVariantContainerDarkPreview() {
+    MnemonicVariantContainerPreviewContent(darkTheme = true)
+}
+
+@Composable
+private fun MnemonicVariantContainerPreviewContent(darkTheme: Boolean) {
+    val baseSelection = MnemonicSelection(
+        word = "circumstance",
+        transcription = "[ˈsɜːrkəmstæns]",
+        translations = listOf("обстоятельство", "условие", "ситуация", "случай"),
+        usageExample = "The decision depends on the circumstance.",
+    )
+    val variants = listOf(
+        MnemonicVariantUiState(
+            id = "preview-cheese",
+            selection = baseSelection.copy(
+                candidate = MnemonicAssociationCandidate(
+                    associationForm = "СЫР",
+                ),
+            ),
+        ),
+        MnemonicVariantUiState(
+            id = "preview-circus-station",
+            selection = baseSelection.copy(
+                candidate = MnemonicAssociationCandidate(
+                    targetTranslation = "обстоятельство",
+                    soundAnchor = "цирк",
+                    secondarySoundAnchor = "станция",
+                    associationForm = "ЦИРК + СТАНЦИЯ",
+                    scene = "Цирк врезался в станцию и перекрыл поездам путь.",
+                    soundMapping = "circum [сёрк...] -> цирк; stance [станс] -> станция",
+                    meaningMapping = "Это обстоятельство полностью изменило движение поездов.",
+                ),
+            ),
+        ),
+        MnemonicVariantUiState(
+            id = "preview-sickle",
+            selection = baseSelection.copy(
+                candidate = MnemonicAssociationCandidate(
+                    associationForm = "СЕРП",
+                ),
+            ),
+        ),
+    )
+    val state = MnemonicManagementUiState(
+        variants = variants,
+        selectedVariantId = "preview-circus-station",
+    )
+
+    MainTheme(darkTheme = darkTheme) {
+        Surface {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                MnemonicVariantsSection(
+                    mnemonicState = state,
+                    selectedVariant = state.selectedVariant,
+                    onSelectVariant = {},
                 )
             }
         }
