@@ -719,7 +719,8 @@ private fun MnemonicImageCarousel(
             val alpha = 1f - (pageOffset * 0.30f)
             val previewShape = RoundedCornerShape(18.dp)
 
-            Box(
+            ExpandableMnemonicImage(
+                imagePath = imageVariant.imagePath,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(vertical = 8.dp)
@@ -748,19 +749,14 @@ private fun MnemonicImageCarousel(
                             MainTheme.colors.common.separator.copy(alpha = 0.22f)
                         },
                         shape = previewShape,
-                    )
-                    .clickable { onSelectImage(imageVariant.id) },
-                contentAlignment = Alignment.Center,
-            ) {
-                MnemonicImagePreview(
-                    imagePath = imageVariant.imagePath,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .padding(horizontal = 4.dp, vertical = 6.dp),
-                    contentScale = ContentScale.Fit,
-                )
-            }
+                    ),
+                imageModifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .padding(horizontal = 4.dp, vertical = 6.dp),
+                contentScale = ContentScale.Fit,
+                onClick = { onSelectImage(imageVariant.id) },
+            )
         }
     }
 }

@@ -53,6 +53,7 @@
     <string name="mnemonic_image_comment_label">Comment for image generation</string>
     <string name="mnemonic_image_request_action">Generate Image</string>
     <string name="mnemonic_management_image_empty_state">No image variants for this mnemonic yet.</string>
+    <string name="mnemonic_image_preview_close_action">Close image preview</string>
     <string name="mnemonic_comment_clear_action">Clear comment</string>
     <string name="mnemonic_comment_dictate_action">Dictate comment</string>
     <string name="speech_input_unsupported">Voice input is not available on this device.</string>

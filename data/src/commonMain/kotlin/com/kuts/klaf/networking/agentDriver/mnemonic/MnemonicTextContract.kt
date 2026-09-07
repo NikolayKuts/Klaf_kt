@@ -25,6 +25,10 @@ Caller-priority rule
 - If the caller comment conflicts with default mnemonic preferences, follow the caller comment.
 - Keep only the minimum hard requirements needed for a valid structured response and for basic phonetic anchoring.
 - If the caller explicitly names a preferred Russian figure, persona, object, anchor, or character, build the mnemonic directly around that requested figure.
+- If the caller explicitly requests a particular sound anchor or association word, use that same anchor in every new generation while the comment remains present.
+- An explicitly requested anchor overrides novelty rules and the list of already used anchors. Do not replace it merely to make a later generation different.
+- In that case, return exactly one candidate using the requested anchor so no alternative candidate can ignore the comment.
+- When reusing a caller-requested anchor, you may vary the scene or other details, but keep the requested anchor itself.
 - In that case, do not satisfy the comment only indirectly through mood, background flavor, or a side detail.
 - The requested figure should appear explicitly in the returned mnemonic itself, especially in the scene, and in the primary sound anchor or association form only when it is itself a valid sound anchor.
 - If the caller requests a specific named figure such as a mafia boss, do not replace that request with a different unrelated anchor just because the different anchor matches the pronunciation more conveniently.
@@ -230,8 +234,9 @@ Candidate-selection rules
 - In an alternative-association follow-up, do not reuse the previous primary sound anchor merely with a rewritten or slightly adjusted scene.
 - In an alternative-association follow-up, return a genuinely new association or say plainly that no strong new alternative association was found.
 - In an alternative-association follow-up, novelty must not override phonetic accuracy, longest-initial-fragment priority, or the normal stopping rule of the finger method.
-- If the caller provides a list of already used primary sound anchors for this word, treat those anchors as forbidden for the new result.
-- In that case, do not return the same primary Russian sound anchor again even if you can invent a new scene, a new meaning sentence, or a new formatting of the same anchor.
+- If the caller provides a list of already used primary sound anchors for this word, treat those anchors as forbidden for the new result unless the current highest-priority comment explicitly requests one of them.
+- If the current comment explicitly requests an already used anchor, reuse that anchor; otherwise, do not return the same primary Russian sound anchor even with a new scene, meaning sentence, or formatting.
+- When the current comment explicitly requests an anchor, return exactly one candidate. The rule that multiple candidates need different primary anchors does not apply because multiple candidates must not be returned in this case.
 - When multiple new candidates are returned in one response, their primary sound anchors must also be different from each other.
 
 Explanation and presentation rules
@@ -314,6 +319,7 @@ The mnemonic instruction above is the source of truth.
 If the caller supplied an additional request comment, treat it as the highest-priority content directive for this turn.
 Do not downgrade the caller comment to a soft preference or optional hint.
 If the caller comment explicitly names a preferred figure, persona, character, or object, the returned mnemonic must use that requested figure directly instead of replacing it with a different convenient anchor.
+If the caller comment explicitly requests a sound anchor or association word, reuse it even when it appears in the already-used anchors list. This explicit request overrides novelty and exclusion rules, and the response must contain exactly one candidate using that anchor.
 Return only the final JSON object that satisfies the provided output schema.
 Do not return markdown, explanations, comments, code fences, or extra keys.
 Do not use tools, shell commands, file reads, web search, MCP, plugins, or external actions.

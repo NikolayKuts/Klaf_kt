@@ -90,7 +90,7 @@ import com.kuts.klaf.common.RepetitionTimerState
 import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.TimerCountingState
 import com.kuts.klaf.common.WordInsightsBottomSheetContent
-import com.kuts.klaf.cardManagement.mnemonic.MnemonicImagePreview
+import com.kuts.klaf.cardManagement.mnemonic.ExpandableMnemonicImage
 import com.kuts.klaf.common.timeAsString
 import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent.Non
 import com.kuts.klaf.navigation.AppDestination
@@ -705,21 +705,26 @@ private fun MnemonicImageHolder(
     val borderColor = MainTheme.colors.common.separator.copy(alpha = 0.55f)
     val iconRes = if (isContentVisible) Res.drawable.ic_visibility_off else Res.drawable.ic_visibility
 
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(18.dp))
-            .border(width = 1.dp, color = borderColor, shape = RoundedCornerShape(18.dp))
-            .background(backgroundColor)
-            .clickable(enabled = canRevealContent, onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (isContentVisible) {
-            MnemonicImagePreview(
-                imagePath = imagePath,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = androidx.compose.ui.layout.ContentScale.Fit,
-            )
-        } else {
+    val holderModifier = modifier
+        .clip(RoundedCornerShape(18.dp))
+        .border(width = 1.dp, color = borderColor, shape = RoundedCornerShape(18.dp))
+        .background(backgroundColor)
+
+    if (isContentVisible) {
+        ExpandableMnemonicImage(
+            imagePath = imagePath,
+            modifier = holderModifier,
+            contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+            onClick = onClick,
+        )
+    } else {
+        Box(
+            modifier = holderModifier.clickable(
+                enabled = canRevealContent,
+                onClick = onClick,
+            ),
+            contentAlignment = Alignment.Center,
+        ) {
             Icon(
                 painter = painterResource(resource = iconRes),
                 contentDescription = null,

@@ -37,7 +37,7 @@ import com.kuts.domain.common.LoadingState
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.klaf.cardManagement.cardAddition.AutocompleteState
 import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionsState
-import com.kuts.klaf.cardManagement.mnemonic.MnemonicImagePreview
+import com.kuts.klaf.cardManagement.mnemonic.ExpandableMnemonicImage
 import com.kuts.klaf.common.Pointer
 import com.kuts.klaf.common.RoundButton
 import com.kuts.klaf.common.ScrollableBox
@@ -290,7 +290,7 @@ private fun MnemonicSummaryContent(
 
     selectedVariant.selectedImage?.let { imageVariant ->
         Text(text = stringResource(Res.string.mnemonic_summary_image))
-        MnemonicImagePreview(
+        ExpandableMnemonicImage(
             imagePath = imageVariant.imagePath,
             modifier = Modifier
                 .size(width = 180.dp, height = 180.dp)

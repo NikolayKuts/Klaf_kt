@@ -25,7 +25,22 @@ internal object MnemonicPromptFactory {
         word: String,
         comment: String?,
         excludedSoundAnchors: List<String>,
-    ): MnemonicTextPrompt {
+    ): MnemonicTextPrompt = MnemonicTextPrompt(
+        prompt = buildTextPromptContent(
+            word = word,
+            comment = comment,
+            excludedSoundAnchors = excludedSoundAnchors,
+        ),
+        responseSchema = ResponseSchema(
+            definition = json.parseToJsonElement(MnemonicTextContract.outputSchema).jsonObject,
+        ),
+    )
+
+    internal fun buildTextPromptContent(
+        word: String,
+        comment: String?,
+        excludedSoundAnchors: List<String>,
+    ): String {
         val commentBlock = comment?.let { value ->
             """
             Highest-priority caller comment for this request:
@@ -33,6 +48,8 @@ internal object MnemonicPromptFactory {
 
             Follow this comment as the main directive for anchor choice, persona, scene logic, and context.
             If this comment names a preferred figure, persona, character, or object, use that requested figure directly in the mnemonic instead of replacing it with a different convenient anchor.
+            If this comment explicitly requests a sound anchor or association word, reuse that same anchor in every generation while the comment remains present, even when it appears in the already-used anchors list.
+            The explicit anchor request overrides novelty and exclusion rules. Return exactly one candidate using that anchor. You may vary the scene, but do not replace the requested anchor merely to make this result different.
             """.trimIndent()
         }.orEmpty()
         val excludedAnchorsBlock = excludedSoundAnchors
@@ -43,7 +60,7 @@ internal object MnemonicPromptFactory {
                 Already used primary Russian sound anchors for this word:
                 $anchors
 
-                Do not reuse any of those anchors in the new result.
+                Do not reuse any of those anchors in the new result unless the highest-priority caller comment explicitly requests one of them.
                 """.trimIndent()
             }
             .orEmpty()
@@ -56,15 +73,10 @@ internal object MnemonicPromptFactory {
             Return structured JSON only.
         """.trimIndent()
 
-        return MnemonicTextPrompt(
-            prompt = joinPromptSections(
-                MnemonicTextContract.instruction,
-                MnemonicTextContract.developerRules,
-                userPrompt,
-            ),
-            responseSchema = ResponseSchema(
-                definition = json.parseToJsonElement(MnemonicTextContract.outputSchema).jsonObject,
-            ),
+        return joinPromptSections(
+            MnemonicTextContract.instruction,
+            MnemonicTextContract.developerRules,
+            userPrompt,
         )
     }
 

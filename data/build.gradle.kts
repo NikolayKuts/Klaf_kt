@@ -54,6 +54,11 @@ kotlin {
                 api(libs.agentdriver.client)
             }
         }
+        val commonTest by getting {
+            dependencies {
+                implementation(libs.tests.kotlin)
+            }
+        }
 
         val iosMain = maybeCreate("iosMain").apply {
             dependsOn(commonMain)
