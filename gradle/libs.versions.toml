@@ -76,7 +76,7 @@ composeMultiplatform = "1.11.1"
 lokdroid = "0.2.0-alpha"
 
 # AgentDriver SDK #
-agentdriver = "0.10.4-SNAPSHOT"
+agentdriver = "0.10.5-SNAPSHOT"
 
 # KSP #
 ksp = "2.3.11"
