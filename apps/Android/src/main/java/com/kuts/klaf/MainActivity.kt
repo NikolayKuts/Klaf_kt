@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.kuts.domain.managers.MnemonicGenerationLaunchExtras
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.EventMessageView
 import com.kuts.klaf.common.MainViewModel
@@ -32,6 +33,11 @@ import org.koin.android.ext.android.inject
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+
+        private const val MIME_TYPE_TEXT_PLAIN = "text/plain"
+    }
+
     private val sharedViewModel: BaseMainViewModel by viewModels<MainViewModel>()
     private val notificationPermissionBinder: INotificationPermissionBinder by inject()
     private val microphonePermissionBinder: IMicrophonePermissionBinder by inject()
@@ -42,16 +48,14 @@ class MainActivity : AppCompatActivity() {
         extraBufferCapacity = 1,
     )
 
-    companion object {
-        private const val MIME_TYPE_TEXT_PLAIN = "text/plain"
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
 
         super.onCreate(savedInstanceState)
         notificationPermissionBinder.bind(activity = this)
         microphonePermissionBinder.bind(activity = this)
+        val initialLaunchRequest = intent.toLaunchNavigationRequest()
+        intent.clearMnemonicGenerationLaunchExtras()
 
         setContent {
             MainTheme {
@@ -60,7 +64,7 @@ class MainActivity : AppCompatActivity() {
                 Box(modifier = Modifier.fillMaxSize()) {
                     AndroidKlafNavHost(
                         sharedViewModel = sharedViewModel,
-                        initialLaunchRequest = intent.toLaunchNavigationRequest(),
+                        initialLaunchRequest = initialLaunchRequest,
                         launchRequests = launchRequests,
                         onRestartApp = ::finish,
                     )
@@ -87,8 +91,10 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
+        val launchRequest = intent.toLaunchNavigationRequest()
+        intent.clearMnemonicGenerationLaunchExtras()
         setIntent(intent)
-        intent.toLaunchNavigationRequest()?.let { request -> launchRequests.tryEmit(request) }
+        launchRequest?.let { request -> launchRequests.tryEmit(request) }
     }
 
     override fun onStart() {
@@ -102,6 +108,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun Intent.toLaunchNavigationRequest(): AppLaunchNavigationRequest? {
+        toMnemonicGenerationLaunchNavigationRequest()?.let { request -> return request }
+
         val destination = getStringExtra(AppLaunchNavigationExtras.DESTINATION_KEY)
 
         if (destination != null) {
@@ -140,5 +148,36 @@ class MainActivity : AppCompatActivity() {
         } else {
             null
         }
+    }
+
+    private fun Intent.toMnemonicGenerationLaunchNavigationRequest(): AppLaunchNavigationRequest? {
+        val destination = getStringExtra(MnemonicGenerationLaunchExtras.DESTINATION_KEY)
+            ?: return null
+        if (!hasExtra(MnemonicGenerationLaunchExtras.DECK_ID_KEY)) return null
+        val deckId = getIntExtra(MnemonicGenerationLaunchExtras.DECK_ID_KEY, 0)
+
+        return when (destination) {
+            MnemonicGenerationLaunchExtras.DESTINATION_CARD_ADDITION -> {
+                AppLaunchNavigationRequest.OpenCardAdditionMnemonicManagement(deckId = deckId)
+            }
+
+            MnemonicGenerationLaunchExtras.DESTINATION_CARD_EDITING -> {
+                if (!hasExtra(MnemonicGenerationLaunchExtras.CARD_ID_KEY)) return null
+                val cardId = getIntExtra(MnemonicGenerationLaunchExtras.CARD_ID_KEY, 0)
+
+                AppLaunchNavigationRequest.OpenCardEditingMnemonicManagement(
+                    deckId = deckId,
+                    cardId = cardId,
+                )
+            }
+
+            else -> null
+        }
+    }
+
+    private fun Intent.clearMnemonicGenerationLaunchExtras() {
+        removeExtra(MnemonicGenerationLaunchExtras.DESTINATION_KEY)
+        removeExtra(MnemonicGenerationLaunchExtras.DECK_ID_KEY)
+        removeExtra(MnemonicGenerationLaunchExtras.CARD_ID_KEY)
     }
 }

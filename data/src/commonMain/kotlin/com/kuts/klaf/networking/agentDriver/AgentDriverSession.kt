@@ -1,10 +1,13 @@
 package com.kuts.klaf.networking.agentDriver
 
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.lib.lokdroid.core.logD
+import com.lib.lokdroid.core.logE
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import org.agentdriver.project.ktorclient.external.AssistantClientConnectionState
 import org.agentdriver.project.ktorclient.external.AssistantClientEndpoint
 import org.agentdriver.project.ktorclient.external.ClientAuthentication
@@ -14,8 +17,6 @@ import org.agentdriver.project.ktorclient.external.KtorAssistantClientEvent
 import org.agentdriver.project.ktorclient.external.KtorAssistantClientEventListener
 import org.agentdriver.project.protocol.ImageGenerationRequest
 import org.agentdriver.project.protocol.TextGenerationRequest
-import com.lib.lokdroid.core.logD
-import com.lib.lokdroid.core.logE
 
 /**
  * The app's connection to the assistant.
@@ -25,9 +26,8 @@ import com.lib.lokdroid.core.logE
  * insights, mnemonic associations, mnemonic illustrations -- goes through [generateText] and
  * [generateImage] and shares this one connection.
  *
- * Staying connected is the SDK's job. It reconnects by itself after a drop, so a request only ever
- * has to open the connection when it is the first one; if the connection is down at that moment,
- * the request fails with a typed error the caller reports.
+ * The SDK reconnects by itself after ordinary network drops. On Android, the app lifecycle closes
+ * an idle connection before the process is frozen and opens a fresh one when the app returns.
  */
 class AgentDriverSession(
     serverHost: String,
@@ -46,16 +46,22 @@ class AgentDriverSession(
             port = CLOUDFLARE_HTTPS_PORT,
             secure = true,
         ),
-        // The AgentDriver server issued this and checks it itself, so the tunnel in front only has
-        // to carry the connection rather than decide who may open one.
+        // The AgentDriver server issued this and checks it itself, so the tunnel in front only
+        // has to carry the connection rather than decide who may open one.
         authentication = ClientAuthentication.BearerToken(token = clientToken.trim()),
         eventListener = KtorAssistantClientEventListener { event ->
             when (event) {
                 is KtorAssistantClientEvent.RequestSendFailed ->
-                    logE("Agent Driver SDK failed to send ${event.messageType}: ${event.failure.describeForLog()}")
+                    logE(
+                        "Agent Driver SDK failed to send ${event.messageType}: " +
+                            event.failure.describeForLog(),
+                    )
 
                 is KtorAssistantClientEvent.MonitorConnectionFailed ->
-                    logE("Agent Driver SDK connection monitor failed: ${event.failure.describeForLog()}")
+                    logE(
+                        "Agent Driver SDK connection monitor failed: " +
+                            event.failure.describeForLog(),
+                    )
 
                 else -> logD("Agent Driver SDK event: $event")
             }
@@ -67,60 +73,83 @@ class AgentDriverSession(
     /** Where this client connects. Fixed for its lifetime, and part of what a session log states. */
     val endpoint: AssistantClientEndpoint get() = client.endpoint
 
-    private val switchedOn = MutableStateFlow(value = false)
     private val connectMutex = Mutex()
+    private val requestLifecycle = AgentDriverRequestLifecycle()
+    private var isSwitchedOn = false
 
     /** Opens the connection, and lets requests open it again after a drop the SDK cannot recover. */
     suspend fun switchOn() {
-        switchedOn.value = true
-        awaitOpenSession()
+        connectMutex.withLock {
+            isSwitchedOn = true
+            awaitOpenSessionLocked()
+        }
     }
 
     /** Closes the connection. Nothing opens it again until [switchOn]. */
     suspend fun switchOff() {
-        switchedOn.value = false
-        client.disconnect()
+        connectMutex.withLock {
+            isSwitchedOn = false
+            client.disconnect()
+        }
     }
 
     suspend fun generateText(request: TextGenerationRequest): String {
-        awaitOpenSession()
-        return client.generateText(request = request)
+        return withActiveRequest {
+            client.generateText(request = request)
+        }
     }
 
     suspend fun generateImage(request: ImageGenerationRequest): ByteArray {
-        awaitOpenSession()
-        return client.generateImage(request = request).bytes
+        return withActiveRequest {
+            client.generateImage(request = request).bytes
+        }
+    }
+
+    /** Closes an idle socket before Android can freeze it in an apparently connected state. */
+    internal suspend fun onApplicationBackgrounded() {
+        connectMutex.withLock {
+            requestLifecycle.onApplicationBackgrounded()
+            disconnectIfBackgroundIdleLocked()
+        }
+    }
+
+    /** Opens a fresh session after an idle background period instead of reusing a stale socket. */
+    internal suspend fun onApplicationForegrounded() {
+        connectMutex.withLock {
+            val shouldRefreshConnection = requestLifecycle.onApplicationForegrounded()
+            if (!isSwitchedOn || !shouldRefreshConnection) return
+
+            if (client.connectionState.value !is AssistantClientConnectionState.Disconnected) {
+                client.disconnect()
+            }
+            client.connect()
+        }
     }
 
     /**
      * Waits for an open connection, opening it if this is the first request.
      *
-     * Serialized so that several features asking at once produce one connection rather than a race
-     * between them; once connected, the fast path is a single state read.
+     * This must run under [connectMutex]. The same lock protects lifecycle connection changes and
+     * request registration, so Android cannot disconnect the socket between this check and send.
      */
-    private suspend fun awaitOpenSession() {
-        check(value = switchedOn.value) { "The assistant is switched off." }
+    private suspend fun awaitOpenSessionLocked() {
+        check(value = isSwitchedOn) { "The assistant is switched off." }
 
-        if (connectionState.value is AssistantClientConnectionState.Connected) return
+        when (connectionState.value) {
+            is AssistantClientConnectionState.Connected -> return
 
-        connectMutex.withLock {
-            when (connectionState.value) {
-                is AssistantClientConnectionState.Connected -> return
+            // A reconnect is already in flight; wait for it rather than fighting it with a
+            // second attempt, which the SDK would refuse anyway.
+            is AssistantClientConnectionState.Connecting -> Unit
 
-                // A reconnect is already in flight; wait for it rather than fighting it with a
-                // second attempt, which the SDK would refuse anyway.
-                is AssistantClientConnectionState.Connecting -> Unit
-
-                is AssistantClientConnectionState.Disconnected -> {
-                    client.connect()
-                    return
-                }
-
-                // ResumeAvailable is an automatic reconnect hand-off. The SDK has already
-                // scheduled the resume attempt, so calling connect() here would cancel that
-                // attempt and race it with a fresh session. Wait for the SDK to finish instead.
-                is AssistantClientConnectionState.ResumeAvailable -> Unit
+            is AssistantClientConnectionState.Disconnected -> {
+                client.connect()
+                return
             }
+
+            // ResumeAvailable is an automatic reconnect hand-off. The SDK has already scheduled
+            // the resume attempt, so calling connect() here would race it with a fresh session.
+            is AssistantClientConnectionState.ResumeAvailable -> Unit
         }
 
         awaitConnectionInFlight()
@@ -142,6 +171,41 @@ class AgentDriverSession(
 
         if (settledState is AssistantClientConnectionState.Disconnected) {
             throw IllegalStateException(settledState.cause.toShortAgentDriverMessage())
+        }
+    }
+
+    private suspend fun <T> withActiveRequest(block: suspend () -> T): T {
+        connectMutex.withLock {
+            requestLifecycle.onRequestStarted()
+            try {
+                awaitOpenSessionLocked()
+            } catch (throwable: Throwable) {
+                requestLifecycle.onRequestFinished()
+                throw throwable
+            }
+        }
+
+        return try {
+            block()
+        } finally {
+            withContext(NonCancellable) {
+                connectMutex.withLock {
+                    requestLifecycle.onRequestFinished()
+                    disconnectIfBackgroundIdleLocked()
+                }
+            }
+        }
+    }
+
+    private suspend fun disconnectIfBackgroundIdleLocked() {
+        val shouldDisconnect = requestLifecycle.shouldDisconnectIdleSession(
+            isSwitchedOn = isSwitchedOn,
+        )
+        if (
+            shouldDisconnect &&
+            client.connectionState.value !is AssistantClientConnectionState.Disconnected
+        ) {
+            client.disconnect()
         }
     }
 }

@@ -8,7 +8,9 @@ import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.entities.Card
 import com.kuts.domain.ipa.toRowInfos
 import com.kuts.domain.managers.IAudioPlayerManager
+import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
+import com.kuts.domain.managers.MnemonicGenerationSource
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.domain.useCases.AddNewCardIntoDeckUseCase
@@ -39,6 +41,7 @@ class CardAdditionViewModel(
     fetchMnemonicAssociation: FetchMnemonicAssociationUseCase,
     fetchMnemonicImage: FetchMnemonicImageUseCase,
     mnemonicImageAssetRepository: IMnemonicImageAssetRepository,
+    mnemonicGenerationBackgroundManager: IMnemonicGenerationBackgroundManager,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
     speechRecognitionManager: ISpeechRecognitionManager,
@@ -54,6 +57,10 @@ class CardAdditionViewModel(
     fetchMnemonicAssociation = fetchMnemonicAssociation,
     fetchMnemonicImage = fetchMnemonicImage,
     mnemonicImageAssetRepository = mnemonicImageAssetRepository,
+    mnemonicGenerationBackgroundManager = mnemonicGenerationBackgroundManager,
+    mnemonicGenerationSource = MnemonicGenerationSource.CardCreation(
+        deckId = deckId,
+    ),
     fetchWordAutocomplete = fetchWordAutocomplete,
     fetchWordInfo = fetchWordInfo,
     speechRecognitionManager = speechRecognitionManager,

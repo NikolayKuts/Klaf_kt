@@ -23,7 +23,12 @@ import com.kuts.domain.entities.canSendRequests
 import com.kuts.domain.entities.toSelections
 import com.kuts.domain.ipa.toRowIpaItemHolders
 import com.kuts.domain.managers.IAudioPlayerManager
+import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
+import com.kuts.domain.managers.MnemonicGenerationHandle
+import com.kuts.domain.managers.MnemonicGenerationOutcome
+import com.kuts.domain.managers.MnemonicGenerationSource
+import com.kuts.domain.managers.MnemonicGenerationType
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.domain.repositories.IWordInfoRepository
@@ -43,6 +48,7 @@ import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.permissions.IMicrophonePermissionManager
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -75,6 +81,8 @@ abstract class CardManagementViewModel(
     private val fetchMnemonicAssociation: FetchMnemonicAssociationUseCase,
     private val fetchMnemonicImage: FetchMnemonicImageUseCase,
     protected val mnemonicImageAssetRepository: IMnemonicImageAssetRepository,
+    private val mnemonicGenerationBackgroundManager: IMnemonicGenerationBackgroundManager,
+    private val mnemonicGenerationSource: MnemonicGenerationSource,
     private val fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     private val fetchWordInfo: FetchWordInfoUseCase,
     speechRecognitionManager: ISpeechRecognitionManager,
@@ -272,6 +280,20 @@ abstract class CardManagementViewModel(
 
         if (!canStartAgentDriverRequest()) return
 
+        val generationHandle = try {
+            mnemonicGenerationBackgroundManager.startGeneration(
+                type = MnemonicGenerationType.Text,
+                source = mnemonicGenerationSource,
+            )
+        } catch (error: Throwable) {
+            crashlytics.report(exception = error)
+            eventMessage.tryEmitAsNegative(
+                resId = Res.string.mnemonic_association_request_failed,
+                duration = EventMessage.Duration.Long,
+            )
+            return
+        }
+
         mnemonicManagementState.update { state -> state.startAssociationLoading() }
 
         val requestJob = viewModelScope.launchWithState(coroutineContextProvider.io) {
@@ -302,7 +324,9 @@ abstract class CardManagementViewModel(
         }
 
         mnemonicAssociationRequestJob = requestJob
-        requestJob.invokeOnCompletion {
+        requestJob.invokeOnCompletion { failure ->
+            finishMnemonicGeneration(handle = generationHandle, failure = failure)
+
             if (mnemonicAssociationRequestJob == requestJob) {
                 mnemonicAssociationRequestJob = null
             }
@@ -311,7 +335,6 @@ abstract class CardManagementViewModel(
 
     override fun cancelMnemonicAssociationRequest() {
         mnemonicAssociationRequestJob?.cancel()
-        mnemonicAssociationRequestJob = null
         mnemonicManagementState.update { state -> state.stopAssociationLoading() }
     }
 
@@ -326,6 +349,20 @@ abstract class CardManagementViewModel(
         }
 
         if (!canStartAgentDriverRequest()) return
+
+        val generationHandle = try {
+            mnemonicGenerationBackgroundManager.startGeneration(
+                type = MnemonicGenerationType.Image,
+                source = mnemonicGenerationSource,
+            )
+        } catch (error: Throwable) {
+            crashlytics.report(exception = error)
+            eventMessage.tryEmitAsNegative(
+                resId = Res.string.mnemonic_image_request_failed,
+                duration = EventMessage.Duration.Long,
+            )
+            return
+        }
 
         mnemonicManagementState.update { state -> state.startImageLoading() }
 
@@ -363,7 +400,9 @@ abstract class CardManagementViewModel(
         }
 
         mnemonicImageRequestJob = requestJob
-        requestJob.invokeOnCompletion {
+        requestJob.invokeOnCompletion { failure ->
+            finishMnemonicGeneration(handle = generationHandle, failure = failure)
+
             if (mnemonicImageRequestJob == requestJob) {
                 mnemonicImageRequestJob = null
             }
@@ -372,8 +411,23 @@ abstract class CardManagementViewModel(
 
     override fun cancelMnemonicImageRequest() {
         mnemonicImageRequestJob?.cancel()
-        mnemonicImageRequestJob = null
         mnemonicManagementState.update { state -> state.stopImageLoading() }
+    }
+
+    private fun finishMnemonicGeneration(
+        handle: MnemonicGenerationHandle,
+        failure: Throwable?,
+    ) {
+        val outcome = when {
+            failure == null -> MnemonicGenerationOutcome.Succeeded
+            failure is CancellationException -> MnemonicGenerationOutcome.Cancelled
+            else -> MnemonicGenerationOutcome.Failed
+        }
+        runCatching {
+            handle.finish(outcome = outcome)
+        }.onFailure { backgroundManagerFailure ->
+            crashlytics.report(exception = backgroundManagerFailure)
+        }
     }
 
     override fun selectMnemonicVariant(variantId: String) {

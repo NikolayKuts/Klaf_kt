@@ -4,8 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.kuts.domain.entities.Deck
 import com.kuts.klaf.common.externalActions.IExternalAppActions
 import kotlinx.coroutines.flow.Flow
@@ -83,5 +85,53 @@ internal fun NavHostController.handleLaunchRequest(request: AppLaunchNavigationR
                 launchSingleTop = true
             }
         }
+
+        is AppLaunchNavigationRequest.OpenCardAdditionMnemonicManagement -> {
+            openNestedDestination(
+                parent = AppDestination.CardAddition(deckId = request.deckId),
+                destination = AppDestination.CardAdditionMnemonicManagement(
+                    deckId = request.deckId,
+                ),
+            )
+        }
+
+        is AppLaunchNavigationRequest.OpenCardEditingMnemonicManagement -> {
+            openNestedDestination(
+                parent = AppDestination.CardEditing(
+                    deckId = request.deckId,
+                    cardId = request.cardId,
+                ),
+                destination = AppDestination.CardEditingMnemonicManagement(
+                    deckId = request.deckId,
+                    cardId = request.cardId,
+                ),
+            )
+        }
     }
+}
+
+private inline fun <reified Parent : Any, reified Destination : Any> NavHostController.openNestedDestination(
+    parent: Parent,
+    destination: Destination,
+) {
+    if (isCurrentRoute(route = destination)) return
+    if (popBackStack(route = destination, inclusive = false)) return
+
+    if (!isCurrentRoute(route = parent) && !popBackStack(route = parent, inclusive = false)) {
+        navigate(route = parent) {
+            popUpTo(route = AppDestination.DeckList) {
+                inclusive = false
+            }
+            launchSingleTop = true
+        }
+    }
+
+    navigate(route = destination) {
+        launchSingleTop = true
+    }
+}
+
+private inline fun <reified Route : Any> NavHostController.isCurrentRoute(route: Route): Boolean {
+    val currentEntry = currentBackStackEntry ?: return false
+    return currentEntry.destination.hasRoute<Route>() && currentEntry.toRoute<Route>() == route
 }

@@ -1,5 +1,6 @@
 package com.kuts.klaf.di
 
+import android.app.Application
 import android.app.NotificationManager
 import android.content.Context
 import android.net.ConnectivityManager
@@ -20,6 +21,7 @@ import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
+import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
 import com.kuts.domain.managers.IWordInsightsProviderManager
 import com.kuts.domain.repositories.IAuthenticationRepository
@@ -62,12 +64,16 @@ import com.kuts.klaf.firestore.repositoryImplementations.AndroidDeckRepositoryFi
 import com.kuts.klaf.firestore.repositoryImplementations.AndroidStorageSaveVersionRepositoryFirestore
 import com.kuts.klaf.firestore.repositoryImplementations.AndroidWordAutocompleteFirestore
 import com.kuts.klaf.networking.AndroidCardAudioPlayer
+import com.kuts.klaf.networking.agentDriver.AndroidAgentDriverSessionLifecycleManager
 import com.kuts.klaf.networking.agentDriver.AgentDriverConnectionManager
 import com.kuts.klaf.networking.agentDriver.AgentDriverSession
 import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicAssociationRepository
 import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicImageRepository
 import com.kuts.klaf.networking.agentDriver.AgentDriverWordMeaningInsightsRepository
 import com.kuts.klaf.mnemonic.AndroidMnemonicImageAssetRepository
+import com.kuts.klaf.mnemonic.AndroidApplicationVisibilityTracker
+import com.kuts.klaf.mnemonic.AndroidMnemonicGenerationBackgroundManager
+import com.kuts.klaf.mnemonic.MnemonicGenerationNotifier
 import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
 import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
 import com.kuts.klaf.networking.wordInsights.SwitchableWordMeaningInsightsRepository
@@ -238,6 +244,18 @@ private fun Module.infrastructureModule() {
     // resolved it, so it is not constructed at all.
     single<ICambridgeWordDataProvider> { AndroidNoOpCambridgeWordDataProvider() }
     single { LoKdroid }
+    single(createdAtStart = true) {
+        AndroidApplicationVisibilityTracker(
+            application = androidContext().applicationContext as Application,
+        )
+    }
+    single(createdAtStart = true) {
+        AndroidAgentDriverSessionLifecycleManager(
+            application = androidContext().applicationContext as Application,
+            agentDriverSession = get(),
+            coroutineContextProvider = get(),
+        )
+    }
 }
 
 private fun Module.dataManagerBindings() {
@@ -249,6 +267,20 @@ private fun Module.dataManagerBindings() {
     }
     single { AppRestartNotifier(context = androidContext()) }
     single { DataSynchronizationNotifier(context = androidContext()) }
+    single {
+        MnemonicGenerationNotifier(
+            context = androidContext(),
+            notificationManager = get(),
+        )
+    }
+    single<IMnemonicGenerationBackgroundManager> {
+        AndroidMnemonicGenerationBackgroundManager(
+            context = androidContext(),
+            applicationVisibilityTracker = get(),
+            notificationChannelInitializer = get(),
+            notifier = get(),
+        )
+    }
     single { NetworkConnectivity(connectivityManager = get()) }
 
     single<IAppMaintenanceManager> {

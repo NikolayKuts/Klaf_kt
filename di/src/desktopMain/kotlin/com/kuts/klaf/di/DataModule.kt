@@ -13,6 +13,7 @@ import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
+import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
 import com.kuts.domain.managers.IWordInsightsProviderManager
 import com.kuts.domain.managers.SpeechRecognitionResult
@@ -38,6 +39,7 @@ import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicAssociat
 import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicImageRepository
 import com.kuts.klaf.mnemonic.DesktopNoOpMnemonicImageRemoteRepository
 import com.kuts.klaf.mnemonic.DesktopMnemonicImageAssetRepository
+import com.kuts.klaf.mnemonic.NoOpMnemonicGenerationBackgroundManager
 import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
 import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
 import com.kuts.klaf.networking.wordInsights.SwitchableWordMeaningInsightsRepository
@@ -151,6 +153,9 @@ private fun Module.desktopInfrastructureModule() {
 
 private fun Module.desktopManagerBindings() {
     single<IAppMaintenanceManager> { DesktopAppMaintenanceManager(mnemonicImageAssetRepository = get()) }
+    single<IMnemonicGenerationBackgroundManager> {
+        NoOpMnemonicGenerationBackgroundManager()
+    }
     factory<IAudioPlayerManager> { DesktopNoOpAudioPlayerManager() }
     factory<ISpeechRecognitionManager> { DesktopNoOpSpeechRecognitionManager() }
     single<IDeckReviewScheduler> { DesktopNoOpDeckReviewScheduler() }

@@ -12,6 +12,15 @@ sealed interface AppLaunchNavigationRequest {
         val deckId: Int,
         val deckName: String,
     ) : AppLaunchNavigationRequest
+
+    data class OpenCardAdditionMnemonicManagement(
+        val deckId: Int,
+    ) : AppLaunchNavigationRequest
+
+    data class OpenCardEditingMnemonicManagement(
+        val deckId: Int,
+        val cardId: Int,
+    ) : AppLaunchNavigationRequest
 }
 
 object AppLaunchNavigationExtras {

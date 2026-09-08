@@ -21,11 +21,72 @@ class NotificationChannelInitializer(
         const val WORK_LOGIC_NOTIFICATION_CHANNEL_ID = "work_logic_channel_id"
         const val DECK_REPETITION_CHANNEL_NAME = "Deck repetition channel"
         const val DECK_REPETITION_CHANNEL_ID = "deck_repetition_channel_id"
+        // Channel IDs cannot be renamed after creation without losing the user's settings.
+        const val MNEMONIC_GENERATION_PROGRESS_CHANNEL_ID = "mnemonic_image_progress_channel_id"
+        const val MNEMONIC_GENERATION_SUCCESS_CHANNEL_ID = "mnemonic_image_success_alert_channel_id"
+        const val MNEMONIC_GENERATION_FAILURE_CHANNEL_ID = "mnemonic_image_failure_channel_id"
     }
 
     fun initialize() {
         createDeckRepetitionChannel()
         createWorkLogicChannel()
+        initializeMnemonicGenerationChannels()
+    }
+
+    fun initializeMnemonicGenerationChannels() {
+        createMnemonicGenerationProgressChannel()
+        createMnemonicGenerationSuccessChannel()
+        createMnemonicGenerationFailureChannel()
+    }
+
+    private fun createMnemonicGenerationProgressChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                MNEMONIC_GENERATION_PROGRESS_CHANNEL_ID,
+                context.getString(R.string.mnemonic_generation_progress_channel_name),
+                NotificationManager.IMPORTANCE_LOW,
+            ).apply {
+                description = context.getString(R.string.mnemonic_generation_progress_channel_description)
+                setSound(null, null)
+                enableVibration(false)
+            }
+
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+    }
+
+    private fun createMnemonicGenerationSuccessChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                MNEMONIC_GENERATION_SUCCESS_CHANNEL_ID,
+                context.getString(R.string.mnemonic_generation_success_channel_name),
+                NotificationManager.IMPORTANCE_HIGH,
+            ).apply {
+                description = context.getString(R.string.mnemonic_generation_success_channel_description)
+                lightColor = Color.GREEN
+                enableLights(true)
+                enableVibration(true)
+            }
+
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+    }
+
+    private fun createMnemonicGenerationFailureChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                MNEMONIC_GENERATION_FAILURE_CHANNEL_ID,
+                context.getString(R.string.mnemonic_generation_failure_channel_name),
+                NotificationManager.IMPORTANCE_HIGH,
+            ).apply {
+                description = context.getString(R.string.mnemonic_generation_failure_channel_description)
+                lightColor = Color.RED
+                enableLights(true)
+                enableVibration(true)
+            }
+
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
     }
 
     private fun createWorkLogicChannel() {

@@ -23,6 +23,18 @@
     <string name="app_restart_notification_template">App restarting</string>
     <string name="data_synchronization_notifier_content_text">Local and remote data synchronization</string>
 
+    <string name="mnemonic_generation_in_progress">Generating mnemonic content</string>
+    <string name="mnemonic_text_generation_succeeded">Text mnemonic is ready</string>
+    <string name="mnemonic_text_generation_failed">Text mnemonic generation failed</string>
+    <string name="mnemonic_image_generation_succeeded">Mnemonic image is ready</string>
+    <string name="mnemonic_image_generation_failed">Mnemonic image generation failed</string>
+    <string name="mnemonic_generation_progress_channel_name">Mnemonic generation</string>
+    <string name="mnemonic_generation_progress_channel_description">Shows progress while mnemonic content is generated</string>
+    <string name="mnemonic_generation_success_channel_name">Mnemonic generation results</string>
+    <string name="mnemonic_generation_success_channel_description">Notifies when mnemonic content is ready</string>
+    <string name="mnemonic_generation_failure_channel_name">Mnemonic generation errors</string>
+    <string name="mnemonic_generation_failure_channel_description">Alerts when mnemonic generation fails</string>
+
     <string name="deck_repetition_channel_description">Notify when the decks should be repeated</string>
     <string name="deck_repetition_notification_template">It is time to repeat the deck "%s"</string>
     <string name="deck_repetition_common_notification_template">Some decks require repetition</string>

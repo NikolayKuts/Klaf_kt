@@ -11,7 +11,9 @@ import com.kuts.domain.entities.CardMnemonic
 import com.kuts.domain.entities.WordMeaningInsights
 import com.kuts.domain.ipa.toLetterInfos
 import com.kuts.domain.managers.IAudioPlayerManager
+import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
+import com.kuts.domain.managers.MnemonicGenerationSource
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.domain.useCases.CheckIfCardExistsUseCase
@@ -71,6 +73,7 @@ class CardEditingViewModel(
     fetchMnemonicAssociation: FetchMnemonicAssociationUseCase,
     fetchMnemonicImage: FetchMnemonicImageUseCase,
     mnemonicImageAssetRepository: IMnemonicImageAssetRepository,
+    mnemonicGenerationBackgroundManager: IMnemonicGenerationBackgroundManager,
     fetchWordAutocomplete: FetchWordAutocompleteUseCase,
     fetchWordInfo: FetchWordInfoUseCase,
     speechRecognitionManager: ISpeechRecognitionManager,
@@ -86,6 +89,11 @@ class CardEditingViewModel(
     fetchMnemonicAssociation = fetchMnemonicAssociation,
     fetchMnemonicImage = fetchMnemonicImage,
     mnemonicImageAssetRepository = mnemonicImageAssetRepository,
+    mnemonicGenerationBackgroundManager = mnemonicGenerationBackgroundManager,
+    mnemonicGenerationSource = MnemonicGenerationSource.CardEditing(
+        deckId = deckId,
+        cardId = cardId,
+    ),
     fetchWordAutocomplete = fetchWordAutocomplete,
     fetchWordInfo = fetchWordInfo,
     speechRecognitionManager = speechRecognitionManager,

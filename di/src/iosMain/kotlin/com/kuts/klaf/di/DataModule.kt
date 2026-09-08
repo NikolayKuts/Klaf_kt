@@ -6,6 +6,7 @@ import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAgentDriverConnectionManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
+import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
 import com.kuts.domain.managers.IWordInsightsProviderManager
 import com.kuts.domain.managers.SpeechRecognitionResult
@@ -41,6 +42,7 @@ import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
 import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
 import com.kuts.klaf.mnemonic.IosNoOpMnemonicImageAssetRepository
 import com.kuts.klaf.mnemonic.IosNoOpMnemonicImageRemoteRepository
+import com.kuts.klaf.mnemonic.NoOpMnemonicGenerationBackgroundManager
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
@@ -104,6 +106,9 @@ private fun Module.iosInfrastructureModule() {
 
 private fun Module.iosManagerBindings() {
     single<IAppMaintenanceManager> { IosAppMaintenanceManager() }
+    single<IMnemonicGenerationBackgroundManager> {
+        NoOpMnemonicGenerationBackgroundManager()
+    }
     factory<IAudioPlayerManager> { IosNoOpAudioPlayerManager() }
     factory<ISpeechRecognitionManager> { IosNoOpSpeechRecognitionManager() }
     single<IDeckReviewScheduler> { IosNoOpDeckReviewScheduler() }
