@@ -11,7 +11,6 @@ class MnemonicGenerationForegroundService : Service(), KoinComponent {
 
     private val notifier: MnemonicGenerationNotifier by inject()
     private val diagnostics: AndroidMnemonicGenerationDiagnostics by inject()
-    private var generationWakeLock: AndroidMnemonicGenerationWakeLock? = null
     private var serviceInstanceId = 0L
 
     override fun onCreate() {
@@ -22,12 +21,8 @@ class MnemonicGenerationForegroundService : Service(), KoinComponent {
             MnemonicGenerationNotifier.FOREGROUND_NOTIFICATION_ID,
             notifier.createProgressNotification(),
         )
-        generationWakeLock = AndroidMnemonicGenerationWakeLock(context = this).also { it.acquire() }
         diagnostics.foregroundServiceEnteredForeground(serviceInstanceId)
-        logD(
-            "Mnemonic foreground service entered foreground: " +
-                "wakeLockHeld=${generationWakeLock?.isHeld == true}; ${diagnostics.snapshot()}",
-        )
+        logD("Mnemonic foreground service entered foreground: ${diagnostics.snapshot()}")
     }
 
     override fun onStartCommand(
@@ -49,22 +44,11 @@ class MnemonicGenerationForegroundService : Service(), KoinComponent {
     }
 
     override fun onDestroy() {
-        try {
-            diagnostics.foregroundServiceDestroying(serviceInstanceId)
-            logD("Mnemonic foreground service destroying: ${diagnostics.snapshot()}")
-        } finally {
-            val wakeLock = generationWakeLock
-            val wasWakeLockHeld = wakeLock?.isHeld == true
-            generationWakeLock = null
-            try {
-                wakeLock?.release()
-                logD("Mnemonic foreground service wake lock released: wasHeld=$wasWakeLockHeld")
-            } finally {
-                super.onDestroy()
-                diagnostics.foregroundServiceDestroyed(serviceInstanceId)
-                logD("Mnemonic foreground service destroyed: ${diagnostics.snapshot()}")
-            }
-        }
+        diagnostics.foregroundServiceDestroying(serviceInstanceId)
+        logD("Mnemonic foreground service destroying: ${diagnostics.snapshot()}")
+        super.onDestroy()
+        diagnostics.foregroundServiceDestroyed(serviceInstanceId)
+        logD("Mnemonic foreground service destroyed: ${diagnostics.snapshot()}")
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
