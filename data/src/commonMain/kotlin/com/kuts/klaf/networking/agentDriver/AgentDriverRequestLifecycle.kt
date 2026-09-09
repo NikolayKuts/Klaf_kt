@@ -27,4 +27,8 @@ internal class AgentDriverRequestLifecycle {
     fun shouldDisconnectIdleSession(isSwitchedOn: Boolean): Boolean {
         return isSwitchedOn && isApplicationInBackground && activeRequestCount == 0
     }
+
+    fun diagnosticDescription(): String {
+        return "activeRequests=$activeRequestCount, appInBackground=$isApplicationInBackground"
+    }
 }

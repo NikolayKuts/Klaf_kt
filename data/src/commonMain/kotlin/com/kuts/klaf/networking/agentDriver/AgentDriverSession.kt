@@ -2,6 +2,7 @@ package com.kuts.klaf.networking.agentDriver
 
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -17,6 +18,7 @@ import org.agentdriver.project.ktorclient.external.KtorAssistantClientEvent
 import org.agentdriver.project.ktorclient.external.KtorAssistantClientEventListener
 import org.agentdriver.project.protocol.ImageGenerationRequest
 import org.agentdriver.project.protocol.TextGenerationRequest
+import kotlin.time.TimeSource
 
 /**
  * The app's connection to the assistant.
@@ -32,6 +34,7 @@ import org.agentdriver.project.protocol.TextGenerationRequest
 class AgentDriverSession(
     serverHost: String,
     clientToken: String,
+    private val runtimeDiagnostics: AgentDriverRuntimeDiagnostics = AgentDriverRuntimeDiagnostics.None,
 ) {
 
     companion object {
@@ -53,17 +56,51 @@ class AgentDriverSession(
             when (event) {
                 is KtorAssistantClientEvent.RequestSendFailed ->
                     logE(
-                        "Agent Driver SDK failed to send ${event.messageType}: " +
-                            event.failure.describeForLog(),
+                        "Agent Driver SDK request send failed: " +
+                            "requestId=${event.requestId.diagnosticValue()}, " +
+                            "messageType=${event.messageType}, " +
+                            "failure=${event.failure.describeForLog()}; " +
+                            runtimeDiagnostics.snapshot(),
                     )
 
                 is KtorAssistantClientEvent.MonitorConnectionFailed ->
                     logE(
                         "Agent Driver SDK connection monitor failed: " +
-                            event.failure.describeForLog(),
+                            "failure=${event.failure.describeForLog()}; " +
+                            runtimeDiagnostics.snapshot(),
                     )
 
-                else -> logD("Agent Driver SDK event: $event")
+                is KtorAssistantClientEvent.PendingRequestsFailed ->
+                    logE(
+                        "Agent Driver SDK pending requests failed: " +
+                            "requestIds=${event.requestIds.joinToString { it.value }}, " +
+                            "failure=${event.failure.describeForLog()}; " +
+                            runtimeDiagnostics.snapshot(),
+                    )
+
+                is KtorAssistantClientEvent.ReconnectAttemptStarted ->
+                    logD(
+                        "Agent Driver SDK reconnect starting: attempt=${event.attempt}, " +
+                            "resuming=${event.resuming}; ${runtimeDiagnostics.snapshot()}",
+                    )
+
+                is KtorAssistantClientEvent.RequestSendStarted ->
+                    logD(
+                        "Agent Driver SDK request send started: " +
+                            "requestId=${event.requestId.diagnosticValue()}, messageType=${event.messageType}",
+                    )
+
+                is KtorAssistantClientEvent.RequestSendSucceeded ->
+                    logD(
+                        "Agent Driver SDK request send succeeded: " +
+                            "requestId=${event.requestId.diagnosticValue()}, messageType=${event.messageType}",
+                    )
+
+                is KtorAssistantClientEvent.RequestResponseReceived ->
+                    logD(
+                        "Agent Driver SDK response received: " +
+                            "requestId=${event.requestId.value}, messageType=${event.messageType}",
+                    )
             }
         },
     )
@@ -76,31 +113,39 @@ class AgentDriverSession(
     private val connectMutex = Mutex()
     private val requestLifecycle = AgentDriverRequestLifecycle()
     private var isSwitchedOn = false
+    private var nextRequestOperationId = 0L
 
     /** Opens the connection, and lets requests open it again after a drop the SDK cannot recover. */
     suspend fun switchOn() {
         connectMutex.withLock {
+            logD("Agent Driver switch on requested: connection=${connectionState.value.diagnosticName()}")
             isSwitchedOn = true
             awaitOpenSessionLocked()
+            logD("Agent Driver switch on completed: connection=${connectionState.value.diagnosticName()}")
         }
     }
 
     /** Closes the connection. Nothing opens it again until [switchOn]. */
     suspend fun switchOff() {
         connectMutex.withLock {
+            logD(
+                "Agent Driver switch off requested: connection=${connectionState.value.diagnosticName()}, " +
+                    requestLifecycle.diagnosticDescription(),
+            )
             isSwitchedOn = false
             client.disconnect()
+            logD("Agent Driver switch off completed: connection=${connectionState.value.diagnosticName()}")
         }
     }
 
     suspend fun generateText(request: TextGenerationRequest): String {
-        return withActiveRequest {
+        return withActiveRequest(requestType = "text") {
             client.generateText(request = request)
         }
     }
 
     suspend fun generateImage(request: ImageGenerationRequest): ByteArray {
-        return withActiveRequest {
+        return withActiveRequest(requestType = "image") {
             client.generateImage(request = request).bytes
         }
     }
@@ -109,7 +154,16 @@ class AgentDriverSession(
     internal suspend fun onApplicationBackgrounded() {
         connectMutex.withLock {
             requestLifecycle.onApplicationBackgrounded()
-            disconnectIfBackgroundIdleLocked()
+            logD(
+                "Agent Driver session handling app background: " +
+                    "connection=${connectionState.value.diagnosticName()}, " +
+                    requestLifecycle.diagnosticDescription(),
+            )
+            val disconnected = disconnectIfBackgroundIdleLocked()
+            logD(
+                "Agent Driver session handled app background: idleDisconnect=$disconnected, " +
+                    "connection=${connectionState.value.diagnosticName()}",
+            )
         }
     }
 
@@ -117,12 +171,19 @@ class AgentDriverSession(
     internal suspend fun onApplicationForegrounded() {
         connectMutex.withLock {
             val shouldRefreshConnection = requestLifecycle.onApplicationForegrounded()
-            if (!isSwitchedOn || !shouldRefreshConnection) return
+            logD(
+                "Agent Driver session handling app foreground: switchedOn=$isSwitchedOn, " +
+                    "shouldRefresh=$shouldRefreshConnection, " +
+                    "connection=${connectionState.value.diagnosticName()}, " +
+                    requestLifecycle.diagnosticDescription(),
+            )
+            if (!isSwitchedOn || !shouldRefreshConnection) return@withLock
 
             if (client.connectionState.value !is AssistantClientConnectionState.Disconnected) {
                 client.disconnect()
             }
             client.connect()
+            logD("Agent Driver foreground refresh completed: connection=${connectionState.value.diagnosticName()}")
         }
     }
 
@@ -174,38 +235,90 @@ class AgentDriverSession(
         }
     }
 
-    private suspend fun <T> withActiveRequest(block: suspend () -> T): T {
-        connectMutex.withLock {
+    private suspend fun <T> withActiveRequest(
+        requestType: String,
+        block: suspend () -> T,
+    ): T {
+        val startedAt = TimeSource.Monotonic.markNow()
+        val operationId = connectMutex.withLock {
+            val allocatedOperationId = nextRequestOperationId++
             requestLifecycle.onRequestStarted()
             try {
                 awaitOpenSessionLocked()
+                logD(
+                    "Agent Driver $requestType request starting: operationId=$allocatedOperationId, " +
+                        "connection=${connectionState.value.diagnosticName()}, " +
+                        "${requestLifecycle.diagnosticDescription()}; ${runtimeDiagnostics.snapshot()}",
+                )
             } catch (throwable: Throwable) {
                 requestLifecycle.onRequestFinished()
+                logE(
+                    "Agent Driver $requestType request could not start: operationId=$allocatedOperationId, " +
+                        throwable.describeAgentDriverFailureForLog(),
+                )
                 throw throwable
             }
+            allocatedOperationId
         }
 
         return try {
-            block()
+            block().also {
+                logD(
+                    "Agent Driver $requestType request completed successfully: operationId=$operationId, " +
+                        "elapsedMs=${startedAt.elapsedNow().inWholeMilliseconds}",
+                )
+            }
+        } catch (cancellation: CancellationException) {
+            logD(
+                "Agent Driver $requestType request cancelled: operationId=$operationId, " +
+                    "elapsedMs=${startedAt.elapsedNow().inWholeMilliseconds}",
+            )
+            throw cancellation
+        } catch (failure: Throwable) {
+            logE(
+                "Agent Driver $requestType request failed: operationId=$operationId, " +
+                    "elapsedMs=${startedAt.elapsedNow().inWholeMilliseconds}, " +
+                    "failure=${failure.describeAgentDriverFailureForLog()}; ${runtimeDiagnostics.snapshot()}",
+            )
+            throw failure
         } finally {
             withContext(NonCancellable) {
                 connectMutex.withLock {
                     requestLifecycle.onRequestFinished()
-                    disconnectIfBackgroundIdleLocked()
+                    val disconnected = disconnectIfBackgroundIdleLocked()
+                    logD(
+                        "Agent Driver $requestType request cleanup completed: operationId=$operationId, " +
+                        "idleDisconnect=$disconnected, " +
+                            "connection=${connectionState.value.diagnosticName()}, " +
+                            requestLifecycle.diagnosticDescription(),
+                    )
                 }
             }
         }
     }
 
-    private suspend fun disconnectIfBackgroundIdleLocked() {
+    private suspend fun disconnectIfBackgroundIdleLocked(): Boolean {
         val shouldDisconnect = requestLifecycle.shouldDisconnectIdleSession(
             isSwitchedOn = isSwitchedOn,
         )
-        if (
-            shouldDisconnect &&
-            client.connectionState.value !is AssistantClientConnectionState.Disconnected
-        ) {
-            client.disconnect()
+        if (!shouldDisconnect || client.connectionState.value is AssistantClientConnectionState.Disconnected) {
+            return false
         }
+
+        logD(
+            "Agent Driver closing idle background session: " +
+                "connection=${connectionState.value.diagnosticName()}, " +
+                requestLifecycle.diagnosticDescription(),
+        )
+        client.disconnect()
+        return true
     }
+}
+
+private fun AssistantClientConnectionState.diagnosticName(): String {
+    return this::class.simpleName ?: "Unknown"
+}
+
+private fun org.agentdriver.project.domain.model.RequestId?.diagnosticValue(): String {
+    return this?.value ?: "none"
 }

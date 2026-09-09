@@ -3,9 +3,11 @@ package com.kuts.klaf.mnemonic
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
+import com.lib.lokdroid.core.logD
 
 class AndroidApplicationVisibilityTracker(
     application: Application,
+    private val diagnostics: AndroidMnemonicGenerationDiagnostics,
 ) : Application.ActivityLifecycleCallbacks {
 
     @Volatile
@@ -20,12 +22,20 @@ class AndroidApplicationVisibilityTracker(
     }
 
     override fun onActivityStarted(activity: Activity) {
+        val wasVisible = isApplicationVisible
         if (configurationChangeCount > 0) {
             configurationChangeCount--
         } else {
             startedActivityCount++
         }
         isApplicationVisible = true
+
+        if (!wasVisible) {
+            logD(
+                "Mnemonic diagnostics: app visible: activity=${activity::class.simpleName}, " +
+                    "startedActivities=$startedActivityCount; ${diagnostics.snapshot()}",
+            )
+        }
     }
 
     override fun onActivityStopped(activity: Activity) {
@@ -34,6 +44,12 @@ class AndroidApplicationVisibilityTracker(
         } else {
             startedActivityCount = (startedActivityCount - 1).coerceAtLeast(0)
             isApplicationVisible = startedActivityCount > 0
+            if (!isApplicationVisible) {
+                logD(
+                    "Mnemonic diagnostics: app backgrounded: activity=${activity::class.simpleName}, " +
+                        "startedActivities=$startedActivityCount; ${diagnostics.snapshot()}",
+                )
+            }
         }
     }
 

@@ -29,7 +29,7 @@ internal fun Throwable.toShortAgentDriverMessage(): String = when (this) {
     // not resolve, a gateway answering 502, and a certificate the device would not trust alike, and
     // those need different things done about them -- so the detail comes along.
     is KtorAssistantClientException.TransportFailure ->
-        firstDetailMessage(maxLength = MAX_DETAIL_LENGTH)
+        (cause ?: this).firstDetailMessage(maxLength = MAX_DETAIL_LENGTH)
             ?.let { detail -> "Connection failed: $detail" }
             ?: "Connection failed"
 
@@ -117,6 +117,8 @@ internal fun Throwable.describeAgentDriverFailureForLog(): String = when (this) 
 }
 
 internal fun KtorAssistantClientException.describeForLog(): String = when (this) {
+    is KtorAssistantClientException.TransportFailure -> describeChainForLog()
+
     is KtorAssistantClientException.ConnectionClosed ->
         "${this::class.simpleName}(code=$closeCode)"
 

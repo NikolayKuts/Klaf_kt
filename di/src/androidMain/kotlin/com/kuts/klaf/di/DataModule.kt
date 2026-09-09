@@ -73,6 +73,7 @@ import com.kuts.klaf.networking.agentDriver.AgentDriverWordMeaningInsightsReposi
 import com.kuts.klaf.mnemonic.AndroidMnemonicImageAssetRepository
 import com.kuts.klaf.mnemonic.AndroidApplicationVisibilityTracker
 import com.kuts.klaf.mnemonic.AndroidMnemonicGenerationBackgroundManager
+import com.kuts.klaf.mnemonic.AndroidMnemonicGenerationDiagnostics
 import com.kuts.klaf.mnemonic.MnemonicGenerationNotifier
 import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
 import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
@@ -156,6 +157,7 @@ private fun Module.androidRepositoryModule() {
         AgentDriverSession(
             serverHost = com.kuts.klaf.SecretConstants.AgentDriver.serverHostOrNull().orEmpty(),
             clientToken = com.kuts.klaf.SecretConstants.AgentDriver.clientTokenOrNull().orEmpty(),
+            runtimeDiagnostics = get<AndroidMnemonicGenerationDiagnostics>(),
         )
     }
     single<IAgentDriverConnectionManager> {
@@ -244,15 +246,18 @@ private fun Module.infrastructureModule() {
     // resolved it, so it is not constructed at all.
     single<ICambridgeWordDataProvider> { AndroidNoOpCambridgeWordDataProvider() }
     single { LoKdroid }
+    single { AndroidMnemonicGenerationDiagnostics(context = androidContext()) }
     single(createdAtStart = true) {
         AndroidApplicationVisibilityTracker(
             application = androidContext().applicationContext as Application,
+            diagnostics = get(),
         )
     }
     single(createdAtStart = true) {
         AndroidAgentDriverSessionLifecycleManager(
             application = androidContext().applicationContext as Application,
             agentDriverSession = get(),
+            diagnostics = get(),
             coroutineContextProvider = get(),
         )
     }
@@ -277,6 +282,7 @@ private fun Module.dataManagerBindings() {
         AndroidMnemonicGenerationBackgroundManager(
             context = androidContext(),
             applicationVisibilityTracker = get(),
+            diagnostics = get(),
             notificationChannelInitializer = get(),
             notifier = get(),
         )

@@ -9,6 +9,7 @@ import com.kuts.domain.managers.MnemonicGenerationOutcome
 import com.kuts.domain.managers.MnemonicGenerationSource
 import com.kuts.domain.managers.MnemonicGenerationType
 import com.kuts.klaf.common.notifications.NotificationChannelInitializer
+import com.lib.lokdroid.core.logD
 
 private data class ActiveMnemonicGeneration(
     val type: MnemonicGenerationType,
@@ -18,6 +19,7 @@ private data class ActiveMnemonicGeneration(
 class AndroidMnemonicGenerationBackgroundManager(
     context: Context,
     private val applicationVisibilityTracker: AndroidApplicationVisibilityTracker,
+    private val diagnostics: AndroidMnemonicGenerationDiagnostics,
     private val notificationChannelInitializer: NotificationChannelInitializer,
     private val notifier: MnemonicGenerationNotifier,
 ) : IMnemonicGenerationBackgroundManager {
@@ -36,12 +38,20 @@ class AndroidMnemonicGenerationBackgroundManager(
             type = type,
             source = source,
         )
+        diagnostics.generationStarted(generationId = requestId, type = type)
 
         try {
             notificationChannelInitializer.initializeMnemonicGenerationChannels()
+            diagnostics.foregroundServiceStartRequested()
             ContextCompat.startForegroundService(applicationContext, serviceIntent())
+            logD(
+                "Mnemonic foreground service start requested: generationId=$requestId, " +
+                    "type=$type, activeGenerations=${activeGenerations.size}",
+            )
         } catch (error: Throwable) {
             activeGenerations.remove(requestId)
+            diagnostics.foregroundServiceStartFailed()
+            diagnostics.generationFinished(generationId = requestId, type = type)
             throw error
         }
 
@@ -57,6 +67,12 @@ class AndroidMnemonicGenerationBackgroundManager(
         val finishedGeneration = synchronized(lock) {
             activeGenerations.remove(requestId)
         } ?: return
+
+        logD(
+            "Mnemonic generation completion received: generationId=$requestId, " +
+                "type=${finishedGeneration.type}, outcome=$outcome, " +
+                "appVisible=${applicationVisibilityTracker.isApplicationVisible}",
+        )
 
         try {
             if (!applicationVisibilityTracker.isApplicationVisible) {
@@ -81,9 +97,18 @@ class AndroidMnemonicGenerationBackgroundManager(
         } finally {
             synchronized(lock) {
                 if (activeGenerations.isEmpty()) {
-                    applicationContext.stopService(serviceIntent())
+                    val stopRequested = applicationContext.stopService(serviceIntent())
+                    diagnostics.foregroundServiceStopRequested(accepted = stopRequested)
+                    logD(
+                        "Mnemonic foreground service stop requested: generationId=$requestId, " +
+                            "accepted=$stopRequested; ${diagnostics.snapshot()}",
+                    )
                 }
             }
+            diagnostics.generationFinished(
+                generationId = requestId,
+                type = finishedGeneration.type,
+            )
         }
     }
 
