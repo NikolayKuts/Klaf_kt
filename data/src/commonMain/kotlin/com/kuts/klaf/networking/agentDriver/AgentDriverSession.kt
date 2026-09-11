@@ -28,8 +28,9 @@ import kotlin.time.TimeSource
  * insights, mnemonic associations, mnemonic illustrations -- goes through [generateText] and
  * [generateImage] and shares this one connection.
  *
- * The SDK reconnects by itself after ordinary network drops. On Android, the app lifecycle closes
- * an idle connection before the process is frozen and opens a fresh one when the app returns.
+ * The client-side Agent Driver SDK reconnects by itself after ordinary network drops and resumes
+ * pending one-shot requests. On Android, the app lifecycle closes an idle connection before the
+ * process is frozen and opens a fresh one when the app returns.
  */
 class AgentDriverSession(
     serverHost: String,

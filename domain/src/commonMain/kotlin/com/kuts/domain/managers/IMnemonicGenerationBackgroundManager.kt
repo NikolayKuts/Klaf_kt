@@ -25,6 +25,7 @@ fun interface MnemonicGenerationHandle {
     fun finish(outcome: MnemonicGenerationOutcome)
 }
 
+/** Platform hook that keeps generation visible to the OS and reports its terminal outcome. */
 interface IMnemonicGenerationBackgroundManager {
 
     fun startGeneration(

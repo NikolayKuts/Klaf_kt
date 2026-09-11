@@ -33,6 +33,8 @@ Relevant files:
 - Add notification permission flow on iOS.
 - Add background execution support for app reopening and repetition checking if those behaviors are required on iOS as well.
 - Handle opening the correct screen after tapping a notification.
+- Implement the `IMnemonicGenerationBackgroundManager` behavior for long-running mnemonic text and image requests; iOS currently uses the no-op binding.
+- Add mnemonic generation success/failure notifications and route taps to the matching card creation or editing screen.
 
 Relevant Android reference:
 

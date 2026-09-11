@@ -12,7 +12,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-/** Keeps an idle Agent Driver socket out of Android's frozen process state. */
+/** Closes idle sockets in background while leaving active requests to SDK reconnect handling. */
 class AndroidAgentDriverSessionLifecycleManager(
     application: Application,
     private val agentDriverSession: AgentDriverSession,
@@ -65,7 +65,7 @@ class AndroidAgentDriverSessionLifecycleManager(
                     "activity=${activity::class.simpleName}; ${diagnostics.snapshot()}",
             )
             enqueueLifecycleOperation(
-                operationName = "background disconnect",
+                operationName = "background transition",
                 operation = agentDriverSession::onApplicationBackgrounded,
             )
         }

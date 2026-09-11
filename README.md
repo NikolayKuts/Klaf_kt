@@ -16,8 +16,10 @@ Android currently has the most complete platform integration. Desktop and iOS al
 - Spaced repetition review flow
 - Word pronunciation playback
 - Word autocomplete suggestions
+- AI-generated mnemonic text and illustrations
 - Dark and light themes
 - Shared Compose UI across platforms
+- Android background mnemonic generation with progress and result notifications
 - Android-specific integrations for notifications, Firebase-backed services, and smart text selection
 
 ## Project Structure
@@ -49,6 +51,15 @@ Android currently has the most complete platform integration. Desktop and iOS al
 - Android is the primary app target and has the broadest platform integration.
 - Desktop reuses the shared UI and local data stack, but several platform services are development-oriented or no-op.
 - iOS runs the shared Compose UI through a SwiftUI host, but some integrations are still intentionally minimal.
+
+The Android mnemonic flow uses a foreground service while text or image
+generation is active. If the WebSocket drops while Android freezes the app, the
+Agent Driver SDK resumes the same logical one-shot request after connectivity
+returns. Desktop and iOS currently use a no-op implementation of the shared
+background-generation contract.
+
+See [Mnemonic Generation](docs/mnemonic-generation.md) for the component flow,
+cleanup rules, platform limits, and diagnostics.
 
 ## Requirements
 
@@ -94,6 +105,8 @@ apps/iOS/iosApp.xcodeproj
 The pre-Kotlin-Multiplatform version of the project is available here:
 
 https://github.com/NikolayKuts/Klaf
+
+See [CHANGELOG.md](CHANGELOG.md) for recent implementation changes.
 
 ## Animation samples
 ![name](https://github.com/NikolayKuts/Klaf_kt/blob/develop/preview/data_synchronization_dark_theme.gif)

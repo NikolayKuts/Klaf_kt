@@ -16,6 +16,7 @@ private data class ActiveMnemonicGeneration(
     val source: MnemonicGenerationSource,
 )
 
+/** Shares one foreground service across all active mnemonic text and image requests. */
 class AndroidMnemonicGenerationBackgroundManager(
     context: Context,
     private val applicationVisibilityTracker: AndroidApplicationVisibilityTracker,
