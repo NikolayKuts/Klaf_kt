@@ -54,8 +54,8 @@ internal val commonPresentationModule = module {
             crashlytics = get(),
             appMaintenanceManager = get(),
             authenticationInteractor = get(),
-            observeWordInsightsProviderState = get(),
-            setWordInsightsProviderUseCase = get(),
+            observeAgentDriverConnectionState = get(),
+            retryAgentDriverConnectionUseCase = get(),
             coroutineContextProvider = get(),
         )
     }

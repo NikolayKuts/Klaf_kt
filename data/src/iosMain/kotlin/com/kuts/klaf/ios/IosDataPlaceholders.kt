@@ -5,17 +5,16 @@ import com.kuts.domain.common.LoadingState
 import com.kuts.domain.entities.AgentDriverConnectionState
 import com.kuts.domain.entities.AuthenticationState
 import com.kuts.domain.entities.AutocompleteWord
-import com.kuts.domain.entities.WordInsightsProvider
-import com.kuts.domain.entities.WordInsightsProviderState
+import com.kuts.domain.entities.WordMeaningInsights
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAgentDriverConnectionManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
-import com.kuts.domain.managers.IWordInsightsProviderManager
 import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IOldAppKlafDataTransferRepository
 import com.kuts.domain.repositories.IWordAutocompleteRepository
+import com.kuts.domain.repositories.IWordMeaningInsightsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -73,11 +72,9 @@ class IosNoOpWordAutocompleteRepository : IWordAutocompleteRepository {
     override suspend fun fetchAutocomplete(prefix: String): List<AutocompleteWord> = emptyList()
 }
 
-class IosNoOpWordInsightsProviderManager : IWordInsightsProviderManager {
-    override val state = MutableStateFlow(WordInsightsProviderState())
-
-    override suspend fun setSelectedProvider(provider: WordInsightsProvider) {
-        state.value = WordInsightsProviderState(selectedProvider = WordInsightsProvider.OpenAi)
+class IosNoOpWordMeaningInsightsRepository : IWordMeaningInsightsRepository {
+    override suspend fun fetchWordMeaningInsights(word: String): WordMeaningInsights {
+        error("Word insights through Agent Driver are not implemented on iOS yet.")
     }
 }
 
@@ -86,9 +83,7 @@ class IosNoOpAgentDriverConnectionManager : IAgentDriverConnectionManager {
         value = AgentDriverConnectionState.Disconnected,
     )
 
-    override suspend fun switchOn() = Unit
-
-    override suspend fun switchOff() = Unit
+    override suspend fun retry() = Unit
 }
 
 class IosNoOpOldAppKlafDataTransferRepository : IOldAppKlafDataTransferRepository {

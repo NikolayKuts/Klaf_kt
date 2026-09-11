@@ -8,7 +8,6 @@ import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
-import com.kuts.domain.managers.IWordInsightsProviderManager
 import com.kuts.domain.managers.SpeechRecognitionResult
 import com.kuts.domain.managers.SpeechRecognitionState
 import com.kuts.domain.repositories.IAuthenticationRepository
@@ -37,9 +36,7 @@ import com.kuts.klaf.ios.IosNoOpCrashlyticsRepository
 import com.kuts.klaf.ios.IosNoOpDeckReviewScheduler
 import com.kuts.klaf.ios.IosNoOpOldAppKlafDataTransferRepository
 import com.kuts.klaf.ios.IosNoOpWordAutocompleteRepository
-import com.kuts.klaf.ios.IosNoOpWordInsightsProviderManager
-import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
-import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
+import com.kuts.klaf.ios.IosNoOpWordMeaningInsightsRepository
 import com.kuts.klaf.mnemonic.IosNoOpMnemonicImageAssetRepository
 import com.kuts.klaf.mnemonic.IosNoOpMnemonicImageRemoteRepository
 import com.kuts.klaf.mnemonic.NoOpMnemonicGenerationBackgroundManager
@@ -86,13 +83,12 @@ private fun Module.iosRepositoryModule() {
     }
     single<IWordAutocompleteRepository> { IosNoOpWordAutocompleteRepository() }
     single<IWordMeaningInsightsRepository> {
-        OpenAiWordMeaningInsightsRepository(client = OpenAiHttpClientFactory().create())
+        IosNoOpWordMeaningInsightsRepository()
     }
     single<IMnemonicAssociationRepository> { IosNoOpMnemonicAssociationRepository() }
     single<IMnemonicImageRepository> { IosNoOpMnemonicImageRepository() }
     single<IMnemonicImageAssetRepository> { IosNoOpMnemonicImageAssetRepository() }
     single<IMnemonicImageRemoteRepository> { IosNoOpMnemonicImageRemoteRepository() }
-    single<IWordInsightsProviderManager> { IosNoOpWordInsightsProviderManager() }
     single<IAgentDriverConnectionManager> { IosNoOpAgentDriverConnectionManager() }
     single<IDeckRepetitionInfoRepository> { IosInMemoryDeckRepetitionInfoRepository() }
     single<IOldAppKlafDataTransferRepository> { IosNoOpOldAppKlafDataTransferRepository() }

@@ -11,11 +11,11 @@ class AgentDriverRequestLifecycleTest {
         val lifecycle = AgentDriverRequestLifecycle()
 
         lifecycle.onApplicationBackgrounded()
-        assertTrue(lifecycle.shouldDisconnectIdleSession(isSwitchedOn = true))
+        assertTrue(lifecycle.shouldDisconnectIdleSession())
 
         val shouldRefreshConnection = lifecycle.onApplicationForegrounded()
         assertTrue(shouldRefreshConnection)
-        assertFalse(lifecycle.shouldDisconnectIdleSession(isSwitchedOn = true))
+        assertFalse(lifecycle.shouldDisconnectIdleSession())
     }
 
     @Test
@@ -24,20 +24,11 @@ class AgentDriverRequestLifecycleTest {
         lifecycle.onRequestStarted()
 
         lifecycle.onApplicationBackgrounded()
-        assertFalse(lifecycle.shouldDisconnectIdleSession(isSwitchedOn = true))
+        assertFalse(lifecycle.shouldDisconnectIdleSession())
         assertFalse(lifecycle.onApplicationForegrounded())
 
         lifecycle.onApplicationBackgrounded()
         lifecycle.onRequestFinished()
-        assertTrue(lifecycle.shouldDisconnectIdleSession(isSwitchedOn = true))
-    }
-
-    @Test
-    fun switchedOffAssistantDoesNotNeedBackgroundDisconnect() {
-        val lifecycle = AgentDriverRequestLifecycle()
-
-        lifecycle.onApplicationBackgrounded()
-
-        assertFalse(lifecycle.shouldDisconnectIdleSession(isSwitchedOn = false))
+        assertTrue(lifecycle.shouldDisconnectIdleSession())
     }
 }

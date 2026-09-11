@@ -20,13 +20,33 @@ import org.agentdriver.project.protocol.ImageGenerationRequest
 import org.agentdriver.project.protocol.TextGenerationRequest
 import kotlin.time.TimeSource
 
+private fun AssistantClientConnectionState.nextConnectionAction(): AgentDriverConnectionAction {
+    return when (this) {
+        is AssistantClientConnectionState.Connected ->
+            AgentDriverConnectionStatus.Connected.nextAction()
+
+        is AssistantClientConnectionState.Connecting ->
+            AgentDriverConnectionStatus.Connecting.nextAction()
+
+        is AssistantClientConnectionState.Disconnected ->
+            AgentDriverConnectionStatus.Disconnected.nextAction(
+                automaticReconnectActive = automaticReconnectActive,
+            )
+
+        is AssistantClientConnectionState.ResumeAvailable ->
+            AgentDriverConnectionStatus.ResumeAvailable.nextAction(
+                automaticReconnectActive = automaticReconnectActive,
+            )
+    }
+}
+
 /**
  * The app's connection to the assistant.
  *
- * Open only while the assistant is switched on: [switchOn] and [switchOff] follow the provider
- * switch, and nothing else opens the connection. Everything the app asks the assistant -- word
- * insights, mnemonic associations, mnemonic illustrations -- goes through [generateText] and
- * [generateImage] and shares this one connection.
+ * Everything the app asks the assistant -- word insights, mnemonic associations, mnemonic
+ * illustrations -- goes through [generateText] and [generateImage] and shares this one connection.
+ * The connection starts automatically, can be retried explicitly, and is also opened lazily by a
+ * request when no connection attempt is active.
  *
  * The client-side Agent Driver SDK reconnects by itself after ordinary network drops and resumes
  * pending one-shot requests. On Android, the app lifecycle closes an idle connection before the
@@ -113,29 +133,14 @@ class AgentDriverSession(
 
     private val connectMutex = Mutex()
     private val requestLifecycle = AgentDriverRequestLifecycle()
-    private var isSwitchedOn = false
     private var nextRequestOperationId = 0L
 
-    /** Opens the connection, and lets requests open it again after a drop the SDK cannot recover. */
-    suspend fun switchOn() {
+    /** Starts the connection, and lets requests open it again after a drop the SDK cannot recover. */
+    suspend fun start() {
         connectMutex.withLock {
-            logD("Agent Driver switch on requested: connection=${connectionState.value.diagnosticName()}")
-            isSwitchedOn = true
+            logD("Agent Driver connection start requested: connection=${connectionState.value.diagnosticName()}")
             awaitOpenSessionLocked()
-            logD("Agent Driver switch on completed: connection=${connectionState.value.diagnosticName()}")
-        }
-    }
-
-    /** Closes the connection. Nothing opens it again until [switchOn]. */
-    suspend fun switchOff() {
-        connectMutex.withLock {
-            logD(
-                "Agent Driver switch off requested: connection=${connectionState.value.diagnosticName()}, " +
-                    requestLifecycle.diagnosticDescription(),
-            )
-            isSwitchedOn = false
-            client.disconnect()
-            logD("Agent Driver switch off completed: connection=${connectionState.value.diagnosticName()}")
+            logD("Agent Driver connection start completed: connection=${connectionState.value.diagnosticName()}")
         }
     }
 
@@ -173,12 +178,11 @@ class AgentDriverSession(
         connectMutex.withLock {
             val shouldRefreshConnection = requestLifecycle.onApplicationForegrounded()
             logD(
-                "Agent Driver session handling app foreground: switchedOn=$isSwitchedOn, " +
-                    "shouldRefresh=$shouldRefreshConnection, " +
+                "Agent Driver session handling app foreground: shouldRefresh=$shouldRefreshConnection, " +
                     "connection=${connectionState.value.diagnosticName()}, " +
                     requestLifecycle.diagnosticDescription(),
             )
-            if (!isSwitchedOn || !shouldRefreshConnection) return@withLock
+            if (!shouldRefreshConnection) return@withLock
 
             if (client.connectionState.value !is AssistantClientConnectionState.Disconnected) {
                 client.disconnect()
@@ -195,23 +199,20 @@ class AgentDriverSession(
      * request registration, so Android cannot disconnect the socket between this check and send.
      */
     private suspend fun awaitOpenSessionLocked() {
-        check(value = isSwitchedOn) { "The assistant is switched off." }
-
-        when (connectionState.value) {
-            is AssistantClientConnectionState.Connected -> return
-
-            // A reconnect is already in flight; wait for it rather than fighting it with a
-            // second attempt, which the SDK would refuse anyway.
-            is AssistantClientConnectionState.Connecting -> Unit
-
-            is AssistantClientConnectionState.Disconnected -> {
+        when (connectionState.value.nextConnectionAction()) {
+            AgentDriverConnectionAction.UseCurrent -> return
+            AgentDriverConnectionAction.Connect -> {
                 client.connect()
                 return
             }
 
-            // ResumeAvailable is an automatic reconnect hand-off. The SDK has already scheduled
-            // the resume attempt, so calling connect() here would race it with a fresh session.
-            is AssistantClientConnectionState.ResumeAvailable -> Unit
+            AgentDriverConnectionAction.Resume -> {
+                client.resume()
+                return
+            }
+
+            // The SDK owns this attempt or retry run. An explicit connect/resume would cancel it.
+            AgentDriverConnectionAction.AwaitRecovery -> Unit
         }
 
         awaitConnectionInFlight()
@@ -228,7 +229,7 @@ class AgentDriverSession(
     private suspend fun awaitConnectionInFlight() {
         val settledState = connectionState.first { state ->
             state is AssistantClientConnectionState.Connected ||
-                state is AssistantClientConnectionState.Disconnected
+                state is AssistantClientConnectionState.Disconnected && !state.automaticReconnectActive
         }
 
         if (settledState is AssistantClientConnectionState.Disconnected) {
@@ -299,9 +300,7 @@ class AgentDriverSession(
     }
 
     private suspend fun disconnectIfBackgroundIdleLocked(): Boolean {
-        val shouldDisconnect = requestLifecycle.shouldDisconnectIdleSession(
-            isSwitchedOn = isSwitchedOn,
-        )
+        val shouldDisconnect = requestLifecycle.shouldDisconnectIdleSession()
         if (!shouldDisconnect || client.connectionState.value is AssistantClientConnectionState.Disconnected) {
             return false
         }

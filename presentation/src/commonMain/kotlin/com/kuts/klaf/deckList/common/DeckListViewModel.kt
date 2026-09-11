@@ -16,7 +16,6 @@ import com.kuts.domain.common.IDataSynchronizationState.Uncertain
 import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.common.launchIn
 import com.kuts.domain.entities.Deck
-import com.kuts.domain.entities.WordInsightsProvider
 import com.kuts.domain.interactors.AuthenticationInteractor
 import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.IAuthenticationRepository.IAccountDeletingError
@@ -48,8 +47,8 @@ class DeckListViewModel(
     private val crashlytics: ICrashlyticsRepository,
     private val appMaintenanceManager: IAppMaintenanceManager,
     private val authenticationInteractor: AuthenticationInteractor,
-    private val observeWordInsightsProviderState: ObserveWordInsightsProviderStateUseCase,
-    private val setWordInsightsProviderUseCase: SetWordInsightsProviderUseCase,
+    private val observeAgentDriverConnectionState: ObserveAgentDriverConnectionStateUseCase,
+    private val retryAgentDriverConnectionUseCase: RetryAgentDriverConnectionUseCase,
     private val coroutineContextProvider: ICoroutineContextProvider,
 ) : BaseDeckListViewModel() {
 
@@ -318,9 +317,9 @@ class DeckListViewModel(
         }
     }
 
-    override fun setWordInsightsProvider(provider: WordInsightsProvider) {
+    override fun retryAgentDriverConnection() {
         viewModelScope.launchWithState {
-            setWordInsightsProviderUseCase(provider = provider)
+            retryAgentDriverConnectionUseCase()
         }.onException { _, throwable ->
             crashlytics.report(exception = throwable)
         }
@@ -375,13 +374,12 @@ class DeckListViewModel(
     private fun observeAuthenticationState() {
         combine(
             authenticationInteractor.getObservableAuthenticationState(),
-            observeWordInsightsProviderState(),
-        ) { authenticationState, providerState ->
+            observeAgentDriverConnectionState(),
+        ) { authenticationState, connectionState ->
             DrawerViewState(
                 signedIn = authenticationState.email.isNotNull(),
                 userEmail = authenticationState.email,
-                wordInsightsProvider = providerState.selectedProvider,
-                codexObserverSessionState = providerState.codexObserverSessionState,
+                agentDriverConnectionState = connectionState,
             )
         }.flowOn(coroutineContextProvider.io)
             .onEach { drawerViewState -> drawerState.emit(drawerViewState) }

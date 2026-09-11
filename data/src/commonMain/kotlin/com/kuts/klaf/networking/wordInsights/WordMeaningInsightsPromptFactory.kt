@@ -4,20 +4,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.agentdriver.project.protocol.ResponseSchema
 
-/**
- * One word-insights request, in the two shapes its two providers need.
- *
- * OpenAI takes the role, the question, and the schema as three separate fields of its own request
- * format, so those stay separate. AgentDriver deliberately does not let a client set instructions
- * -- the server owns them, and serves every feature of this app from one configuration -- so the
- * part specific to word insights is folded into [agentDriverPrompt] instead. Nothing is lost by
- * that: the server delivers its own instruction as text in the same turn either way.
- */
 data class WordMeaningInsightsPrompt(
-    val systemInstruction: String,
-    val userPrompt: String,
-    val responseJsonSchema: String,
-    val agentDriverPrompt: String,
+    val text: String,
     val responseSchema: ResponseSchema,
 )
 
@@ -34,10 +22,7 @@ object WordMeaningInsightsPromptFactory {
         val responseJsonSchema = WordMeaningInsightsContract.buildResponseJsonSchema(word = requestedWord)
 
         return WordMeaningInsightsPrompt(
-            systemInstruction = systemInstruction,
-            userPrompt = userPrompt,
-            responseJsonSchema = responseJsonSchema,
-            agentDriverPrompt = "$systemInstruction\n\n$userPrompt",
+            text = "$systemInstruction\n\n$userPrompt",
             responseSchema = ResponseSchema(
                 definition = json.parseToJsonElement(responseJsonSchema).jsonObject,
             ),

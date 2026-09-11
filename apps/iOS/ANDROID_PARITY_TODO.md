@@ -85,16 +85,15 @@ Relevant files:
 - `presentation/src/commonMain/kotlin/com/kuts/klaf/cardManagement/common/CardManagementViewModel.kt`
 - `presentation/src/commonMain/kotlin/com/kuts/klaf/cardManagement/cardEditing/CardEditingViewModel.kt`
 
-### 6. Word insights provider state and Codex session support
+### 6. Agent Driver session support
 
-- Replace the in-memory provider manager with a persistent implementation.
-- If Codex Observer is meant to exist on iOS too, implement the same session lifecycle and error handling.
-- Make sure drawer status and provider switching show real state instead of placeholder state.
+- Implement the Agent Driver client SDK session lifecycle and error handling on iOS.
+- Make sure the drawer shows the real connection state instead of placeholder state.
 
 Relevant files:
 
 - `data/src/iosMain/kotlin/com/kuts/klaf/ios/IosDataPlaceholders.kt`
-- `data/src/commonMain/kotlin/com/kuts/klaf/networking/wordInsights/WordInsightsProviderManager.kt`
+- Agent Driver word-insights and connection lifecycle implementations
 
 ### 7. Process text, launch routing, deep links, and notification routing
 
@@ -164,4 +163,4 @@ Relevant files:
   - deck repetition
   - reminder scheduling and notification handling
   - embedded web content
-  - word insights provider selection
+  - Agent Driver connection status and retry

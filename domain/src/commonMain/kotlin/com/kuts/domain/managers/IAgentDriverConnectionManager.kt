@@ -7,7 +7,5 @@ interface IAgentDriverConnectionManager {
 
     val state: StateFlow<AgentDriverConnectionState>
 
-    suspend fun switchOn()
-
-    suspend fun switchOff()
+    suspend fun retry()
 }

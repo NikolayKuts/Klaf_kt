@@ -4,6 +4,8 @@ import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.entities.AgentDriverConnectionState
 import com.kuts.domain.managers.IAgentDriverConnectionManager
 import com.lib.lokdroid.core.logD
+import com.lib.lokdroid.core.logE
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,14 +26,11 @@ class AgentDriverConnectionManager(
 
     init {
         observeConnectionState()
+        startConnection()
     }
 
-    override suspend fun switchOn() {
-        agentDriverSession.switchOn()
-    }
-
-    override suspend fun switchOff() {
-        agentDriverSession.switchOff()
+    override suspend fun retry() {
+        agentDriverSession.start()
     }
 
     private fun observeConnectionState() {
@@ -39,6 +38,18 @@ class AgentDriverConnectionManager(
             agentDriverSession.connectionState.collect { connectionState ->
                 state.value = connectionState.toAgentDriverConnectionState()
                 connectionState.logTransition()
+            }
+        }
+    }
+
+    private fun startConnection() {
+        scope.launch {
+            try {
+                retry()
+            } catch (cancellationException: CancellationException) {
+                throw cancellationException
+            } catch (throwable: Throwable) {
+                logE("Initial Agent Driver connection failed: ${throwable.describeChainForLog()}")
             }
         }
     }

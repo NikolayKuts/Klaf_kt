@@ -42,6 +42,7 @@ Android currently has the most complete platform integration. Desktop and iOS al
 - Koin for dependency injection
 - Room and DataStore for local persistence
 - Ktor and Kotlinx Serialization for networking
+- Agent Driver client SDK for word insights and mnemonic generation
 - Firebase Authentication, Firestore, and Crashlytics on Android
 - WorkManager on Android
 - Gradle Kotlin DSL with included build logic in `build-logic`
@@ -52,7 +53,8 @@ Android currently has the most complete platform integration. Desktop and iOS al
 - Desktop reuses the shared UI and local data stack, but several platform services are development-oriented or no-op.
 - iOS runs the shared Compose UI through a SwiftUI host, but some integrations are still intentionally minimal.
 
-The Android mnemonic flow uses a foreground service while text or image
+Word insights and mnemonic generation use one shared Agent Driver client SDK session. Klaf does
+not contain a second AI provider or a runtime provider switch. The Android mnemonic flow uses a foreground service while text or image
 generation is active. If the WebSocket drops while Android freezes the app, the
 Agent Driver SDK resumes the same logical one-shot request after connectivity
 returns. Desktop and iOS currently use a no-op implementation of the shared

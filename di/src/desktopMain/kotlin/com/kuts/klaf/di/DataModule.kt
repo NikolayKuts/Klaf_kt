@@ -15,7 +15,6 @@ import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
-import com.kuts.domain.managers.IWordInsightsProviderManager
 import com.kuts.domain.managers.SpeechRecognitionResult
 import com.kuts.domain.managers.SpeechRecognitionState
 import com.kuts.domain.repositories.IAuthenticationRepository
@@ -40,11 +39,7 @@ import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicImageRep
 import com.kuts.klaf.mnemonic.DesktopNoOpMnemonicImageRemoteRepository
 import com.kuts.klaf.mnemonic.DesktopMnemonicImageAssetRepository
 import com.kuts.klaf.mnemonic.NoOpMnemonicGenerationBackgroundManager
-import com.kuts.klaf.networking.openai.OpenAiHttpClientFactory
-import com.kuts.klaf.networking.openai.OpenAiWordMeaningInsightsRepository
-import com.kuts.klaf.networking.wordInsights.SwitchableWordMeaningInsightsRepository
 import com.kuts.klaf.networking.agentDriver.AgentDriverSession
-import com.kuts.klaf.networking.wordInsights.WordInsightsProviderManager
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
@@ -93,19 +88,6 @@ private fun Module.desktopRepositoryModule() {
         )
     }
     single<IWordAutocompleteRepository> { DesktopWordAutocompleteRepository() }
-    single {
-        OpenAiWordMeaningInsightsRepository(
-            client = OpenAiHttpClientFactory().create(),
-        )
-    }
-    single {
-        WordInsightsProviderManager(
-            dataStore = get(qualifier = named(name = APP_PREFERENCES_DATA_STORE)),
-            agentDriverSession = get(),
-            agentDriverConnectionManager = get(),
-            coroutineContextProvider = get(),
-        )
-    }
     // One connection to the AgentDriver server for the whole app: every feature that asks the
     // assistant anything shares this session rather than opening its own.
     single {
@@ -120,10 +102,9 @@ private fun Module.desktopRepositoryModule() {
             coroutineContextProvider = get(),
         )
     }
-    single<IWordInsightsProviderManager> { get<WordInsightsProviderManager>() }
-    single {
+    single<IWordMeaningInsightsRepository> {
         AgentDriverWordMeaningInsightsRepository(
-            manager = get(),
+            agentDriverSession = get(),
         )
     }
     single<IMnemonicAssociationRepository> {
@@ -134,13 +115,6 @@ private fun Module.desktopRepositoryModule() {
     }
     single<IMnemonicImageAssetRepository> { DesktopMnemonicImageAssetRepository() }
     single<IMnemonicImageRemoteRepository> { DesktopNoOpMnemonicImageRemoteRepository() }
-    single<IWordMeaningInsightsRepository> {
-        SwitchableWordMeaningInsightsRepository(
-            manager = get(),
-            openAiRepository = get(),
-            agentDriverRepository = get(),
-        )
-    }
     single<IDeckRepetitionInfoRepository> { DesktopInMemoryDeckRepetitionInfoRepository() }
     single<IOldAppKlafDataTransferRepository> { DesktopNoOpOldAppKlafDataTransferRepository() }
     single<ICrashlyticsRepository> { DesktopNoOpCrashlyticsRepository() }

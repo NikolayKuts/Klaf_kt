@@ -3,7 +3,6 @@ package com.kuts.klaf.deckList.common
 import androidx.lifecycle.ViewModel
 import com.kuts.domain.common.IDataSynchronizationState
 import com.kuts.domain.entities.Deck
-import com.kuts.domain.entities.WordInsightsProvider
 import com.kuts.klaf.common.IEventMessageSource
 import com.kuts.klaf.deckList.drawer.DrawerViewState
 import kotlinx.coroutines.flow.SharedFlow
@@ -30,5 +29,5 @@ abstract class BaseDeckListViewModel : ViewModel(), IEventMessageSource {
     abstract fun logOut()
     abstract fun deleteAccount()
     abstract fun generateGptPromptWithDeckContent(deckId: Int)
-    abstract fun setWordInsightsProvider(provider: WordInsightsProvider)
+    abstract fun retryAgentDriverConnection()
 }
