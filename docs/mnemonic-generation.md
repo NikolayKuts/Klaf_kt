@@ -55,6 +55,9 @@ permission is used.
   and a server process restart loses the retained logical session and result.
 - The server advertises a reconnect grace period, currently 10 minutes by
   default. Recovery after that deadline is not guaranteed.
+- The drawer shows reconnecting only while the client SDK confirms that its
+  automatic retry loop is active. A failed first connection is shown as an
+  error because the SDK does not retry an explicit initial `connect()` call.
 - Streaming text is not resumable because replay of already delivered chunks is
   not defined.
 - Navigating in a way that clears the card-management view model cancels its

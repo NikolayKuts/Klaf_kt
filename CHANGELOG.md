@@ -15,10 +15,15 @@
 
 ### Changed
 
-- Use Agent Driver client SDK `0.10.7-SNAPSHOT` so one-shot text and image calls
+- Use Agent Driver client SDK `0.10.8-SNAPSHOT` so one-shot text and image calls
   can resume after an unexpected WebSocket disconnect.
 - Close an idle Agent Driver connection when Klaf enters background, but keep a
   session with an active request available for automatic resume.
+
+### Fixed
+
+- Show a failed initial Agent Driver connection as an error instead of leaving
+  the drawer on `Connecting` when no automatic retry loop is active.
 
 ### Removed
 

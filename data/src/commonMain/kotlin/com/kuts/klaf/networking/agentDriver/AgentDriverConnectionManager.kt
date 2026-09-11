@@ -78,17 +78,19 @@ class AgentDriverConnectionManager(
     private fun AssistantClientConnectionState.toAgentDriverConnectionState(): AgentDriverConnectionState {
         return when (this) {
             is AssistantClientConnectionState.Connected -> AgentDriverConnectionState.Ready
-            is AssistantClientConnectionState.Connecting -> AgentDriverConnectionState.Reconnecting(
-                attempt = attempt,
-            )
-            is AssistantClientConnectionState.ResumeAvailable -> cause.toAgentDriverConnectionState()
-            is AssistantClientConnectionState.Disconnected -> cause.toAgentDriverConnectionState()
+            is AssistantClientConnectionState.Connecting -> AgentDriverConnectionState.Reconnecting(attempt = attempt)
+            is AssistantClientConnectionState.ResumeAvailable ->
+                cause.toAgentDriverConnectionState(automaticReconnectActive = automaticReconnectActive)
+            is AssistantClientConnectionState.Disconnected ->
+                cause.toAgentDriverConnectionState(automaticReconnectActive = automaticReconnectActive)
         }
     }
 
-    private fun AssistantClientDisconnectCause.toAgentDriverConnectionState(): AgentDriverConnectionState {
+    private fun AssistantClientDisconnectCause.toAgentDriverConnectionState(
+        automaticReconnectActive: Boolean,
+    ): AgentDriverConnectionState {
         return when {
-            allowsAutomaticReconnect -> AgentDriverConnectionState.Reconnecting()
+            automaticReconnectActive -> AgentDriverConnectionState.Reconnecting()
             isFault -> AgentDriverConnectionState.Error(message = toShortAgentDriverMessage())
             else -> AgentDriverConnectionState.Disconnected
         }
