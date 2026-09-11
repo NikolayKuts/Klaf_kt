@@ -43,6 +43,7 @@ import com.kuts.klaf.common.externalActions.IExternalAppActions
 import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.navigation.ObserveAudioLifecycle
+import com.kuts.klaf.webContent.WebContentSource
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -88,6 +89,13 @@ internal fun CardAdditionScreen(
                 )
             },
             onClearMnemonic = viewModel::clearMnemonicSelection,
+            onYouGlishClick = { word ->
+                navController.navigate(
+                    route = AppDestination.WebContent(
+                        source = WebContentSource.YouGlish(word = word),
+                    ),
+                )
+            },
         )
     }
 }
@@ -99,6 +107,7 @@ internal fun CardManagementContent(
     isCambridgeBottomSheetEnabled: Boolean = true,
     onOpenMnemonicManagement: (() -> Unit)? = null,
     onClearMnemonic: (() -> Unit)? = null,
+    onYouGlishClick: (String) -> Unit,
 ) {
     val deck = viewModel.deck.collectAsState(initial = null)
     val isConfirmationEnabled by viewModel.isConfirmationEnabled.collectAsState()
@@ -186,6 +195,12 @@ internal fun CardManagementContent(
             },
             onPronounceIconClick = {
                 viewModel.sendAction(action = ICardManagementAction.PronounceForeignWordClicked)
+            },
+            onYouGlishClick = {
+                foreignWordFieldValue.text
+                    .trim()
+                    .takeIf(String::isNotBlank)
+                    ?.let(onYouGlishClick)
             },
             onAutocompleteItemClick = { autocompleteWord ->
                 viewModel.sendAction(

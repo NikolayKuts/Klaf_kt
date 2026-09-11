@@ -1,12 +1,10 @@
 package com.kuts.klaf.common
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,14 +27,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kuts.domain.entities.CefrLevel
 import com.kuts.domain.entities.WordMeaningItem
 import com.kuts.klaf.presentation.resources.Res
-import com.kuts.klaf.presentation.resources.ic_youglish_logo
 import com.kuts.klaf.presentation.resources.word_insights_applying_label
 import com.kuts.klaf.presentation.resources.word_insights_current_saved_variant
 import com.kuts.klaf.presentation.resources.word_insights_examples_label
@@ -45,10 +41,8 @@ import com.kuts.klaf.presentation.resources.word_insights_loading_label
 import com.kuts.klaf.presentation.resources.word_insights_new_variant_preview
 import com.kuts.klaf.presentation.resources.word_insights_use_new_variant_action
 import com.kuts.klaf.presentation.resources.word_insights_word_label
-import com.kuts.klaf.presentation.resources.word_insights_youglish_action
 import com.kuts.klaf.theme.MainTheme
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -63,7 +57,6 @@ internal fun WordInsightsBottomSheetContent(
     canApplyRefreshedInsights: Boolean = false,
     onRequestRefreshedInsights: (() -> Unit)? = null,
     onApplyRefreshedInsights: (() -> Unit)? = null,
-    onYouGlishClick: () -> Unit = {},
 ) {
     val isRefreshingAvailable =
         onRequestRefreshedInsights != null && onApplyRefreshedInsights != null
@@ -106,12 +99,6 @@ internal fun WordInsightsBottomSheetContent(
             }
         }
 
-        if (word.isNotBlank()) {
-            WordInsightActionsRow(
-                onYouGlishClick = onYouGlishClick,
-            )
-        }
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -139,7 +126,7 @@ internal fun WordInsightsBottomSheetContent(
                 OutlinedButton(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = canRequestRefreshedInsights,
-                    onClick = { onRequestRefreshedInsights?.invoke() },
+                    onClick = { onRequestRefreshedInsights() },
                 ) {
                     if (isRefreshing) {
                         CircularProgressIndicator(
@@ -192,7 +179,7 @@ internal fun WordInsightsBottomSheetContent(
                     Button(
                         modifier = Modifier.fillMaxWidth(),
                         enabled = canApplyRefreshedInsights,
-                        onClick = { onApplyRefreshedInsights?.invoke() },
+                        onClick = { onApplyRefreshedInsights() },
                     ) {
                         if (isApplyingRefreshed) {
                             CircularProgressIndicator(
@@ -207,35 +194,6 @@ internal fun WordInsightsBottomSheetContent(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun WordInsightActionsRow(
-    onYouGlishClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        OutlinedButton(
-            modifier = Modifier
-                .height(28.dp),
-            onClick = onYouGlishClick,
-            shape = RoundedCornerShape(12.dp),
-            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = Color(0x16ffffff),
-            )
-        ) {
-            Image(
-                painter = painterResource(resource = Res.drawable.ic_youglish_logo),
-                contentDescription = stringResource(resource = Res.string.word_insights_youglish_action),
-                colorFilter = ColorFilter.tint(Color.White)
-            )
         }
     }
 }
@@ -394,7 +352,6 @@ private fun WordInsightsBottomSheetContentPreviewContent(darkTheme: Boolean) {
                 canApplyRefreshedInsights = true,
                 onRequestRefreshedInsights = {},
                 onApplyRefreshedInsights = {},
-                onYouGlishClick = {},
             )
         }
     }

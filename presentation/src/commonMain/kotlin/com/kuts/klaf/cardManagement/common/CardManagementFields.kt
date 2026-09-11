@@ -89,6 +89,7 @@ fun CardManagementFields(
     onNativeWordFieldValueChange: (TextFieldValue) -> Unit,
     onIpaTextFieldValueChange: (letterGroupIndex: Int, ipaTextFieldValue: TextFieldValue) -> Unit,
     onPronounceIconClick: () -> Unit,
+    onYouGlishClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: String) -> Unit,
     onNativeWordFieldClick: () -> Unit,
     nativeWordSuggestionsState: NativeWordSuggestionsState,
@@ -108,6 +109,7 @@ fun CardManagementFields(
             loadingState = loadingState,
             onTypedWordFieldValueChange = onForeignWordFieldValueChange,
             onPronounceIconClick = onPronounceIconClick,
+            onYouGlishClick = onYouGlishClick,
             onAutocompleteItemClick = { autoCompleteWord, _ ->
                 onAutocompleteItemClick(autoCompleteWord.word())
             },
@@ -148,6 +150,7 @@ private fun DropDownForeignWordField(
     loadingState: LoadingState<Unit, Unit>,
     onTypedWordFieldValueChange: (TextFieldValue) -> Unit,
     onPronounceIconClick: () -> Unit,
+    onYouGlishClick: () -> Unit,
     onTextFiledClick: () -> Unit,
     onAutocompleteItemClick: (chosenWord: AutocompleteWord, choseIndex: Int) -> Unit,
 ) {
@@ -166,22 +169,34 @@ private fun DropDownForeignWordField(
                 else -> MainTheme.colors.cardManagementView.inactivePronunciationIcon to false
             }
 
-            if (loadingState == LoadingState.Loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(35.dp),
-                    color = MainTheme.colors.common.progressIndicator,
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                ExpandableYouGlishButton(
+                    enabled = typedTextFieldValue.text.isNotBlank(),
+                    onOpen = onYouGlishClick,
                 )
-            }
 
-            Icon(
-                modifier = Modifier
-                    .clip(shape = RoundedCornerShape(50.dp))
-                    .clickable(enabled = clickable) { onPronounceIconClick() }
-                    .padding(5.dp),
-                painter = painterResource(resource = Res.drawable.ic_baseline_volume_up_24),
-                contentDescription = null,
-                tint = iconColor,
-            )
+                Box(contentAlignment = Alignment.Center) {
+                    if (loadingState == LoadingState.Loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(35.dp),
+                            color = MainTheme.colors.common.progressIndicator,
+                        )
+                    }
+
+                    Icon(
+                        modifier = Modifier
+                            .clip(shape = RoundedCornerShape(50.dp))
+                            .clickable(enabled = clickable) { onPronounceIconClick() }
+                            .padding(5.dp),
+                        painter = painterResource(resource = Res.drawable.ic_baseline_volume_up_24),
+                        contentDescription = null,
+                        tint = iconColor,
+                    )
+                }
+            }
         },
         onTypedWordFieldValueChange = onTypedWordFieldValueChange,
         itemContent = { wordable, wordableIndex, onItemSizeChange ->

@@ -98,7 +98,6 @@ internal fun CardEditingScreen(
                 )
             },
             onYouGlishClick = { word ->
-                viewModel.hideInsightsSheet()
                 navController.navigate(
                     route = AppDestination.WebContent(
                         source = WebContentSource.YouGlish(word = word),
@@ -125,6 +124,7 @@ private fun CardEditingContent(
             isCambridgeBottomSheetEnabled = false,
             onOpenMnemonicManagement = onOpenMnemonicManagement,
             onClearMnemonic = viewModel::clearMnemonicSelection,
+            onYouGlishClick = onYouGlishClick,
         )
 
         InsightsSheetHandle(
@@ -154,11 +154,6 @@ private fun CardEditingContent(
                     canApplyRefreshedInsights = insightsUiState.canApplyRefreshedInsights,
                     onRequestRefreshedInsights = viewModel::requestRefreshedInsights,
                     onApplyRefreshedInsights = viewModel::applyRefreshedInsights,
-                    onYouGlishClick = {
-                        insightsUiState.word
-                            .takeIf(String::isNotBlank)
-                            ?.let(onYouGlishClick)
-                    },
                 )
             } else {
                 InsightsErrorBottomSheetContent(
