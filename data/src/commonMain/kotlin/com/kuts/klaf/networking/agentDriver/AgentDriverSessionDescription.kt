@@ -34,6 +34,7 @@ internal fun AssistantClientSession.describeForLog(
     )
     appendLine("  provider: $provider")
     appendLine("  model: $modelId")
+    appendLine("  effort: ${reasoningEffort ?: "server default"}")
     appendLine("  reconnect grace period: ${reconnectGracePeriodSeconds}s")
     appendLine("  capabilities: ${capabilities.describeCapabilities()}")
     appendLine("  required by Klaf: ${capabilities.describeRequiredCapabilities()}")
