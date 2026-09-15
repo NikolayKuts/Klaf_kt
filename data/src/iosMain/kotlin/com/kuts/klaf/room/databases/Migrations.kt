@@ -8,6 +8,8 @@ import com.kuts.klaf.room.entities.RoomCard.Companion.CARD_TABLE_NAME
 object Migrations {
 
     private const val MNEMONIC_JSON_COLUMN = "mnemonicJson"
+    private const val VOCABULARY_SOURCE_TABLE = "vocabulary_sources"
+    private const val VOCABULARY_SOURCE_ITEM_TABLE = "vocabulary_source_items"
 
     val from6To7 = object : Migration(6, 7) {
 
@@ -19,5 +21,17 @@ object Migrations {
                 )
             }
         }
+    }
+
+    val from8To7 = object : Migration(8, 7) {
+
+        override fun migrate(connection: SQLiteConnection) {
+            dropVocabularySourceTables { sql -> connection.execSQL(sql) }
+        }
+    }
+
+    private fun dropVocabularySourceTables(execSql: (String) -> Unit) {
+        execSql("DROP TABLE IF EXISTS `$VOCABULARY_SOURCE_ITEM_TABLE`")
+        execSql("DROP TABLE IF EXISTS `$VOCABULARY_SOURCE_TABLE`")
     }
 }

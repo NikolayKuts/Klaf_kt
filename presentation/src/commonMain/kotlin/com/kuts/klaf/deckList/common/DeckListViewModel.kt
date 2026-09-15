@@ -47,15 +47,14 @@ class DeckListViewModel(
     private val crashlytics: ICrashlyticsRepository,
     private val appMaintenanceManager: IAppMaintenanceManager,
     private val authenticationInteractor: AuthenticationInteractor,
-    private val observeAgentDriverConnectionState: ObserveAgentDriverConnectionStateUseCase,
-    private val retryAgentDriverConnectionUseCase: RetryAgentDriverConnectionUseCase,
+    private val observeKlafServerConnectionState: ObserveKlafServerConnectionStateUseCase,
+    private val retryKlafServerConnectionUseCase: RetryKlafServerConnectionUseCase,
     private val coroutineContextProvider: ICoroutineContextProvider,
 ) : BaseDeckListViewModel() {
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
-    override val dataSynchronizationState =
-        MutableStateFlow<IDataSynchronizationState>(Initial)
+    override val dataSynchronizationState = MutableStateFlow<IDataSynchronizationState>(Initial)
 
     override val deckSource: StateFlow<List<Deck>?> = (fetchDeckSource() as Flow<List<Deck>?>)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
@@ -317,9 +316,9 @@ class DeckListViewModel(
         }
     }
 
-    override fun retryAgentDriverConnection() {
+    override fun retryKlafServerConnection() {
         viewModelScope.launchWithState {
-            retryAgentDriverConnectionUseCase()
+            retryKlafServerConnectionUseCase()
         }.onException { _, throwable ->
             crashlytics.report(exception = throwable)
         }
@@ -374,12 +373,12 @@ class DeckListViewModel(
     private fun observeAuthenticationState() {
         combine(
             authenticationInteractor.getObservableAuthenticationState(),
-            observeAgentDriverConnectionState(),
+            observeKlafServerConnectionState(),
         ) { authenticationState, connectionState ->
             DrawerViewState(
                 signedIn = authenticationState.email.isNotNull(),
                 userEmail = authenticationState.email,
-                agentDriverConnectionState = connectionState,
+                klafServerConnectionState = connectionState,
             )
         }.flowOn(coroutineContextProvider.io)
             .onEach { drawerViewState -> drawerState.emit(drawerViewState) }

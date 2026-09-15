@@ -8,4 +8,5 @@ object Modules {
     const val Presentation = ":presentation"
     const val Data = ":data"
     const val Domain = ":domain"
+    const val KlafServerContract = ":klaf-server-contract"
 }

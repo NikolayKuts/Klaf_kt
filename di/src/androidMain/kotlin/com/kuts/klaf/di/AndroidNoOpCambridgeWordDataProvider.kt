@@ -9,7 +9,7 @@ import com.kuts.klaf.cardManagement.common.ICambridgeWordDataProvider
  * `com.cambridge.dictionary:client` is compiled against Ktor 2, whose
  * `io.ktor.client.plugins.contentnegotiation.ContentNegotiation` class Ktor 3 no longer has -- it
  * became a top-level property. Merely having the library on the classpath crashed the app the
- * moment anything touched it, and Ktor 3 is not optional here: the AgentDriver client SDK requires
+ * moment anything touched it, and Ktor 3 is not optional here: the KlafServer client SDK requires
  * it.
  *
  * Behaves like the desktop and iOS stands-in, which have always returned nothing: word data is

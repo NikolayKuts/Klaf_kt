@@ -65,11 +65,11 @@
     <string name="speech_input_failed">Voice input failed. Please try again.</string>
     <string name="word_insights_invalid_word_format">The word format is invalid. Please enter a real English word.</string>
     <string name="word_insights_no_refreshed_data">There is no refreshed insights data to apply.</string>
-    <string name="drawer_agent_driver_label">Agent Driver</string>
-    <string name="drawer_agent_driver_retry">Retry</string>
-    <string name="drawer_agent_driver_status_connecting">Connecting...</string>
-    <string name="drawer_agent_driver_status_ready">Ready</string>
-    <string name="drawer_agent_driver_status_not_ready">Not ready</string>
+    <string name="drawer_klaf_server_label">Klaf Server</string>
+    <string name="drawer_klaf_server_retry">Retry</string>
+    <string name="drawer_klaf_server_status_connecting">Connecting...</string>
+    <string name="drawer_klaf_server_status_ready">Ready</string>
+    <string name="drawer_klaf_server_status_not_ready">Not ready</string>
         <string name="account_deleting_action">Delete account</string>
         <string name="account_deleting_confirmation_question">Would you like to delete account?</string>
         <string name="account_deleting_warning_message">Warning!!! If you confirm deleting account local and remote storage state will be reset</string>

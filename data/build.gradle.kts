@@ -31,6 +31,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                implementation(project(Modules.KlafServerContract))
                 implementation(project(Modules.Domain))
                 implementation(libs.core.coroutines.core)
                 implementation(libs.kotlin.serilization)
@@ -46,12 +47,6 @@ kotlin {
                 /** LoKdroid **/
                 implementation(libs.lokdroid)
 
-                /**
-                 * AgentDriver client SDK. Replaces the hand-written Codex app-server JSON-RPC
-                 * session and its reconnect state machine: connecting, resuming, and turning a
-                 * turn's deltas back into an answer are the SDK's job now.
-                 */
-                api(libs.agentdriver.client)
             }
         }
         val commonTest by getting {

@@ -44,6 +44,8 @@ include(":domain")
 include(":data")
 include(":presentation")
 include(":di")
+include(":klaf-server-contract")
+include(":klaf-server")
 
 project(":Android").projectDir = file("apps/Android")
 project(":Desktop").projectDir = file("apps/Desktop")

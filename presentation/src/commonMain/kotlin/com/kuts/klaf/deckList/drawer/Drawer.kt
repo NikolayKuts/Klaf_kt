@@ -14,14 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
-import com.kuts.domain.entities.AgentDriverConnectionState
+import com.kuts.domain.entities.KlafServerConnectionState
 import com.kuts.klaf.presentation.resources.Res
 import com.kuts.klaf.presentation.resources.account_deleting_action
-import com.kuts.klaf.presentation.resources.drawer_agent_driver_label
-import com.kuts.klaf.presentation.resources.drawer_agent_driver_retry
-import com.kuts.klaf.presentation.resources.drawer_agent_driver_status_connecting
-import com.kuts.klaf.presentation.resources.drawer_agent_driver_status_not_ready
-import com.kuts.klaf.presentation.resources.drawer_agent_driver_status_ready
+import com.kuts.klaf.presentation.resources.drawer_klaf_server_label
+import com.kuts.klaf.presentation.resources.drawer_klaf_server_retry
+import com.kuts.klaf.presentation.resources.drawer_klaf_server_status_connecting
+import com.kuts.klaf.presentation.resources.drawer_klaf_server_status_not_ready
+import com.kuts.klaf.presentation.resources.drawer_klaf_server_status_ready
 import com.kuts.klaf.presentation.resources.ic_account_24
 import com.kuts.klaf.presentation.resources.ic_delete_account_24
 import com.kuts.klaf.presentation.resources.ic_login_24
@@ -40,7 +40,7 @@ fun Drawer(
     onLogInClick: () -> Unit,
     onLogOutClick: () -> Unit,
     onDeleteAccountClick: () -> Unit,
-    onAgentDriverRetry: () -> Unit,
+    onKlafServerRetry: () -> Unit,
 ) {
     val rightCorners = RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp)
     BoxWithConstraints {
@@ -65,9 +65,9 @@ fun Drawer(
                     .width(IntrinsicSize.Max)
                     .padding(16.dp)
             ) {
-                AgentDriverSection(
+                KlafServerSection(
                     state = state,
-                    onRetry = onAgentDriverRetry,
+                    onRetry = onKlafServerRetry,
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -96,13 +96,13 @@ fun Drawer(
 }
 
 @Composable
-private fun AgentDriverSection(
+private fun KlafServerSection(
     state: DrawerViewState,
     onRetry: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = stringResource(resource = Res.string.drawer_agent_driver_label),
+            text = stringResource(resource = Res.string.drawer_klaf_server_label),
         )
 
         Row(
@@ -115,15 +115,15 @@ private fun AgentDriverSection(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = agentDriverStatusText(state = state),
-                    color = agentDriverStatusColor(state = state),
+                    text = klafServerStatusText(state = state),
+                    color = klafServerStatusColor(state = state),
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
 
-            if (state.agentDriverConnectionState.canRetry()) {
+            if (state.klafServerConnectionState.canRetry()) {
                 TextButton(onClick = onRetry) {
-                    Text(text = stringResource(resource = Res.string.drawer_agent_driver_retry))
+                    Text(text = stringResource(resource = Res.string.drawer_klaf_server_retry))
                 }
             }
         }
@@ -131,33 +131,33 @@ private fun AgentDriverSection(
 }
 
 @Composable
-private fun agentDriverStatusText(state: DrawerViewState): String {
-    return when (val connectionState = state.agentDriverConnectionState) {
-        AgentDriverConnectionState.Disconnected -> {
-            stringResource(resource = Res.string.drawer_agent_driver_status_not_ready)
+private fun klafServerStatusText(state: DrawerViewState): String {
+    return when (val connectionState = state.klafServerConnectionState) {
+        KlafServerConnectionState.Disconnected -> {
+            stringResource(resource = Res.string.drawer_klaf_server_status_not_ready)
         }
 
-        is AgentDriverConnectionState.Reconnecting -> {
-            stringResource(resource = Res.string.drawer_agent_driver_status_connecting)
+        is KlafServerConnectionState.Reconnecting -> {
+            stringResource(resource = Res.string.drawer_klaf_server_status_connecting)
         }
 
-        AgentDriverConnectionState.Ready -> {
-            stringResource(resource = Res.string.drawer_agent_driver_status_ready)
+        KlafServerConnectionState.Ready -> {
+            stringResource(resource = Res.string.drawer_klaf_server_status_ready)
         }
 
-        is AgentDriverConnectionState.Error -> connectionState.message
+        is KlafServerConnectionState.Error -> connectionState.message
     }
 }
 
 @Composable
-private fun agentDriverStatusColor(state: DrawerViewState) = when (state.agentDriverConnectionState) {
-    AgentDriverConnectionState.Ready -> MainTheme.colors.deckListScreen.drawerColors.profileIconPositiveTint
-    is AgentDriverConnectionState.Error -> MainTheme.colors.deckListScreen.drawerColors.profileIconNegativeTint
+private fun klafServerStatusColor(state: DrawerViewState) = when (state.klafServerConnectionState) {
+    KlafServerConnectionState.Ready -> MainTheme.colors.deckListScreen.drawerColors.profileIconPositiveTint
+    is KlafServerConnectionState.Error -> MainTheme.colors.deckListScreen.drawerColors.profileIconNegativeTint
     else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
 }
 
-private fun AgentDriverConnectionState.canRetry(): Boolean {
-    return this is AgentDriverConnectionState.Error || this == AgentDriverConnectionState.Disconnected
+private fun KlafServerConnectionState.canRetry(): Boolean {
+    return this is KlafServerConnectionState.Error || this == KlafServerConnectionState.Disconnected
 }
 
 @Composable

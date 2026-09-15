@@ -12,7 +12,7 @@ import com.kuts.domain.common.catchWithCrashlyticsReport
 import com.kuts.domain.common.generateLetterInfos
 import com.kuts.domain.common.ifTrue
 import com.kuts.domain.common.updatedAt
-import com.kuts.domain.entities.AgentDriverConnectionState
+import com.kuts.domain.entities.KlafServerConnectionState
 import com.kuts.domain.entities.CardMnemonic
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.ipa.LetterInfo
@@ -39,7 +39,7 @@ import com.kuts.domain.useCases.FetchMnemonicAssociationUseCase
 import com.kuts.domain.useCases.FetchMnemonicImageUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
-import com.kuts.domain.useCases.ObserveAgentDriverConnectionStateUseCase
+import com.kuts.domain.useCases.ObserveKlafServerConnectionStateUseCase
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.cardManagement.cardAddition.AutocompleteState
 import com.kuts.klaf.cardManagement.cardAddition.NativeWordSuggestionItem
@@ -87,7 +87,7 @@ abstract class CardManagementViewModel(
     private val fetchWordInfo: FetchWordInfoUseCase,
     speechRecognitionManager: ISpeechRecognitionManager,
     microphonePermissionManager: IMicrophonePermissionManager,
-    observeAgentDriverConnectionState: ObserveAgentDriverConnectionStateUseCase,
+    observeKlafServerConnectionState: ObserveKlafServerConnectionStateUseCase,
     protected val crashlytics: ICrashlyticsRepository,
     protected val checkIfWordExists: CheckIfCardExistsUseCase,
     protected val coroutineContextProvider: ICoroutineContextProvider,
@@ -127,12 +127,14 @@ abstract class CardManagementViewModel(
     override val nativeWordSuggestionsState = MutableStateFlow(value = NativeWordSuggestionsState())
     override val transcriptionState = MutableStateFlow(value = "")
 
-    override val cardManagementState =
-        MutableStateFlow<CardManagementState>(value = CardManagementState.InProgress())
+    override val cardManagementState = MutableStateFlow<CardManagementState>(
+        value = CardManagementState.InProgress()
+    )
     protected val nativeWordFieldValueState = MutableStateFlow(value = TextFieldValue())
     protected val foreignWordFieldValueState = MutableStateFlow(value = TextFieldValue())
-    protected val textFieldValueIpaHoldersState =
-        MutableStateFlow<List<TextFieldValueIpaHolder>>(value = emptyList())
+    protected val textFieldValueIpaHoldersState = MutableStateFlow<List<TextFieldValueIpaHolder>>(
+        value = emptyList()
+    )
     protected val letterInfosState = MutableStateFlow<List<LetterInfo>>(value = emptyList())
     override val isConfirmationEnabled: StateFlow<Boolean> = combine(
         nativeWordFieldValueState,
@@ -151,8 +153,7 @@ abstract class CardManagementViewModel(
 
     override val ipaKeyboardState = MutableStateFlow(value = IpaKeyboardState(keys = ipaKeys))
     override val mnemonicManagementState = MutableStateFlow(MnemonicManagementUiState())
-    override val agentDriverConnectionState: StateFlow<AgentDriverConnectionState> =
-        observeAgentDriverConnectionState()
+    override val klafServerConnectionState: StateFlow<KlafServerConnectionState> = observeKlafServerConnectionState()
     private var nextMnemonicVariantId = 0L
     private var nextMnemonicImageVariantId = 0L
     private var mnemonicAssociationRequestJob: Job? = null
@@ -278,7 +279,7 @@ abstract class CardManagementViewModel(
             return
         }
 
-        if (!canStartAgentDriverRequest()) return
+        if (!canStartKlafServerRequest()) return
 
         val generationHandle = try {
             mnemonicGenerationBackgroundManager.startGeneration(
@@ -348,7 +349,7 @@ abstract class CardManagementViewModel(
             return
         }
 
-        if (!canStartAgentDriverRequest()) return
+        if (!canStartKlafServerRequest()) return
 
         val generationHandle = try {
             mnemonicGenerationBackgroundManager.startGeneration(
@@ -858,8 +859,8 @@ abstract class CardManagementViewModel(
         return true
     }
 
-    private fun canStartAgentDriverRequest(): Boolean {
-        if (agentDriverConnectionState.value.canSendRequests) return true
+    private fun canStartKlafServerRequest(): Boolean {
+        if (klafServerConnectionState.value.canSendRequests) return true
 
         eventMessage.tryEmitAsNegative(resId = Res.string.data_synchronization_network_connection_warning)
         return false

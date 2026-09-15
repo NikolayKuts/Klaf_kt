@@ -13,7 +13,6 @@ import android.os.PowerManager
 import android.os.Process
 import android.os.SystemClock
 import com.kuts.domain.managers.MnemonicGenerationType
-import com.kuts.klaf.networking.agentDriver.AgentDriverRuntimeDiagnostics
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
 
@@ -35,7 +34,7 @@ private enum class MnemonicForegroundServiceState(
 
 class AndroidMnemonicGenerationDiagnostics(
     context: Context,
-) : AgentDriverRuntimeDiagnostics {
+) {
 
     private val applicationContext = context.applicationContext
     private val activityManager =
@@ -233,7 +232,7 @@ class AndroidMnemonicGenerationDiagnostics(
         }
     }
 
-    override fun snapshot(): String {
+    fun snapshot(): String {
         val processInfo = ActivityManager.RunningAppProcessInfo()
         ActivityManager.getMyMemoryState(processInfo)
         val network = runCatching { connectivityManager.activeNetwork }.getOrNull()

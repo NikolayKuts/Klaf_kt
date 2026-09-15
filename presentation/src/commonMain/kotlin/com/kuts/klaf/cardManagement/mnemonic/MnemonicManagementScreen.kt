@@ -63,7 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
-import com.kuts.domain.entities.AgentDriverConnectionState
+import com.kuts.domain.entities.KlafServerConnectionState
 import com.kuts.domain.entities.MnemonicAssociationCandidate
 import com.kuts.domain.entities.MnemonicSelection
 import com.kuts.domain.entities.canSendRequests
@@ -175,7 +175,7 @@ private fun MnemonicManagementContent(
 ) {
     val mnemonicState by viewModel.mnemonicManagementState.collectAsState()
     val cardManagementState by viewModel.cardManagementState.collectAsState()
-    val connectionState by viewModel.agentDriverConnectionState.collectAsState()
+    val connectionState by viewModel.klafServerConnectionState.collectAsState()
     val selectedVariant = mnemonicState.selectedVariant
     val foreignWord = cardManagementState.foreignWordFieldValue.text.trim()
     val initialSnapshot = remember { mnemonicState }
@@ -312,7 +312,7 @@ private fun MnemonicManagementHeader(
 @Composable
 private fun MnemonicAssociationRequestSection(
     mnemonicState: MnemonicManagementUiState,
-    connectionState: AgentDriverConnectionState,
+    connectionState: KlafServerConnectionState,
     onCommentChange: (TextFieldValue) -> Unit,
     onClearComment: (MnemonicCommentField) -> Unit,
     onDictateComment: (MnemonicCommentField) -> Unit,
@@ -435,7 +435,7 @@ private suspend fun LazyListState.animateSelectedVariantIntoView(
 @Composable
 private fun MnemonicImageRequestSection(
     mnemonicState: MnemonicManagementUiState,
-    connectionState: AgentDriverConnectionState,
+    connectionState: KlafServerConnectionState,
     selectedVariant: MnemonicVariantUiState,
     onCommentChange: (TextFieldValue) -> Unit,
     onClearComment: (MnemonicCommentField) -> Unit,
@@ -538,7 +538,7 @@ private fun MnemonicCommentInput(
 private fun MnemonicActionButton(
     label: String,
     isLoading: Boolean,
-    connectionState: AgentDriverConnectionState,
+    connectionState: KlafServerConnectionState,
     onClick: () -> Unit,
 ) {
     val isEnabled = !isLoading && connectionState.canSendRequests
@@ -568,15 +568,15 @@ private fun MnemonicActionButton(
 @Composable
 private fun disabledMnemonicActionButtonColor(
     isLoading: Boolean,
-    connectionState: AgentDriverConnectionState,
+    connectionState: KlafServerConnectionState,
 ): Color {
     return when {
         isLoading -> MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
         else -> when (connectionState) {
-            is AgentDriverConnectionState.Error -> MainTheme.colors.common.negativeDialogButton
-            is AgentDriverConnectionState.Reconnecting -> MainTheme.colors.common.agentDriverReconnectingButton
-            AgentDriverConnectionState.Disconnected -> MainTheme.colors.common.agentDriverDisconnectedButton
-            AgentDriverConnectionState.Ready -> MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
+            is KlafServerConnectionState.Error -> MainTheme.colors.common.negativeDialogButton
+            is KlafServerConnectionState.Reconnecting -> MainTheme.colors.common.klafServerReconnectingButton
+            KlafServerConnectionState.Disconnected -> MainTheme.colors.common.klafServerDisconnectedButton
+            KlafServerConnectionState.Ready -> MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
         }
     }
 }

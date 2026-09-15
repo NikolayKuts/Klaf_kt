@@ -29,5 +29,5 @@ abstract class BaseDeckListViewModel : ViewModel(), IEventMessageSource {
     abstract fun logOut()
     abstract fun deleteAccount()
     abstract fun generateGptPromptWithDeckContent(deckId: Int)
-    abstract fun retryAgentDriverConnection()
+    abstract fun retryKlafServerConnection()
 }

@@ -15,7 +15,10 @@ object KlafRoomDatabaseProvider {
         database ?: Room.databaseBuilder<KlafRoomDatabase>(
             name = databaseFilePath(),
         )
-            .addMigrations(Migrations.from6To7)
+            .addMigrations(
+                Migrations.from6To7,
+                Migrations.from8To7,
+            )
             .setDriver(BundledSQLiteDriver())
             .setQueryCoroutineContext(context = Dispatchers.IO)
             .build()

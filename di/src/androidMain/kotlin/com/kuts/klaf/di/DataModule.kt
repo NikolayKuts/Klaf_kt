@@ -16,7 +16,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.entities.DeckRepetitionInfos
-import com.kuts.domain.managers.IAgentDriverConnectionManager
+import com.kuts.domain.managers.IKlafServerConnectionManager
 import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
@@ -63,17 +63,18 @@ import com.kuts.klaf.firestore.repositoryImplementations.AndroidDeckRepositoryFi
 import com.kuts.klaf.firestore.repositoryImplementations.AndroidStorageSaveVersionRepositoryFirestore
 import com.kuts.klaf.firestore.repositoryImplementations.AndroidWordAutocompleteFirestore
 import com.kuts.klaf.networking.AndroidCardAudioPlayer
-import com.kuts.klaf.networking.agentDriver.AndroidAgentDriverSessionLifecycleManager
-import com.kuts.klaf.networking.agentDriver.AgentDriverConnectionManager
-import com.kuts.klaf.networking.agentDriver.AgentDriverSession
-import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicAssociationRepository
-import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicImageRepository
-import com.kuts.klaf.networking.agentDriver.AgentDriverWordMeaningInsightsRepository
 import com.kuts.klaf.mnemonic.AndroidMnemonicImageAssetRepository
 import com.kuts.klaf.mnemonic.AndroidApplicationVisibilityTracker
 import com.kuts.klaf.mnemonic.AndroidMnemonicGenerationBackgroundManager
 import com.kuts.klaf.mnemonic.AndroidMnemonicGenerationDiagnostics
 import com.kuts.klaf.mnemonic.MnemonicGenerationNotifier
+import com.kuts.klaf.networking.klafServer.IKlafServerSession
+import com.kuts.klaf.networking.klafServer.KlafServerConnectionManager
+import com.kuts.klaf.networking.klafServer.KlafServerHttpClientFactory
+import com.kuts.klaf.networking.klafServer.KlafServerMnemonicAssociationRepository
+import com.kuts.klaf.networking.klafServer.KlafServerMnemonicImageRepository
+import com.kuts.klaf.networking.klafServer.KlafServerSession
+import com.kuts.klaf.networking.klafServer.KlafServerWordMeaningInsightsRepository
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
@@ -141,31 +142,30 @@ private fun Module.androidRepositoryModule() {
             client = YandexSecureHttpClientFactory().create(),
         )
     }
-    // One connection to the AgentDriver server for the whole app: every feature that asks the
-    // assistant anything shares this session rather than opening its own.
-    single {
-        AgentDriverSession(
-            serverHost = com.kuts.klaf.SecretConstants.AgentDriver.serverHostOrNull().orEmpty(),
-            clientToken = com.kuts.klaf.SecretConstants.AgentDriver.clientTokenOrNull().orEmpty(),
-            runtimeDiagnostics = get<AndroidMnemonicGenerationDiagnostics>(),
+    single<IKlafServerSession> {
+        KlafServerSession(
+            host = com.kuts.klaf.SecretConstants.KlafServer.hostOrNull().orEmpty(),
+            port = com.kuts.klaf.SecretConstants.KlafServer.PORT,
+            isSecure = com.kuts.klaf.SecretConstants.KlafServer.IS_SECURE,
+            httpClient = KlafServerHttpClientFactory().create(),
         )
     }
-    single<IAgentDriverConnectionManager> {
-        AgentDriverConnectionManager(
-            agentDriverSession = get(),
+    single<IKlafServerConnectionManager> {
+        KlafServerConnectionManager(
+            klafServerSession = get(),
             coroutineContextProvider = get(),
         )
     }
     single<IWordMeaningInsightsRepository> {
-        AgentDriverWordMeaningInsightsRepository(
-            agentDriverSession = get(),
+        KlafServerWordMeaningInsightsRepository(
+            klafServerSession = get(),
         )
     }
     single<IMnemonicAssociationRepository> {
-        AgentDriverMnemonicAssociationRepository(agentDriverSession = get())
+        KlafServerMnemonicAssociationRepository(klafServerSession = get())
     }
     single<IMnemonicImageRepository> {
-        AgentDriverMnemonicImageRepository(agentDriverSession = get())
+        KlafServerMnemonicImageRepository(klafServerSession = get())
     }
     single<IMnemonicImageAssetRepository> {
         AndroidMnemonicImageAssetRepository(context = androidContext())
@@ -225,14 +225,6 @@ private fun Module.infrastructureModule() {
         AndroidApplicationVisibilityTracker(
             application = androidContext().applicationContext as Application,
             diagnostics = get(),
-        )
-    }
-    single(createdAtStart = true) {
-        AndroidAgentDriverSessionLifecycleManager(
-            application = androidContext().applicationContext as Application,
-            agentDriverSession = get(),
-            diagnostics = get(),
-            coroutineContextProvider = get(),
         )
     }
 }

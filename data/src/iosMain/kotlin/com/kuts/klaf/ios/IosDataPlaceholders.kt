@@ -2,12 +2,12 @@ package com.kuts.klaf.ios
 
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.common.LoadingState
-import com.kuts.domain.entities.AgentDriverConnectionState
+import com.kuts.domain.entities.KlafServerConnectionState
 import com.kuts.domain.entities.AuthenticationState
 import com.kuts.domain.entities.AutocompleteWord
 import com.kuts.domain.entities.WordMeaningInsights
 import com.kuts.domain.managers.IAudioPlayerManager
-import com.kuts.domain.managers.IAgentDriverConnectionManager
+import com.kuts.domain.managers.IKlafServerConnectionManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.repositories.IAuthenticationRepository
@@ -74,13 +74,13 @@ class IosNoOpWordAutocompleteRepository : IWordAutocompleteRepository {
 
 class IosNoOpWordMeaningInsightsRepository : IWordMeaningInsightsRepository {
     override suspend fun fetchWordMeaningInsights(word: String): WordMeaningInsights {
-        error("Word insights through Agent Driver are not implemented on iOS yet.")
+        error("Word insights through Klaf Server are not implemented on iOS yet.")
     }
 }
 
-class IosNoOpAgentDriverConnectionManager : IAgentDriverConnectionManager {
-    override val state = MutableStateFlow<AgentDriverConnectionState>(
-        value = AgentDriverConnectionState.Disconnected,
+class IosNoOpKlafServerConnectionManager : IKlafServerConnectionManager {
+    override val state = MutableStateFlow<KlafServerConnectionState>(
+        value = KlafServerConnectionState.Disconnected,
     )
 
     override suspend fun retry() = Unit

@@ -24,13 +24,13 @@ import com.kuts.domain.useCases.FetchMnemonicImageUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
 import com.kuts.domain.useCases.FetchWordMeaningInsightsUseCase
-import com.kuts.domain.useCases.ObserveAgentDriverConnectionStateUseCase
+import com.kuts.domain.useCases.ObserveKlafServerConnectionStateUseCase
 import com.kuts.domain.useCases.RemoveDeckUseCase
 import com.kuts.domain.useCases.RenameDeckUseCase
 import com.kuts.domain.useCases.SaveCardRemotelyUseCase
 import com.kuts.domain.useCases.SaveDeckRemotelyUseCase
 import com.kuts.domain.useCases.SaveDeckReviewInfoUseCase
-import com.kuts.domain.useCases.RetryAgentDriverConnectionUseCase
+import com.kuts.domain.useCases.RetryKlafServerConnectionUseCase
 import com.kuts.domain.useCases.SynchronizeLocalAndRemoteDataUseCase
 import com.kuts.domain.useCases.TransferCardsToDeckUseCase
 import com.kuts.domain.useCases.TransferDataOfOldAppKlafUseCase
@@ -202,10 +202,10 @@ private fun Module.commonUseCaseModule() {
             coroutineContextProvider = get(),
         )
     }
-    factory { ObserveAgentDriverConnectionStateUseCase(agentDriverConnectionManager = get()) }
+    factory { ObserveKlafServerConnectionStateUseCase(klafServerConnectionManager = get()) }
     factory {
-        RetryAgentDriverConnectionUseCase(
-            agentDriverConnectionManager = get(),
+        RetryKlafServerConnectionUseCase(
+            klafServerConnectionManager = get(),
             coroutineContextProvider = get(),
         )
     }

@@ -3,7 +3,7 @@ package com.kuts.klaf.di
 import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
-import com.kuts.domain.managers.IAgentDriverConnectionManager
+import com.kuts.domain.managers.IKlafServerConnectionManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
@@ -31,7 +31,7 @@ import com.kuts.klaf.dataStore.implementations.IosInMemoryDeckRepetitionInfoRepo
 import com.kuts.klaf.ios.IosAuthenticationRepository
 import com.kuts.klaf.ios.IosAuthenticationSessionManager
 import com.kuts.klaf.ios.IosNoOpAudioPlayerManager
-import com.kuts.klaf.ios.IosNoOpAgentDriverConnectionManager
+import com.kuts.klaf.ios.IosNoOpKlafServerConnectionManager
 import com.kuts.klaf.ios.IosNoOpCrashlyticsRepository
 import com.kuts.klaf.ios.IosNoOpDeckReviewScheduler
 import com.kuts.klaf.ios.IosNoOpOldAppKlafDataTransferRepository
@@ -89,7 +89,7 @@ private fun Module.iosRepositoryModule() {
     single<IMnemonicImageRepository> { IosNoOpMnemonicImageRepository() }
     single<IMnemonicImageAssetRepository> { IosNoOpMnemonicImageAssetRepository() }
     single<IMnemonicImageRemoteRepository> { IosNoOpMnemonicImageRemoteRepository() }
-    single<IAgentDriverConnectionManager> { IosNoOpAgentDriverConnectionManager() }
+    single<IKlafServerConnectionManager> { IosNoOpKlafServerConnectionManager() }
     single<IDeckRepetitionInfoRepository> { IosInMemoryDeckRepetitionInfoRepository() }
     single<IOldAppKlafDataTransferRepository> { IosNoOpOldAppKlafDataTransferRepository() }
     single<ICrashlyticsRepository> { IosNoOpCrashlyticsRepository() }

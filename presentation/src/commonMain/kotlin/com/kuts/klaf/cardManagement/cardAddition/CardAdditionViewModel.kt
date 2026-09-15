@@ -20,7 +20,7 @@ import com.kuts.domain.useCases.FetchMnemonicAssociationUseCase
 import com.kuts.domain.useCases.FetchMnemonicImageUseCase
 import com.kuts.domain.useCases.FetchWordAutocompleteUseCase
 import com.kuts.domain.useCases.FetchWordInfoUseCase
-import com.kuts.domain.useCases.ObserveAgentDriverConnectionStateUseCase
+import com.kuts.domain.useCases.ObserveKlafServerConnectionStateUseCase
 import com.kuts.klaf.presentation.resources.*
 import com.kuts.klaf.cardManagement.common.ICardManagementAction
 import com.kuts.klaf.cardManagement.common.ICambridgeWordDataProvider
@@ -46,7 +46,7 @@ class CardAdditionViewModel(
     fetchWordInfo: FetchWordInfoUseCase,
     speechRecognitionManager: ISpeechRecognitionManager,
     microphonePermissionManager: IMicrophonePermissionManager,
-    observeAgentDriverConnectionState: ObserveAgentDriverConnectionStateUseCase,
+    observeKlafServerConnectionState: ObserveKlafServerConnectionStateUseCase,
     crashlytics: ICrashlyticsRepository,
     fetchDeckById: FetchDeckByIdUseCase,
     coroutineContextProvider: ICoroutineContextProvider,
@@ -65,7 +65,7 @@ class CardAdditionViewModel(
     fetchWordInfo = fetchWordInfo,
     speechRecognitionManager = speechRecognitionManager,
     microphonePermissionManager = microphonePermissionManager,
-    observeAgentDriverConnectionState = observeAgentDriverConnectionState,
+    observeKlafServerConnectionState = observeKlafServerConnectionState,
     crashlytics = crashlytics,
     fetchDeckById = fetchDeckById,
     checkIfWordExists = checkIfWordExists,

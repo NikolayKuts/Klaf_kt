@@ -274,7 +274,7 @@ internal fun DeckListScreen(
                             )
                         }
                     },
-                    onAgentDriverRetry = viewModel::retryAgentDriverConnection,
+                    onKlafServerRetry = viewModel::retryKlafServerConnection,
                 )
             },
         ) {

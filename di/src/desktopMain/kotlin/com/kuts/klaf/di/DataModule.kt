@@ -8,7 +8,7 @@ import com.kuts.domain.entities.AuthenticationState
 import com.kuts.domain.entities.AutocompleteWord
 import com.kuts.domain.entities.DeckRepetitionInfo
 import com.kuts.domain.entities.WordMeaningInsights
-import com.kuts.domain.managers.IAgentDriverConnectionManager
+import com.kuts.domain.managers.IKlafServerConnectionManager
 import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
@@ -32,14 +32,16 @@ import com.kuts.domain.repositories.IWordAutocompleteRepository
 import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.repositories.IWordMeaningInsightsRepository
 import com.kuts.klaf.common.CoroutineContextProvider
-import com.kuts.klaf.networking.agentDriver.AgentDriverConnectionManager
-import com.kuts.klaf.networking.agentDriver.AgentDriverWordMeaningInsightsRepository
-import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicAssociationRepository
-import com.kuts.klaf.networking.agentDriver.mnemonic.AgentDriverMnemonicImageRepository
 import com.kuts.klaf.mnemonic.DesktopNoOpMnemonicImageRemoteRepository
 import com.kuts.klaf.mnemonic.DesktopMnemonicImageAssetRepository
 import com.kuts.klaf.mnemonic.NoOpMnemonicGenerationBackgroundManager
-import com.kuts.klaf.networking.agentDriver.AgentDriverSession
+import com.kuts.klaf.networking.klafServer.IKlafServerSession
+import com.kuts.klaf.networking.klafServer.KlafServerConnectionManager
+import com.kuts.klaf.networking.klafServer.KlafServerHttpClientFactory
+import com.kuts.klaf.networking.klafServer.KlafServerMnemonicAssociationRepository
+import com.kuts.klaf.networking.klafServer.KlafServerMnemonicImageRepository
+import com.kuts.klaf.networking.klafServer.KlafServerSession
+import com.kuts.klaf.networking.klafServer.KlafServerWordMeaningInsightsRepository
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
@@ -88,30 +90,30 @@ private fun Module.desktopRepositoryModule() {
         )
     }
     single<IWordAutocompleteRepository> { DesktopWordAutocompleteRepository() }
-    // One connection to the AgentDriver server for the whole app: every feature that asks the
-    // assistant anything shares this session rather than opening its own.
-    single {
-        AgentDriverSession(
-            serverHost = com.kuts.klaf.SecretConstants.AgentDriver.serverHostOrNull().orEmpty(),
-            clientToken = com.kuts.klaf.SecretConstants.AgentDriver.clientTokenOrNull().orEmpty(),
+    single<IKlafServerSession> {
+        KlafServerSession(
+            host = com.kuts.klaf.SecretConstants.KlafServer.hostOrNull().orEmpty(),
+            port = com.kuts.klaf.SecretConstants.KlafServer.PORT,
+            isSecure = com.kuts.klaf.SecretConstants.KlafServer.IS_SECURE,
+            httpClient = KlafServerHttpClientFactory().create(),
         )
     }
-    single<IAgentDriverConnectionManager> {
-        AgentDriverConnectionManager(
-            agentDriverSession = get(),
+    single<IKlafServerConnectionManager> {
+        KlafServerConnectionManager(
+            klafServerSession = get(),
             coroutineContextProvider = get(),
         )
     }
     single<IWordMeaningInsightsRepository> {
-        AgentDriverWordMeaningInsightsRepository(
-            agentDriverSession = get(),
+        KlafServerWordMeaningInsightsRepository(
+            klafServerSession = get(),
         )
     }
     single<IMnemonicAssociationRepository> {
-        AgentDriverMnemonicAssociationRepository(agentDriverSession = get())
+        KlafServerMnemonicAssociationRepository(klafServerSession = get())
     }
     single<IMnemonicImageRepository> {
-        AgentDriverMnemonicImageRepository(agentDriverSession = get())
+        KlafServerMnemonicImageRepository(klafServerSession = get())
     }
     single<IMnemonicImageAssetRepository> { DesktopMnemonicImageAssetRepository() }
     single<IMnemonicImageRemoteRepository> { DesktopNoOpMnemonicImageRemoteRepository() }

@@ -76,7 +76,7 @@ composeMultiplatform = "1.11.1"
 lokdroid = "0.2.0-alpha"
 
 # AgentDriver SDK #
-agentdriver = "0.10.9-SNAPSHOT"
+agentdriver = "0.10.11-SNAPSHOT"
 
 # KSP #
 ksp = "2.3.11"
@@ -191,12 +191,16 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
+ktor-server-websockets = { module = "io.ktor:ktor-server-websockets", version.ref = "ktor" }
 
 # LoKdroid #
 lokdroid = { group = "io.github.nikolaykuts", name = "lokdroid", version.ref = "lokdroid" }
 
 # AgentDriver SDK -- the assistant client that replaced the hand-written Codex JSON-RPC bridge #
 agentdriver-client = { group = "io.github.nikolaykuts", name = "client", version.ref = "agentdriver" }
+agentdriver-server = { group = "io.github.nikolaykuts", name = "server", version.ref = "agentdriver" }
 
 # Cambridge Lib #
 cambridge-dictionary-core  = { group = "com.cambridge.dictionary", name = "core", version.ref = "cambridgeLib" }

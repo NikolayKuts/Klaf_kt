@@ -31,7 +31,7 @@ fun SpeechInputButton(
 ) {
     val ringSize = size + PROGRESS_RING_INSET
     val background = when {
-        isBusy -> MainTheme.colors.common.agentDriverReconnectingButton
+        isBusy -> MainTheme.colors.common.klafServerReconnectingButton
         enabled -> MainTheme.colors.common.positiveDialogButton
         else -> MainTheme.colors.common.separator.copy(alpha = 0.24f)
     }

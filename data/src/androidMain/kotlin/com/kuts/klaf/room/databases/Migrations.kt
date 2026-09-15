@@ -11,6 +11,8 @@ object Migrations {
     private const val INSIGHTS_JSON_COLUMN = "wordMeaningInsightsJson"
     private const val LEGACY_INSIGHTS_JSON_COLUMN = "geminiWordMeaningInsightsJson"
     private const val MNEMONIC_JSON_COLUMN = "mnemonicJson"
+    private const val VOCABULARY_SOURCE_TABLE = "vocabulary_sources"
+    private const val VOCABULARY_SOURCE_ITEM_TABLE = "vocabulary_source_items"
 
     val from3To4 = object : Migration(3, 4) {
 
@@ -120,5 +122,21 @@ object Migrations {
                 )
             }
         }
+    }
+
+    val from8To7 = object : Migration(8, 7) {
+
+        override fun migrate(database: SupportSQLiteDatabase) {
+            dropVocabularySourceTables { sql -> database.execSQL(sql) }
+        }
+
+        override fun migrate(connection: SQLiteConnection) {
+            dropVocabularySourceTables { sql -> connection.execSQL(sql) }
+        }
+    }
+
+    private fun dropVocabularySourceTables(execSql: (String) -> Unit) {
+        execSql("DROP TABLE IF EXISTS `$VOCABULARY_SOURCE_ITEM_TABLE`")
+        execSql("DROP TABLE IF EXISTS `$VOCABULARY_SOURCE_TABLE`")
     }
 }

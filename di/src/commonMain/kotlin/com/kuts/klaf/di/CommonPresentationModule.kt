@@ -54,8 +54,8 @@ internal val commonPresentationModule = module {
             crashlytics = get(),
             appMaintenanceManager = get(),
             authenticationInteractor = get(),
-            observeAgentDriverConnectionState = get(),
-            retryAgentDriverConnectionUseCase = get(),
+            observeKlafServerConnectionState = get(),
+            retryKlafServerConnectionUseCase = get(),
             coroutineContextProvider = get(),
         )
     }
@@ -108,7 +108,7 @@ internal val commonPresentationModule = module {
             microphonePermissionManager = get(),
             crashlytics = get(),
             fetchDeckById = get(),
-            observeAgentDriverConnectionState = get(),
+            observeKlafServerConnectionState = get(),
             coroutineContextProvider = get(),
         )
     }
@@ -133,7 +133,7 @@ internal val commonPresentationModule = module {
             microphonePermissionManager = get(),
             crashlytics = get(),
             fetchDeckById = get(),
-            observeAgentDriverConnectionState = get(),
+            observeKlafServerConnectionState = get(),
             coroutineContextProvider = get(),
         )
     }

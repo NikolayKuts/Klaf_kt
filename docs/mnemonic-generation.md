@@ -21,22 +21,28 @@ boundary, not an `expect`/`actual` declaration.
    `MnemonicGenerationForegroundService`.
 2. One foreground service and one ongoing notification are shared by all active
    mnemonic operations. The service stops only after the final handle finishes.
-3. `AgentDriverSession` records the request as active before sending it through
-   the client-side Agent Driver SDK.
-4. When Klaf enters background, an idle socket is closed deliberately. A socket
-   with an active request is left to normal SDK reconnect handling.
-5. If Android or the network drops the WebSocket, the client SDK resumes the
-   logical session and keeps the same one-shot request ID. The server-side Agent
-   Driver SDK continues provider work and buffers the terminal result.
-6. The result updates the existing view-model state. If Klaf is not visible, a
+3. The presentation layer checks the shared connection state. For Android and
+   Desktop, this state now represents the Klaf Server WebSocket connection.
+4. The repository sends a Klaf Server protocol command over the shared
+   `KlafServerSession`:
+   - `mnemonic.association.generate` for mnemonic text;
+   - `mnemonic.image.generate` for mnemonic image bytes.
+5. Klaf Server owns prompt construction, response-schema selection, assistant
+   parsing, and validation. The Android app sends business data, not full
+   AgentDriver prompts.
+6. Inside Klaf Server, the mnemonic feature lazily starts an internal
+   AgentDriver/Codex session. Session-level Klaf/mnemonic instructions are sent
+   through AgentDriver/Codex `thread/start`; each request sends only
+   request-specific word/comment/selection data.
+7. The result updates the existing view-model state. If Klaf is not visible, a
    success or failure notification is also shown.
-7. Tapping that result notification removes it and opens the matching card
+8. Tapping that result notification removes it and opens the matching card
    creation or editing mnemonic screen.
 
-User cancellation cancels the view-model job. The client SDK sends
-`CancelRequest` immediately when connected, or after resume when cancellation
-happens during a disconnect. Finishing the final generation handle stops the
-foreground service. Cancelled work does not show a result notification.
+User cancellation cancels the view-model job. The current Klaf Server protocol
+does not yet expose a per-request cancel command. Finishing the final generation
+handle stops the foreground service. Cancelled work does not show a result
+notification.
 
 ## Android Permissions
 
@@ -49,41 +55,53 @@ permission is used.
 
 - The foreground service improves process priority but cannot prevent every
   vendor-specific process freeze or operating-system kill.
-- WebSocket continuity is not required for one-shot text and image operations;
-  SDK session resume provides recovery after a transport drop.
-- Recovery state is in memory. A Klaf process death loses the waiting UI job,
-  and a server process restart loses the retained logical session and result.
-- The server advertises a reconnect grace period, currently 10 minutes by
-  default. Recovery after that deadline is not guaranteed.
-- The drawer shows reconnecting only while the client SDK confirms that its
-  automatic retry loop is active. A failed first connection is shown as an
-  error because the SDK does not retry an explicit initial `connect()` call.
+- WebSocket continuity is currently required for receiving the final Klaf
+  Server response. If the app process dies, the waiting UI job is lost. If the
+  Klaf Server process dies, the internal AgentDriver session and in-flight
+  feature request are lost.
+- The drawer readiness reflects the Klaf Server WebSocket state. It becomes
+  ready only after the client receives `server.ready`.
 - Streaming text is not resumable because replay of already delivered chunks is
   not defined.
 - Navigating in a way that clears the card-management view model cancels its
   active generation. This flow is background-safe, not durable scheduled work.
+- The current Klaf Server implementation keeps mnemonic text and mnemonic image
+  in one internal Codex session. This is convenient for MVP, but text-only
+  developer rules can conflict with image generation rules; splitting them into
+  separate sessions is a known follow-up.
 
 ## Diagnostics
 
 Useful Android log messages include:
 
-- `Agent Driver SDK connection monitor failed` when the client detects loss.
-- `Agent Driver SDK reconnect starting` when automatic recovery begins.
-- `AgentDriver connecting: resuming the previous session` for resume handshake.
-- `Agent Driver SDK request send started` and `response received` with request
-  IDs for correlation.
+- `Klaf Server connection opening` when the app tries to open the WebSocket.
+- `Klaf Server ready` when the app receives the server readiness message.
+- `Klaf Server mnemonic association request failed` for client-side transport or
+  protocol failure.
+- `Klaf Server mnemonic association received` when mnemonic text returns.
+- `Klaf Server mnemonic image received` when image bytes return.
 - `Mnemonic foreground service ...` for service start, stop, and destruction.
 - `Mnemonic diagnostics: generation ...` for process, power, and network state.
 
-The server application can correlate the same request ID in its request and
-provider diagnostics. Resume tokens must never be logged.
+Useful Klaf Server console logs include:
+
+- `Mnemonic association request received/completed`.
+- `Mnemonic image request received/completed`.
+- `[mnemonic AgentDriver server] state=...`.
+- `[mnemonic AgentDriver server] sessions active=...`.
+- `[mnemonic AgentDriver client] [Connected] provider=... model=...`.
+- `[mnemonic provider] ...` for provider diagnostics.
+
+The server application can correlate the same request ID in its request logs and
+provider diagnostics. Secrets and future authentication tokens must never be
+logged.
 
 ## Verification
 
 Run shared request-lifecycle tests and build the Android app:
 
 ```powershell
-.\gradlew.bat :data:testDebugUnitTest :Android:assembleDebug
+.\gradlew.bat :data:compileReleaseKotlinAndroid :di:compileReleaseKotlinAndroid
 ```
 
 The final device check should start text and image generation, lock the screen,
