@@ -25,8 +25,12 @@ class CardRepositoryRoom(
             .map { roomCard -> roomCard.toDomainEntity() }
     }
 
-    override suspend fun insertCard(card: Card) {
-        roomDatabase.cardDao().insetCard(card = card.toRoomEntity())
+    override suspend fun insertCard(card: Card): Int {
+        val cardId = roomDatabase.cardDao()
+            .insetCard(card = card.toRoomEntity())
+            .toInt()
+
+        return card.id.takeIf { it > 0 } ?: cardId
     }
 
     override suspend fun insertCardAtPath(

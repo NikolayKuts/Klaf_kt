@@ -35,6 +35,13 @@ data class MnemonicImageGenerateRequest(
 ) : KlafServerClientMessage
 
 @Serializable
+@SerialName("vocabularySource.analyze")
+data class VocabularySourceAnalyzeRequest(
+    override val requestId: String,
+    val cleanText: String,
+) : KlafServerClientMessage
+
+@Serializable
 sealed interface KlafServerMessage
 
 @Serializable
@@ -62,6 +69,13 @@ data class MnemonicAssociationGeneratedMessage(
 data class MnemonicImageGeneratedMessage(
     val requestId: String,
     val imageBase64: String,
+) : KlafServerMessage
+
+@Serializable
+@SerialName("vocabularySource.analyzed")
+data class VocabularySourceAnalyzedMessage(
+    val requestId: String,
+    val analysis: VocabularySourceAnalysisDto,
 ) : KlafServerMessage
 
 @Serializable
@@ -130,5 +144,52 @@ data class MnemonicSelectionDto(
     val usageExample: String = "",
     val candidate: MnemonicAssociationCandidateDto = MnemonicAssociationCandidateDto(),
 )
+
+@Serializable
+data class VocabularySourceAnalysisDto(
+    val language: String,
+    val items: List<VocabularySourceAnalysisItemDto>,
+)
+
+@Serializable
+data class VocabularySourceAnalysisItemDto(
+    val foreignWord: String,
+    val nativeWord: String,
+    val originalText: String,
+    val partOfSpeech: VocabularySourceItemPartOfSpeechDto,
+    val cefrLevel: String?,
+    val confidence: VocabularySourceItemConfidenceDto,
+    val sourceExample: String,
+    val explanation: String,
+    val occurrences: List<VocabularySourceItemOccurrenceDto>,
+)
+
+@Serializable
+data class VocabularySourceItemOccurrenceDto(
+    val timestamp: String = "",
+    val startOffset: Int = 0,
+    val endOffset: Int = 0,
+    val sentence: String = "",
+)
+
+@Serializable
+enum class VocabularySourceItemConfidenceDto {
+    LOW,
+    MEDIUM,
+    HIGH,
+}
+
+@Serializable
+enum class VocabularySourceItemPartOfSpeechDto {
+    UNKNOWN,
+    NOUN,
+    VERB,
+    ADJECTIVE,
+    ADVERB,
+    PHRASAL_VERB,
+    PHRASE,
+    IDIOM,
+    OTHER,
+}
 
 const val KLAF_SERVER_PROTOCOL_VERSION = 1

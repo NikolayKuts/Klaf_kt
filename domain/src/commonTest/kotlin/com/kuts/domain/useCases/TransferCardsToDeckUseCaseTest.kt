@@ -373,9 +373,10 @@ class TransferCardsToDeckUseCaseTest {
             return cardsById.values.toList()
         }
 
-        override suspend fun insertCard(card: Card) {
+        override suspend fun insertCard(card: Card): Int {
             val id = if (card.id == 0 || cardsById.containsKey(card.id)) nextId++ else card.id
             cardsById[id] = card.copy(id = id)
+            return id
         }
 
         override suspend fun insertCardAtPath(card: Card, rootEmailPath: String) {
@@ -423,8 +424,9 @@ class TransferCardsToDeckUseCaseTest {
             return flowOf(decksById[deckId])
         }
 
-        override suspend fun insertDeck(deck: Deck) {
+        override suspend fun insertDeck(deck: Deck): Int {
             decksById[deck.id] = deck
+            return deck.id
         }
 
         override suspend fun insertDeckAtPath(deck: Deck, rootEmailPath: String) {
@@ -470,9 +472,9 @@ class TransferCardsToDeckUseCaseTest {
         var transactionCount = 0
             private set
 
-        override suspend fun <R> performWithTransaction(block: suspend () -> R) {
+        override suspend fun <R> performWithTransaction(block: suspend () -> R): R {
             transactionCount++
-            block()
+            return block()
         }
     }
 

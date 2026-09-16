@@ -275,6 +275,11 @@ internal fun DeckListScreen(
                         }
                     },
                     onKlafServerRetry = viewModel::retryKlafServerConnection,
+                    onVocabularySourcesClick = {
+                        closeDrawerAndPerform {
+                            navController.navigate(route = AppDestination.VocabularySourceList)
+                        }
+                    },
                 )
             },
         ) {

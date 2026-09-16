@@ -223,8 +223,9 @@ private class FakeCardRepository(
         return cardsFlow.value
     }
 
-    override suspend fun insertCard(card: Card) {
+    override suspend fun insertCard(card: Card): Int {
         cardsFlow.value = cardsFlow.value + card
+        return card.id
     }
 
     override suspend fun insertCardAtPath(card: Card, rootEmailPath: String) {
@@ -275,9 +276,10 @@ private class FakeDeckRepository(
         return deckFlow
     }
 
-    override suspend fun insertDeck(deck: Deck) {
+    override suspend fun insertDeck(deck: Deck): Int {
         insertedDecks += deck
         deckFlow.value = deck
+        return deck.id
     }
 
     override suspend fun insertDeckAtPath(deck: Deck, rootEmailPath: String) {
@@ -314,8 +316,8 @@ private class FakeStorageSaveVersionRepository : IStorageSaveVersionRepository {
 
 private class FakeStorageTransactionRepository : IStorageTransactionRepository {
 
-    override suspend fun <R> performWithTransaction(block: suspend () -> R) {
-        block()
+    override suspend fun <R> performWithTransaction(block: suspend () -> R): R {
+        return block()
     }
 }
 

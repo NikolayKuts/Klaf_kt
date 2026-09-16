@@ -23,15 +23,56 @@ object Migrations {
         }
     }
 
-    val from8To7 = object : Migration(8, 7) {
+    val from7To8 = object : Migration(7, 8) {
 
         override fun migrate(connection: SQLiteConnection) {
-            dropVocabularySourceTables { sql -> connection.execSQL(sql) }
+            createVocabularySourceTables { sql -> connection.execSQL(sql) }
         }
     }
 
-    private fun dropVocabularySourceTables(execSql: (String) -> Unit) {
-        execSql("DROP TABLE IF EXISTS `$VOCABULARY_SOURCE_ITEM_TABLE`")
-        execSql("DROP TABLE IF EXISTS `$VOCABULARY_SOURCE_TABLE`")
+    private fun createVocabularySourceTables(execSql: (String) -> Unit) {
+        execSql(
+            "CREATE TABLE IF NOT EXISTS `$VOCABULARY_SOURCE_TABLE` (" +
+                "`title` TEXT NOT NULL, " +
+                "`description` TEXT NOT NULL, " +
+                "`rawText` TEXT NOT NULL, " +
+                "`cleanText` TEXT NOT NULL, " +
+                "`analysisVersion` INTEGER NOT NULL, " +
+                "`createdAt` INTEGER NOT NULL, " +
+                "`updatedAt` INTEGER NOT NULL, " +
+                "`lastAnalyzedAt` INTEGER, " +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)"
+        )
+        execSql(
+            "CREATE TABLE IF NOT EXISTS `$VOCABULARY_SOURCE_ITEM_TABLE` (" +
+                "`sourceId` INTEGER NOT NULL, " +
+                "`foreignWord` TEXT NOT NULL, " +
+                "`nativeWord` TEXT NOT NULL, " +
+                "`originalText` TEXT NOT NULL, " +
+                "`partOfSpeech` TEXT NOT NULL, " +
+                "`cefrLevel` TEXT, " +
+                "`confidence` TEXT NOT NULL, " +
+                "`category` TEXT NOT NULL, " +
+                "`status` TEXT NOT NULL, " +
+                "`sourceExample` TEXT NOT NULL, " +
+                "`explanation` TEXT NOT NULL, " +
+                "`knownMeaningsSnapshot` TEXT NOT NULL, " +
+                "`alreadyExists` INTEGER NOT NULL, " +
+                "`occurrencesJson` TEXT NOT NULL, " +
+                "`createdCardId` INTEGER, " +
+                "`targetDeckId` INTEGER, " +
+                "`firstOccurrenceOrder` INTEGER NOT NULL, " +
+                "`createdAt` INTEGER NOT NULL, " +
+                "`updatedAt` INTEGER NOT NULL, " +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)"
+        )
+        execSql(
+            "CREATE INDEX IF NOT EXISTS `index_${VOCABULARY_SOURCE_ITEM_TABLE}_sourceId` " +
+                "ON `$VOCABULARY_SOURCE_ITEM_TABLE` (`sourceId`)"
+        )
+        execSql(
+            "CREATE INDEX IF NOT EXISTS `index_${VOCABULARY_SOURCE_ITEM_TABLE}_createdCardId` " +
+                "ON `$VOCABULARY_SOURCE_ITEM_TABLE` (`createdCardId`)"
+        )
     }
 }

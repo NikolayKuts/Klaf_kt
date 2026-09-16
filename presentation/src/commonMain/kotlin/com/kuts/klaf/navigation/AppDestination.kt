@@ -15,6 +15,17 @@ internal sealed interface AppDestination {
     data object DeckList : AppDestination
 
     @Serializable
+    data object VocabularySourceList : AppDestination
+
+    @Serializable
+    data object VocabularySourceCreationDialog : AppDestination
+
+    @Serializable
+    data class VocabularySourceDetail(
+        val sourceId: Int,
+    ) : AppDestination
+
+    @Serializable
     data object DeckCreationDialog : AppDestination
 
     @Serializable

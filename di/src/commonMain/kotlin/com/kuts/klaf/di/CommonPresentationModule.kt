@@ -19,6 +19,8 @@ import com.kuts.klaf.deckManagment.DeckManagementViewModel
 import com.kuts.klaf.deckRepetition.BaseDeckReviewViewModel
 import com.kuts.klaf.deckRepetition.DeckReviewViewModel
 import com.kuts.klaf.deckRepetitionInfo.DeckRepetitionInfoViewModel
+import com.kuts.klaf.vocabularySource.VocabularySourceDetailViewModel
+import com.kuts.klaf.vocabularySource.VocabularySourceListViewModel
 import com.kuts.klaf.webContent.WebContentViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
@@ -166,6 +168,31 @@ internal val commonPresentationModule = module {
             deckId = params.get(),
             fetchDeckRepetitionInfo = get(),
             crashlytics = get(),
+        )
+    }
+
+    viewModel {
+        VocabularySourceListViewModel(
+            observeVocabularySources = get(),
+            observeAllVocabularySourceItems = get(),
+            createVocabularySource = get(),
+            removeVocabularySource = get(),
+        )
+    }
+
+    viewModel { params ->
+        VocabularySourceDetailViewModel(
+            sourceId = params.get(),
+            observeVocabularySourceById = get(),
+            observeVocabularySourceItems = get(),
+            updateVocabularySource = get(),
+            saveVocabularySourceItems = get(),
+            replaceVocabularySourceDraftItems = get(),
+            analyzeVocabularySourceText = get(),
+            fetchAllCards = get(),
+            fetchDeckSource = get(),
+            addVocabularySourceItemsToDeck = get(),
+            vocabularySourceAnalysisBackgroundManager = get(),
         )
     }
 

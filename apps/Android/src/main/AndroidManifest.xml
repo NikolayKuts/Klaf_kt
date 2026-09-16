@@ -50,6 +50,11 @@
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
+        <service
+            android:name="com.kuts.klaf.vocabularySource.VocabularySourceAnalysisForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
         <receiver android:name="com.kuts.klaf.common.BootReceiver"
             android:exported="true">
             <intent-filter>

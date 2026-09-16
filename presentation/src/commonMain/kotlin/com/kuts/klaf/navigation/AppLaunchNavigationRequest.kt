@@ -21,6 +21,10 @@ sealed interface AppLaunchNavigationRequest {
         val deckId: Int,
         val cardId: Int,
     ) : AppLaunchNavigationRequest
+
+    data class OpenVocabularySourceDetail(
+        val sourceId: Int,
+    ) : AppLaunchNavigationRequest
 }
 
 object AppLaunchNavigationExtras {

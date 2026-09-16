@@ -10,17 +10,23 @@ import com.kuts.klaf.room.converters.RoomDateConverter
 import com.kuts.klaf.room.dao.ICardDao
 import com.kuts.klaf.room.dao.IDeckDao
 import com.kuts.klaf.room.dao.IStorageSaveVersionDao
+import com.kuts.klaf.room.dao.IVocabularySourceDao
+import com.kuts.klaf.room.dao.IVocabularySourceItemDao
 import com.kuts.klaf.room.entities.RoomCard
 import com.kuts.klaf.room.entities.RoomDeck
 import com.kuts.klaf.room.entities.RoomStorageSaveVersion
+import com.kuts.klaf.room.entities.RoomVocabularySource
+import com.kuts.klaf.room.entities.RoomVocabularySourceItem
 
 @Database(
     entities = [
         RoomDeck::class,
         RoomCard::class,
-        RoomStorageSaveVersion::class
+        RoomStorageSaveVersion::class,
+        RoomVocabularySource::class,
+        RoomVocabularySourceItem::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
     autoMigrations = [AutoMigration(from = 1, to = 2)]
 )
@@ -31,6 +37,8 @@ abstract class KlafRoomDatabase : RoomDatabase() {
     abstract fun deckDao(): IDeckDao
     abstract fun cardDao(): ICardDao
     abstract fun storageSaveVersionDao(): IStorageSaveVersionDao
+    abstract fun vocabularySourceDao(): IVocabularySourceDao
+    abstract fun vocabularySourceItemDao(): IVocabularySourceItemDao
 }
 
 @Suppress("KotlinNoActualForExpect")

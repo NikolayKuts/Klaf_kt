@@ -32,8 +32,12 @@ class DeckRepositoryRoom(
             .map { roomDeck: RoomDeck? -> roomDeck?.toDomainEntity() }
     }
 
-    override suspend fun insertDeck(deck: Deck) {
-        roomDatabase.deckDao().insertDeck(deck = deck.toRoomEntity())
+    override suspend fun insertDeck(deck: Deck): Int {
+        val deckId = roomDatabase.deckDao()
+            .insertDeck(deck = deck.toRoomEntity())
+            .toInt()
+
+        return deck.id.takeIf { it > 0 } ?: deckId
     }
 
     override suspend fun insertDeckAtPath(

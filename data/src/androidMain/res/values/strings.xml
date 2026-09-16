@@ -35,6 +35,16 @@
     <string name="mnemonic_generation_failure_channel_name">Mnemonic generation errors</string>
     <string name="mnemonic_generation_failure_channel_description">Alerts when mnemonic generation fails</string>
 
+    <string name="vocabulary_source_analysis_in_progress">Analyzing subtitles</string>
+    <string name="vocabulary_source_analysis_succeeded">Subtitles analyzed: %s</string>
+    <string name="vocabulary_source_analysis_failed">Subtitle analysis failed: %s</string>
+    <string name="vocabulary_source_analysis_progress_channel_name">Subtitle analysis</string>
+    <string name="vocabulary_source_analysis_progress_channel_description">Shows progress while subtitles are analyzed</string>
+    <string name="vocabulary_source_analysis_success_channel_name">Subtitle analysis results</string>
+    <string name="vocabulary_source_analysis_success_channel_description">Notifies when subtitle analysis is ready</string>
+    <string name="vocabulary_source_analysis_failure_channel_name">Subtitle analysis errors</string>
+    <string name="vocabulary_source_analysis_failure_channel_description">Alerts when subtitle analysis fails</string>
+
     <string name="deck_repetition_channel_description">Notify when the decks should be repeated</string>
     <string name="deck_repetition_notification_template">It is time to repeat the deck "%s"</string>
     <string name="deck_repetition_common_notification_template">Some decks require repetition</string>

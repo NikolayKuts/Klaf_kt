@@ -24,11 +24,13 @@ import com.kuts.klaf.presentation.resources.drawer_klaf_server_status_not_ready
 import com.kuts.klaf.presentation.resources.drawer_klaf_server_status_ready
 import com.kuts.klaf.presentation.resources.ic_account_24
 import com.kuts.klaf.presentation.resources.ic_delete_account_24
+import com.kuts.klaf.presentation.resources.ic_list_clear
 import com.kuts.klaf.presentation.resources.ic_login_24
 import com.kuts.klaf.presentation.resources.ic_logout_24
 import com.kuts.klaf.presentation.resources.log_in_action
 import com.kuts.klaf.presentation.resources.log_in_negative_state
 import com.kuts.klaf.presentation.resources.log_out_action
+import com.kuts.klaf.presentation.resources.vocabulary_sources_title
 import com.kuts.klaf.theme.MainTheme
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -41,6 +43,7 @@ fun Drawer(
     onLogOutClick: () -> Unit,
     onDeleteAccountClick: () -> Unit,
     onKlafServerRetry: () -> Unit,
+    onVocabularySourcesClick: () -> Unit,
 ) {
     val rightCorners = RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp)
     BoxWithConstraints {
@@ -71,6 +74,12 @@ fun Drawer(
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
+
+                DrawerItem(
+                    iconRes = Res.drawable.ic_list_clear,
+                    text = stringResource(resource = Res.string.vocabulary_sources_title),
+                    onClick = onVocabularySourcesClick,
+                )
 
                 if (state.signedIn) {
                     DrawerItem(

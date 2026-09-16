@@ -357,9 +357,10 @@ class CardTransferringViewModelTest {
             return cardsFlow.value.values.toList()
         }
 
-        override suspend fun insertCard(card: Card) {
+        override suspend fun insertCard(card: Card): Int {
             val id = if (card.id == 0 || cardsFlow.value.containsKey(card.id)) nextId++ else card.id
             cardsFlow.value = cardsFlow.value + (id to card.copy(id = id))
+            return id
         }
 
         override suspend fun insertCardAtPath(card: Card, rootEmailPath: String) {
@@ -409,8 +410,9 @@ class CardTransferringViewModelTest {
             return decksFlow.map { decks -> decks[deckId] }
         }
 
-        override suspend fun insertDeck(deck: Deck) {
+        override suspend fun insertDeck(deck: Deck): Int {
             decksFlow.value = decksFlow.value + (deck.id to deck)
+            return deck.id
         }
 
         override suspend fun insertDeckAtPath(deck: Deck, rootEmailPath: String) {
@@ -456,9 +458,9 @@ class CardTransferringViewModelTest {
         var transactionCount = 0
             private set
 
-        override suspend fun <R> performWithTransaction(block: suspend () -> R) {
+        override suspend fun <R> performWithTransaction(block: suspend () -> R): R {
             transactionCount++
-            block()
+            return block()
         }
     }
 

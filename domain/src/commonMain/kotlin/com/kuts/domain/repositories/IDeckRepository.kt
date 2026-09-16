@@ -11,7 +11,7 @@ interface IDeckRepository {
 
     fun fetchObservableDeckById(deckId: Int): Flow<Deck?>
 
-    suspend fun insertDeck(deck: Deck)
+    suspend fun insertDeck(deck: Deck): Int
 
     suspend fun insertDeckAtPath(deck: Deck, rootEmailPath: String)
 

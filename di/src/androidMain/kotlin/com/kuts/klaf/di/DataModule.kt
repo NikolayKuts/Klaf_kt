@@ -23,6 +23,7 @@ import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
+import com.kuts.domain.managers.IVocabularySourceAnalysisBackgroundManager
 import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.ICrashlyticsRepository
@@ -68,6 +69,7 @@ import com.kuts.klaf.mnemonic.AndroidApplicationVisibilityTracker
 import com.kuts.klaf.mnemonic.AndroidMnemonicGenerationBackgroundManager
 import com.kuts.klaf.mnemonic.AndroidMnemonicGenerationDiagnostics
 import com.kuts.klaf.mnemonic.MnemonicGenerationNotifier
+import com.kuts.klaf.networking.klafServer.AndroidKlafServerForegroundReconnecter
 import com.kuts.klaf.networking.klafServer.IKlafServerSession
 import com.kuts.klaf.networking.klafServer.KlafServerConnectionManager
 import com.kuts.klaf.networking.klafServer.KlafServerHttpClientFactory
@@ -80,6 +82,8 @@ import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
 import com.kuts.klaf.speech.AndroidSpeechRecognitionManager
+import com.kuts.klaf.vocabularySource.AndroidVocabularySourceAnalysisBackgroundManager
+import com.kuts.klaf.vocabularySource.VocabularySourceAnalysisNotifier
 import com.lib.lokdroid.core.LoKdroid
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -154,6 +158,14 @@ private fun Module.androidRepositoryModule() {
         KlafServerConnectionManager(
             klafServerSession = get(),
             coroutineContextProvider = get(),
+        )
+    }
+    single(createdAtStart = true) {
+        AndroidKlafServerForegroundReconnecter(
+            applicationVisibilityTracker = get(),
+            connectionManager = get(),
+            coroutineContextProvider = get(),
+            diagnostics = get(),
         )
     }
     single<IWordMeaningInsightsRepository> {
@@ -244,8 +256,23 @@ private fun Module.dataManagerBindings() {
             notificationManager = get(),
         )
     }
+    single {
+        VocabularySourceAnalysisNotifier(
+            context = androidContext(),
+            notificationManager = get(),
+        )
+    }
     single<IMnemonicGenerationBackgroundManager> {
         AndroidMnemonicGenerationBackgroundManager(
+            context = androidContext(),
+            applicationVisibilityTracker = get(),
+            diagnostics = get(),
+            notificationChannelInitializer = get(),
+            notifier = get(),
+        )
+    }
+    single<IVocabularySourceAnalysisBackgroundManager> {
+        AndroidVocabularySourceAnalysisBackgroundManager(
             context = androidContext(),
             applicationVisibilityTracker = get(),
             diagnostics = get(),

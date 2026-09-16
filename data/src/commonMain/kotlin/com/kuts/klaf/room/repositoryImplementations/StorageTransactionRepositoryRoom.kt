@@ -8,7 +8,7 @@ class StorageTransactionRepositoryRoom(
     private val roomDatabase: KlafRoomDatabase,
 ) : IStorageTransactionRepository {
 
-    override suspend fun <R> performWithTransaction(block: suspend () -> R) {
-        roomDatabase.performInTransaction(block = block)
+    override suspend fun <R> performWithTransaction(block: suspend () -> R): R {
+        return roomDatabase.performInTransaction(block = block)
     }
 }

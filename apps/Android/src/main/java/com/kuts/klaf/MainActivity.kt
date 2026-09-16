@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.kuts.domain.managers.MnemonicGenerationLaunchExtras
+import com.kuts.domain.managers.VocabularySourceAnalysisLaunchExtras
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.EventMessageView
 import com.kuts.klaf.common.MainViewModel
@@ -56,6 +57,7 @@ class MainActivity : AppCompatActivity() {
         microphonePermissionBinder.bind(activity = this)
         val initialLaunchRequest = intent.toLaunchNavigationRequest()
         intent.clearMnemonicGenerationLaunchExtras()
+        intent.clearVocabularySourceAnalysisLaunchExtras()
 
         setContent {
             MainTheme {
@@ -93,6 +95,7 @@ class MainActivity : AppCompatActivity() {
 
         val launchRequest = intent.toLaunchNavigationRequest()
         intent.clearMnemonicGenerationLaunchExtras()
+        intent.clearVocabularySourceAnalysisLaunchExtras()
         setIntent(intent)
         launchRequest?.let { request -> launchRequests.tryEmit(request) }
     }
@@ -109,6 +112,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun Intent.toLaunchNavigationRequest(): AppLaunchNavigationRequest? {
         toMnemonicGenerationLaunchNavigationRequest()?.let { request -> return request }
+        toVocabularySourceAnalysisLaunchNavigationRequest()?.let { request -> return request }
 
         val destination = getStringExtra(AppLaunchNavigationExtras.DESTINATION_KEY)
 
@@ -175,9 +179,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun Intent.toVocabularySourceAnalysisLaunchNavigationRequest(): AppLaunchNavigationRequest? {
+        if (!hasExtra(VocabularySourceAnalysisLaunchExtras.SOURCE_ID_KEY)) return null
+
+        return AppLaunchNavigationRequest.OpenVocabularySourceDetail(
+            sourceId = getIntExtra(VocabularySourceAnalysisLaunchExtras.SOURCE_ID_KEY, 0),
+        )
+    }
+
     private fun Intent.clearMnemonicGenerationLaunchExtras() {
         removeExtra(MnemonicGenerationLaunchExtras.DESTINATION_KEY)
         removeExtra(MnemonicGenerationLaunchExtras.DECK_ID_KEY)
         removeExtra(MnemonicGenerationLaunchExtras.CARD_ID_KEY)
+    }
+
+    private fun Intent.clearVocabularySourceAnalysisLaunchExtras() {
+        removeExtra(VocabularySourceAnalysisLaunchExtras.SOURCE_ID_KEY)
     }
 }

@@ -16,9 +16,17 @@ class AndroidApplicationVisibilityTracker(
 
     private var startedActivityCount = 0
     private var configurationChangeCount = 0
+    private val visibilityListenerLock = Any()
+    private val visibilityListeners = mutableSetOf<(Boolean) -> Unit>()
 
     init {
         application.registerActivityLifecycleCallbacks(this)
+    }
+
+    fun addVisibilityListener(listener: (Boolean) -> Unit) {
+        synchronized(visibilityListenerLock) {
+            visibilityListeners += listener
+        }
     }
 
     override fun onActivityStarted(activity: Activity) {
@@ -35,6 +43,7 @@ class AndroidApplicationVisibilityTracker(
                 "Mnemonic diagnostics: app visible: activity=${activity::class.simpleName}, " +
                     "startedActivities=$startedActivityCount; ${diagnostics.snapshot()}",
             )
+            notifyVisibilityChanged(isVisible = true)
         }
     }
 
@@ -49,6 +58,7 @@ class AndroidApplicationVisibilityTracker(
                     "Mnemonic diagnostics: app backgrounded: activity=${activity::class.simpleName}, " +
                         "startedActivities=$startedActivityCount; ${diagnostics.snapshot()}",
                 )
+                notifyVisibilityChanged(isVisible = false)
             }
         }
     }
@@ -62,4 +72,13 @@ class AndroidApplicationVisibilityTracker(
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
 
     override fun onActivityDestroyed(activity: Activity) = Unit
+
+    private fun notifyVisibilityChanged(isVisible: Boolean) {
+        val listeners = synchronized(visibilityListenerLock) {
+            visibilityListeners.toList()
+        }
+        listeners.forEach { listener ->
+            listener(isVisible)
+        }
+    }
 }

@@ -21,7 +21,7 @@ interface IDeckDao {
     fun getObservableDeckById(deckId: Int): Flow<RoomDeck?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertDeck(deck: RoomDeck)
+    suspend fun insertDeck(deck: RoomDeck): Long
 
     @Query("DELETE FROM $DECK_TABLE_NAME WHERE id = :deckId")
     suspend fun deleteDeck(deckId: Int)

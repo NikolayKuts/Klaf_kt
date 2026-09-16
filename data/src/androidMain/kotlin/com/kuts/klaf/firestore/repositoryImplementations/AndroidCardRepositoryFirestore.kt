@@ -38,11 +38,13 @@ class AndroidCardRepositoryFirestore(
             .map { firestoreCard -> firestoreCard.toDomainEntity() }
     }
 
-    override suspend fun insertCard(card: Card) {
+    override suspend fun insertCard(card: Card): Int {
         getCardSubCollection()
             .document(card.id.toString())
             .set(card.toFirestoreEntity())
             .await()
+
+        return card.id
     }
 
     override suspend fun insertCardAtPath(card: Card, rootEmailPath: String) {

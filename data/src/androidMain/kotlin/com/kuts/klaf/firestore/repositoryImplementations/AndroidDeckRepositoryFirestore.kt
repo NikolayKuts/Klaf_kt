@@ -41,11 +41,13 @@ class AndroidDeckRepositoryFirestore(
         TODO("Not yet implemented")
     }
 
-    override suspend fun insertDeck(deck: Deck) {
+    override suspend fun insertDeck(deck: Deck): Int {
         getDeckSubCollection()
             .document(deck.id.toString())
             .set(deck.toFirestoreEntity())
             .await()
+
+        return deck.id
     }
 
     override suspend fun insertDeckAtPath(deck: Deck, rootEmailPath: String) {

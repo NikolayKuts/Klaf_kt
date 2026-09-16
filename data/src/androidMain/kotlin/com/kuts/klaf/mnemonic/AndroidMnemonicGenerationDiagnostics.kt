@@ -46,7 +46,7 @@ class AndroidMnemonicGenerationDiagnostics(
     private val mainHandler = Handler(Looper.getMainLooper())
     private val runtimeId = "${Process.myPid()}-${SystemClock.elapsedRealtime()}"
     private val lock = Any()
-    private val activeGenerationIds = mutableSetOf<Long>()
+    private val activeGenerationIds = mutableSetOf<String>()
     private var networkCallbackRegistered = false
     private var networkEventSequence = 0L
     private var lastNetworkEvent = "none"
@@ -180,10 +180,31 @@ class AndroidMnemonicGenerationDiagnostics(
         generationId: Long,
         type: MnemonicGenerationType,
     ) {
+        backgroundOperationStarted(
+            operationId = generationId,
+            operationName = "mnemonic-$type",
+        )
+    }
+
+    fun generationFinished(
+        generationId: Long,
+        type: MnemonicGenerationType,
+    ) {
+        backgroundOperationFinished(
+            operationId = generationId,
+            operationName = "mnemonic-$type",
+        )
+    }
+
+    fun backgroundOperationStarted(
+        operationId: Long,
+        operationName: String,
+    ) {
+        val operationKey = "$operationName:$operationId"
         val wasFirstGeneration: Boolean
         val shouldRegisterCallback = synchronized(lock) {
             wasFirstGeneration = activeGenerationIds.isEmpty()
-            activeGenerationIds += generationId
+            activeGenerationIds += operationKey
             if (networkCallbackRegistered) {
                 false
             } else {
@@ -199,17 +220,19 @@ class AndroidMnemonicGenerationDiagnostics(
             mainHandler.postDelayed(heartbeat, DIAGNOSTIC_HEARTBEAT_INTERVAL_MILLIS)
         }
         logD(
-            "Mnemonic diagnostics: generation started: id=$generationId, type=$type; " +
+            "Mnemonic diagnostics: background operation started: " +
+                "id=$operationId, name=$operationName; " +
                 snapshot(),
         )
     }
 
-    fun generationFinished(
-        generationId: Long,
-        type: MnemonicGenerationType,
+    fun backgroundOperationFinished(
+        operationId: Long,
+        operationName: String,
     ) {
+        val operationKey = "$operationName:$operationId"
         val shouldUnregisterCallback = synchronized(lock) {
-            activeGenerationIds -= generationId
+            activeGenerationIds -= operationKey
             if (activeGenerationIds.isEmpty() && networkCallbackRegistered) {
                 networkCallbackRegistered = false
                 true
@@ -219,7 +242,8 @@ class AndroidMnemonicGenerationDiagnostics(
         }
 
         logD(
-            "Mnemonic diagnostics: generation finished: id=$generationId, type=$type; " +
+            "Mnemonic diagnostics: background operation finished: " +
+                "id=$operationId, name=$operationName; " +
                 snapshot(),
         )
         if (shouldUnregisterCallback) {

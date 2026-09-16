@@ -32,6 +32,9 @@ import com.kuts.klaf.deckRepetitionInfo.DeckRepetitionInfoDialog
 import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent
 import com.kuts.klaf.navigation.navType.enumNavTypeMap
 import com.kuts.klaf.navigation.navType.serializableNavTypeMap
+import com.kuts.klaf.vocabularySource.VocabularySourceCreationDialog
+import com.kuts.klaf.vocabularySource.VocabularySourceDetailScreen
+import com.kuts.klaf.vocabularySource.VocabularySourceListScreen
 import com.kuts.klaf.webContent.WebContentScreen
 import com.kuts.klaf.webContent.WebContentSource
 
@@ -48,6 +51,31 @@ internal fun NavGraphBuilder.registerAppDestinations(
             sharedViewModel = sharedViewModel,
             externalAppActions = externalAppActions,
             onRestartApp = onRestartApp,
+        )
+    }
+
+    buildComposableWithEntry<AppDestination.VocabularySourceList> { backStackEntry ->
+        VocabularySourceListScreen(
+            navController = navController,
+            backStackEntry = backStackEntry,
+            sharedViewModel = sharedViewModel,
+        )
+    }
+
+    buildDialogWithEntry<AppDestination.VocabularySourceCreationDialog> { backStackEntry ->
+        VocabularySourceCreationDialog(
+            navController = navController,
+            backStackEntry = backStackEntry,
+            sharedViewModel = sharedViewModel,
+        )
+    }
+
+    buildComposable<AppDestination.VocabularySourceDetail> { backStackEntry, route ->
+        VocabularySourceDetailScreen(
+            navController = navController,
+            backStackEntry = backStackEntry,
+            sharedViewModel = sharedViewModel,
+            sourceId = route.sourceId,
         )
     }
 

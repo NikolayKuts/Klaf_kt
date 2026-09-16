@@ -25,18 +25,28 @@ class NotificationChannelInitializer(
         const val MNEMONIC_GENERATION_PROGRESS_CHANNEL_ID = "mnemonic_image_progress_channel_id"
         const val MNEMONIC_GENERATION_SUCCESS_CHANNEL_ID = "mnemonic_image_success_alert_channel_id"
         const val MNEMONIC_GENERATION_FAILURE_CHANNEL_ID = "mnemonic_image_failure_channel_id"
+        const val VOCABULARY_SOURCE_ANALYSIS_PROGRESS_CHANNEL_ID = "vocabulary_source_analysis_progress_channel_id"
+        const val VOCABULARY_SOURCE_ANALYSIS_SUCCESS_CHANNEL_ID = "vocabulary_source_analysis_success_channel_id"
+        const val VOCABULARY_SOURCE_ANALYSIS_FAILURE_CHANNEL_ID = "vocabulary_source_analysis_failure_channel_id"
     }
 
     fun initialize() {
         createDeckRepetitionChannel()
         createWorkLogicChannel()
         initializeMnemonicGenerationChannels()
+        initializeVocabularySourceAnalysisChannels()
     }
 
     fun initializeMnemonicGenerationChannels() {
         createMnemonicGenerationProgressChannel()
         createMnemonicGenerationSuccessChannel()
         createMnemonicGenerationFailureChannel()
+    }
+
+    fun initializeVocabularySourceAnalysisChannels() {
+        createVocabularySourceAnalysisProgressChannel()
+        createVocabularySourceAnalysisSuccessChannel()
+        createVocabularySourceAnalysisFailureChannel()
     }
 
     private fun createMnemonicGenerationProgressChannel() {
@@ -80,6 +90,56 @@ class NotificationChannelInitializer(
                 NotificationManager.IMPORTANCE_HIGH,
             ).apply {
                 description = context.getString(R.string.mnemonic_generation_failure_channel_description)
+                lightColor = Color.RED
+                enableLights(true)
+                enableVibration(true)
+            }
+
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+    }
+
+    private fun createVocabularySourceAnalysisProgressChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                VOCABULARY_SOURCE_ANALYSIS_PROGRESS_CHANNEL_ID,
+                context.getString(R.string.vocabulary_source_analysis_progress_channel_name),
+                NotificationManager.IMPORTANCE_LOW,
+            ).apply {
+                description = context.getString(R.string.vocabulary_source_analysis_progress_channel_description)
+                setSound(null, null)
+                enableVibration(false)
+            }
+
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+    }
+
+    private fun createVocabularySourceAnalysisSuccessChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                VOCABULARY_SOURCE_ANALYSIS_SUCCESS_CHANNEL_ID,
+                context.getString(R.string.vocabulary_source_analysis_success_channel_name),
+                NotificationManager.IMPORTANCE_HIGH,
+            ).apply {
+                description = context.getString(R.string.vocabulary_source_analysis_success_channel_description)
+                lightColor = Color.GREEN
+                enableLights(true)
+                enableVibration(true)
+            }
+
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+    }
+
+    private fun createVocabularySourceAnalysisFailureChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                VOCABULARY_SOURCE_ANALYSIS_FAILURE_CHANNEL_ID,
+                context.getString(R.string.vocabulary_source_analysis_failure_channel_name),
+                NotificationManager.IMPORTANCE_HIGH,
+            ).apply {
+                description = context.getString(R.string.vocabulary_source_analysis_failure_channel_description)
                 lightColor = Color.RED
                 enableLights(true)
                 enableVibration(true)

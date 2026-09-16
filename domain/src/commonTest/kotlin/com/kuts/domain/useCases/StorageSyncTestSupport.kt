@@ -39,9 +39,10 @@ internal class TestCardRepository(
         return cardsById.values.sortedBy { card -> card.id }
     }
 
-    override suspend fun insertCard(card: Card) {
+    override suspend fun insertCard(card: Card): Int {
         val targetId = if (card.id == 0) nextId++ else card.id
         cardsById[targetId] = card.copy(id = targetId)
+        return targetId
     }
 
     override suspend fun insertCardAtPath(card: Card, rootEmailPath: String) {
@@ -89,8 +90,9 @@ internal class TestDeckRepository(
 
     override fun fetchObservableDeckById(deckId: Int): Flow<Deck?> = flowOf(decksById[deckId])
 
-    override suspend fun insertDeck(deck: Deck) {
+    override suspend fun insertDeck(deck: Deck): Int {
         decksById[deck.id] = deck
+        return deck.id
     }
 
     override suspend fun insertDeckAtPath(deck: Deck, rootEmailPath: String) {

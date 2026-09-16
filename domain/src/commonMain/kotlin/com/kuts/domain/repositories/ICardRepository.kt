@@ -10,7 +10,7 @@ interface ICardRepository {
 
     suspend fun fetchAllCards(): List<Card>
 
-    suspend fun insertCard(card: Card)
+    suspend fun insertCard(card: Card): Int
 
     suspend fun insertCardAtPath(card: Card, rootEmailPath: String)
 

@@ -15,6 +15,7 @@ import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
+import com.kuts.domain.managers.IVocabularySourceAnalysisBackgroundManager
 import com.kuts.domain.managers.SpeechRecognitionResult
 import com.kuts.domain.managers.SpeechRecognitionState
 import com.kuts.domain.repositories.IAuthenticationRepository
@@ -46,6 +47,7 @@ import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
+import com.kuts.klaf.vocabularySource.NoOpVocabularySourceAnalysisBackgroundManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -131,6 +133,9 @@ private fun Module.desktopManagerBindings() {
     single<IAppMaintenanceManager> { DesktopAppMaintenanceManager(mnemonicImageAssetRepository = get()) }
     single<IMnemonicGenerationBackgroundManager> {
         NoOpMnemonicGenerationBackgroundManager()
+    }
+    single<IVocabularySourceAnalysisBackgroundManager> {
+        NoOpVocabularySourceAnalysisBackgroundManager()
     }
     factory<IAudioPlayerManager> { DesktopNoOpAudioPlayerManager() }
     factory<ISpeechRecognitionManager> { DesktopNoOpSpeechRecognitionManager() }

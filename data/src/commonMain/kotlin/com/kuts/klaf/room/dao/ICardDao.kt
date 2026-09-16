@@ -24,7 +24,7 @@ interface ICardDao {
     fun getObservableCardById(cardId: Int): Flow<RoomCard?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insetCard(card: RoomCard)
+    suspend fun insetCard(card: RoomCard): Long
 
     @Query("SELECT COUNT(*) FROM $CARD_TABLE_NAME WHERE deckId = :deckId")
     suspend fun getCardQuantityInDeckAsInt(deckId: Int): Int

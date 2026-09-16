@@ -107,6 +107,15 @@ internal fun NavHostController.handleLaunchRequest(request: AppLaunchNavigationR
                 ),
             )
         }
+
+        is AppLaunchNavigationRequest.OpenVocabularySourceDetail -> {
+            navigate(route = AppDestination.VocabularySourceDetail(sourceId = request.sourceId)) {
+                popUpTo(route = AppDestination.DeckList) {
+                    inclusive = false
+                }
+                launchSingleTop = true
+            }
+        }
     }
 }
 
