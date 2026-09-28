@@ -7,8 +7,71 @@ It should be removed or replaced by permanent documentation after the full imple
 
 MVP implementation is in local testing/review.
 
+- Commit preparation (2026-09-28): user authorized a local snapshot of all
+  current branch changes, including audited implementation/tests, both UI themes
+  and privacy cleanup. Last full validation: 116 passing tests and Android/Desktop
+  compilation; the final server theme follow-up also passes. The diagnosed
+  LoKdroid iOS publication issue below is deliberately included as a known open
+  issue, not fixed or hidden. No push, merge or sibling-project changes requested.
+
+- IDE import dependency check (2026-09-28): `help` and all five KMP
+  `resolveIdeDependencies` tasks complete, but their JSON reports contain 12
+  unresolved iOS dependencies in data/di/presentation. LoKdroid `0.2.0-alpha`
+  requests `LoKdroid:core-iosarm64:unspecified` and
+  `LoKdroid:core-iossimulatorarm64:unspecified`. Android/Desktop build success
+  does not validate these iOS artifacts. Latest IDE sync is recorded as
+  successful despite these dependency errors; the earlier AgentDriver plugin
+  lookup failure is not reproduced now. No library/configuration fix or
+  publication was performed; correcting the sibling library publication needs
+  separate authorization.
+
+- Theme follow-up (2026-09-28): server/client colors centralized and both
+  palettes covered by tests. Manual visual smoke checks remain; no live server
+  or device was launched for this change.
+
+## Uncommitted-worktree Audit (2026-09-28)
+
+- All staged/unstaged/new work was reviewed relative to HEAD on
+  `mnemonic-voice-dictation`. Existing staging/user edits were preserved; no
+  commit, merge, deployment or paid-provider request was performed.
+- Fixed binary/upload validation, start ordering, temporary-file lifetime,
+  cancellation/queue isolation, pending registry completion and transcription TTL.
+- Fixed connection cleanup lock inversion and covered cancellation before Ready,
+  close before Ready and pending-request replay through a temporary loopback server.
+- Push registration routes by originating client session; a desktop request can
+  never fall back to the last registered phone. Delivery deduplication records
+  confirmed success only and has bounded retention. Diagnostic errors avoid
+  credential paths, push payloads and exception details sent to clients.
+- Log capture is bounded per pending line (16 KiB) and history (5,000 entries);
+  console output remains intact. Installation is idempotent; full-history
+  autoscroll follows content, not the now-constant entry count.
+- Actual SDK/plugin version is `0.10.12-SNAPSHOT`, published locally from the
+  sibling checkout under existing user authorization without SDK source edits.
+- Server 34 tests and contract 10 tests pass. The final cross-module run passes
+  all 109 tests plus `:di:compileKotlinDesktop` and `:Android:compileDebugKotlin`.
+- Remaining audio gaps and manual verification are in `audio-transcription-status.md`:
+  selected-file duration display, disconnected failure push, real phone/provider/Linux
+  checks. Killed-process reconciliation is explicitly deferred by the user for
+  the current commit. These are not completed by a compile/test-only audit.
+
 ## Completed
 
+- UI theme consistency (2026-09-28): server window/log styles now consume
+  centralized light/dark `ServerColors`; initial selection follows the system,
+  with an in-window toggle. Inputs, caret, selection, search borders/highlights,
+  logo and actions follow the active palette. Styled log caching includes the
+  palette, while entries and search text survive a toggle. No dependency on
+  the client presentation module was added.
+- Seven new palette/style regressions cover light/dark selection, every log
+  part, unchanged text/search ranges, readable contrast, source badge colors,
+  disabled tokens and direct palette initialization. The full cross-module run
+  passed 116 tests plus Android and Desktop DI compilation. See the source
+  feature status for client colors and previews. No commit was performed.
+- Final commit privacy/hygiene check (2026-09-28): removed tracking for 15
+  local/generated files without deleting them, added a neutral presentation
+  config template, sanitized documentation/test examples, and checked both
+  current text and the index. Server 34 tests pass after fixture sanitization.
+  Details and the old-history/staging caveats are in `audio-transcription-status.md`.
 - Created initial requirements document.
 - Created initial status document.
 - Captured the first high-level concept:
@@ -48,7 +111,7 @@ MVP implementation is in local testing/review.
   - recreates the feature session and retries once after request/session failure.
 - Verified `:klaf-server-contract:compileKotlinMetadata` successfully.
 - Fixed the Klaf server Ktor engine type after the first compile attempt.
-- Bumped AgentDriver SDK version to `0.10.10-SNAPSHOT` in `C:\Users\kutsn\StudioProjects\AgentDriver`.
+- Bumped AgentDriver SDK version to `0.10.10-SNAPSHOT` in the sibling `AgentDriver` checkout.
 - Updated Klaf version catalog to consume AgentDriver `0.10.10-SNAPSHOT`.
 - Published AgentDriver `0.10.10-SNAPSHOT` to Maven local with `publishSdkToMavenLocal`.
 - Verified `:klaf-server:compileKotlin --refresh-dependencies --no-configuration-cache` successfully.
@@ -117,6 +180,10 @@ MVP implementation is in local testing/review.
 - Removed the stale direct AgentDriver client secret/config block from the local ignored `data` `SecretConstants.kt`, leaving only the Klaf Server host/port config for the client path.
 - Corrected docs/changelog wording so AgentDriver remains the name of the internal SDK/assistant bridge, while Klaf Server remains the public app/server protocol.
 - Updated the Klaf AgentDriver SDK dependency target to `0.10.11-SNAPSHOT` for the WSL2 data-root readiness fix in AgentDriver preflight. This requires publishing the matching AgentDriver snapshot to Maven Local before rebuilding `:klaf-server`.
+- Bumped AgentDriver to `0.10.12-SNAPSHOT` for the progressive speech-to-text
+  client API and configuration-cache-safe local config tasks. Published the
+  server/client SDK sets to Maven Local, updated the Klaf version catalog, and
+  verified `:klaf-server:compileKotlin --refresh-dependencies --no-configuration-cache`.
 - Verified after rename:
   - `:domain:compileKotlinMetadata`;
   - `:data:compileKotlinMetadata`;
@@ -183,9 +250,9 @@ MVP implementation is in local testing/review.
 - Server bind host and port will be configurable through the local ignored server `SecretConstants.kt`.
 - The MVP WebSocket path will be `/ws`.
 - MVP local/LAN testing will use plain non-TLS `ws://`.
-- AgentDriver Gradle tests/publish were not run yet because the AgentDriver repository contract says not to run Gradle from Codex.
-- `:klaf-server` previously compiled against AgentDriver `0.10.10-SNAPSHOT`; the current target is
-  `0.10.11-SNAPSHOT` and needs the matching local Maven publish before the next rebuild.
+- AgentDriver's external plugin and JVM/root metadata were published locally
+  under the user's explicit authorization; no SDK source was modified by this audit.
+- `:klaf-server` currently compiles against locally published `0.10.12-SNAPSHOT`.
 - Android/Desktop Word Insights and mnemonic text/image now use the Klaf server path.
 - Direct AgentDriver client/server interaction has been removed from the Android/Desktop app feature path.
 - The domain/UI connection concept has been renamed from AgentDriver naming to Klaf Server naming:
@@ -200,27 +267,21 @@ MVP implementation is in local testing/review.
   but this should be revisited because text rules and image rules can conflict.
 - No Git commits should be created by Codex during this implementation phase.
 
-## Review Findings To Fix
+## Review Findings Rechecked
 
-- `KlafServerSession.disconnect()` can deadlock by holding `lifecycleMutex` while waiting for
-  `readerJob.cancelAndJoin()`. The reader job also needs `lifecycleMutex` in `finally`.
-- `KlafServerSession.ensureConnected()` has the same cleanup pattern in its failure path.
-- Pending Klaf Server client requests are failed only when `readMessages()` catches an exception.
-  If the WebSocket incoming loop ends normally, a pending `response.await()` can hang forever.
-- Mnemonic text and image generation share one `MnemonicAgentSession`. The session-level text
-  developer rules include JSON-only and no-tool constraints, which can conflict with image
-  generation.
+- Connection cleanup lock inversion and clean-close pending-request hangs are
+  fixed and covered by loopback lifecycle regression tests.
+- Mnemonic text/image still share an internal session, now with both text and
+  image contracts in its developer instructions. Alternating real provider turns
+  were not tested here; the old text-only-instruction finding is not proof of a
+  current defect. This pre-existing policy was not changed by the audit.
 - AgentDriver docs were updated for the new `baseInstructions` / `developerInstructions` API
   in the main architecture notes and Ralph planning docs.
 
 ## Next
 
-- Fix review findings above before treating the migration as stable.
-- Add focused tests for `KlafServerSession` connection lifecycle:
-  - timeout before `server.ready`;
-  - clean close during a pending request;
-  - disconnect during reader shutdown;
-  - retry after failed initial connection.
+- Address the audio implementation gaps listed in `audio-transcription-status.md`
+  without including the user-deferred killed-process recovery in the current scope.
 - Run manual end-to-end checks:
   - set Klaf server bind host to the computer LAN/hotspot IP;
   - set client `SecretConstants.KlafServer.HOST` to the same IP;

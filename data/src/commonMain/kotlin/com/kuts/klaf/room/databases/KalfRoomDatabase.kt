@@ -9,11 +9,13 @@ import androidx.room.TypeConverters
 import com.kuts.klaf.room.converters.RoomDateConverter
 import com.kuts.klaf.room.dao.ICardDao
 import com.kuts.klaf.room.dao.IDeckDao
+import com.kuts.klaf.room.dao.IIgnoredVocabularyWordDao
 import com.kuts.klaf.room.dao.IStorageSaveVersionDao
 import com.kuts.klaf.room.dao.IVocabularySourceDao
 import com.kuts.klaf.room.dao.IVocabularySourceItemDao
 import com.kuts.klaf.room.entities.RoomCard
 import com.kuts.klaf.room.entities.RoomDeck
+import com.kuts.klaf.room.entities.RoomIgnoredVocabularyWord
 import com.kuts.klaf.room.entities.RoomStorageSaveVersion
 import com.kuts.klaf.room.entities.RoomVocabularySource
 import com.kuts.klaf.room.entities.RoomVocabularySourceItem
@@ -25,8 +27,9 @@ import com.kuts.klaf.room.entities.RoomVocabularySourceItem
         RoomStorageSaveVersion::class,
         RoomVocabularySource::class,
         RoomVocabularySourceItem::class,
+        RoomIgnoredVocabularyWord::class,
     ],
-    version = 8,
+    version = 12,
     exportSchema = true,
     autoMigrations = [AutoMigration(from = 1, to = 2)]
 )
@@ -39,6 +42,7 @@ abstract class KlafRoomDatabase : RoomDatabase() {
     abstract fun storageSaveVersionDao(): IStorageSaveVersionDao
     abstract fun vocabularySourceDao(): IVocabularySourceDao
     abstract fun vocabularySourceItemDao(): IVocabularySourceItemDao
+    abstract fun ignoredVocabularyWordDao(): IIgnoredVocabularyWordDao
 }
 
 @Suppress("KotlinNoActualForExpect")

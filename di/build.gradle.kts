@@ -70,6 +70,7 @@ kotlin {
                 implementation(libs.firebase.authentication)
                 implementation(libs.firebase.crashlytics)
                 implementation(libs.firebase.storage)
+                implementation(libs.firebase.messaging)
 
                 // Cambridge dictionary is off the classpath entirely, not merely unused: it is
                 // built against Ktor 2, and its reference to a class Ktor 3 removed crashed the app

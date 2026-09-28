@@ -6,6 +6,9 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import com.kuts.klaf.common.ColorHolder
 
+const val LightThemePreviewBackground: Long = 0xFFF4F0E8
+const val DarkThemePreviewBackground: Long = 0xFF1B1B1F
+
 val LightMainPalettes = MainColors(
     material = MaterialColorScheme.Theme.light,
     common = CommonColors.Theme.light,
@@ -19,6 +22,7 @@ val LightMainPalettes = MainColors(
     cardTransferringScreen = CardTransferringScreenColors.Theme.light,
     authenticationScreen = AuthenticationScreenColors.Theme.light,
     eventMessageColors = EventMessageColors.Theme.light,
+    vocabularySourceScreen = VocabularySourceScreenColors.Theme.light,
 )
 
 val DarkMainPalettes = MainColors(
@@ -34,6 +38,7 @@ val DarkMainPalettes = MainColors(
     cardTransferringScreen = CardTransferringScreenColors.Theme.dark,
     authenticationScreen = AuthenticationScreenColors.Theme.dark,
     eventMessageColors = EventMessageColors.Theme.dark,
+    vocabularySourceScreen = VocabularySourceScreenColors.Theme.dark,
 )
 
 data class MainColors(
@@ -49,7 +54,76 @@ data class MainColors(
     val cardTransferringScreen: CardTransferringScreenColors,
     val authenticationScreen: AuthenticationScreenColors,
     val eventMessageColors: EventMessageColors,
+    val vocabularySourceScreen: VocabularySourceScreenColors,
 )
+
+data class VocabularySourceBadgeColors(val container: Color, val content: Color)
+
+data class VocabularySourceScreenColors(
+    val disabledTextModeBackground: Color,
+    val disabledTextModeSelectedBackground: Color,
+    val disabledTextModeContent: Color,
+    val disabledTextModeSelectedContent: Color,
+    val disabledButtonContainer: Color,
+    val disabledButtonContent: Color,
+    val savedDot: Color,
+    val savedButtonContainer: Color,
+    val editedDot: Color,
+    val markerBorder: Color,
+    val occurrenceHighlight: Color,
+    val newBadge: VocabularySourceBadgeColors,
+    val newMeaningBadge: VocabularySourceBadgeColors,
+    val ignoredNewMeaningBadge: VocabularySourceBadgeColors,
+    val itemContainer: Color,
+    val badgeContainer: Color,
+    val audioContainer: Color,
+    val secondaryContent: Color,
+    val icon: Color,
+    val disabledIcon: Color,
+    val exampleContent: Color,
+    val cefrBadgeContainers: List<Color>,
+    val cefrBadgeContent: Color,
+) {
+    object Theme : IThemable<VocabularySourceScreenColors> {
+        override val light = vocabularySourceColors(MaterialColorScheme.Theme.light, darkTheme = false)
+        override val dark = vocabularySourceColors(MaterialColorScheme.Theme.dark, darkTheme = true)
+
+        private fun vocabularySourceColors(material: ColorScheme, darkTheme: Boolean): VocabularySourceScreenColors {
+            val newContent = if (darkTheme) Color(0xFF81C784) else Color(0xFF23753D)
+            val newMeaningContent = if (darkTheme) Color(0xFFFFB74D) else Color(0xFF8A4D00)
+            val ignoredContent = if (darkTheme) Color(0xFFEF8D8D) else Color(0xFFB52E2E)
+            val editedDot = if (darkTheme) Color(0xFFFFA000) else Color(0xFF9C6500)
+            return VocabularySourceScreenColors(
+                disabledTextModeBackground = material.surfaceVariant,
+                disabledTextModeSelectedBackground = material.onSurface.copy(alpha = 0.12F),
+                disabledTextModeContent = material.onSurface.copy(alpha = 0.60F),
+                disabledTextModeSelectedContent = material.onSurface.copy(alpha = 0.72F),
+                disabledButtonContainer = material.onSurface.copy(alpha = 0.12F),
+                disabledButtonContent = material.onSurface.copy(alpha = 0.38F),
+                savedDot = if (darkTheme) Color(0xFF66BB6A) else Color(0xFF237D41),
+                savedButtonContainer = material.surfaceVariant,
+                editedDot = editedDot,
+                markerBorder = material.surface.copy(alpha = 0.96F),
+                occurrenceHighlight = editedDot.copy(alpha = 0.32F),
+                newBadge = VocabularySourceBadgeColors(newContent.copy(alpha = 0.08F), newContent),
+                newMeaningBadge = VocabularySourceBadgeColors(newMeaningContent.copy(alpha = 0.08F), newMeaningContent),
+                ignoredNewMeaningBadge = VocabularySourceBadgeColors(ignoredContent.copy(alpha = 0.10F), ignoredContent),
+                itemContainer = material.surfaceVariant.copy(alpha = 0.14F),
+                badgeContainer = material.surfaceVariant.copy(alpha = 0.28F),
+                audioContainer = material.surfaceVariant.copy(alpha = 0.50F),
+                secondaryContent = material.onBackground.copy(alpha = 0.62F),
+                icon = material.onBackground.copy(alpha = 0.72F),
+                disabledIcon = material.onBackground.copy(alpha = 0.28F),
+                exampleContent = material.onBackground.copy(alpha = 0.70F),
+                cefrBadgeContainers = listOf(
+                    Color(0xFF2E7D32), Color(0xFF2E7D32), Color(0xFF1565C0),
+                    Color(0xFF0D47A1), Color(0xFF8D4C00), Color(0xFFB3261E),
+                ),
+                cefrBadgeContent = Color.White,
+            )
+        }
+    }
+}
 
 class MaterialColorScheme {
 
@@ -69,6 +143,8 @@ class MaterialColorScheme {
 }
 
 data class CommonColors(
+    val transparent: Color,
+    val uncheckedBoxBorder: Color,
     val statusBarBackground: Color,
     val focusedLabelColor: Color,
     val appLabelColorFilter: Color,
@@ -86,6 +162,8 @@ data class CommonColors(
     object Theme : IThemable<CommonColors> {
 
         override val light: CommonColors = CommonColors(
+            transparent = Color.Transparent,
+            uncheckedBoxBorder = MaterialColorScheme.Theme.light.onSurface.copy(alpha = 0.60F),
             statusBarBackground = Color(0xFF8AA768),
             focusedLabelColor = MaterialColorScheme.Theme.light.onPrimary,
             appLabelColorFilter = Color(0xFF374D5E),
@@ -101,6 +179,8 @@ data class CommonColors(
         )
 
         override val dark: CommonColors = CommonColors(
+            transparent = Color.Transparent,
+            uncheckedBoxBorder = MaterialColorScheme.Theme.dark.onSurface.copy(alpha = 0.60F),
             statusBarBackground = Color(0xFF464646),
             focusedLabelColor = MaterialColorScheme.Theme.dark.onPrimary,
             appLabelColorFilter = Color(0xFF686868),

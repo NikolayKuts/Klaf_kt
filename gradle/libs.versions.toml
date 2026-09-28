@@ -66,6 +66,7 @@ firebaseCoroutinePlayServices = "1.7.3"
 firebaseFirestoreKtx = "25.0.0"
 firebaseAuthenticationKtx = "23.0.0"
 firebaseCrashlyticsKtx = "19.0.3"
+firebaseAdmin = "9.4.3"
 
 # Compose #
 composeBom = "2024.06.00"
@@ -76,7 +77,7 @@ composeMultiplatform = "1.11.1"
 lokdroid = "0.2.0-alpha"
 
 # AgentDriver SDK #
-agentdriver = "0.10.11-SNAPSHOT"
+agentdriver = "0.10.12-SNAPSHOT"
 
 # KSP #
 ksp = "2.3.11"
@@ -151,6 +152,8 @@ firebase-rirestore-ktx = { group = "com.google.firebase", name = "firebase-fires
 firebase-authentication = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthenticationKtx" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx", version.ref = "firebaseCrashlyticsKtx" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage-ktx" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
+firebase-admin = { group = "com.google.firebase", name = "firebase-admin", version.ref = "firebaseAdmin" }
 
 # Compose #
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
@@ -239,3 +242,5 @@ android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.
 android-lint = { id = "com.android.lint", version.ref = "agp" }
 # Room
 room = { id = "androidx.room", version.ref = "roomPlugin" }
+# AgentDriver Speech Runtime
+agentdriver-speech-runtime = { id = "agentdriver.speech-runtime", version.ref = "agentdriver" }

@@ -1,12 +1,16 @@
 package com.kuts.klaf.networking.klafServer
 
+import com.kuts.domain.entities.MnemonicImageResult
 import com.kuts.domain.entities.MnemonicAssociationCandidate
 import com.kuts.domain.entities.MnemonicSelection
+import com.kuts.domain.managers.MnemonicGenerationSource
 import com.kuts.domain.repositories.IMnemonicImageRepository
 import com.kuts.klaf.server.contract.KlafServerErrorMessage
 import com.kuts.klaf.server.contract.MnemonicAssociationCandidateDto
 import com.kuts.klaf.server.contract.MnemonicImageGenerateRequest
 import com.kuts.klaf.server.contract.MnemonicImageGeneratedMessage
+import com.kuts.klaf.server.contract.MnemonicLaunchContextDto
+import com.kuts.klaf.server.contract.MnemonicLaunchDestinationDto
 import com.kuts.klaf.server.contract.MnemonicSelectionDto
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
@@ -22,7 +26,8 @@ class KlafServerMnemonicImageRepository(
     override suspend fun fetchMnemonicImage(
         selection: MnemonicSelection,
         comment: String?,
-    ): ByteArray {
+        launchSource: MnemonicGenerationSource?,
+    ): MnemonicImageResult {
         val normalizedSelection = selection.normalized()
         require(normalizedSelection.word.isNotBlank()) {
             "Mnemonic image request word must not be blank."
@@ -38,6 +43,7 @@ class KlafServerMnemonicImageRepository(
                     requestId = requestId,
                     selection = normalizedSelection.toContractDto(),
                     comment = comment?.trim()?.ifBlank { null },
+                    launchContext = launchSource?.toContractDto(),
                 ),
             )
         } catch (cancellation: CancellationException) {
@@ -53,9 +59,13 @@ class KlafServerMnemonicImageRepository(
                 require(bytes.isNotEmpty()) { "Mnemonic image response is empty." }
                 logD(
                     "Klaf Server mnemonic image received: requestId=$requestId, " +
-                        "word=${normalizedSelection.word}, bytes=${bytes.size}",
+                        "word=${normalizedSelection.word}, bytes=${bytes.size}, " +
+                        "serverNotificationSent=${response.serverNotificationSent}",
                 )
-                bytes
+                MnemonicImageResult(
+                    imageBytes = bytes,
+                    serverNotificationSent = response.serverNotificationSent,
+                )
             }
             is KlafServerErrorMessage -> {
                 logE(
@@ -115,3 +125,21 @@ private fun MnemonicSelection.normalized(): MnemonicSelection = copy(
         meaningMapping = candidate.meaningMapping.trim(),
     ),
 )
+
+private fun MnemonicGenerationSource.toContractDto(): MnemonicLaunchContextDto =
+    when (this) {
+        is MnemonicGenerationSource.CardCreation -> {
+            MnemonicLaunchContextDto(
+                destination = MnemonicLaunchDestinationDto.CARD_ADDITION,
+                deckId = deckId,
+            )
+        }
+
+        is MnemonicGenerationSource.CardEditing -> {
+            MnemonicLaunchContextDto(
+                destination = MnemonicLaunchDestinationDto.CARD_EDITING,
+                deckId = deckId,
+                cardId = cardId,
+            )
+        }
+    }

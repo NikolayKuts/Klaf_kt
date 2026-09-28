@@ -45,6 +45,16 @@
     <string name="vocabulary_source_analysis_failure_channel_name">Subtitle analysis errors</string>
     <string name="vocabulary_source_analysis_failure_channel_description">Alerts when subtitle analysis fails</string>
 
+    <string name="vocabulary_source_transcription_in_progress">Transcribing audio</string>
+    <string name="vocabulary_source_transcription_succeeded">Audio transcribed: %s</string>
+    <string name="vocabulary_source_transcription_failed">Audio transcription failed: %s</string>
+    <string name="vocabulary_source_transcription_progress_channel_name">Audio transcription</string>
+    <string name="vocabulary_source_transcription_progress_channel_description">Shows progress while audio is transcribed</string>
+    <string name="vocabulary_source_transcription_success_channel_name">Audio transcription results</string>
+    <string name="vocabulary_source_transcription_success_channel_description">Notifies when audio transcription is ready</string>
+    <string name="vocabulary_source_transcription_failure_channel_name">Audio transcription errors</string>
+    <string name="vocabulary_source_transcription_failure_channel_description">Alerts when audio transcription fails</string>
+
     <string name="deck_repetition_channel_description">Notify when the decks should be repeated</string>
     <string name="deck_repetition_notification_template">It is time to repeat the deck "%s"</string>
     <string name="deck_repetition_common_notification_template">Some decks require repetition</string>

@@ -24,6 +24,11 @@ kotlin {
                 implementation(libs.kotlin.serilization)
             }
         }
+        commonTest {
+            dependencies {
+                implementation(libs.tests.kotlin)
+            }
+        }
     }
 }
 

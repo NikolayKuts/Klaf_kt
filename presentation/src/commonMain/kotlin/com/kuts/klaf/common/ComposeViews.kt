@@ -181,7 +181,7 @@ fun FullBackgroundDialog(
 @Composable
 fun TransparentSurface(content: @Composable () -> Unit) {
     Surface(
-        color = Color.Transparent,
+        color = MainTheme.colors.common.transparent,
         contentColor = contentColorFor(MaterialTheme.colorScheme.surface),
         content = content,
     )
@@ -236,13 +236,14 @@ fun CustomCheckBox(
     modifier: Modifier,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true,
     checkBoxSize: Dp = 20.dp,
     borderWidth: Dp = 1.dp,
     checkedBoxColor: Color = MaterialTheme.colorScheme.secondary,
-    uncheckedBoxColor: Color = checkedBoxColor.copy(alpha = 0f),
+    uncheckedBoxColor: Color = MainTheme.colors.common.transparent,
     checkmarkColor: Color = MaterialTheme.colorScheme.surface,
     checkedBorderColor: Color = checkedBoxColor,
-    uncheckedBorderColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+    uncheckedBorderColor: Color = MainTheme.colors.common.uncheckedBoxBorder,
     shape: Shape = RoundedCornerShape(size = 4.dp),
     contentDescription: String? = null,
 ) {
@@ -258,7 +259,7 @@ fun CustomCheckBox(
                 shape = RoundedCornerShape(size = 6.dp)
             )
             .size(checkBoxSize)
-            .clickable { onCheckedChange(checked) },
+            .clickable(enabled = enabled) { onCheckedChange(checked) },
         contentAlignment = Alignment.Center
     ) {
         checked.ifTrue {
@@ -316,13 +317,14 @@ fun ScrollableBox(
 fun Modifier.verticalScrollbar(
     state: LazyListState,
     width: Dp = 3.dp,
-    color: Color = Color.Gray,
+    color: Color? = null,
     enterDuration: Int = 150,
     exitDuration: Int = 500,
     minAlpha: Float = 0f,
     maxAlpha: Float = 0.5f,
     alwaysVisible: Boolean = false,
 ): Modifier = composed {
+    val scrollbarColor = color ?: MainTheme.colors.common.separator
     val targetAlpha = if (alwaysVisible || state.isScrollInProgress) maxAlpha else minAlpha
     val duration = if (state.isScrollInProgress) enterDuration else exitDuration
 
@@ -343,7 +345,7 @@ fun Modifier.verticalScrollbar(
             val scrollbarHeight = state.layoutInfo.visibleItemsInfo.size * elementHeight
 
             drawRect(
-                color = color,
+                color = scrollbarColor,
                 topLeft = Offset(this.size.width - width.toPx(), scrollbarOffsetY),
                 size = Size(width = width.toPx(), height = scrollbarHeight),
                 alpha = alpha
@@ -356,13 +358,14 @@ fun Modifier.verticalScrollBar(
     state: ScrollState,
     visibleHeight: Dp,
     width: Dp = 5.dp,
-    color: Color = Color.Gray,
+    color: Color? = null,
     enterDuration: Int = 150,
     exitDuration: Int = 1000,
     minAlpha: Float = 0f,
     maxAlpha: Float = 0.5f,
     alwaysVisible: Boolean = false,
 ): Modifier = composed {
+    val scrollbarColor = color ?: MainTheme.colors.common.separator
     val targetAlpha = if (alwaysVisible || state.isScrollInProgress) maxAlpha else minAlpha
     val duration = if (state.isScrollInProgress) enterDuration else exitDuration
 
@@ -389,7 +392,7 @@ fun Modifier.verticalScrollBar(
             val scrollbarOffsetY = ((maxOffsetValue * scrollPositionPercent) / 100) + scrollPosition
 
             drawRect(
-                color = color,
+                color = scrollbarColor,
                 topLeft = Offset(x = this.size.width - width.toPx(), y = scrollbarOffsetY),
                 size = Size(width = width.toPx(), height = barHeight),
                 alpha = alpha,

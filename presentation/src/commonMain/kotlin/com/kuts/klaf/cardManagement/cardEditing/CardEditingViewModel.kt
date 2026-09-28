@@ -13,6 +13,7 @@ import com.kuts.domain.ipa.toLetterInfos
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
+import com.kuts.domain.managers.CardLaunchContext
 import com.kuts.domain.managers.MnemonicGenerationSource
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IMnemonicImageAssetRepository
@@ -63,7 +64,7 @@ import org.jetbrains.compose.resources.StringResource
 
 class CardEditingViewModel(
     private val deckId: Int,
-    cardId: Int,
+    private val cardId: Int,
     private val fetchCard: FetchCardUseCase,
     private val updateCard: UpdateCardUseCase,
     private val fetchWordMeaningInsights: FetchWordMeaningInsightsUseCase,
@@ -262,7 +263,15 @@ class CardEditingViewModel(
         }
 
         viewModelScope.launchWithState(coroutineContextProvider.io) {
-            val refreshedInsights = sanitizeInsights(insights = fetchWordMeaningInsights(word = foreignWord))
+            val refreshedInsights = sanitizeInsights(
+                insights = fetchWordMeaningInsights(
+                    word = foreignWord,
+                    launchContext = CardLaunchContext(
+                        deckId = deckId,
+                        cardId = cardId,
+                    ),
+                ),
+            )
             val refreshedMeanings = refreshedInsights.meanings
             logD(
                 "refresh completed for word=${foreignWord.asLogWord()}, meanings=${refreshedMeanings.size}"
@@ -416,7 +425,13 @@ class CardEditingViewModel(
                 return@launchWithState
             }
 
-            val insights = fetchWordMeaningInsights(word = foreignWord)
+            val insights = fetchWordMeaningInsights(
+                word = foreignWord,
+                launchContext = CardLaunchContext(
+                    deckId = deckId,
+                    cardId = card.id,
+                ),
+            )
             logD(
                 "auto-load fetched insights for cardId=${card.id}, " +
                     "word=${foreignWord.asLogWord()}, meanings=${insights.meanings.size}"

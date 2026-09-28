@@ -69,6 +69,13 @@ kotlin {
                 implementation(libs.ktor.client.cio)
             }
         }
+        val desktopTest by getting {
+            dependencies {
+                implementation(libs.ktor.server.core)
+                implementation(libs.ktor.server.cio)
+                implementation(libs.ktor.server.websockets)
+            }
+        }
         val androidMain by getting {
             dependencies {
                 implementation(libs.core.android.ktx)
@@ -82,6 +89,7 @@ kotlin {
                 implementation(libs.firebase.coroutine.play.services)
                 implementation(libs.firebase.crashlytics)
                 implementation(libs.firebase.storage)
+                implementation(libs.firebase.messaging)
 
                 implementation(libs.work.manager)
 

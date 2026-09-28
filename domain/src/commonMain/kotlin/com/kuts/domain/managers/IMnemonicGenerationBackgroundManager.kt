@@ -22,7 +22,10 @@ sealed interface MnemonicGenerationSource {
 }
 
 fun interface MnemonicGenerationHandle {
-    fun finish(outcome: MnemonicGenerationOutcome)
+    fun finish(
+        outcome: MnemonicGenerationOutcome,
+        serverNotificationSent: Boolean,
+    )
 }
 
 /** Platform hook that keeps generation visible to the OS and reports its terminal outcome. */

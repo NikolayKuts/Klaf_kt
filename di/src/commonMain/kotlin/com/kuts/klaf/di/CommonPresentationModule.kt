@@ -3,6 +3,7 @@ package com.kuts.klaf.di
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.kuts.domain.common.ICoroutineContextProvider
+import com.kuts.domain.managers.VocabularySourceTranscriptionCoordinator
 import com.kuts.klaf.authentication.AuthenticationViewModel
 import com.kuts.klaf.authentication.BaseAuthenticationViewModel
 import com.kuts.klaf.cardManagement.cardAddition.CardAdditionViewModel
@@ -22,11 +23,21 @@ import com.kuts.klaf.deckRepetitionInfo.DeckRepetitionInfoViewModel
 import com.kuts.klaf.vocabularySource.VocabularySourceDetailViewModel
 import com.kuts.klaf.vocabularySource.VocabularySourceListViewModel
 import com.kuts.klaf.webContent.WebContentViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 internal val commonPresentationModule = module {
+    single {
+        VocabularySourceTranscriptionCoordinator(
+            transcribe = get(),
+            backgroundManager = get(),
+            scope = CoroutineScope(SupervisorJob() + get<ICoroutineContextProvider>().io),
+            onBackgroundFailure = { println("Transcription notification finish failed: ${it::class.simpleName}") },
+        )
+    }
     single<DataStore<Preferences>>(qualifier = named(name = APP_PREFERENCES_DATA_STORE)) {
         get<IAppPreferencesDataStoreFactory>().create()
     }
@@ -185,14 +196,15 @@ internal val commonPresentationModule = module {
             sourceId = params.get(),
             observeVocabularySourceById = get(),
             observeVocabularySourceItems = get(),
-            updateVocabularySource = get(),
-            saveVocabularySourceItems = get(),
-            replaceVocabularySourceDraftItems = get(),
+            saveVocabularySourceChanges = get(),
             analyzeVocabularySourceText = get(),
+            transcriptionCoordinator = get(),
             fetchAllCards = get(),
+            fetchIgnoredVocabularyWords = get(),
             fetchDeckSource = get(),
             addVocabularySourceItemsToDeck = get(),
             vocabularySourceAnalysisBackgroundManager = get(),
+            textToSpeechManager = get(),
         )
     }
 

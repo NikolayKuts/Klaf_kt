@@ -3,7 +3,9 @@ package com.kuts.klaf.networking.klafServer
 import com.kuts.domain.entities.CefrLevel
 import com.kuts.domain.entities.WordMeaningInsights
 import com.kuts.domain.entities.WordMeaningItem
+import com.kuts.domain.managers.CardLaunchContext
 import com.kuts.domain.repositories.IWordMeaningInsightsRepository
+import com.kuts.klaf.server.contract.CardLaunchContextDto
 import com.kuts.klaf.server.contract.KlafServerErrorMessage
 import com.kuts.klaf.server.contract.WordInsightsGenerateRequest
 import com.kuts.klaf.server.contract.WordInsightsGeneratedMessage
@@ -17,7 +19,10 @@ class KlafServerWordMeaningInsightsRepository(
     private val klafServerSession: IKlafServerSession,
 ) : IWordMeaningInsightsRepository {
 
-    override suspend fun fetchWordMeaningInsights(word: String): WordMeaningInsights {
+    override suspend fun fetchWordMeaningInsights(
+        word: String,
+        launchContext: CardLaunchContext?,
+    ): WordMeaningInsights {
         val requestedWord = word.trim()
         require(requestedWord.isNotBlank()) { "Word must not be blank." }
 
@@ -27,6 +32,7 @@ class KlafServerWordMeaningInsightsRepository(
                 message = WordInsightsGenerateRequest(
                     requestId = requestId,
                     word = requestedWord,
+                    launchContext = launchContext?.toContractDto(),
                 ),
             )
         } catch (cancellation: CancellationException) {
@@ -70,4 +76,10 @@ private fun WordMeaningItemDto.toDomainEntity(): WordMeaningItem =
         proficiencyLevel = CefrLevel.valueOf(cefr),
         context = context,
         examples = examples,
+    )
+
+private fun CardLaunchContext.toContractDto(): CardLaunchContextDto =
+    CardLaunchContextDto(
+        deckId = deckId,
+        cardId = cardId,
     )

@@ -70,6 +70,18 @@ cleanup rules, platform limits, and diagnostics.
 - Xcode for iOS work
 - Android SDK for the Android app
 
+## Local Configuration
+
+Before building a fresh checkout, copy
+`presentation/src/commonMain/kotlin/com/kuts/klaf/common/SecretConstants.kt.example`
+to `SecretConstants.kt` in the same directory. The empty URL uses the default
+public ChatGPT page; an optional custom URL belongs only in the ignored local file.
+
+Keep credentials, machine-specific paths, host addresses, and account/device
+identifiers out of tracked files. Local `SecretConstants.kt`, `local.properties`,
+Firebase configuration, build caches, and JVM crash logs are excluded by
+`.gitignore`; only neutral configuration templates should be committed.
+
 ## Run
 
 ### Android

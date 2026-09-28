@@ -7,7 +7,10 @@ enum class VocabularySourceAnalysisOutcome {
 }
 
 fun interface VocabularySourceAnalysisHandle {
-    fun finish(outcome: VocabularySourceAnalysisOutcome)
+    fun finish(
+        outcome: VocabularySourceAnalysisOutcome,
+        serverNotificationSent: Boolean,
+    )
 }
 
 interface IVocabularySourceAnalysisBackgroundManager {

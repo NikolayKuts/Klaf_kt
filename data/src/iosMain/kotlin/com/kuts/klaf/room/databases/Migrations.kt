@@ -4,6 +4,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.execSQL
 import com.kuts.klaf.room.entities.RoomCard.Companion.CARD_TABLE_NAME
+import com.kuts.klaf.room.entities.RoomIgnoredVocabularyWord.Companion.IGNORED_VOCABULARY_WORD_TABLE_NAME
 
 object Migrations {
 
@@ -27,6 +28,35 @@ object Migrations {
 
         override fun migrate(connection: SQLiteConnection) {
             createVocabularySourceTables { sql -> connection.execSQL(sql) }
+        }
+    }
+
+    val from8To9 = object : Migration(8, 9) {
+
+        override fun migrate(connection: SQLiteConnection) {
+            addVocabularySourceItemTranscriptionColumn { sql -> connection.execSQL(sql) }
+        }
+    }
+
+    val from9To10 = object : Migration(9, 10) {
+
+        override fun migrate(connection: SQLiteConnection) {
+            addVocabularySourceItemIsEditedColumn { sql -> connection.execSQL(sql) }
+        }
+    }
+
+    val from10To11 = object : Migration(10, 11) {
+
+        override fun migrate(connection: SQLiteConnection) {
+            addVocabularySourceItemLanguageColumn { sql -> connection.execSQL(sql) }
+            createIgnoredVocabularyWordsTable { sql -> connection.execSQL(sql) }
+        }
+    }
+
+    val from11To12 = object : Migration(11, 12) {
+
+        override fun migrate(connection: SQLiteConnection) {
+            addVocabularySourceUrlColumn { sql -> connection.execSQL(sql) }
         }
     }
 
@@ -73,6 +103,54 @@ object Migrations {
         execSql(
             "CREATE INDEX IF NOT EXISTS `index_${VOCABULARY_SOURCE_ITEM_TABLE}_createdCardId` " +
                 "ON `$VOCABULARY_SOURCE_ITEM_TABLE` (`createdCardId`)"
+        )
+    }
+
+    private fun addVocabularySourceItemTranscriptionColumn(execSql: (String) -> Unit) {
+        execSql(
+            "ALTER TABLE `$VOCABULARY_SOURCE_ITEM_TABLE` " +
+                "ADD COLUMN `transcription` TEXT NOT NULL DEFAULT ''"
+        )
+    }
+
+    private fun addVocabularySourceItemIsEditedColumn(execSql: (String) -> Unit) {
+        execSql(
+            "ALTER TABLE `$VOCABULARY_SOURCE_ITEM_TABLE` " +
+                "ADD COLUMN `isEdited` INTEGER NOT NULL DEFAULT 0"
+        )
+    }
+
+    private fun addVocabularySourceItemLanguageColumn(execSql: (String) -> Unit) {
+        execSql(
+            "ALTER TABLE `$VOCABULARY_SOURCE_ITEM_TABLE` " +
+                "ADD COLUMN `language` TEXT NOT NULL DEFAULT ''"
+        )
+    }
+
+    private fun createIgnoredVocabularyWordsTable(execSql: (String) -> Unit) {
+        execSql(
+            "CREATE TABLE IF NOT EXISTS `$IGNORED_VOCABULARY_WORD_TABLE_NAME` (" +
+                "`language` TEXT NOT NULL, " +
+                "`foreignWord` TEXT NOT NULL, " +
+                "`nativeWord` TEXT NOT NULL, " +
+                "`languageKey` TEXT NOT NULL, " +
+                "`foreignWordKey` TEXT NOT NULL, " +
+                "`nativeWordKey` TEXT NOT NULL, " +
+                "`createdAt` INTEGER NOT NULL, " +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)"
+        )
+        execSql(
+            "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                "`index_${IGNORED_VOCABULARY_WORD_TABLE_NAME}_languageKey_foreignWordKey_nativeWordKey` " +
+                "ON `$IGNORED_VOCABULARY_WORD_TABLE_NAME` " +
+                "(`languageKey`, `foreignWordKey`, `nativeWordKey`)"
+        )
+    }
+
+    private fun addVocabularySourceUrlColumn(execSql: (String) -> Unit) {
+        execSql(
+            "ALTER TABLE `$VOCABULARY_SOURCE_TABLE` " +
+                "ADD COLUMN `url` TEXT NOT NULL DEFAULT ''"
         )
     }
 }

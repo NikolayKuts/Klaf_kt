@@ -6,10 +6,12 @@ import com.kuts.domain.entities.KlafServerConnectionState
 import com.kuts.domain.entities.AuthenticationState
 import com.kuts.domain.entities.AutocompleteWord
 import com.kuts.domain.entities.WordMeaningInsights
+import com.kuts.domain.managers.CardLaunchContext
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IKlafServerConnectionManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
+import com.kuts.domain.managers.ITextToSpeechManager
 import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.repositories.IOldAppKlafDataTransferRepository
@@ -73,7 +75,10 @@ class IosNoOpWordAutocompleteRepository : IWordAutocompleteRepository {
 }
 
 class IosNoOpWordMeaningInsightsRepository : IWordMeaningInsightsRepository {
-    override suspend fun fetchWordMeaningInsights(word: String): WordMeaningInsights {
+    override suspend fun fetchWordMeaningInsights(
+        word: String,
+        launchContext: CardLaunchContext?,
+    ): WordMeaningInsights {
         error("Word insights through Klaf Server are not implemented on iOS yet.")
     }
 }
@@ -104,6 +109,12 @@ class IosNoOpAudioPlayerManager : IAudioPlayerManager {
     override fun preparePronunciation(word: String) = Unit
     override fun play() = Unit
     override fun preparePronunciationAndPlay(word: String) = Unit
+}
+
+class IosNoOpTextToSpeechManager : ITextToSpeechManager {
+    override fun speak(text: String) = Unit
+    override fun stop() = Unit
+    override fun shutdown() = Unit
 }
 
 class IosNoOpDeckReviewScheduler : IDeckReviewScheduler {

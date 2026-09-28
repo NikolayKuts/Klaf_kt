@@ -1,9 +1,27 @@
 # Transcript Vocabulary Analysis Requirements
 
+## Uncommitted-worktree Audit (2026-09-28)
+
+- Preserve edits made while Save is running; saving an older snapshot must not
+  clear newer unsaved changes. An empty new analysis draft stays empty instead
+  of displaying previously saved items.
+- Cover Room 8/9/10/11 -> 12 migrations, ignored-rule uniqueness and transactional
+  rollback with fresh temporary databases. Never open or change the user backup.
+- Saving a draft must preserve the current persisted ADDED rows and card/deck
+  links, not overwrite them with stale copies from that draft. Phrase matching
+  normalizes repeated whitespace in foreign words as well as meanings.
+
 This document captures product and technical requirements for transcript-based
 vocabulary extraction in Klaf.
 
 ## Agreed Requirements
+
+### UI Theme Consistency (2026-09-28)
+
+Source detail UI, its dialogs, disabled states, saved/edited markers, category
+badges and occurrence highlights must follow the selected light/dark theme.
+Define palette values centrally in the existing presentation theme configuration;
+screens consume semantic colors instead of defining local color literals.
 
 ### P0 - Feature Naming
 
@@ -22,8 +40,9 @@ items to decks.
 The creation flow should not collect transcript text. Transcript text is entered
 or edited on the source detail screen.
 
-The source list should show item counters for each source, including pending,
-added, and ignored counts.
+The source list should show item counters for each source, including pending and
+added counts. Ignored runtime items become global Ignored Words when saved and
+therefore do not remain in source counters.
 
 The source list should show useful timestamps such as creation date, update date,
 or last analysis date.
@@ -39,6 +58,10 @@ After an analysis has been created, the user may edit the transcript text and ru
 analysis again. Reanalysis must require confirmation because it can replace or
 recompute existing analysis items.
 
+Starting analysis must clear any active occurrence highlight, locate request,
+and text selection left by the item target action, because those offsets belong
+to the previous analysis result.
+
 On reanalysis, items already linked to created cards should be preserved. Other
 items can be replaced by the new AI result. The user may later adjust item status
 manually when needed.
@@ -47,6 +70,10 @@ manually when needed.
 
 The MVP accepts text pasted manually by the user. It does not integrate with
 subtitle websites, REST APIs, YouTube APIs, or file import.
+
+The transcript editor must display the current character count for the visible
+Original or Cleaned text. The count should be compact and integrated into the
+field's outline near its top-right edge, without taking a separate layout row.
 
 ### P0 - English To Russian Analysis
 
@@ -70,6 +97,11 @@ The analysis result should separate items into at least two groups:
 Each result item should include:
 
 - foreign word or expression;
+- IPA transcription and a text-to-speech action. In the item title, the
+  transcription and its action form one unbreakable visual unit. When the title
+  row is too narrow, that unit wraps below the foreign word and aligns to the
+  left edge instead of forcing the foreign word to wrap around it. When both
+  units fit on one row, they must be vertically center-aligned;
 - Russian meaning;
 - source example from the transcript;
 - short explanation for the detected meaning;
@@ -119,22 +151,26 @@ Each analysis item should have a status:
 
 - `pending` - visible and not added yet;
 - `added` - added to a deck/card;
-- `ignored` - intentionally hidden or removed by the user from the active review
-  list.
+- `ignored` - a runtime-only pending decision. Before save it is visually
+  disabled and may be restored. Saving moves its word/meaning pair into the
+  global Ignored Words store instead of persisting the item in this source.
 
 Each analysis item should also store its result category:
 
 - `new` - the word or expression is not present in the user's vocabulary;
 - `possibleNewMeaning` - the word or expression exists, but the transcript may
   use a new meaning.
+- `ignoredWordNewMeaning` - the word exists only in Ignored Words, not in a
+  card, and the transcript contains a different meaning that must be reviewed.
 
 For `possibleNewMeaning` items, store a snapshot of known meanings from existing
 cards when available, for example "обвинение; плата". This helps explain why the
 item is considered a possible new meaning.
 
 Klaf should assign item categories locally by comparing AI-extracted vocabulary
-items with the user's card database. If a meaning comparison is ambiguous, Klaf
-may send a compact set of ambiguous cases to the AI for resolution.
+items with the user's card database and global Ignored Words. If a meaning
+comparison is ambiguous, Klaf may send a compact set of ambiguous cases to the
+AI for resolution.
 
 The local comparison should use cards from all decks, not only a target deck.
 
@@ -168,10 +204,27 @@ Selection checkbox state is runtime UI state only and should not be persisted in
 Room. It can be modeled with a holder similar to the existing card transfer
 selection holder.
 
-Item processing status such as `pending`, `added`, and `ignored` is persistent
-state and should be stored in Room.
+`pending` and `added` are persistent source-item states. `ignored` is runtime
+state until the next save. The user can restore an ignored item back to
+`pending` before saving.
 
-Ignored items should have an action that restores them back to `pending`.
+Saving a source must atomically:
+
+- persist source fields and non-ignored source items;
+- upsert ignored items into a global Ignored Words store; and
+- exclude those ignored items from source-item records.
+
+Ignored Words apply across every Vocabulary Source. Each record stores the
+analysis `language`, `foreignWord`, `nativeWord`, timestamps, and an id. The
+matching key is a normalized exact `language + foreignWord + nativeWord` pair:
+trimmed, case-insensitive, with normalized whitespace in the meaning. No
+semantic synonym matching is required.
+
+During analysis categorization, an item whose normalized pair already exists in
+either cards or Ignored Words must not be shown. If a foreign word has a
+different meaning in a card, it is `possibleNewMeaning`. If it has a different
+meaning only in Ignored Words, it is `ignoredWordNewMeaning` and the UI shows a
+soft red `IGNORED · NEW MEANING` badge.
 
 The MVP should not provide a manual action that changes `added` back to
 `pending` while the linked card still exists. Added state should follow the
@@ -186,6 +239,10 @@ pending, and the user receives an error or summary.
 
 Before creating cards from selected items, show a confirmation dialog with the
 selected item count and target deck name.
+
+The target-deck chooser must keep the new-deck action accessible and provide a
+vertically scrollable, height-bounded list of existing decks so every target
+deck remains selectable on small screens or when many decks exist.
 
 Batch add should create cards only from selected `pending` items. Selected
 `ignored` or `added` items should be skipped with a short message or summary.
@@ -319,9 +376,9 @@ should be able to show that the vocabulary already exists even when it was not
 created from this source item. This should be treated separately from the
 source-created `added` state, for example with an `alreadyExists` flag.
 
-Ignored items should not disappear permanently. They may be shown with a disabled
-or semi-transparent visual style, and the screen may provide filters to include
-or exclude them.
+An ignored item remains visible only in the unsaved runtime draft, with a
+disabled or semi-transparent visual style. After save it is removed from the
+source. Managing or deleting global Ignored Words is a separate future screen.
 
 ### P0 - Added State Tracking
 
@@ -351,6 +408,7 @@ See `docs/transcript-vocabulary-analysis-nice-to-have.md`.
 
 - `id`
 - `sourceId`
+- `language`
 - `foreignWord`
 - `nativeWord`
 - `originalText`
@@ -381,3 +439,11 @@ Stored in `occurrencesJson` for the MVP.
 - `startOffset`
 - `endOffset`
 - `sentence`
+
+### IgnoredVocabularyWord
+
+- `id`
+- `language`
+- `foreignWord`
+- `nativeWord`
+- `createdAt`

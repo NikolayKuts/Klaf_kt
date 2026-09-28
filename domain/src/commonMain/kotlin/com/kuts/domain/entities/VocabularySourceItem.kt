@@ -4,7 +4,9 @@ import kotlinx.serialization.Serializable
 
 data class VocabularySourceItem(
     val sourceId: Int,
+    val language: String = "",
     val foreignWord: String,
+    val transcription: String = "",
     val nativeWord: String,
     val originalText: String = "",
     val partOfSpeech: VocabularySourceItemPartOfSpeech = VocabularySourceItemPartOfSpeech.UNKNOWN,
@@ -20,6 +22,7 @@ data class VocabularySourceItem(
     val createdCardId: Int? = null,
     val targetDeckId: Int? = null,
     val firstOccurrenceOrder: Int = 0,
+    val isEdited: Boolean = false,
     val createdAt: Long,
     val updatedAt: Long,
     val id: Int = 0,
@@ -34,6 +37,7 @@ enum class VocabularySourceItemStatus {
 enum class VocabularySourceItemCategory {
     NEW,
     POSSIBLE_NEW_MEANING,
+    IGNORED_WORD_NEW_MEANING,
 }
 
 enum class VocabularySourceItemConfidence {

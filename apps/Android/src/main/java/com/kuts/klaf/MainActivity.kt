@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
 
         private const val MIME_TYPE_TEXT_PLAIN = "text/plain"
+        private const val FIREBASE_SOURCE_ID_KEY = "sourceId"
     }
 
     private val sharedViewModel: BaseMainViewModel by viewModels<MainViewModel>()
@@ -58,6 +59,7 @@ class MainActivity : AppCompatActivity() {
         val initialLaunchRequest = intent.toLaunchNavigationRequest()
         intent.clearMnemonicGenerationLaunchExtras()
         intent.clearVocabularySourceAnalysisLaunchExtras()
+        intent.clearAppLaunchNavigationExtras()
 
         setContent {
             MainTheme {
@@ -96,6 +98,7 @@ class MainActivity : AppCompatActivity() {
         val launchRequest = intent.toLaunchNavigationRequest()
         intent.clearMnemonicGenerationLaunchExtras()
         intent.clearVocabularySourceAnalysisLaunchExtras()
+        intent.clearAppLaunchNavigationExtras()
         setIntent(intent)
         launchRequest?.let { request -> launchRequests.tryEmit(request) }
     }
@@ -127,16 +130,24 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 AppLaunchNavigationExtras.DESTINATION_DECK_REPETITION -> {
-                    val deckId = getIntExtra(
-                        AppLaunchNavigationExtras.DECK_ID_KEY,
-                        AppLaunchNavigationExtras.DEFAULT_DECK_ID,
-                    )
+                    val deckId = getLaunchIntExtra(AppLaunchNavigationExtras.DECK_ID_KEY)
+                        ?: AppLaunchNavigationExtras.DEFAULT_DECK_ID
                     val deckName = getStringExtra(AppLaunchNavigationExtras.DECK_NAME_KEY)
                         ?: AppLaunchNavigationExtras.DEFAULT_DECK_NAME
 
                     AppLaunchNavigationRequest.OpenDeckRepetition(
                         deckId = deckId,
                         deckName = deckName,
+                    )
+                }
+
+                AppLaunchNavigationExtras.DESTINATION_CARD_EDITING -> {
+                    val cardId = getLaunchIntExtra(AppLaunchNavigationExtras.CARD_ID_KEY)
+                        ?: return null
+                    AppLaunchNavigationRequest.OpenCardEditing(
+                        deckId = getLaunchIntExtra(AppLaunchNavigationExtras.DECK_ID_KEY)
+                            ?: AppLaunchNavigationExtras.DEFAULT_DECK_ID,
+                        cardId = cardId,
                     )
                 }
 
@@ -157,8 +168,8 @@ class MainActivity : AppCompatActivity() {
     private fun Intent.toMnemonicGenerationLaunchNavigationRequest(): AppLaunchNavigationRequest? {
         val destination = getStringExtra(MnemonicGenerationLaunchExtras.DESTINATION_KEY)
             ?: return null
-        if (!hasExtra(MnemonicGenerationLaunchExtras.DECK_ID_KEY)) return null
-        val deckId = getIntExtra(MnemonicGenerationLaunchExtras.DECK_ID_KEY, 0)
+        val deckId = getLaunchIntExtra(MnemonicGenerationLaunchExtras.DECK_ID_KEY)
+            ?: return null
 
         return when (destination) {
             MnemonicGenerationLaunchExtras.DESTINATION_CARD_ADDITION -> {
@@ -166,8 +177,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             MnemonicGenerationLaunchExtras.DESTINATION_CARD_EDITING -> {
-                if (!hasExtra(MnemonicGenerationLaunchExtras.CARD_ID_KEY)) return null
-                val cardId = getIntExtra(MnemonicGenerationLaunchExtras.CARD_ID_KEY, 0)
+                val cardId = getLaunchIntExtra(MnemonicGenerationLaunchExtras.CARD_ID_KEY)
+                    ?: return null
 
                 AppLaunchNavigationRequest.OpenCardEditingMnemonicManagement(
                     deckId = deckId,
@@ -180,10 +191,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun Intent.toVocabularySourceAnalysisLaunchNavigationRequest(): AppLaunchNavigationRequest? {
-        if (!hasExtra(VocabularySourceAnalysisLaunchExtras.SOURCE_ID_KEY)) return null
+        val sourceId = getLaunchIntExtra(VocabularySourceAnalysisLaunchExtras.SOURCE_ID_KEY)
+            ?: getLaunchIntExtra(FIREBASE_SOURCE_ID_KEY)
+            ?: return null
 
         return AppLaunchNavigationRequest.OpenVocabularySourceDetail(
-            sourceId = getIntExtra(VocabularySourceAnalysisLaunchExtras.SOURCE_ID_KEY, 0),
+            sourceId = sourceId,
         )
     }
 
@@ -195,5 +208,25 @@ class MainActivity : AppCompatActivity() {
 
     private fun Intent.clearVocabularySourceAnalysisLaunchExtras() {
         removeExtra(VocabularySourceAnalysisLaunchExtras.SOURCE_ID_KEY)
+        removeExtra(FIREBASE_SOURCE_ID_KEY)
+    }
+
+    private fun Intent.clearAppLaunchNavigationExtras() {
+        removeExtra(AppLaunchNavigationExtras.DESTINATION_KEY)
+        removeExtra(AppLaunchNavigationExtras.DECK_ID_KEY)
+        removeExtra(AppLaunchNavigationExtras.DECK_NAME_KEY)
+        removeExtra(AppLaunchNavigationExtras.CARD_ID_KEY)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun Intent.getLaunchIntExtra(key: String): Int? {
+        return when (val value = extras?.get(key)) {
+            is Int -> value
+            is Long -> value
+                .takeIf { it in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong() }
+                ?.toInt()
+            is String -> value.toIntOrNull()
+            else -> null
+        }
     }
 }

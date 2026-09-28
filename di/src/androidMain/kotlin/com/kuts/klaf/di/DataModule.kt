@@ -13,6 +13,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.entities.DeckRepetitionInfos
@@ -23,6 +24,7 @@ import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
+import com.kuts.domain.managers.ITextToSpeechManager
 import com.kuts.domain.managers.IVocabularySourceAnalysisBackgroundManager
 import com.kuts.domain.repositories.IAuthenticationRepository
 import com.kuts.domain.repositories.ICardRepository
@@ -79,11 +81,17 @@ import com.kuts.klaf.networking.klafServer.KlafServerSession
 import com.kuts.klaf.networking.klafServer.KlafServerWordMeaningInsightsRepository
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
+import com.kuts.klaf.push.AndroidKlafServerPushTokenRegistrar
+import com.kuts.klaf.push.KlafPushTokenManager
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
 import com.kuts.klaf.speech.AndroidSpeechRecognitionManager
+import com.kuts.klaf.speech.AndroidTextToSpeechManager
+import com.kuts.domain.managers.IVocabularySourceTranscriptionBackgroundManager
 import com.kuts.klaf.vocabularySource.AndroidVocabularySourceAnalysisBackgroundManager
+import com.kuts.klaf.vocabularySource.AndroidVocabularySourceTranscriptionBackgroundManager
 import com.kuts.klaf.vocabularySource.VocabularySourceAnalysisNotifier
+import com.kuts.klaf.vocabularySource.VocabularySourceTranscriptionNotifier
 import com.lib.lokdroid.core.LoKdroid
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -168,6 +176,13 @@ private fun Module.androidRepositoryModule() {
             diagnostics = get(),
         )
     }
+    single(createdAtStart = true) {
+        AndroidKlafServerPushTokenRegistrar(
+            klafServerSession = get(),
+            pushTokenManager = get(),
+            coroutineContextProvider = get(),
+        )
+    }
     single<IWordMeaningInsightsRepository> {
         KlafServerWordMeaningInsightsRepository(
             klafServerSession = get(),
@@ -206,6 +221,7 @@ private fun Module.infrastructureModule() {
     single { FirebaseFirestore.getInstance() }
     single { FirebaseAuth.getInstance() }
     single { FirebaseStorage.getInstance() }
+    single { FirebaseMessaging.getInstance() }
     single<FirebaseCrashlytics> { Firebase.crashlytics }
 
     single<DataStore<DeckRepetitionInfos>>(
@@ -262,6 +278,18 @@ private fun Module.dataManagerBindings() {
             notificationManager = get(),
         )
     }
+    single {
+        VocabularySourceTranscriptionNotifier(
+            context = androidContext(),
+            notificationManager = get(),
+        )
+    }
+    single {
+        KlafPushTokenManager(
+            firebaseMessaging = get(),
+            coroutineContextProvider = get(),
+        )
+    }
     single<IMnemonicGenerationBackgroundManager> {
         AndroidMnemonicGenerationBackgroundManager(
             context = androidContext(),
@@ -273,6 +301,15 @@ private fun Module.dataManagerBindings() {
     }
     single<IVocabularySourceAnalysisBackgroundManager> {
         AndroidVocabularySourceAnalysisBackgroundManager(
+            context = androidContext(),
+            applicationVisibilityTracker = get(),
+            diagnostics = get(),
+            notificationChannelInitializer = get(),
+            notifier = get(),
+        )
+    }
+    single<IVocabularySourceTranscriptionBackgroundManager> {
+        AndroidVocabularySourceTranscriptionBackgroundManager(
             context = androidContext(),
             applicationVisibilityTracker = get(),
             diagnostics = get(),
@@ -292,6 +329,7 @@ private fun Module.dataManagerBindings() {
     }
 
     factory<IAudioPlayerManager> { AndroidCardAudioPlayer(crashlytics = get()) }
+    factory<ITextToSpeechManager> { AndroidTextToSpeechManager(context = androidContext()) }
     factory<ISpeechRecognitionManager> {
         AndroidSpeechRecognitionManager(context = androidContext())
     }

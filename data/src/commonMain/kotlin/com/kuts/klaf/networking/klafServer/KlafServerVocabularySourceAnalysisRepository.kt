@@ -3,6 +3,7 @@ package com.kuts.klaf.networking.klafServer
 import com.kuts.domain.entities.CefrLevel
 import com.kuts.domain.entities.VocabularySourceAnalysis
 import com.kuts.domain.entities.VocabularySourceAnalysisItem
+import com.kuts.domain.entities.VocabularySourceAnalysisResult
 import com.kuts.domain.entities.VocabularySourceItemConfidence
 import com.kuts.domain.entities.VocabularySourceItemOccurrence
 import com.kuts.domain.entities.VocabularySourceItemPartOfSpeech
@@ -18,12 +19,18 @@ import com.kuts.klaf.server.contract.VocabularySourceItemPartOfSpeechDto
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 
 class KlafServerVocabularySourceAnalysisRepository(
     private val klafServerSession: IKlafServerSession,
 ) : IVocabularySourceAnalysisRepository {
 
-    override suspend fun analyze(cleanText: String): VocabularySourceAnalysis {
+    override suspend fun analyze(
+        cleanText: String,
+        sourceId: Int?,
+        sourceTitle: String?,
+    ): VocabularySourceAnalysisResult {
         val text = cleanText.trim()
         require(text.isNotBlank()) { "Transcript text must not be blank." }
 
@@ -33,9 +40,14 @@ class KlafServerVocabularySourceAnalysisRepository(
                 message = VocabularySourceAnalyzeRequest(
                     requestId = requestId,
                     cleanText = text,
+                    sourceId = sourceId,
+                    sourceTitle = sourceTitle,
                 ),
             )
         } catch (cancellation: CancellationException) {
+            withContext(NonCancellable) {
+                klafServerSession.cancelRequest(requestId = requestId)
+            }
             throw cancellation
         } catch (throwable: Throwable) {
             logE("Klaf Server vocabulary source analysis request failed: requestId=$requestId, failure=$throwable")
@@ -46,9 +58,13 @@ class KlafServerVocabularySourceAnalysisRepository(
             is VocabularySourceAnalyzedMessage -> {
                 logD(
                     "Klaf Server vocabulary source analysis received: requestId=$requestId, " +
-                        "language=${response.analysis.language}, items=${response.analysis.items.size}",
+                        "language=${response.analysis.language}, items=${response.analysis.items.size}, " +
+                        "serverNotificationSent=${response.serverNotificationSent}",
                 )
-                response.analysis.toDomainEntity()
+                VocabularySourceAnalysisResult(
+                    analysis = response.analysis.toDomainEntity(),
+                    serverNotificationSent = response.serverNotificationSent,
+                )
             }
             is KlafServerErrorMessage -> {
                 logE(
@@ -71,6 +87,7 @@ private fun VocabularySourceAnalysisDto.toDomainEntity(): VocabularySourceAnalys
 private fun VocabularySourceAnalysisItemDto.toDomainEntity(): VocabularySourceAnalysisItem =
     VocabularySourceAnalysisItem(
         foreignWord = foreignWord,
+        transcription = transcription,
         nativeWord = nativeWord,
         originalText = originalText,
         partOfSpeech = partOfSpeech.toDomainEntity(),

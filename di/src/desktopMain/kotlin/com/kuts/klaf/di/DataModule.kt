@@ -8,6 +8,7 @@ import com.kuts.domain.entities.AuthenticationState
 import com.kuts.domain.entities.AutocompleteWord
 import com.kuts.domain.entities.DeckRepetitionInfo
 import com.kuts.domain.entities.WordMeaningInsights
+import com.kuts.domain.managers.CardLaunchContext
 import com.kuts.domain.managers.IKlafServerConnectionManager
 import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
@@ -15,6 +16,7 @@ import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
+import com.kuts.domain.managers.ITextToSpeechManager
 import com.kuts.domain.managers.IVocabularySourceAnalysisBackgroundManager
 import com.kuts.domain.managers.SpeechRecognitionResult
 import com.kuts.domain.managers.SpeechRecognitionState
@@ -47,7 +49,9 @@ import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
+import com.kuts.domain.managers.IVocabularySourceTranscriptionBackgroundManager
 import com.kuts.klaf.vocabularySource.NoOpVocabularySourceAnalysisBackgroundManager
+import com.kuts.klaf.vocabularySource.NoOpVocabularySourceTranscriptionBackgroundManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -137,7 +141,11 @@ private fun Module.desktopManagerBindings() {
     single<IVocabularySourceAnalysisBackgroundManager> {
         NoOpVocabularySourceAnalysisBackgroundManager()
     }
+    single<IVocabularySourceTranscriptionBackgroundManager> {
+        NoOpVocabularySourceTranscriptionBackgroundManager()
+    }
     factory<IAudioPlayerManager> { DesktopNoOpAudioPlayerManager() }
+    factory<ITextToSpeechManager> { DesktopNoOpTextToSpeechManager() }
     factory<ISpeechRecognitionManager> { DesktopNoOpSpeechRecognitionManager() }
     single<IDeckReviewScheduler> { DesktopNoOpDeckReviewScheduler() }
 }
@@ -196,7 +204,10 @@ private class DesktopWordAutocompleteRepository : IWordAutocompleteRepository {
 }
 
 private class DesktopWordMeaningInsightsRepository : IWordMeaningInsightsRepository {
-    override suspend fun fetchWordMeaningInsights(word: String): WordMeaningInsights {
+    override suspend fun fetchWordMeaningInsights(
+        word: String,
+        launchContext: CardLaunchContext?,
+    ): WordMeaningInsights {
         return WordMeaningInsights.EMPTY
     }
 }
@@ -257,6 +268,12 @@ private class DesktopNoOpAudioPlayerManager : IAudioPlayerManager {
     override fun preparePronunciation(word: String) = Unit
     override fun play() = Unit
     override fun preparePronunciationAndPlay(word: String) = Unit
+}
+
+private class DesktopNoOpTextToSpeechManager : ITextToSpeechManager {
+    override fun speak(text: String) = Unit
+    override fun stop() = Unit
+    override fun shutdown() = Unit
 }
 
 private class DesktopNoOpDeckReviewScheduler : IDeckReviewScheduler {

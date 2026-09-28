@@ -4,6 +4,7 @@ import com.kuts.domain.entities.Card
 import com.kuts.domain.entities.CardMnemonic
 import com.kuts.domain.entities.CefrLevel
 import com.kuts.domain.entities.Deck
+import com.kuts.domain.entities.IgnoredVocabularyWord
 import com.kuts.domain.entities.StorageSaveVersion
 import com.kuts.domain.entities.VocabularySource
 import com.kuts.domain.entities.VocabularySourceItem
@@ -12,8 +13,12 @@ import com.kuts.domain.entities.VocabularySourceItemConfidence
 import com.kuts.domain.entities.VocabularySourceItemOccurrence
 import com.kuts.domain.entities.VocabularySourceItemPartOfSpeech
 import com.kuts.domain.entities.VocabularySourceItemStatus
+import com.kuts.domain.vocabularySource.toLanguageKey
+import com.kuts.domain.vocabularySource.toMeaningKey
+import com.kuts.domain.vocabularySource.toVocabularyKey
 import com.kuts.klaf.room.entities.RoomCard
 import com.kuts.klaf.room.entities.RoomDeck
+import com.kuts.klaf.room.entities.RoomIgnoredVocabularyWord
 import com.kuts.klaf.room.entities.RoomStorageSaveVersion
 import com.kuts.klaf.room.entities.RoomVocabularySource
 import com.kuts.klaf.room.entities.RoomVocabularySourceItem
@@ -91,6 +96,7 @@ fun RoomStorageSaveVersion.toDomainEntity(): StorageSaveVersion = StorageSaveVer
 fun RoomVocabularySource.toDomainEntity(): VocabularySource = VocabularySource(
     title = title,
     description = description,
+    url = url,
     rawText = rawText,
     cleanText = cleanText,
     analysisVersion = analysisVersion,
@@ -103,6 +109,7 @@ fun RoomVocabularySource.toDomainEntity(): VocabularySource = VocabularySource(
 fun VocabularySource.toRoomEntity(): RoomVocabularySource = RoomVocabularySource(
     title = title,
     description = description,
+    url = url,
     rawText = rawText,
     cleanText = cleanText,
     analysisVersion = analysisVersion,
@@ -114,7 +121,9 @@ fun VocabularySource.toRoomEntity(): RoomVocabularySource = RoomVocabularySource
 
 fun RoomVocabularySourceItem.toDomainEntity(): VocabularySourceItem = VocabularySourceItem(
     sourceId = sourceId,
+    language = language,
     foreignWord = foreignWord,
+    transcription = transcription,
     nativeWord = nativeWord,
     originalText = originalText,
     partOfSpeech = partOfSpeech.toEnumOrDefault(default = VocabularySourceItemPartOfSpeech.UNKNOWN),
@@ -130,6 +139,7 @@ fun RoomVocabularySourceItem.toDomainEntity(): VocabularySourceItem = Vocabulary
     createdCardId = createdCardId,
     targetDeckId = targetDeckId,
     firstOccurrenceOrder = firstOccurrenceOrder,
+    isEdited = isEdited,
     createdAt = createdAt,
     updatedAt = updatedAt,
     id = id,
@@ -137,7 +147,9 @@ fun RoomVocabularySourceItem.toDomainEntity(): VocabularySourceItem = Vocabulary
 
 fun VocabularySourceItem.toRoomEntity(): RoomVocabularySourceItem = RoomVocabularySourceItem(
     sourceId = sourceId,
+    language = language,
     foreignWord = foreignWord,
+    transcription = transcription,
     nativeWord = nativeWord,
     originalText = originalText,
     partOfSpeech = partOfSpeech.name,
@@ -153,8 +165,28 @@ fun VocabularySourceItem.toRoomEntity(): RoomVocabularySourceItem = RoomVocabula
     createdCardId = createdCardId,
     targetDeckId = targetDeckId,
     firstOccurrenceOrder = firstOccurrenceOrder,
+    isEdited = isEdited,
     createdAt = createdAt,
     updatedAt = updatedAt,
+    id = id,
+)
+
+fun RoomIgnoredVocabularyWord.toDomainEntity(): IgnoredVocabularyWord = IgnoredVocabularyWord(
+    language = language,
+    foreignWord = foreignWord,
+    nativeWord = nativeWord,
+    createdAt = createdAt,
+    id = id,
+)
+
+fun IgnoredVocabularyWord.toRoomEntity(): RoomIgnoredVocabularyWord = RoomIgnoredVocabularyWord(
+    language = language.trim(),
+    foreignWord = foreignWord.trim(),
+    nativeWord = nativeWord.trim(),
+    languageKey = language.toLanguageKey(),
+    foreignWordKey = foreignWord.toVocabularyKey(),
+    nativeWordKey = nativeWord.toMeaningKey(),
+    createdAt = createdAt,
     id = id,
 )
 

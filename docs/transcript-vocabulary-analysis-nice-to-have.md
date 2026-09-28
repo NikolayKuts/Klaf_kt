@@ -5,6 +5,8 @@
 
 ## Nice-To-Have Items
 
+- Add an Ignored Words management screen to review and delete global ignored
+  word/meaning rules.
 - Show occurrence count for each detected word or phrase in the analyzed text.
 - Sort results by occurrence count, confidence, or first appearance in the transcript.
 - Preserve timestamps from SRT/VTT input and let the user jump back to the source moment.

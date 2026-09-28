@@ -3,6 +3,7 @@ package com.kuts.domain.entities
 data class VocabularySource(
     val title: String,
     val description: String = "",
+    val url: String = "",
     val rawText: String = "",
     val cleanText: String = "",
     val analysisVersion: Int = CURRENT_ANALYSIS_VERSION,

@@ -22,6 +22,11 @@ sealed interface AppLaunchNavigationRequest {
         val cardId: Int,
     ) : AppLaunchNavigationRequest
 
+    data class OpenCardEditing(
+        val deckId: Int,
+        val cardId: Int,
+    ) : AppLaunchNavigationRequest
+
     data class OpenVocabularySourceDetail(
         val sourceId: Int,
     ) : AppLaunchNavigationRequest
@@ -32,10 +37,12 @@ object AppLaunchNavigationExtras {
     const val DESTINATION_KEY = "launch_destination"
     const val DECK_ID_KEY = "launch_deck_id"
     const val DECK_NAME_KEY = "launch_deck_name"
+    const val CARD_ID_KEY = "launch_card_id"
 
     const val DESTINATION_DECK_LIST = "deck_list"
     const val DESTINATION_INTERIM_CARD_ADDITION = "interim_card_addition"
     const val DESTINATION_DECK_REPETITION = "deck_repetition"
+    const val DESTINATION_CARD_EDITING = "card_editing"
 
     const val DEFAULT_DECK_ID = Deck.INTERIM_DECK_ID
     const val DEFAULT_DECK_NAME = Deck.INTERIM_DECK_NAME

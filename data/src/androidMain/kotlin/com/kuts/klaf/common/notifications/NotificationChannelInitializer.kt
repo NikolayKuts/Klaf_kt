@@ -28,6 +28,9 @@ class NotificationChannelInitializer(
         const val VOCABULARY_SOURCE_ANALYSIS_PROGRESS_CHANNEL_ID = "vocabulary_source_analysis_progress_channel_id"
         const val VOCABULARY_SOURCE_ANALYSIS_SUCCESS_CHANNEL_ID = "vocabulary_source_analysis_success_channel_id"
         const val VOCABULARY_SOURCE_ANALYSIS_FAILURE_CHANNEL_ID = "vocabulary_source_analysis_failure_channel_id"
+        const val VOCABULARY_SOURCE_TRANSCRIPTION_PROGRESS_CHANNEL_ID = "vocabulary_source_transcription_progress_channel_id"
+        const val VOCABULARY_SOURCE_TRANSCRIPTION_SUCCESS_CHANNEL_ID = "vocabulary_source_transcription_success_channel_id"
+        const val VOCABULARY_SOURCE_TRANSCRIPTION_FAILURE_CHANNEL_ID = "vocabulary_source_transcription_failure_channel_id"
     }
 
     fun initialize() {
@@ -35,6 +38,7 @@ class NotificationChannelInitializer(
         createWorkLogicChannel()
         initializeMnemonicGenerationChannels()
         initializeVocabularySourceAnalysisChannels()
+        initializeVocabularySourceTranscriptionChannels()
     }
 
     fun initializeMnemonicGenerationChannels() {
@@ -140,6 +144,63 @@ class NotificationChannelInitializer(
                 NotificationManager.IMPORTANCE_HIGH,
             ).apply {
                 description = context.getString(R.string.vocabulary_source_analysis_failure_channel_description)
+                lightColor = Color.RED
+                enableLights(true)
+                enableVibration(true)
+            }
+
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+    }
+
+    fun initializeVocabularySourceTranscriptionChannels() {
+        createVocabularySourceTranscriptionProgressChannel()
+        createVocabularySourceTranscriptionSuccessChannel()
+        createVocabularySourceTranscriptionFailureChannel()
+    }
+
+    private fun createVocabularySourceTranscriptionProgressChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                VOCABULARY_SOURCE_TRANSCRIPTION_PROGRESS_CHANNEL_ID,
+                context.getString(R.string.vocabulary_source_transcription_progress_channel_name),
+                NotificationManager.IMPORTANCE_LOW,
+            ).apply {
+                description = context.getString(R.string.vocabulary_source_transcription_progress_channel_description)
+                lightColor = Color.GREEN
+                enableLights(false)
+                enableVibration(false)
+            }
+
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+    }
+
+    private fun createVocabularySourceTranscriptionSuccessChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                VOCABULARY_SOURCE_TRANSCRIPTION_SUCCESS_CHANNEL_ID,
+                context.getString(R.string.vocabulary_source_transcription_success_channel_name),
+                NotificationManager.IMPORTANCE_HIGH,
+            ).apply {
+                description = context.getString(R.string.vocabulary_source_transcription_success_channel_description)
+                lightColor = Color.GREEN
+                enableLights(true)
+                enableVibration(true)
+            }
+
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+    }
+
+    private fun createVocabularySourceTranscriptionFailureChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(
+                VOCABULARY_SOURCE_TRANSCRIPTION_FAILURE_CHANNEL_ID,
+                context.getString(R.string.vocabulary_source_transcription_failure_channel_name),
+                NotificationManager.IMPORTANCE_HIGH,
+            ).apply {
+                description = context.getString(R.string.vocabulary_source_transcription_failure_channel_description)
                 lightColor = Color.RED
                 enableLights(true)
                 enableVibration(true)

@@ -44,7 +44,7 @@ internal fun <SharedViewModel> KlafNavHostContent(
     }
 
     LaunchedEffect(key1 = navController) {
-        initialLaunchRequest?.let { navController.handleLaunchRequest(request = it) }
+        initialLaunchRequest?.let { request -> navController.handleLaunchRequest(request = request) }
     }
 
     LaunchedEffect(key1 = navController, key2 = launchRequests) {
@@ -73,17 +73,12 @@ internal fun NavHostController.handleLaunchRequest(request: AppLaunchNavigationR
         }
 
         is AppLaunchNavigationRequest.OpenDeckRepetition -> {
-            navigate(
-                route = AppDestination.DeckRepetition(
+            openTopLevelDestination(
+                destination = AppDestination.DeckRepetition(
                     deckId = request.deckId,
                     deckName = request.deckName,
-                )
-            ) {
-                popUpTo(route = AppDestination.DeckList) {
-                    inclusive = false
-                }
-                launchSingleTop = true
-            }
+                ),
+            )
         }
 
         is AppLaunchNavigationRequest.OpenCardAdditionMnemonicManagement -> {
@@ -108,14 +103,36 @@ internal fun NavHostController.handleLaunchRequest(request: AppLaunchNavigationR
             )
         }
 
-        is AppLaunchNavigationRequest.OpenVocabularySourceDetail -> {
-            navigate(route = AppDestination.VocabularySourceDetail(sourceId = request.sourceId)) {
-                popUpTo(route = AppDestination.DeckList) {
-                    inclusive = false
-                }
-                launchSingleTop = true
-            }
+        is AppLaunchNavigationRequest.OpenCardEditing -> {
+            openTopLevelDestination(
+                destination = AppDestination.CardEditing(
+                    deckId = request.deckId,
+                    cardId = request.cardId,
+                ),
+            )
         }
+
+        is AppLaunchNavigationRequest.OpenVocabularySourceDetail -> {
+            openTopLevelDestination(
+                destination = AppDestination.VocabularySourceDetail(sourceId = request.sourceId),
+            )
+        }
+    }
+}
+
+private inline fun <reified Destination : Any> NavHostController.openTopLevelDestination(destination: Destination) {
+    if (isCurrentRoute(route = destination)) {
+        return
+    }
+    if (popBackStack(route = destination, inclusive = false)) {
+        return
+    }
+
+    navigate(route = destination) {
+        popUpTo(route = AppDestination.DeckList) {
+            inclusive = false
+        }
+        launchSingleTop = true
     }
 }
 
@@ -123,8 +140,12 @@ private inline fun <reified Parent : Any, reified Destination : Any> NavHostCont
     parent: Parent,
     destination: Destination,
 ) {
-    if (isCurrentRoute(route = destination)) return
-    if (popBackStack(route = destination, inclusive = false)) return
+    if (isCurrentRoute(route = destination)) {
+        return
+    }
+    if (popBackStack(route = destination, inclusive = false)) {
+        return
+    }
 
     if (!isCurrentRoute(route = parent) && !popBackStack(route = parent, inclusive = false)) {
         navigate(route = parent) {

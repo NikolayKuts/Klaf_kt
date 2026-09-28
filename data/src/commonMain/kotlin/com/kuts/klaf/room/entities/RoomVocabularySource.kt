@@ -8,6 +8,7 @@ import com.kuts.klaf.room.entities.RoomVocabularySource.Companion.VOCABULARY_SOU
 data class RoomVocabularySource(
     val title: String,
     val description: String,
+    val url: String = "",
     val rawText: String,
     val cleanText: String,
     val analysisVersion: Int,

@@ -7,7 +7,9 @@ import com.kuts.domain.managers.IKlafServerConnectionManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
+import com.kuts.domain.managers.MnemonicGenerationSource
 import com.kuts.domain.managers.ISpeechRecognitionManager
+import com.kuts.domain.managers.ITextToSpeechManager
 import com.kuts.domain.managers.IVocabularySourceAnalysisBackgroundManager
 import com.kuts.domain.managers.SpeechRecognitionResult
 import com.kuts.domain.managers.SpeechRecognitionState
@@ -25,7 +27,8 @@ import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IWordAutocompleteRepository
 import com.kuts.domain.repositories.IWordInfoRepository
 import com.kuts.domain.repositories.IWordMeaningInsightsRepository
-import com.kuts.domain.entities.MnemonicAssociation
+import com.kuts.domain.entities.MnemonicAssociationResult
+import com.kuts.domain.entities.MnemonicImageResult
 import com.kuts.klaf.common.IosAppMaintenanceManager
 import com.kuts.klaf.common.IosCoroutineContextProvider
 import com.kuts.klaf.dataStore.implementations.IosInMemoryDeckRepetitionInfoRepository
@@ -36,6 +39,7 @@ import com.kuts.klaf.ios.IosNoOpKlafServerConnectionManager
 import com.kuts.klaf.ios.IosNoOpCrashlyticsRepository
 import com.kuts.klaf.ios.IosNoOpDeckReviewScheduler
 import com.kuts.klaf.ios.IosNoOpOldAppKlafDataTransferRepository
+import com.kuts.klaf.ios.IosNoOpTextToSpeechManager
 import com.kuts.klaf.ios.IosNoOpWordAutocompleteRepository
 import com.kuts.klaf.ios.IosNoOpWordMeaningInsightsRepository
 import com.kuts.klaf.mnemonic.IosNoOpMnemonicImageAssetRepository
@@ -111,6 +115,7 @@ private fun Module.iosManagerBindings() {
         NoOpVocabularySourceAnalysisBackgroundManager()
     }
     factory<IAudioPlayerManager> { IosNoOpAudioPlayerManager() }
+    factory<ITextToSpeechManager> { IosNoOpTextToSpeechManager() }
     factory<ISpeechRecognitionManager> { IosNoOpSpeechRecognitionManager() }
     single<IDeckReviewScheduler> { IosNoOpDeckReviewScheduler() }
 }
@@ -120,7 +125,8 @@ private class IosNoOpMnemonicAssociationRepository : IMnemonicAssociationReposit
         word: String,
         comment: String?,
         excludedSoundAnchors: List<String>,
-    ): MnemonicAssociation {
+        launchSource: MnemonicGenerationSource?,
+    ): MnemonicAssociationResult {
         throw UnsupportedOperationException("Mnemonic association requests are unavailable on iOS.")
     }
 }
@@ -129,7 +135,8 @@ private class IosNoOpMnemonicImageRepository : IMnemonicImageRepository {
     override suspend fun fetchMnemonicImage(
         selection: com.kuts.domain.entities.MnemonicSelection,
         comment: String?,
-    ): ByteArray {
+        launchSource: MnemonicGenerationSource?,
+    ): MnemonicImageResult {
         throw UnsupportedOperationException("Mnemonic image requests are unavailable on iOS.")
     }
 }

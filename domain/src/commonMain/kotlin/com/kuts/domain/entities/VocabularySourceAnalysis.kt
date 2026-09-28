@@ -7,6 +7,7 @@ data class VocabularySourceAnalysis(
 
 data class VocabularySourceAnalysisItem(
     val foreignWord: String,
+    val transcription: String = "",
     val nativeWord: String,
     val originalText: String,
     val partOfSpeech: VocabularySourceItemPartOfSpeech,

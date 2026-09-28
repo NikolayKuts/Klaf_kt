@@ -4,14 +4,17 @@ import com.kuts.domain.common.DataSynchronizationValidator
 import com.kuts.domain.interactors.AuthenticationInteractor
 import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.IDeckRepository
+import com.kuts.domain.repositories.IIgnoredVocabularyWordRepository
 import com.kuts.domain.repositories.IMnemonicImageRemoteRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IStorageTransactionRepository
 import com.kuts.domain.repositories.IVocabularySourceAnalysisRepository
 import com.kuts.domain.repositories.IVocabularySourceRepository
+import com.kuts.domain.repositories.IVocabularySourceTranscriptionRepository
 import com.kuts.domain.useCases.AddNewCardIntoDeckUseCase
 import com.kuts.domain.useCases.AddVocabularySourceItemsToDeckUseCase
 import com.kuts.domain.useCases.AnalyzeVocabularySourceTextUseCase
+import com.kuts.domain.useCases.TranscribeVocabularySourceAudioUseCase
 import com.kuts.domain.useCases.BackupDataUseCase
 import com.kuts.domain.useCases.CheckIfCardExistsUseCase
 import com.kuts.domain.useCases.CreateDeckUseCase
@@ -25,6 +28,7 @@ import com.kuts.domain.useCases.FetchCardsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
 import com.kuts.domain.useCases.FetchDeckRepetitionInfoUseCase
 import com.kuts.domain.useCases.FetchDeckSourceUseCase
+import com.kuts.domain.useCases.FetchIgnoredVocabularyWordsUseCase
 import com.kuts.domain.useCases.FetchMnemonicAssociationUseCase
 import com.kuts.domain.useCases.FetchMnemonicImageUseCase
 import com.kuts.domain.useCases.FetchVocabularySourceByIdUseCase
@@ -47,6 +51,7 @@ import com.kuts.domain.useCases.SaveDeckRemotelyUseCase
 import com.kuts.domain.useCases.SaveDeckReviewInfoUseCase
 import com.kuts.domain.useCases.RetryKlafServerConnectionUseCase
 import com.kuts.domain.useCases.SaveVocabularySourceItemsUseCase
+import com.kuts.domain.useCases.SaveVocabularySourceChangesUseCase
 import com.kuts.domain.useCases.SynchronizeLocalAndRemoteDataUseCase
 import com.kuts.domain.useCases.TransferCardsToDeckUseCase
 import com.kuts.domain.useCases.TransferDataOfOldAppKlafUseCase
@@ -54,8 +59,10 @@ import com.kuts.domain.useCases.UpdateCardUseCase
 import com.kuts.domain.useCases.UpdateDeckUseCase
 import com.kuts.domain.useCases.UpdateVocabularySourceUseCase
 import com.kuts.klaf.networking.klafServer.KlafServerVocabularySourceAnalysisRepository
+import com.kuts.klaf.networking.klafServer.KlafServerVocabularySourceTranscriptionRepository
 import com.kuts.klaf.room.repositoryImplementations.CardRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.DeckRepositoryRoom
+import com.kuts.klaf.room.repositoryImplementations.IgnoredVocabularyWordRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.StorageSaveVersionRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.StorageTransactionRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.VocabularySourceRepositoryRoom
@@ -94,8 +101,14 @@ private fun Module.commonRepositoryModule() {
     single<IVocabularySourceRepository> {
         VocabularySourceRepositoryRoom(roomDatabase = get())
     }
+    single<IIgnoredVocabularyWordRepository> {
+        IgnoredVocabularyWordRepositoryRoom(roomDatabase = get())
+    }
     single<IVocabularySourceAnalysisRepository> {
         KlafServerVocabularySourceAnalysisRepository(klafServerSession = get())
+    }
+    single<IVocabularySourceTranscriptionRepository> {
+        KlafServerVocabularySourceTranscriptionRepository(klafServerSession = get())
     }
 
     single<IStorageTransactionRepository> { StorageTransactionRepositoryRoom(roomDatabase = get()) }
@@ -386,6 +399,12 @@ private fun Module.commonVocabularySourceUseCaseModule() {
             coroutineContextProvider = get(),
         )
     }
+    factory {
+        FetchIgnoredVocabularyWordsUseCase(
+            ignoredVocabularyWordRepository = get(),
+            coroutineContextProvider = get(),
+        )
+    }
     factory { ObserveVocabularySourceByIdUseCase(vocabularySourceRepository = get()) }
     factory { ObserveAllVocabularySourceItemsUseCase(vocabularySourceRepository = get()) }
     factory { ObserveVocabularySourceItemsUseCase(vocabularySourceRepository = get()) }
@@ -411,6 +430,17 @@ private fun Module.commonVocabularySourceUseCaseModule() {
         )
     }
     factory {
+        SaveVocabularySourceChangesUseCase(
+            vocabularySourceRepository = get(),
+            ignoredVocabularyWordRepository = get(),
+            localStorageSaveVersionRepository = get(
+                qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
+            ),
+            localStorageTransactionRepository = get(),
+            coroutineContextProvider = get(),
+        )
+    }
+    factory {
         ReplaceVocabularySourceDraftItemsUseCase(
             vocabularySourceRepository = get(),
             localStorageSaveVersionRepository = get(
@@ -428,6 +458,11 @@ private fun Module.commonVocabularySourceUseCaseModule() {
             ),
             localStorageTransactionRepository = get(),
             coroutineContextProvider = get(),
+        )
+    }
+    factory {
+        TranscribeVocabularySourceAudioUseCase(
+            repository = get(),
         )
     }
 }

@@ -3,6 +3,16 @@
 This file is a temporary working document for the Klaf server implementation.
 It should be removed or replaced by permanent documentation after the full implementation is finished.
 
+## UI Theme Consistency (2026-09-28)
+
+- Uncommitted server log UI and client screens/dialogs/components must support
+  both light and dark themes. Keep actual color values in centralized theme
+  configuration, not in screen files or log text builders.
+- Server log severity, search highlights, inputs and actions must use the active
+  palette. Changing theme must rebuild styled log text without losing searches
+  or log entries. The server uses a module-local theme configuration rather than
+  depending on the client presentation module.
+
 ## Goal
 
 Create a separate Gradle module for a Klaf server application inside the existing `Klaf_kt` Gradle project.
@@ -28,7 +38,7 @@ Review note: keeping mnemonic text and mnemonic image in one session creates a p
 
 AgentDriver SDK needs support for passing session-level developer instructions into Codex app-server `thread/start`, instead of wrapping the same instruction into every `turn/start` prompt.
 
-This has been implemented in the local AgentDriver working tree. Klaf Server currently targets `0.10.11-SNAPSHOT`, which must be published to Maven Local before rebuilding the integration.
+This has been implemented in the local AgentDriver working tree. Klaf Server currently targets `0.10.12-SNAPSHOT`, published to Maven Local for the local integration build.
 
 The current SDK shape is:
 

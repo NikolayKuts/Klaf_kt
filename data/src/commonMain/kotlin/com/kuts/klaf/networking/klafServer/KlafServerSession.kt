@@ -1,14 +1,24 @@
 package com.kuts.klaf.networking.klafServer
 
 import com.kuts.domain.entities.KlafServerConnectionState
+import com.kuts.klaf.server.contract.AudioUploadFrameCodec
 import com.kuts.klaf.server.contract.KLAF_SERVER_WEBSOCKET_PATH
+import com.kuts.klaf.server.contract.KlafServerCancelRequest
 import com.kuts.klaf.server.contract.KlafServerClientMessage
+import com.kuts.klaf.server.contract.KlafServerErrorCode
 import com.kuts.klaf.server.contract.KlafServerErrorMessage
 import com.kuts.klaf.server.contract.KlafServerMessage
 import com.kuts.klaf.server.contract.KlafServerReadyMessage
 import com.kuts.klaf.server.contract.MnemonicAssociationGeneratedMessage
 import com.kuts.klaf.server.contract.MnemonicImageGeneratedMessage
+import com.kuts.klaf.server.contract.PushTokenRegisteredMessage
+import com.kuts.klaf.server.contract.SpeechToTextSegmentDto
 import com.kuts.klaf.server.contract.VocabularySourceAnalyzedMessage
+import com.kuts.klaf.server.contract.VocabularySourceTranscribeCompleteRequest
+import com.kuts.klaf.server.contract.VocabularySourceTranscribeRecognitionProgressMessage
+import com.kuts.klaf.server.contract.VocabularySourceTranscribeStartRequest
+import com.kuts.klaf.server.contract.VocabularySourceTranscribeUploadProgressMessage
+import com.kuts.klaf.server.contract.VocabularySourceTranscribedMessage
 import com.kuts.klaf.server.contract.WordInsightsGeneratedMessage
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
@@ -23,15 +33,20 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.SerializationException
@@ -45,6 +60,25 @@ private const val READY_TIMEOUT_MILLIS = 5_000L
 private const val RECONNECT_INITIAL_DELAY_MILLIS = 1_000L
 private const val RECONNECT_MAX_DELAY_MILLIS = 10_000L
 private const val CONNECTION_WATCH_INTERVAL_MILLIS = 15_000L
+private const val AUDIO_UPLOAD_WINDOW_BYTES = 2 * 1024 * 1024L
+
+sealed interface VocabularySourceTranscriptionSessionEvent {
+    data class UploadProgress(val uploadedBytes: Long, val totalBytes: Long) : VocabularySourceTranscriptionSessionEvent
+    data class RecognitionProgress(val completedChunks: Int, val totalChunks: Int) : VocabularySourceTranscriptionSessionEvent
+    data class Completed(
+        val transcript: String,
+        val segments: List<SpeechToTextSegmentDto>,
+        val serverNotificationSent: Boolean = false,
+    ) : VocabularySourceTranscriptionSessionEvent
+}
+
+private data class PendingTranscriptionRequest(
+    val requestId: String,
+    val uploadSession: DefaultClientWebSocketSession,
+    val channel: Channel<VocabularySourceTranscriptionSessionEvent>,
+    val acknowledgements: Channel<Long> = Channel(capacity = Channel.CONFLATED),
+    @Volatile var isUploadCompleted: Boolean = false,
+)
 
 private data class PendingKlafServerRequest(
     val message: KlafServerClientMessage,
@@ -60,10 +94,23 @@ private data class ConnectionWatchSnapshot(
 
 interface IKlafServerSession {
     val connectionState: StateFlow<KlafServerConnectionState>
+    val clientSessionId: String
 
     suspend fun connect()
 
     suspend fun request(message: KlafServerClientMessage): KlafServerMessage
+
+    fun transcribeAudio(
+        requestId: String,
+        sourceId: Int?,
+        sourceTitle: String? = null,
+        fileName: String,
+        audioFormat: String,
+        declaredByteSize: Long,
+        audioStreamProvider: suspend (sendChunk: suspend (ByteArray) -> Unit) -> Unit,
+    ): Flow<VocabularySourceTranscriptionSessionEvent>
+
+    suspend fun cancelRequest(requestId: String)
 
     suspend fun nextRequestId(prefix: String): String
 
@@ -85,8 +132,11 @@ class KlafServerSession(
     }
     private val scope = CoroutineScope(SupervisorJob())
     private val lifecycleMutex = Mutex()
+    private val connectionMutex = Mutex()
     private val requestMutex = Mutex()
+    private val resendMutex = Mutex()
     private val pendingRequests = mutableMapOf<String, PendingKlafServerRequest>()
+    private val pendingTranscriptionRequests = mutableMapOf<String, PendingTranscriptionRequest>()
     private val mutableConnectionState = MutableStateFlow<KlafServerConnectionState>(
         value = KlafServerConnectionState.Disconnected,
     )
@@ -96,7 +146,7 @@ class KlafServerSession(
     private var reconnectJob: Job? = null
     private var connectionWatchJob: Job? = null
     private var readySignal: CompletableDeferred<Unit>? = null
-    private val requestIdNamespace = Random.nextLong().toString()
+    override val clientSessionId = Random.nextLong().toULong().toString(radix = 16)
     private var nextRequestSequence = 0L
     private var manualDisconnectRequested = false
 
@@ -183,8 +233,153 @@ class KlafServerSession(
         }
     }
 
+    override fun transcribeAudio(
+        requestId: String,
+        sourceId: Int?,
+        sourceTitle: String?,
+        fileName: String,
+        audioFormat: String,
+        declaredByteSize: Long,
+        audioStreamProvider: suspend (sendChunk: suspend (ByteArray) -> Unit) -> Unit,
+    ): Flow<VocabularySourceTranscriptionSessionEvent> = flow {
+        val activeSession = ensureConnected()
+        val eventChannel = Channel<VocabularySourceTranscriptionSessionEvent>(capacity = Channel.BUFFERED)
+        val acknowledgements = Channel<Long>(capacity = Channel.CONFLATED)
+        val pending = PendingTranscriptionRequest(
+            requestId = requestId,
+            uploadSession = activeSession,
+            channel = eventChannel,
+            acknowledgements = acknowledgements,
+        )
+        requestMutex.withLock {
+            pendingTranscriptionRequests[requestId] = pending
+        }
+
+        var uploadJob: Job? = null
+        try {
+            val startRequest = VocabularySourceTranscribeStartRequest(
+                requestId = requestId,
+                sourceId = sourceId,
+                sourceTitle = sourceTitle,
+                fileName = fileName,
+                audioFormat = audioFormat,
+                declaredByteSize = declaredByteSize,
+                clientSessionId = clientSessionId,
+            )
+            sendRequest(session = activeSession, message = startRequest)
+
+            uploadJob = scope.launch {
+                try {
+                    awaitAcknowledgement(acknowledgements, targetBytes = 0L)
+                    var bytesSent = 0L
+                    var windowSent = 0L
+                    audioStreamProvider { chunk ->
+                        if (chunk.isNotEmpty()) {
+                            require(chunk.size.toLong() <= declaredByteSize - bytesSent) {
+                                "Audio file exceeds its declared byte size."
+                            }
+                            val encoded = AudioUploadFrameCodec.encode(requestId = requestId, audioChunk = chunk)
+                            activeSession.send(Frame.Binary(fin = true, data = encoded))
+                            bytesSent += chunk.size
+                            windowSent += chunk.size
+                            if (windowSent >= AUDIO_UPLOAD_WINDOW_BYTES) {
+                                awaitAcknowledgement(
+                                    acknowledgements = acknowledgements,
+                                    targetBytes = bytesSent,
+                                )
+                                windowSent = 0L
+                            }
+                        }
+                    }
+                    require(bytesSent == declaredByteSize) { "Audio file size changed during upload." }
+                    if (bytesSent > 0L) {
+                        awaitAcknowledgement(
+                            acknowledgements = acknowledgements,
+                            targetBytes = bytesSent,
+                        )
+                    }
+                    logD("Audio upload complete; sending complete request: requestId=$requestId, bytesSent=$bytesSent")
+                    val completeRequest = VocabularySourceTranscribeCompleteRequest(requestId = requestId)
+                    requestMutex.withLock {
+                        pending.isUploadCompleted = true
+                    }
+                    try {
+                        sendRequest(session = activeSession, message = completeRequest)
+                    } catch (cancellation: CancellationException) {
+                        throw cancellation
+                    } catch (failure: Throwable) {
+                        logE(
+                            "Klaf Server failed to send initial transcribe complete request; " +
+                                "will be sent on reconnect: requestId=$requestId, failure=$failure",
+                        )
+                        scheduleReconnect(reason = failure)
+                    }
+                } catch (cancellation: CancellationException) {
+                    throw cancellation
+                } catch (failure: Throwable) {
+                    logE("Klaf Server audio upload streaming failed: requestId=$requestId, failure=$failure")
+                    eventChannel.close(failure)
+                }
+            }
+
+            for (event in eventChannel) {
+                emit(event)
+                if (event is VocabularySourceTranscriptionSessionEvent.Completed) {
+                    break
+                }
+            }
+            uploadJob.join()
+        } catch (cancellation: CancellationException) {
+            uploadJob?.cancel()
+            withContext(NonCancellable) {
+                cancelRequest(requestId = requestId)
+            }
+            throw cancellation
+        } finally {
+            requestMutex.withLock {
+                pendingTranscriptionRequests.remove(requestId)
+            }
+            uploadJob?.cancel()
+            acknowledgements.close()
+            eventChannel.close()
+        }
+    }
+
+    private suspend fun awaitAcknowledgement(
+        acknowledgements: Channel<Long>,
+        targetBytes: Long,
+    ) {
+        withTimeout(30_000) {
+            while (acknowledgements.receive() < targetBytes) {
+                // Progress can be conflated; the most recent acknowledgement is sufficient.
+            }
+        }
+    }
+
+    override suspend fun cancelRequest(requestId: String) {
+        val cancelMessage = KlafServerCancelRequest(
+            requestId = nextRequestId(prefix = "request-cancel"),
+            targetRequestId = requestId,
+        )
+        try {
+            val activeSession = lifecycleMutex.withLock { session } ?: return
+            sendRequest(session = activeSession, message = cancelMessage)
+            logD(
+                "Klaf Server cancel request sent: " +
+                    "requestId=${cancelMessage.requestId}, targetRequestId=$requestId",
+            )
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (throwable: Throwable) {
+            logE(
+                "Klaf Server cancel request failed: " +
+                    "requestId=${cancelMessage.requestId}, targetRequestId=$requestId, failure=$throwable",
+            )
+        }
+    }
+
     override suspend fun nextRequestId(prefix: String): String = requestMutex.withLock {
-        "$prefix-$requestIdNamespace-${nextRequestSequence++}"
+        "$prefix-$clientSessionId-${nextRequestSequence++}"
     }
 
     override suspend fun disconnect() {
@@ -214,6 +409,13 @@ class KlafServerSession(
                     )
                 }
                 pendingRequests.clear()
+                pendingTranscriptionRequests.values.forEach { pendingTranscription ->
+                    pendingTranscription.acknowledgements.close(IllegalStateException("Klaf Server connection closed."))
+                    pendingTranscription.channel.close(
+                        IllegalStateException("Klaf Server connection closed."),
+                    )
+                }
+                pendingTranscriptionRequests.clear()
             }
         }
 
@@ -223,13 +425,14 @@ class KlafServerSession(
         runCatching { oldConnectionWatchJob?.cancelAndJoin() }
     }
 
-    private suspend fun ensureConnected(connectionAttempt: Int = 1): DefaultClientWebSocketSession = lifecycleMutex.withLock {
-        session?.let { return@withLock it }
+    private suspend fun ensureConnected(connectionAttempt: Int = 1): DefaultClientWebSocketSession = connectionMutex.withLock {
+        val existingSession = lifecycleMutex.withLock { session }
+        if (existingSession != null) return@withLock existingSession
 
         val normalizedHost = host.trim()
         require(normalizedHost.isNotBlank()) { "Klaf Server host must not be blank." }
 
-        manualDisconnectRequested = false
+        lifecycleMutex.withLock { manualDisconnectRequested = false }
         logD(
             "Klaf Server connection opening: host=$normalizedHost, port=$port, secure=$isSecure, " +
                 "attempt=$connectionAttempt",
@@ -238,21 +441,21 @@ class KlafServerSession(
         val newReadySignal = CompletableDeferred<Unit>()
         mutableConnectionState.value = KlafServerConnectionState.Reconnecting(attempt = connectionAttempt)
 
+        var openedSession: DefaultClientWebSocketSession? = null
         try {
             val newSession = httpClient.webSocketSession(
                 urlString = "$scheme://$normalizedHost:$port$KLAF_SERVER_WEBSOCKET_PATH",
             )
-            session = newSession
-            readySignal = newReadySignal
-            readerJob = scope.launch {
-                readMessages(session = newSession)
-            }
-            connectionWatchJob?.cancel()
-            connectionWatchJob = scope.launch {
-                watchConnection(
-                    session = newSession,
-                    connectionAttempt = connectionAttempt,
-                )
+            openedSession = newSession
+            lifecycleMutex.withLock {
+                check(!manualDisconnectRequested) { "Klaf Server connection was disconnected." }
+                session = newSession
+                readySignal = newReadySignal
+                readerJob = scope.launch { readMessages(session = newSession, connectionReadySignal = newReadySignal) }
+                connectionWatchJob?.cancel()
+                connectionWatchJob = scope.launch {
+                    watchConnection(session = newSession, connectionAttempt = connectionAttempt)
+                }
             }
             withTimeout(READY_TIMEOUT_MILLIS) {
                 newReadySignal.await()
@@ -264,24 +467,36 @@ class KlafServerSession(
             newSession
         } catch (throwable: Throwable) {
             logE("Klaf Server connection failed: attempt=$connectionAttempt, failure=$throwable")
-            mutableConnectionState.value = KlafServerConnectionState.Error(
-                message = throwable.message ?: "Klaf Server connection failed.",
-            )
-            readySignal = null
-            val failedSession = session
-            val failedReaderJob = readerJob
-            val failedConnectionWatchJob = connectionWatchJob
-            session = null
-            readerJob = null
-            connectionWatchJob = null
-            runCatching { failedSession?.close() }
-            runCatching { failedReaderJob?.cancelAndJoin() }
-            runCatching { failedConnectionWatchJob?.cancelAndJoin() }
+            withContext(NonCancellable) {
+                val failedJobs = lifecycleMutex.withLock {
+                    if (!manualDisconnectRequested) {
+                        mutableConnectionState.value = KlafServerConnectionState.Error(
+                            message = "Klaf Server connection failed.",
+                        )
+                    }
+                    if (session === openedSession) {
+                        session = null
+                        readySignal = null
+                        listOfNotNull(readerJob, connectionWatchJob).also {
+                            readerJob = null
+                            connectionWatchJob = null
+                        }
+                    } else {
+                        emptyList()
+                    }
+                }
+                failedJobs.forEach { it.cancel() }
+                runCatching { openedSession?.close() }
+                failedJobs.forEach { it.join() }
+            }
             throw throwable
         }
     }
 
-    private suspend fun readMessages(session: DefaultClientWebSocketSession) {
+    private suspend fun readMessages(
+        session: DefaultClientWebSocketSession,
+        connectionReadySignal: CompletableDeferred<Unit>,
+    ) {
         var readerFailure: Throwable? = null
         try {
             for (frame in session.incoming) {
@@ -291,8 +506,10 @@ class KlafServerSession(
                 when (message) {
                     is KlafServerReadyMessage -> {
                         logD("Klaf Server ready: protocol=${message.protocolVersion}")
-                        mutableConnectionState.value = KlafServerConnectionState.Ready
-                        readySignal?.complete(Unit)
+                        lifecycleMutex.withLock {
+                            if (this.session === session) mutableConnectionState.value = KlafServerConnectionState.Ready
+                        }
+                        connectionReadySignal.complete(Unit)
                     }
                     is MnemonicAssociationGeneratedMessage -> completePendingResponse(
                         requestId = message.requestId,
@@ -310,15 +527,57 @@ class KlafServerSession(
                         requestId = message.requestId,
                         message = message,
                     )
+                    is VocabularySourceTranscribeUploadProgressMessage -> {
+                        val pending = requestMutex.withLock { pendingTranscriptionRequests[message.requestId] }
+                        pending?.channel?.trySend(
+                            VocabularySourceTranscriptionSessionEvent.UploadProgress(
+                                uploadedBytes = message.uploadedBytes,
+                                totalBytes = message.totalBytes,
+                            ),
+                        )
+                        pending?.acknowledgements?.trySend(message.uploadedBytes)
+                    }
+                    is VocabularySourceTranscribeRecognitionProgressMessage -> {
+                        val channel = requestMutex.withLock { pendingTranscriptionRequests[message.requestId]?.channel }
+                        channel?.trySend(
+                            VocabularySourceTranscriptionSessionEvent.RecognitionProgress(
+                                completedChunks = message.completedChunks,
+                                totalChunks = message.totalChunks,
+                            ),
+                        )
+                    }
+                    is VocabularySourceTranscribedMessage -> {
+                        val channel = requestMutex.withLock { pendingTranscriptionRequests[message.requestId]?.channel }
+                        channel?.send(
+                            VocabularySourceTranscriptionSessionEvent.Completed(
+                                transcript = message.transcript,
+                                segments = message.segments,
+                                serverNotificationSent = message.serverNotificationSent,
+                            ),
+                        )
+                    }
+                    is PushTokenRegisteredMessage -> completePendingResponse(
+                        requestId = message.requestId,
+                        message = message,
+                    )
                     is KlafServerErrorMessage -> {
                         val requestId = message.requestId
                         if (requestId == null) {
                             logE("Klaf Server connection error: code=${message.code}, message=${message.message}")
                         } else {
-                            completePendingResponse(
-                                requestId = requestId,
-                                message = message,
-                            )
+                            val pending = requestMutex.withLock {
+                                pendingTranscriptionRequests[requestId]
+                            }
+                            if (pending != null) {
+                                val error = IllegalArgumentException("Klaf Server error: code=${message.code}, message=${message.message}")
+                                pending.acknowledgements.close(error)
+                                pending.channel.close(error)
+                            } else {
+                                completePendingResponse(
+                                    requestId = requestId,
+                                    message = message,
+                                )
+                            }
                         }
                     }
                 }
@@ -332,43 +591,65 @@ class KlafServerSession(
                 "Klaf Server reader failed: " +
                     "pendingRequests=${pendingRequestCount()}, failure=${throwable.stackTraceToString()}",
             )
-            mutableConnectionState.value = KlafServerConnectionState.Error(
-                message = throwable.message ?: "Klaf Server reader failed.",
-            )
-            readySignal?.completeExceptionally(throwable)
-        } finally {
-            val closeReason = runCatching {
-                withTimeoutOrNull(timeMillis = 250L) {
-                    session.closeReason.await()
-                }
-            }.getOrNull()
-            val pendingCount = pendingRequestCount()
-            var shouldReconnect = false
-            var manualDisconnect = false
-            var stateBeforeClose: KlafServerConnectionState
-
             lifecycleMutex.withLock {
-                stateBeforeClose = mutableConnectionState.value
-                manualDisconnect = manualDisconnectRequested
                 if (this.session === session) {
-                    this.session = null
-                    readerJob = null
-                    connectionWatchJob?.cancel()
-                    connectionWatchJob = null
-                    readySignal = null
-                    if (mutableConnectionState.value == KlafServerConnectionState.Ready) {
-                        mutableConnectionState.value = KlafServerConnectionState.Disconnected
-                    }
-                    shouldReconnect = !manualDisconnectRequested
+                    mutableConnectionState.value = KlafServerConnectionState.Error(message = "Klaf Server reader failed.")
                 }
             }
-            logD(
-                "Klaf Server reader closed: stateBeforeClose=$stateBeforeClose, " +
-                    "closeReason=${closeReason ?: "none"}, pendingRequests=$pendingCount, " +
-                    "manualDisconnect=$manualDisconnect, shouldReconnect=$shouldReconnect",
-            )
-            if (shouldReconnect) {
-                scheduleReconnect(reason = readerFailure)
+            connectionReadySignal.completeExceptionally(throwable)
+        } finally {
+            withContext(NonCancellable) {
+                connectionReadySignal.completeExceptionally(
+                    readerFailure ?: IllegalStateException("Klaf Server connection closed before ready."),
+                )
+                val pendingTranscriptions = requestMutex.withLock {
+                    pendingTranscriptionRequests.values.filter { it.uploadSession === session }
+                }
+                pendingTranscriptions.forEach { pending ->
+                    if (!pending.isUploadCompleted) {
+                        val error = readerFailure ?: IllegalStateException("Klaf Server connection closed during audio upload.")
+                        pending.acknowledgements.close(error)
+                        pending.channel.close(error)
+                    } else {
+                        logD(
+                            "Klaf Server connection closed during transcription recognition; " +
+                                "keeping request alive for reconnect: requestId=${pending.requestId}",
+                        )
+                    }
+                }
+                val closeReason = runCatching {
+                    withTimeoutOrNull(timeMillis = 250L) {
+                        session.closeReason.await()
+                    }
+                }.getOrNull()
+                val pendingCount = pendingRequestCount()
+                var shouldReconnect = false
+                var manualDisconnect = false
+                var stateBeforeClose: KlafServerConnectionState
+
+                lifecycleMutex.withLock {
+                    stateBeforeClose = mutableConnectionState.value
+                    manualDisconnect = manualDisconnectRequested
+                    if (this@KlafServerSession.session === session) {
+                        this@KlafServerSession.session = null
+                        readerJob = null
+                        connectionWatchJob?.cancel()
+                        connectionWatchJob = null
+                        readySignal = null
+                        if (mutableConnectionState.value == KlafServerConnectionState.Ready) {
+                            mutableConnectionState.value = KlafServerConnectionState.Disconnected
+                        }
+                        shouldReconnect = !manualDisconnectRequested
+                    }
+                }
+                logD(
+                    "Klaf Server reader closed: stateBeforeClose=$stateBeforeClose, " +
+                        "closeReason=${closeReason ?: "none"}, pendingRequests=$pendingCount, " +
+                        "manualDisconnect=$manualDisconnect, shouldReconnect=$shouldReconnect",
+                )
+                if (shouldReconnect) {
+                    scheduleReconnect(reason = readerFailure)
+                }
             }
         }
     }
@@ -492,7 +773,7 @@ class KlafServerSession(
         logD("Klaf Server request sent: requestId=${message.requestId}, type=${message::class.simpleName}")
     }
 
-    private suspend fun resendPendingRequests(session: DefaultClientWebSocketSession) {
+    private suspend fun resendPendingRequests(session: DefaultClientWebSocketSession) = resendMutex.withLock {
         val pendingRequestsSnapshot = requestMutex.withLock {
             pendingRequests.values.toList()
         }
@@ -518,10 +799,34 @@ class KlafServerSession(
                 throw failure
             }
         }
+
+        val completedTranscriptions = requestMutex.withLock {
+            pendingTranscriptionRequests.values.filter { it.isUploadCompleted }.toList()
+        }
+
+        completedTranscriptions.forEach { pending ->
+            runCatching {
+                sendRequest(
+                    session = session,
+                    message = VocabularySourceTranscribeCompleteRequest(requestId = pending.requestId),
+                )
+            }.onSuccess {
+                logD(
+                    "Klaf Server pending transcribe complete request resent: " +
+                        "requestId=${pending.requestId}",
+                )
+            }.onFailure { failure ->
+                logE(
+                    "Klaf Server pending transcribe complete request resend failed: " +
+                        "requestId=${pending.requestId}, failure=$failure",
+                )
+                throw failure
+            }
+        }
     }
 
     private suspend fun pendingRequestCount(): Int = requestMutex.withLock {
-        pendingRequests.size
+        pendingRequests.size + pendingTranscriptionRequests.size
     }
 
     private fun logRequestCompleted(

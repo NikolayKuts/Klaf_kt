@@ -10,5 +10,5 @@ class NoOpVocabularySourceAnalysisBackgroundManager : IVocabularySourceAnalysisB
         sourceId: Int,
         sourceTitle: String,
     ): VocabularySourceAnalysisHandle =
-        VocabularySourceAnalysisHandle { _: VocabularySourceAnalysisOutcome -> Unit }
+        VocabularySourceAnalysisHandle { _: VocabularySourceAnalysisOutcome, _: Boolean -> Unit }
 }

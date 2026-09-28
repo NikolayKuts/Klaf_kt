@@ -1,5 +1,6 @@
 package com.kuts.klaf.room.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -14,7 +15,11 @@ import com.kuts.klaf.room.entities.RoomVocabularySourceItem.Companion.VOCABULARY
 )
 data class RoomVocabularySourceItem(
     val sourceId: Int,
+    @ColumnInfo(defaultValue = "''")
+    val language: String,
     val foreignWord: String,
+    @ColumnInfo(defaultValue = "''")
+    val transcription: String,
     val nativeWord: String,
     val originalText: String,
     val partOfSpeech: String,
@@ -30,6 +35,8 @@ data class RoomVocabularySourceItem(
     val createdCardId: Int?,
     val targetDeckId: Int?,
     val firstOccurrenceOrder: Int,
+    @ColumnInfo(defaultValue = "0")
+    val isEdited: Boolean,
     val createdAt: Long,
     val updatedAt: Long,
     @PrimaryKey(autoGenerate = true)

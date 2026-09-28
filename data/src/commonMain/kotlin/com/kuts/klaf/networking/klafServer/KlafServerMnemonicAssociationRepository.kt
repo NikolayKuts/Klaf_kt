@@ -1,13 +1,17 @@
 package com.kuts.klaf.networking.klafServer
 
 import com.kuts.domain.entities.MnemonicAssociation
+import com.kuts.domain.entities.MnemonicAssociationResult
 import com.kuts.domain.entities.MnemonicAssociationCandidate
+import com.kuts.domain.managers.MnemonicGenerationSource
 import com.kuts.domain.repositories.IMnemonicAssociationRepository
 import com.kuts.klaf.server.contract.KlafServerErrorMessage
 import com.kuts.klaf.server.contract.MnemonicAssociationCandidateDto
 import com.kuts.klaf.server.contract.MnemonicAssociationDto
 import com.kuts.klaf.server.contract.MnemonicAssociationGenerateRequest
 import com.kuts.klaf.server.contract.MnemonicAssociationGeneratedMessage
+import com.kuts.klaf.server.contract.MnemonicLaunchContextDto
+import com.kuts.klaf.server.contract.MnemonicLaunchDestinationDto
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
 import kotlinx.coroutines.CancellationException
@@ -20,7 +24,8 @@ class KlafServerMnemonicAssociationRepository(
         word: String,
         comment: String?,
         excludedSoundAnchors: List<String>,
-    ): MnemonicAssociation {
+        launchSource: MnemonicGenerationSource?,
+    ): MnemonicAssociationResult {
         val requestedWord = word.trim()
         require(requestedWord.isNotBlank()) { "Mnemonic request word must not be blank." }
 
@@ -33,6 +38,7 @@ class KlafServerMnemonicAssociationRepository(
                     comment = comment?.trim()?.ifBlank { null },
                     excludedSoundAnchors = excludedSoundAnchors
                         .mapNotNull { anchor -> anchor.trim().ifBlank { null } },
+                    launchContext = launchSource?.toContractDto(),
                 ),
             )
         } catch (cancellation: CancellationException) {
@@ -46,9 +52,13 @@ class KlafServerMnemonicAssociationRepository(
             is MnemonicAssociationGeneratedMessage -> {
                 logD(
                     "Klaf Server mnemonic association received: requestId=$requestId, " +
-                        "word=${response.association.word}, candidates=${response.association.candidates.size}",
+                        "word=${response.association.word}, candidates=${response.association.candidates.size}, " +
+                        "serverNotificationSent=${response.serverNotificationSent}",
                 )
-                response.association.toDomainEntity()
+                MnemonicAssociationResult(
+                    association = response.association.toDomainEntity(),
+                    serverNotificationSent = response.serverNotificationSent,
+                )
             }
             is KlafServerErrorMessage -> {
                 logE(
@@ -86,3 +96,21 @@ private fun MnemonicAssociationCandidateDto.toDomainEntity(): MnemonicAssociatio
         soundMapping = soundMapping,
         meaningMapping = meaningMapping,
     )
+
+private fun MnemonicGenerationSource.toContractDto(): MnemonicLaunchContextDto =
+    when (this) {
+        is MnemonicGenerationSource.CardCreation -> {
+            MnemonicLaunchContextDto(
+                destination = MnemonicLaunchDestinationDto.CARD_ADDITION,
+                deckId = deckId,
+            )
+        }
+
+        is MnemonicGenerationSource.CardEditing -> {
+            MnemonicLaunchContextDto(
+                destination = MnemonicLaunchDestinationDto.CARD_EDITING,
+                deckId = deckId,
+                cardId = cardId,
+            )
+        }
+    }

@@ -1,6 +1,7 @@
 package com.kuts.domain.repositories
 
-import com.kuts.domain.entities.MnemonicAssociation
+import com.kuts.domain.entities.MnemonicAssociationResult
+import com.kuts.domain.managers.MnemonicGenerationSource
 
 interface IMnemonicAssociationRepository {
 
@@ -8,5 +9,6 @@ interface IMnemonicAssociationRepository {
         word: String,
         comment: String? = null,
         excludedSoundAnchors: List<String> = emptyList(),
-    ): MnemonicAssociation
+        launchSource: MnemonicGenerationSource? = null,
+    ): MnemonicAssociationResult
 }

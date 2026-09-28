@@ -11,5 +11,6 @@ class NoOpMnemonicGenerationBackgroundManager : IMnemonicGenerationBackgroundMan
     override fun startGeneration(
         type: MnemonicGenerationType,
         source: MnemonicGenerationSource,
-    ): MnemonicGenerationHandle = MnemonicGenerationHandle { _: MnemonicGenerationOutcome -> Unit }
+    ): MnemonicGenerationHandle =
+        MnemonicGenerationHandle { _: MnemonicGenerationOutcome, _: Boolean -> Unit }
 }

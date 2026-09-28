@@ -4,10 +4,51 @@ Working status file for the `VocabularySource` feature.
 
 ## Current Focus
 
-- Restored from stash and adapted to the project Klaf Server transport.
+- 2026-09-28 staged/unstaged audit complete. Domain/data/presentation regression
+  tests and Android/Desktop compilation pass. Full audit details and remaining
+  audio lifecycle gaps are recorded in `audio-transcription-status.md`.
+- Manual Android smoke test of the target-deck chooser with enough decks to
+  require scrolling.
 
 ## Completed
 
+- Theme consistency (2026-09-28): source detail colors moved to the central
+  `Color.kt` vocabulary-source palette wired into both `MainTheme` variants.
+  Disabled controls, save/edit markers, occurrence highlights, category/CEFR
+  badges, audio card, icons and secondary text no longer define local colors.
+  Dialogs retain Material theme colors and now have both light/dark previews;
+  preview backgrounds also come from the central configuration. Shared
+  checkbox and scrollbar defaults use central tokens.
+- Added three source-theme tests for palette wiring, disabled tokens and badge
+  contrast. Tests caught and fixed an initialization cycle in the first palette
+  factory placement; the factory now belongs to the palette's Theme object.
+  Full validation: 116 tests, zero failures/errors; Android compile and Desktop
+  DI compile pass. Visual previews/device smoke checks were not run.
+- Audit: one authoritative editable StateFlow prevents rapid edits being lost;
+  Save persists its snapshot without clearing newer edits; duplicate Save is
+  blocked; an empty new analysis no longer displays old persisted items.
+- Audit: analysis against earlier text stays visibly stale, including after
+  Save. ADDED rows keep their current card/deck links rather than being overwritten
+  by stale draft copies. Foreign phrases normalize repeated internal whitespace.
+- Added temporary real-Room tests for migrations 8/9/10/11 -> 12, transactional
+  rollback, ignored-rule uniqueness and ADDED-link preservation. Added ViewModel
+  tests for fast edits, concurrent Save, analysis staleness, transcription-limit
+  rejection and result recovery after ViewModel recreation.
+- Made the existing-deck list in the target-deck chooser a height-bounded,
+  scrollable `LazyColumn`; the new-deck controls remain above it. Verified
+  `:presentation:compileDebugKotlinAndroid`.
+- Center-aligned the foreign word and transcription/text-to-speech unit within
+  a shared `FlowRow` line. Verified `:presentation:compileDebugKotlinAndroid`.
+- Replaced the item title's fixed row with `FlowRow`: the foreign word and the
+  combined transcription/text-to-speech unit now wrap independently, so the
+  unit moves intact below the word when horizontal space is insufficient.
+  Verified `:presentation:compileDebugKotlinAndroid`.
+- Starting a new analysis now clears the previous occurrence highlight, pending
+  locate request, and transcript selection before the background operation is
+  started. Verified `:presentation:compileDebugKotlinAndroid`.
+- Added a compact character counter in the transcript field's top-right
+  outline. It follows the visible Original or Cleaned text and remains visible
+  for empty text. Verified `:presentation:compileDebugKotlinAndroid`.
 - Created requirements document:
   `docs/transcript-vocabulary-analysis-requirements.md`.
 - Created nice-to-have document:
@@ -222,10 +263,26 @@ Working status file for the `VocabularySource` feature.
   `:presentation:compileKotlinMetadata`, `:di:compileKotlinMetadata`,
   `:Android:compileDebugKotlin`, and `:domain:allTests` successfully after
   adapting the feature to Klaf Server.
+- Added global Ignored Words persistence for Vocabulary Sources:
+  - `Ignore` remains reversible in an unsaved runtime draft;
+  - `Save` atomically stores ignored word/meaning pairs, removes those source
+    items, and preserves added items;
+  - an ignored record stores the server-provided analysis language; and
+  - later analysis filters exact normalized pairs from cards and Ignored Words.
+- Added `IGNORED · NEW MEANING` for a different meaning of a word known only
+  through Ignored Words, using a muted red badge.
+- Added Room database migration `10 -> 11` for item language and the global
+  Ignored Words table on Android, Desktop, and iOS.
+- Added categorizer coverage for exact card filtering, normalized ignored-pair
+  filtering, and ignored-word new meanings.
+- Verified `:domain:allTests`, `:data:compileDebugKotlinAndroid`,
+  `:data:compileKotlinDesktop`, `:presentation:compileDebugKotlinAndroid`, and
+  `:di:compileDebugKotlinAndroid` successfully.
 
 ## Active Decisions
 
-- MVP uses manual pasted text input only.
+- MVP accepts pasted text and the separately specified audio transcription path;
+  subtitle fetching and subtitle/text file import remain deferred.
 - MVP stores data locally in Room only.
 - `VocabularySource` is the persistent source object.
 - Source list is flat: no folders, seasons, or hierarchy.
@@ -239,7 +296,12 @@ Working status file for the `VocabularySource` feature.
 - `Save` persists source state and item state but does not create cards/decks.
 - Adding selected items to a deck is a separate explicit action.
 - Selection checkbox state is runtime-only and not persisted.
-- Item statuses are persistent: `pending`, `added`, and `ignored`.
+- `pending` and `added` are persistent source-item states. `ignored` is a
+  runtime state until save, after which it becomes a global Ignored Words rule
+  and the source item is removed.
+- Ignored Words are global across Vocabulary Sources and include the analysis
+  language, foreign word, and Russian meaning. Exact normalized pairs are
+  filtered from later analysis results.
 - Added state follows the linked card's current existence and deck.
 - MVP verification targets Android.
 
@@ -249,8 +311,8 @@ Working status file for the `VocabularySource` feature.
 - File import for `.srt`, `.vtt`, and `.txt`.
 - Remote sync/server-side storage.
 - UI/instrumentation tests.
-- Transcript occurrence highlighting and scroll navigation.
 - Item filters by status/category/level.
+- Ignored Words management screen for viewing and removing global rules.
 
 ## Open Questions
 

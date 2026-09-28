@@ -56,14 +56,19 @@ class AndroidMnemonicGenerationBackgroundManager(
             throw error
         }
 
-        MnemonicGenerationHandle { outcome ->
-            finishGeneration(requestId = requestId, outcome = outcome)
+        MnemonicGenerationHandle { outcome, serverNotificationSent ->
+            finishGeneration(
+                requestId = requestId,
+                outcome = outcome,
+                serverNotificationSent = serverNotificationSent,
+            )
         }
     }
 
     private fun finishGeneration(
         requestId: Long,
         outcome: MnemonicGenerationOutcome,
+        serverNotificationSent: Boolean,
     ) {
         val finishedGeneration = synchronized(lock) {
             activeGenerations.remove(requestId)
@@ -72,6 +77,7 @@ class AndroidMnemonicGenerationBackgroundManager(
         logD(
             "Mnemonic generation completion received: generationId=$requestId, " +
                 "type=${finishedGeneration.type}, outcome=$outcome, " +
+                "serverNotificationSent=$serverNotificationSent, " +
                 "appVisible=${applicationVisibilityTracker.isApplicationVisible}",
         )
 
@@ -79,10 +85,17 @@ class AndroidMnemonicGenerationBackgroundManager(
             if (!applicationVisibilityTracker.isApplicationVisible) {
                 when (outcome) {
                     MnemonicGenerationOutcome.Succeeded -> {
-                        notifier.showSuccess(
-                            type = finishedGeneration.type,
-                            source = finishedGeneration.source,
-                        )
+                        if (serverNotificationSent) {
+                            logD(
+                                "Mnemonic local success notification skipped: " +
+                                    "generationId=$requestId, reason=server-notification-sent",
+                            )
+                        } else {
+                            notifier.showSuccess(
+                                type = finishedGeneration.type,
+                                source = finishedGeneration.source,
+                            )
+                        }
                     }
 
                     MnemonicGenerationOutcome.Failed -> {

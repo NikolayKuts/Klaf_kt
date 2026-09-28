@@ -297,15 +297,18 @@ abstract class CardManagementViewModel(
 
         mnemonicManagementState.update { state -> state.startAssociationLoading() }
 
+        var serverNotificationSent = false
         val requestJob = viewModelScope.launchWithState(coroutineContextProvider.io) {
             val requestComment = mnemonicManagementState.value.associationRequestCommentOrNull()
             val excludedSoundAnchors = mnemonicManagementState.value.excludedSoundAnchors()
-            val association = fetchMnemonicAssociation(
+            val associationResult = fetchMnemonicAssociation(
                 word = requestedWord,
                 comment = requestComment,
                 excludedSoundAnchors = excludedSoundAnchors,
+                launchSource = mnemonicGenerationSource,
             )
-            val newVariants = association.toSelections().map { selection ->
+            serverNotificationSent = associationResult.serverNotificationSent
+            val newVariants = associationResult.association.toSelections().map { selection ->
                 createMnemonicVariant(
                     selection = selection,
                     requestComment = requestComment.orEmpty(),
@@ -326,7 +329,11 @@ abstract class CardManagementViewModel(
 
         mnemonicAssociationRequestJob = requestJob
         requestJob.invokeOnCompletion { failure ->
-            finishMnemonicGeneration(handle = generationHandle, failure = failure)
+            finishMnemonicGeneration(
+                handle = generationHandle,
+                failure = failure,
+                serverNotificationSent = serverNotificationSent,
+            )
 
             if (mnemonicAssociationRequestJob == requestJob) {
                 mnemonicAssociationRequestJob = null
@@ -367,13 +374,18 @@ abstract class CardManagementViewModel(
 
         mnemonicManagementState.update { state -> state.startImageLoading() }
 
+        var serverNotificationSent = false
         val requestJob = viewModelScope.launchWithState(coroutineContextProvider.io) {
             val requestComment = mnemonicManagementState.value.imageRequestCommentOrNull()
-            val imageBytes = fetchMnemonicImage(
+            val imageResult = fetchMnemonicImage(
                 selection = selectedVariant.selection,
                 comment = requestComment,
+                launchSource = mnemonicGenerationSource,
             )
-            val storedDraftImage = mnemonicImageAssetRepository.createDraftImage(imageBytes = imageBytes)
+            serverNotificationSent = imageResult.serverNotificationSent
+            val storedDraftImage = mnemonicImageAssetRepository.createDraftImage(
+                imageBytes = imageResult.imageBytes,
+            )
 
             // The bytes are on disk before the variant reaches the state, and a cancel landing in
             // that window would leave a file nothing references: the draft ids are derived from
@@ -402,7 +414,11 @@ abstract class CardManagementViewModel(
 
         mnemonicImageRequestJob = requestJob
         requestJob.invokeOnCompletion { failure ->
-            finishMnemonicGeneration(handle = generationHandle, failure = failure)
+            finishMnemonicGeneration(
+                handle = generationHandle,
+                failure = failure,
+                serverNotificationSent = serverNotificationSent,
+            )
 
             if (mnemonicImageRequestJob == requestJob) {
                 mnemonicImageRequestJob = null
@@ -418,6 +434,7 @@ abstract class CardManagementViewModel(
     private fun finishMnemonicGeneration(
         handle: MnemonicGenerationHandle,
         failure: Throwable?,
+        serverNotificationSent: Boolean,
     ) {
         val outcome = when {
             failure == null -> MnemonicGenerationOutcome.Succeeded
@@ -425,7 +442,10 @@ abstract class CardManagementViewModel(
             else -> MnemonicGenerationOutcome.Failed
         }
         runCatching {
-            handle.finish(outcome = outcome)
+            handle.finish(
+                outcome = outcome,
+                serverNotificationSent = serverNotificationSent,
+            )
         }.onFailure { backgroundManagerFailure ->
             crashlytics.report(exception = backgroundManagerFailure)
         }

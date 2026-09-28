@@ -59,14 +59,19 @@ class AndroidVocabularySourceAnalysisBackgroundManager(
             throw error
         }
 
-        VocabularySourceAnalysisHandle { outcome ->
-            finishAnalysis(requestId = requestId, outcome = outcome)
+        VocabularySourceAnalysisHandle { outcome, serverNotificationSent ->
+            finishAnalysis(
+                requestId = requestId,
+                outcome = outcome,
+                serverNotificationSent = serverNotificationSent,
+            )
         }
     }
 
     private fun finishAnalysis(
         requestId: Long,
         outcome: VocabularySourceAnalysisOutcome,
+        serverNotificationSent: Boolean,
     ) {
         val finishedAnalysis = synchronized(lock) {
             activeAnalyses.remove(requestId)
@@ -75,6 +80,7 @@ class AndroidVocabularySourceAnalysisBackgroundManager(
         logD(
             "Vocabulary Source analysis completion received: analysisId=$requestId, " +
                 "sourceId=${finishedAnalysis.sourceId}, outcome=$outcome, " +
+                "serverNotificationSent=$serverNotificationSent, " +
                 "appVisible=${applicationVisibilityTracker.isApplicationVisible}",
         )
         diagnostics.backgroundOperationFinished(
@@ -86,10 +92,17 @@ class AndroidVocabularySourceAnalysisBackgroundManager(
             if (!applicationVisibilityTracker.isApplicationVisible) {
                 when (outcome) {
                     VocabularySourceAnalysisOutcome.Succeeded -> {
-                        notifier.showSuccess(
-                            sourceId = finishedAnalysis.sourceId,
-                            sourceTitle = finishedAnalysis.sourceTitle,
-                        )
+                        if (serverNotificationSent) {
+                            logD(
+                                "Vocabulary Source analysis local success notification skipped: " +
+                                    "analysisId=$requestId, reason=server-notification-sent",
+                            )
+                        } else {
+                            notifier.showSuccess(
+                                sourceId = finishedAnalysis.sourceId,
+                                sourceTitle = finishedAnalysis.sourceTitle,
+                            )
+                        }
                     }
 
                     VocabularySourceAnalysisOutcome.Failed -> {
