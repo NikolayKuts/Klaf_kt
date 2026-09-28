@@ -1,5 +1,15 @@
 # Audio Transcription Requirements
 
+## Account Integration (2026-09-28)
+
+Explicit logout/account-context changes cancel the originating device session's
+unfinished work and clear retained client transcription results. This overrides
+retention/reconnect behavior for explicit logout only; ordinary backgrounding
+and transient connection loss still retain work. Offline logout remains immediate
+and rejects late results, even when server cancellation cannot be delivered.
+Other devices' work is unaffected. See `klaf-server-requirements.md` for agreed
+branch integration rules; cross-device source synchronization is a later phase.
+
 This document records agreed requirements for importing a local audio file and
 producing an English transcript for Klaf.
 

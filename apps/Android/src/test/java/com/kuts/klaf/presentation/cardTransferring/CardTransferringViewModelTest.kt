@@ -43,271 +43,6 @@ import kotlin.coroutines.CoroutineContext
 @OptIn(ExperimentalCoroutinesApi::class)
 class CardTransferringViewModelTest {
 
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
-
-    @Test
-    fun `moving selected cards updates decks cards and emits success ui events`() =
-        runTest(context = mainDispatcherRule.dispatcher) {
-            val sourceDeck = deck(
-                id = SOURCE_DECK_ID,
-                cardQuantity = 4,
-                lastReviewPassDuration = 400L,
-                lastFirstReviewDuration = 160L,
-                lastSecondReviewDuration = 240L,
-                scheduledDateInterval = 1_000L,
-                isLastPassSucceeded = false,
-            )
-            val targetDeck = deck(
-                id = TARGET_DECK_ID,
-                cardQuantity = 2,
-                lastReviewPassDuration = 100L,
-                lastFirstReviewDuration = 45L,
-                lastSecondReviewDuration = 55L,
-                scheduledDateInterval = 2_000L,
-                isLastPassSucceeded = true,
-            )
-            val sourceCards = (1..4).map { card(id = it, deckId = SOURCE_DECK_ID) }
-            val targetCards = (10..11).map { card(id = it, deckId = TARGET_DECK_ID) }
-            val env = environment(
-                sourceDeck = sourceDeck,
-                targetDeck = targetDeck,
-                sourceCards = sourceCards,
-                targetCards = targetCards,
-            )
-            val viewModel = env.viewModel()
-            val navigationEvents = mutableListOf<ICardTransferringNavigationEvent>()
-            val eventMessages = mutableListOf<EventMessage>()
-            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                viewModel.navigationEvent.collect(navigationEvents::add)
-            }
-            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                viewModel.eventMessage.collect(eventMessages::add)
-            }
-
-            runCurrent()
-            viewModel.sendAction(ICardTransferringAction.ChangeSelectionState(position = 0))
-            viewModel.sendAction(ICardTransferringAction.ChangeSelectionState(position = 1))
-            runCurrent()
-            viewModel.sendAction(ICardTransferringAction.MoveCards(targetDeck = targetDeck))
-            runCurrent()
-
-            val updatedSourceDeck = checkNotNull(env.deckRepository.getDeckById(SOURCE_DECK_ID))
-            val updatedTargetDeck = checkNotNull(env.deckRepository.getDeckById(TARGET_DECK_ID))
-            assertEquals(2, updatedSourceDeck.cardQuantity)
-            assertEquals(4, updatedTargetDeck.cardQuantity)
-            assertEquals(200L, updatedSourceDeck.lastReviewPassDuration)
-            assertEquals(200L, updatedTargetDeck.lastReviewPassDuration)
-            assertDeckMetadataUnchangedExceptQuantityAndPassDuration(sourceDeck, updatedSourceDeck)
-            assertDeckMetadataUnchangedExceptQuantityAndPassDuration(targetDeck, updatedTargetDeck)
-            assertEquals(
-                listOf(sourceCards[2], sourceCards[3]),
-                env.cardRepository.fetchCardsByDeckId(deckId = SOURCE_DECK_ID),
-            )
-            assertMovedCards(sourceCards = sourceCards.take(2), env = env)
-            assertTrue(navigationEvents.contains(ICardTransferringNavigationEvent.ToPrevious))
-            assertTrue(eventMessages.any { it.type == EventMessage.Type.Positive })
-            assertEquals(1, env.saveVersionRepository.increaseCount)
-            assertEquals(1, env.transactionRepository.transactionCount)
-        }
-
-    @Test
-    fun `move dialog request without selected cards emits negative message and no navigation`() =
-        runTest(context = mainDispatcherRule.dispatcher) {
-            val env = environment()
-            val viewModel = env.viewModel()
-            val navigationEvents = mutableListOf<ICardTransferringNavigationEvent>()
-            val eventMessages = mutableListOf<EventMessage>()
-            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                viewModel.navigationEvent.collect(navigationEvents::add)
-            }
-            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                viewModel.eventMessage.collect(eventMessages::add)
-            }
-
-            runCurrent()
-            viewModel.sendAction(
-                ICardTransferringAction.NavigateTo(
-                    destination = ICardTransferringNavigationDestination.CardMovingDialog,
-                )
-            )
-            runCurrent()
-
-            assertTrue(eventMessages.any { it.type == EventMessage.Type.Negative })
-            assertFalse(navigationEvents.contains(ICardTransferringNavigationEvent.ToCardMovingDialog))
-        }
-
-    @Test
-    fun `move dialog request with selected cards emits moving dialog navigation`() =
-        runTest(context = mainDispatcherRule.dispatcher) {
-            val env = environment()
-            val viewModel = env.viewModel()
-            val navigationEvents = mutableListOf<ICardTransferringNavigationEvent>()
-            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                viewModel.navigationEvent.collect(navigationEvents::add)
-            }
-
-            runCurrent()
-            viewModel.sendAction(ICardTransferringAction.ChangeSelectionState(position = 0))
-            runCurrent()
-            viewModel.sendAction(
-                ICardTransferringAction.NavigateTo(
-                    destination = ICardTransferringNavigationDestination.CardMovingDialog,
-                )
-            )
-            runCurrent()
-
-            assertTrue(navigationEvents.contains(ICardTransferringNavigationEvent.ToCardMovingDialog))
-        }
-
-    @Test
-    fun `initial deck list excludes source deck for target choosing`() =
-        runTest(context = mainDispatcherRule.dispatcher) {
-            val env = environment()
-            val viewModel = env.viewModel()
-
-            runCurrent()
-
-            assertEquals(
-                listOf(TARGET_DECK_ID),
-                viewModel.decks.value.map { it.id },
-            )
-        }
-
-    private fun environment(
-        sourceDeck: Deck = deck(
-            id = SOURCE_DECK_ID,
-            cardQuantity = 2,
-            lastReviewPassDuration = 100L,
-            lastFirstReviewDuration = 40L,
-            lastSecondReviewDuration = 60L,
-            scheduledDateInterval = 1_000L,
-            isLastPassSucceeded = true,
-        ),
-        targetDeck: Deck = deck(
-            id = TARGET_DECK_ID,
-            cardQuantity = 1,
-            lastReviewPassDuration = 30L,
-            lastFirstReviewDuration = 10L,
-            lastSecondReviewDuration = 20L,
-            scheduledDateInterval = 2_000L,
-            isLastPassSucceeded = false,
-        ),
-        sourceCards: List<Card> = (1..2).map { card(id = it, deckId = SOURCE_DECK_ID) },
-        targetCards: List<Card> = listOf(card(id = 10, deckId = TARGET_DECK_ID)),
-    ): TestEnvironment {
-        val cardRepository = InMemoryCardRepository(cards = sourceCards + targetCards)
-        val deckRepository = InMemoryDeckRepository(decks = listOf(sourceDeck, targetDeck))
-
-        return TestEnvironment(
-            cardRepository = cardRepository,
-            deckRepository = deckRepository,
-            saveVersionRepository = FakeStorageSaveVersionRepository(),
-            transactionRepository = FakeStorageTransactionRepository(),
-        )
-    }
-
-    private fun TestEnvironment.viewModel(): CardTransferringViewModel {
-        val coroutineContextProvider = TestCoroutineContextProvider(io = mainDispatcherRule.dispatcher)
-
-        return CardTransferringViewModel(
-            sourceDeckId = SOURCE_DECK_ID,
-            fetchDeckById = FetchDeckByIdUseCase(deckRepository = deckRepository),
-            fetchCards = FetchCardsUseCase(cardRepository = cardRepository),
-            deleteCardsFromDeckUseCase = DeleteCardsFromDeckUseCase(
-                deckRepository = deckRepository,
-                cardRepository = cardRepository,
-                localStorageSaveVersionRepository = saveVersionRepository,
-                localStorageTransactionRepository = transactionRepository,
-                coroutineContextProvider = coroutineContextProvider,
-            ),
-            fetchDeckSource = FetchDeckSourceUseCase(deckRepository = deckRepository),
-            audioPlayer = FakeAudioPlayerManager(),
-            moveCardsToDeck = TransferCardsToDeckUseCase(
-                cardRepository = cardRepository,
-                deckRepository = deckRepository,
-                localStorageSaveVersionRepository = saveVersionRepository,
-                localStorageTransactionRepository = transactionRepository,
-                coroutineContextProvider = coroutineContextProvider,
-            ),
-            crashlytics = FakeCrashlyticsRepository(),
-            coroutineContextProvider = coroutineContextProvider,
-        )
-    }
-
-    private suspend fun assertMovedCards(
-        sourceCards: List<Card>,
-        env: TestEnvironment,
-    ) {
-        val targetCards = env.cardRepository.fetchCardsByDeckId(deckId = TARGET_DECK_ID)
-
-        sourceCards.forEach { sourceCard ->
-            val movedCard = checkNotNull(
-                targetCards.firstOrNull { it.foreignWord == sourceCard.foreignWord }
-            )
-            assertTrue(movedCard.id != sourceCard.id)
-            assertEquals(TARGET_DECK_ID, movedCard.deckId)
-            assertEquals(sourceCard.nativeWord, movedCard.nativeWord)
-            assertEquals(sourceCard.ipa, movedCard.ipa)
-            assertEquals(sourceCard.wordMeaningInsights, movedCard.wordMeaningInsights)
-        }
-    }
-
-    private fun assertDeckMetadataUnchangedExceptQuantityAndPassDuration(
-        expected: Deck,
-        actual: Deck,
-    ) {
-        assertEquals(expected.name, actual.name)
-        assertEquals(expected.creationDate, actual.creationDate)
-        assertEquals(expected.reviewPassDates, actual.reviewPassDates)
-        assertEquals(expected.scheduledReviewDates, actual.scheduledReviewDates)
-        assertEquals(expected.scheduledDateInterval, actual.scheduledDateInterval)
-        assertEquals(expected.reviewCount, actual.reviewCount)
-        assertEquals(expected.lastFirstReviewDuration, actual.lastFirstReviewDuration)
-        assertEquals(expected.lastSecondReviewDuration, actual.lastSecondReviewDuration)
-        assertEquals(expected.isLastPassSucceeded, actual.isLastPassSucceeded)
-        assertEquals(expected.id, actual.id)
-    }
-
-    private fun deck(
-        id: Int,
-        cardQuantity: Int,
-        lastReviewPassDuration: Long,
-        lastFirstReviewDuration: Long,
-        lastSecondReviewDuration: Long,
-        scheduledDateInterval: Long,
-        isLastPassSucceeded: Boolean,
-    ): Deck {
-        return Deck(
-            name = "deck-$id",
-            creationDate = id * 1_000L,
-            reviewPassDates = listOf(id * 10L, id * 20L),
-            scheduledReviewDates = listOf(id * 30L),
-            scheduledDateInterval = scheduledDateInterval,
-            reviewCount = id + 6,
-            cardQuantity = cardQuantity,
-            lastFirstReviewDuration = lastFirstReviewDuration,
-            lastSecondReviewDuration = lastSecondReviewDuration,
-            lastReviewPassDuration = lastReviewPassDuration,
-            isLastPassSucceeded = isLastPassSucceeded,
-            id = id,
-        )
-    }
-
-    private fun card(id: Int, deckId: Int): Card {
-        return Card(
-            id = id,
-            deckId = deckId,
-            nativeWord = "native-$id",
-            foreignWord = "foreign-$id",
-            ipa = emptyList(),
-            wordMeaningInsights = WordMeaningInsights(
-                word = "foreign-$id",
-                language = "en",
-            ),
-        )
-    }
-
     private data class TestEnvironment(
         val cardRepository: InMemoryCardRepository,
         val deckRepository: InMemoryDeckRepository,
@@ -321,8 +56,7 @@ class CardTransferringViewModelTest {
 
     private class FakeAudioPlayerManager : IAudioPlayerManager {
 
-        override val loadingState: StateFlow<LoadingState<Unit, Unit>> =
-            MutableStateFlow(LoadingState.Non)
+        override val loadingState: StateFlow<LoadingState<Unit, Unit>> = MutableStateFlow(LoadingState.Non)
 
         override fun onCreate() = Unit
 
@@ -358,7 +92,7 @@ class CardTransferringViewModelTest {
         }
 
         override suspend fun insertCard(card: Card): Int {
-            val id = if (card.id == 0 || cardsFlow.value.containsKey(card.id)) nextId++ else card.id
+            val id = if (card.id == 0) nextId++ else card.id
             cardsFlow.value = cardsFlow.value + (id to card.copy(id = id))
             return id
         }
@@ -467,5 +201,301 @@ class CardTransferringViewModelTest {
     private companion object {
         const val SOURCE_DECK_ID = 1
         const val TARGET_DECK_ID = 2
+    }
+
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
+    @Test
+    fun `moving selected cards updates decks cards and emits success ui events`() =
+        runTest(context = mainDispatcherRule.dispatcher) {
+            val sourceDeck = deck(
+                id = SOURCE_DECK_ID,
+                cardQuantity = 4,
+                lastReviewPassDuration = 400L,
+                lastFirstReviewDuration = 160L,
+                lastSecondReviewDuration = 240L,
+                scheduledDateInterval = 1_000L,
+                isLastPassSucceeded = false,
+            )
+            val targetDeck = deck(
+                id = TARGET_DECK_ID,
+                cardQuantity = 2,
+                lastReviewPassDuration = 100L,
+                lastFirstReviewDuration = 45L,
+                lastSecondReviewDuration = 55L,
+                scheduledDateInterval = 2_000L,
+                isLastPassSucceeded = true,
+                reviewCount = 0,
+            )
+            val sourceCards = (1..4).map { card(id = it, deckId = SOURCE_DECK_ID) }
+            val targetCards = (10..11).map { card(id = it, deckId = TARGET_DECK_ID) }
+            val env = environment(
+                sourceDeck = sourceDeck,
+                targetDeck = targetDeck,
+                sourceCards = sourceCards,
+                targetCards = targetCards,
+            )
+            val viewModel = env.viewModel()
+            val navigationEvents = mutableListOf<ICardTransferringNavigationEvent>()
+            val eventMessages = mutableListOf<EventMessage>()
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.navigationEvent.collect(navigationEvents::add)
+            }
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.eventMessage.collect(eventMessages::add)
+            }
+
+            runCurrent()
+            viewModel.sendAction(ICardTransferringAction.ChangeSelectionState(position = 0))
+            viewModel.sendAction(ICardTransferringAction.ChangeSelectionState(position = 1))
+            runCurrent()
+            viewModel.sendAction(ICardTransferringAction.MoveCards(targetDeck = targetDeck))
+            runCurrent()
+
+            val updatedSourceDeck = checkNotNull(env.deckRepository.getDeckById(SOURCE_DECK_ID))
+            val updatedTargetDeck = checkNotNull(env.deckRepository.getDeckById(TARGET_DECK_ID))
+            assertEquals(2, updatedSourceDeck.cardQuantity)
+            assertEquals(4, updatedTargetDeck.cardQuantity)
+            assertEquals(200L, updatedSourceDeck.lastReviewPassDuration)
+            assertEquals(200L, updatedTargetDeck.lastReviewPassDuration)
+            assertDeckMetadataUnchangedExceptQuantityAndPassDuration(sourceDeck, updatedSourceDeck)
+            assertDeckMetadataUnchangedExceptQuantityAndPassDuration(targetDeck, updatedTargetDeck)
+            assertEquals(
+                listOf(sourceCards[2], sourceCards[3]),
+                env.cardRepository.fetchCardsByDeckId(deckId = SOURCE_DECK_ID),
+            )
+            assertMovedCards(sourceCards = sourceCards.take(2), env = env)
+            assertTrue(navigationEvents.contains(ICardTransferringNavigationEvent.ToPrevious))
+            assertTrue(eventMessages.any { it.type == EventMessage.Type.Positive })
+            assertEquals(1, env.saveVersionRepository.increaseCount)
+            assertEquals(1, env.transactionRepository.transactionCount)
+        }
+
+    @Test
+    fun `move dialog request without selected cards emits negative message and no navigation`() =
+        runTest(context = mainDispatcherRule.dispatcher) {
+            val env = environment()
+            val viewModel = env.viewModel()
+            val navigationEvents = mutableListOf<ICardTransferringNavigationEvent>()
+            val eventMessages = mutableListOf<EventMessage>()
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.navigationEvent.collect(navigationEvents::add)
+            }
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.eventMessage.collect(eventMessages::add)
+            }
+
+            runCurrent()
+            viewModel.sendAction(
+                ICardTransferringAction.NavigateTo(
+                    destination = ICardTransferringNavigationDestination.CardMovingDialog,
+                )
+            )
+            runCurrent()
+
+            assertTrue(eventMessages.any { it.type == EventMessage.Type.Negative })
+            assertFalse(navigationEvents.contains(ICardTransferringNavigationEvent.ToCardMovingDialog))
+        }
+
+    @Test
+    fun `move dialog request with selected cards emits moving dialog navigation`() =
+        runTest(context = mainDispatcherRule.dispatcher) {
+            val env = environment()
+            val viewModel = env.viewModel()
+            val navigationEvents = mutableListOf<ICardTransferringNavigationEvent>()
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.navigationEvent.collect(navigationEvents::add)
+            }
+
+            runCurrent()
+            viewModel.sendAction(ICardTransferringAction.ChangeSelectionState(position = 0))
+            runCurrent()
+            viewModel.sendAction(
+                ICardTransferringAction.NavigateTo(
+                    destination = ICardTransferringNavigationDestination.CardMovingDialog,
+                )
+            )
+            runCurrent()
+
+            assertTrue(navigationEvents.contains(ICardTransferringNavigationEvent.ToCardMovingDialog))
+        }
+
+    @Test
+    fun `initial deck list excludes source deck for target choosing`() =
+        runTest(context = mainDispatcherRule.dispatcher) {
+            val env = environment()
+            val viewModel = env.viewModel()
+
+            runCurrent()
+
+            assertEquals(
+                listOf(TARGET_DECK_ID),
+                viewModel.decks.value.map { it.id },
+            )
+        }
+
+    @Test
+    fun `reviewed target rejects move and leaves cards and save version unchanged`() =
+        runTest(context = mainDispatcherRule.dispatcher) {
+            val env = environment()
+            val target = checkNotNull(env.deckRepository.getDeckById(TARGET_DECK_ID)).copy(reviewCount = 1)
+            env.deckRepository.insertDeck(target)
+            val originalCards = env.cardRepository.fetchAllCards()
+            val source = env.deckRepository.getDeckById(SOURCE_DECK_ID)
+            val viewModel = env.viewModel()
+            val messages = mutableListOf<EventMessage>()
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.eventMessage.collect(messages::add)
+            }
+
+            runCurrent()
+            assertTrue(viewModel.decks.value.isEmpty())
+            viewModel.sendAction(ICardTransferringAction.ChangeSelectionState(position = 0))
+            runCurrent()
+            viewModel.sendAction(ICardTransferringAction.MoveCards(targetDeck = target))
+            runCurrent()
+
+            assertEquals(originalCards, env.cardRepository.fetchAllCards())
+            assertEquals(source, env.deckRepository.getDeckById(SOURCE_DECK_ID))
+            assertEquals(target, env.deckRepository.getDeckById(TARGET_DECK_ID))
+            assertEquals(0, env.saveVersionRepository.increaseCount)
+            assertTrue(messages.any { it.type == EventMessage.Type.Negative })
+        }
+
+    private fun environment(
+        sourceDeck: Deck = deck(
+            id = SOURCE_DECK_ID,
+            cardQuantity = 2,
+            lastReviewPassDuration = 100L,
+            lastFirstReviewDuration = 40L,
+            lastSecondReviewDuration = 60L,
+            scheduledDateInterval = 1_000L,
+            isLastPassSucceeded = true,
+        ),
+        targetDeck: Deck = deck(
+            id = TARGET_DECK_ID,
+            cardQuantity = 1,
+            lastReviewPassDuration = 30L,
+            lastFirstReviewDuration = 10L,
+            lastSecondReviewDuration = 20L,
+            scheduledDateInterval = 2_000L,
+            isLastPassSucceeded = false,
+            reviewCount = 0,
+        ),
+        sourceCards: List<Card> = (1..2).map { card(id = it, deckId = SOURCE_DECK_ID) },
+        targetCards: List<Card> = listOf(card(id = 10, deckId = TARGET_DECK_ID)),
+    ): TestEnvironment {
+        val cardRepository = InMemoryCardRepository(cards = sourceCards + targetCards)
+        val deckRepository = InMemoryDeckRepository(decks = listOf(sourceDeck, targetDeck))
+
+        return TestEnvironment(
+            cardRepository = cardRepository,
+            deckRepository = deckRepository,
+            saveVersionRepository = FakeStorageSaveVersionRepository(),
+            transactionRepository = FakeStorageTransactionRepository(),
+        )
+    }
+
+    private fun TestEnvironment.viewModel(): CardTransferringViewModel {
+        val coroutineContextProvider = TestCoroutineContextProvider(io = mainDispatcherRule.dispatcher)
+
+        return CardTransferringViewModel(
+            sourceDeckId = SOURCE_DECK_ID,
+            fetchDeckById = FetchDeckByIdUseCase(deckRepository = deckRepository),
+            fetchCards = FetchCardsUseCase(cardRepository = cardRepository),
+            deleteCardsFromDeckUseCase = DeleteCardsFromDeckUseCase(
+                deckRepository = deckRepository,
+                cardRepository = cardRepository,
+                localStorageSaveVersionRepository = saveVersionRepository,
+                localStorageTransactionRepository = transactionRepository,
+                coroutineContextProvider = coroutineContextProvider,
+            ),
+            fetchDeckSource = FetchDeckSourceUseCase(deckRepository = deckRepository),
+            audioPlayer = FakeAudioPlayerManager(),
+            moveCardsToDeck = TransferCardsToDeckUseCase(
+                cardRepository = cardRepository,
+                deckRepository = deckRepository,
+                localStorageSaveVersionRepository = saveVersionRepository,
+                localStorageTransactionRepository = transactionRepository,
+                coroutineContextProvider = coroutineContextProvider,
+            ),
+            crashlytics = FakeCrashlyticsRepository(),
+            coroutineContextProvider = coroutineContextProvider,
+        )
+    }
+
+    private suspend fun assertMovedCards(
+        sourceCards: List<Card>,
+        env: TestEnvironment,
+    ) {
+        val targetCards = env.cardRepository.fetchCardsByDeckId(deckId = TARGET_DECK_ID)
+
+        sourceCards.forEach { sourceCard ->
+            val movedCard = checkNotNull(
+                targetCards.firstOrNull { it.foreignWord == sourceCard.foreignWord }
+            )
+            assertEquals(sourceCard.id, movedCard.id)
+            assertEquals(TARGET_DECK_ID, movedCard.deckId)
+            assertEquals(sourceCard.nativeWord, movedCard.nativeWord)
+            assertEquals(sourceCard.ipa, movedCard.ipa)
+            assertEquals(sourceCard.wordMeaningInsights, movedCard.wordMeaningInsights)
+        }
+    }
+
+    private fun assertDeckMetadataUnchangedExceptQuantityAndPassDuration(
+        expected: Deck,
+        actual: Deck,
+    ) {
+        assertEquals(expected.name, actual.name)
+        assertEquals(expected.creationDate, actual.creationDate)
+        assertEquals(expected.reviewPassDates, actual.reviewPassDates)
+        assertEquals(expected.scheduledReviewDates, actual.scheduledReviewDates)
+        assertEquals(expected.scheduledDateInterval, actual.scheduledDateInterval)
+        assertEquals(expected.reviewCount, actual.reviewCount)
+        assertEquals(expected.lastFirstReviewDuration, actual.lastFirstReviewDuration)
+        assertEquals(expected.lastSecondReviewDuration, actual.lastSecondReviewDuration)
+        assertEquals(expected.isLastPassSucceeded, actual.isLastPassSucceeded)
+        assertEquals(expected.id, actual.id)
+    }
+
+    private fun deck(
+        id: Int,
+        cardQuantity: Int,
+        lastReviewPassDuration: Long,
+        lastFirstReviewDuration: Long,
+        lastSecondReviewDuration: Long,
+        scheduledDateInterval: Long,
+        isLastPassSucceeded: Boolean,
+        reviewCount: Int = id + 6,
+    ): Deck {
+        return Deck(
+            name = "deck-$id",
+            creationDate = id * 1_000L,
+            reviewPassDates = listOf(id * 10L, id * 20L),
+            scheduledReviewDates = listOf(id * 30L),
+            scheduledDateInterval = scheduledDateInterval,
+            reviewCount = reviewCount,
+            cardQuantity = cardQuantity,
+            lastFirstReviewDuration = lastFirstReviewDuration,
+            lastSecondReviewDuration = lastSecondReviewDuration,
+            lastReviewPassDuration = lastReviewPassDuration,
+            isLastPassSucceeded = isLastPassSucceeded,
+            id = id,
+        )
+    }
+
+    private fun card(id: Int, deckId: Int): Card {
+        return Card(
+            id = id,
+            deckId = deckId,
+            nativeWord = "native-$id",
+            foreignWord = "foreign-$id",
+            ipa = emptyList(),
+            wordMeaningInsights = WordMeaningInsights(
+                word = "foreign-$id",
+                language = "en",
+            ),
+        )
     }
 }

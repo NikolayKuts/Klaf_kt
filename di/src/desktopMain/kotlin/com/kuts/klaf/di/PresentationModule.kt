@@ -9,7 +9,9 @@ import com.kuts.klaf.desktop.DesktopNoOpMicrophonePermissionManager
 import org.koin.dsl.module
 
 internal val desktopPresentationModule = module {
-    single<IAppPreferencesDataStoreFactory> { DesktopAppPreferencesDataStoreFactory() }
+    single<IAppPreferencesDataStoreFactory> {
+        DesktopAppPreferencesDataStoreFactory(get<DesktopStorageConfiguration>().directory)
+    }
     factory<IDeckReviewStateStoreFactory> { DesktopDeckReviewStateStoreFactory() }
     single<IDeckReviewNotifierManager> { DesktopNoOpDeckReviewNotifier() }
     single<ICambridgeWordDataProvider> { DesktopNoOpCambridgeWordDataProvider() }

@@ -5,12 +5,14 @@ import com.kuts.domain.common.IDataSynchronizationState
 import com.kuts.domain.entities.Deck
 import com.kuts.klaf.common.IEventMessageSource
 import com.kuts.klaf.deckList.drawer.DrawerViewState
+import com.kuts.klaf.server.contract.SyncHistoryItem
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class BaseDeckListViewModel : ViewModel(), IEventMessageSource {
 
     abstract val dataSynchronizationState: StateFlow<IDataSynchronizationState>
+    abstract val accountSyncStatus: StateFlow<AccountSyncStatus>
     abstract val deckSource: StateFlow<List<Deck>?>
     abstract val navigationDestination: StateFlow<IDeckListNavigationDestination>
     abstract val navigationEvent: SharedFlow<IDeckListNavigationEvent?>
@@ -24,6 +26,7 @@ abstract class BaseDeckListViewModel : ViewModel(), IEventMessageSource {
     abstract fun deleteDeck(deckId: Int)
     abstract fun getDeckById(deckId: Int): Deck?
     abstract fun synchronizeData()
+    abstract suspend fun recentSyncHistory(accountEmail: String): List<SyncHistoryItem>
     abstract fun handleNavigation(event: IDeckListNavigationEvent)
     abstract fun reopenApp()
     abstract fun logOut()

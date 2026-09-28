@@ -1,10 +1,23 @@
 import com.example.klaf.di.dependencies.Modules
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
 }
+
+val klafClientProperties = Properties().apply {
+    val localFile = rootProject.file("local.properties")
+    if (localFile.isFile) localFile.inputStream().use(::load)
+}
+val klafClientHost = klafClientProperties.getProperty("klaf.client.server.host", "127.0.0.1").trim()
+val klafClientPort = klafClientProperties.getProperty("klaf.client.server.port", "8090").trim().toInt()
+val klafClientStorageMode = (providers.gradleProperty("klafClientStorageMode").orNull
+    ?: klafClientProperties.getProperty("klaf.client.storage.mode", "room")).trim().lowercase()
+require(klafClientHost.matches(Regex("[A-Za-z0-9._-]+"))) { "Invalid klaf.client.server.host" }
+require(klafClientPort in 1..65535) { "Invalid klaf.client.server.port" }
+require(klafClientStorageMode in setOf("legacy", "room")) { "Invalid klaf.client.storage.mode" }
 
 kotlin {
     jvmToolchain(17)
@@ -37,6 +50,7 @@ kotlin {
             dependencies {
                 implementation(project(Modules.Domain))
                 implementation(project(Modules.Data))
+                implementation(project(Modules.KlafServerContract))
                 implementation(project(Modules.Presentation))
                 implementation(libs.datastore.preferences.core)
                 implementation(libs.koin.core)
@@ -56,6 +70,12 @@ kotlin {
         val desktopMain by getting {
             dependencies {
                 implementation(libs.koin.compose.viewmodel)
+            }
+        }
+        val desktopTest by getting {
+            dependencies {
+                implementation(libs.tests.kotlin)
+                implementation(libs.room.runtime)
             }
         }
         val androidMain by getting {
@@ -93,6 +113,13 @@ android {
     defaultConfig {
         minSdk = libs.versions.androidMinSdk.get().toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "KLAF_CLIENT_SERVER_HOST", "\"$klafClientHost\"")
+        buildConfigField("int", "KLAF_CLIENT_SERVER_PORT", klafClientPort.toString())
+        buildConfigField("String", "KLAF_CLIENT_STORAGE_MODE", "\"$klafClientStorageMode\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     compileOptions {

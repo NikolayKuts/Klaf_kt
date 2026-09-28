@@ -1,6 +1,7 @@
 package com.kuts.domain.useCases
 
 import com.kuts.domain.common.ICoroutineContextProvider
+import com.kuts.domain.common.ReviewedDeckCardAdditionException
 import com.kuts.domain.common.getCurrentDateAsLong
 import com.kuts.domain.entities.Card
 import com.kuts.domain.entities.Deck
@@ -60,6 +61,9 @@ class AddVocabularySourceItemsToDeckUseCase(
         items: List<VocabularySourceItem>,
         currentTime: Long,
     ): Int {
+        val currentDeck = deckRepository.getDeckById(deck.id)
+            ?: error("Destination deck no longer exists")
+        if (currentDeck.reviewCount != 0) throw ReviewedDeckCardAdditionException()
         val addedItems = items
             .filter { item ->
                 item.status == VocabularySourceItemStatus.PENDING && !item.alreadyExists
@@ -85,7 +89,7 @@ class AddVocabularySourceItemsToDeckUseCase(
         if (addedItems.isNotEmpty()) {
             vocabularySourceRepository.saveItems(items = addedItems)
             deckRepository.insertDeck(
-                deck = deck.copy(
+                deck = currentDeck.copy(
                     cardQuantity = cardRepository.fetchCardQuantityByDeckId(deckId = deck.id),
                 )
             )

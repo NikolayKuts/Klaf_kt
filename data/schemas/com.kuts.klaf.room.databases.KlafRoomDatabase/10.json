@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 10,
-    "identityHash": "c777998c9a9287b21cd80bb1900cfbf3",
+    "identityHash": "4af09b9ad3ec4d5c46ce99db9e02aaa1",
     "entities": [
       {
         "tableName": "decks",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `creationDate` INTEGER NOT NULL, `repetitionIterationDates` TEXT NOT NULL, `scheduledIterationDates` TEXT NOT NULL, `scheduledDateInterval` INTEGER NOT NULL, `repetitionQuantity` INTEGER NOT NULL, `cardQuantity` INTEGER NOT NULL, `lastFirstRepetitionDuration` INTEGER NOT NULL, `lastSecondRepetitionDuration` INTEGER NOT NULL, `lastRepetitionIterationDuration` INTEGER NOT NULL, `isLastIterationSucceeded` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `creationDate` INTEGER NOT NULL, `repetitionIterationDates` TEXT NOT NULL, `scheduledIterationDates` TEXT NOT NULL, `scheduledDateInterval` INTEGER NOT NULL, `repetitionQuantity` INTEGER NOT NULL, `cardQuantity` INTEGER NOT NULL, `lastFirstRepetitionDuration` INTEGER NOT NULL, `lastSecondRepetitionDuration` INTEGER NOT NULL, `lastRepetitionIterationDuration` INTEGER NOT NULL, `isLastIterationSucceeded` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `syncId` TEXT NOT NULL DEFAULT '', `lastChangedServerRevision` INTEGER NOT NULL DEFAULT 0)",
         "fields": [
           {
             "fieldPath": "name",
@@ -79,6 +79,20 @@
             "columnName": "id",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "syncId",
+            "columnName": "syncId",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "lastChangedServerRevision",
+            "columnName": "lastChangedServerRevision",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -86,11 +100,22 @@
           "columnNames": [
             "id"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_decks_syncId",
+            "unique": true,
+            "columnNames": [
+              "syncId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_decks_syncId` ON `${TABLE_NAME}` (`syncId`)"
+          }
+        ]
       },
       {
         "tableName": "cards",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`deckId` INTEGER NOT NULL, `nativeWord` TEXT NOT NULL, `foreignWord` TEXT NOT NULL, `ipa` TEXT NOT NULL, `wordMeaningInsightsJson` TEXT NOT NULL, `mnemonicJson` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`deckId` INTEGER NOT NULL, `nativeWord` TEXT NOT NULL, `foreignWord` TEXT NOT NULL, `ipa` TEXT NOT NULL, `wordMeaningInsightsJson` TEXT NOT NULL, `mnemonicJson` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `syncId` TEXT NOT NULL DEFAULT '', `lastChangedServerRevision` INTEGER NOT NULL DEFAULT 0, FOREIGN KEY(`deckId`) REFERENCES `decks`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "deckId",
@@ -133,6 +158,20 @@
             "columnName": "id",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "syncId",
+            "columnName": "syncId",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "lastChangedServerRevision",
+            "columnName": "lastChangedServerRevision",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -140,7 +179,40 @@
           "columnNames": [
             "id"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_cards_deckId",
+            "unique": false,
+            "columnNames": [
+              "deckId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cards_deckId` ON `${TABLE_NAME}` (`deckId`)"
+          },
+          {
+            "name": "index_cards_syncId",
+            "unique": true,
+            "columnNames": [
+              "syncId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_cards_syncId` ON `${TABLE_NAME}` (`syncId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "decks",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "deckId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       },
       {
         "tableName": "storage_save_version_table_name",
@@ -233,7 +305,7 @@
       },
       {
         "tableName": "vocabulary_source_items",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sourceId` INTEGER NOT NULL, `foreignWord` TEXT NOT NULL, `transcription` TEXT NOT NULL DEFAULT '', `nativeWord` TEXT NOT NULL, `originalText` TEXT NOT NULL, `partOfSpeech` TEXT NOT NULL, `cefrLevel` TEXT, `confidence` TEXT NOT NULL, `category` TEXT NOT NULL, `status` TEXT NOT NULL, `sourceExample` TEXT NOT NULL, `explanation` TEXT NOT NULL, `knownMeaningsSnapshot` TEXT NOT NULL, `alreadyExists` INTEGER NOT NULL, `occurrencesJson` TEXT NOT NULL, `createdCardId` INTEGER, `targetDeckId` INTEGER, `firstOccurrenceOrder` INTEGER NOT NULL, `isEdited` INTEGER NOT NULL DEFAULT 0, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sourceId` INTEGER NOT NULL, `foreignWord` TEXT NOT NULL, `nativeWord` TEXT NOT NULL, `originalText` TEXT NOT NULL, `partOfSpeech` TEXT NOT NULL, `cefrLevel` TEXT, `confidence` TEXT NOT NULL, `category` TEXT NOT NULL, `status` TEXT NOT NULL, `sourceExample` TEXT NOT NULL, `explanation` TEXT NOT NULL, `knownMeaningsSnapshot` TEXT NOT NULL, `alreadyExists` INTEGER NOT NULL, `occurrencesJson` TEXT NOT NULL, `createdCardId` INTEGER, `targetDeckId` INTEGER, `firstOccurrenceOrder` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
         "fields": [
           {
             "fieldPath": "sourceId",
@@ -246,13 +318,6 @@
             "columnName": "foreignWord",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "transcription",
-            "columnName": "transcription",
-            "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "''"
           },
           {
             "fieldPath": "nativeWord",
@@ -342,13 +407,6 @@
             "notNull": true
           },
           {
-            "fieldPath": "isEdited",
-            "columnName": "isEdited",
-            "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "0"
-          },
-          {
             "fieldPath": "createdAt",
             "columnName": "createdAt",
             "affinity": "INTEGER",
@@ -397,7 +455,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c777998c9a9287b21cd80bb1900cfbf3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4af09b9ad3ec4d5c46ce99db9e02aaa1')"
     ]
   }
 }

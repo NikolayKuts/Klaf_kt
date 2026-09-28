@@ -1,10 +1,14 @@
 package com.kuts.klaf.di
 
+import com.kuts.klaf.room.repositoryImplementations.RoomMnemonicImageUploader
+import com.kuts.klaf.networking.klafServer.KlafServerImageRestClient
 import com.kuts.domain.common.DataSynchronizationValidator
 import com.kuts.domain.interactors.AuthenticationInteractor
 import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.IDeckRepository
 import com.kuts.domain.repositories.IIgnoredVocabularyWordRepository
+import com.kuts.domain.repositories.IDeckReviewResultRepository
+
 import com.kuts.domain.repositories.IMnemonicImageRemoteRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IStorageTransactionRepository
@@ -47,6 +51,7 @@ import com.kuts.domain.useCases.RemoveVocabularySourceUseCase
 import com.kuts.domain.useCases.ReplaceVocabularySourceDraftItemsUseCase
 import com.kuts.domain.useCases.RenameDeckUseCase
 import com.kuts.domain.useCases.SaveCardRemotelyUseCase
+import com.kuts.domain.useCases.SaveCompletedDeckReviewUseCase
 import com.kuts.domain.useCases.SaveDeckRemotelyUseCase
 import com.kuts.domain.useCases.SaveDeckReviewInfoUseCase
 import com.kuts.domain.useCases.RetryKlafServerConnectionUseCase
@@ -63,6 +68,15 @@ import com.kuts.klaf.networking.klafServer.KlafServerVocabularySourceTranscripti
 import com.kuts.klaf.room.repositoryImplementations.CardRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.DeckRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.IgnoredVocabularyWordRepositoryRoom
+import com.kuts.klaf.networking.klafServer.AccountDeviceIdentity
+import com.kuts.klaf.networking.klafServer.KlafServerSyncRestClient
+import com.kuts.klaf.room.databases.RoomDatabaseSource
+import com.kuts.klaf.room.databases.ActiveLocalRoomDatabase
+import com.kuts.klaf.room.repositoryImplementations.RoomDeckReviewResultRepository
+import com.kuts.klaf.room.repositoryImplementations.ManualRoomSyncCoordinator
+import com.kuts.klaf.room.repositoryImplementations.RoomSyncDeltaApplier
+import com.kuts.klaf.room.repositoryImplementations.RoomSyncOutbox
+
 import com.kuts.klaf.room.repositoryImplementations.StorageSaveVersionRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.StorageTransactionRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.VocabularySourceRepositoryRoom
@@ -83,26 +97,29 @@ internal val commonDataModule = module {
 }
 
 private fun Module.commonRepositoryModule() {
+    single<com.kuts.domain.managers.IClientSessionScope> {
+        get<com.kuts.klaf.networking.klafServer.IKlafServerSession>()
+    }
     single<IDeckRepository>(
         qualifier = named(name = LOCAL_DECK_REPOSITORY),
     ) {
-        DeckRepositoryRoom(roomDatabase = get())
+        DeckRepositoryRoom(databaseSource = get<RoomDatabaseSource>())
     }
     single<ICardRepository>(
         qualifier = named(name = LOCAL_CARD_REPOSITORY),
     ) {
-        CardRepositoryRoom(roomDatabase = get())
+        CardRepositoryRoom(databaseSource = get<RoomDatabaseSource>())
     }
     single<IStorageSaveVersionRepository>(
         qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
     ) {
-        StorageSaveVersionRepositoryRoom(database = get())
+        StorageSaveVersionRepositoryRoom(databaseSource = get<RoomDatabaseSource>())
     }
     single<IVocabularySourceRepository> {
-        VocabularySourceRepositoryRoom(roomDatabase = get())
+        VocabularySourceRepositoryRoom(databaseSource = get<RoomDatabaseSource>())
     }
     single<IIgnoredVocabularyWordRepository> {
-        IgnoredVocabularyWordRepositoryRoom(roomDatabase = get())
+        IgnoredVocabularyWordRepositoryRoom(databaseSource = get<RoomDatabaseSource>())
     }
     single<IVocabularySourceAnalysisRepository> {
         KlafServerVocabularySourceAnalysisRepository(klafServerSession = get())
@@ -111,7 +128,39 @@ private fun Module.commonRepositoryModule() {
         KlafServerVocabularySourceTranscriptionRepository(klafServerSession = get())
     }
 
-    single<IStorageTransactionRepository> { StorageTransactionRepositoryRoom(roomDatabase = get()) }
+    single<IStorageTransactionRepository> { StorageTransactionRepositoryRoom(databaseSource = get<RoomDatabaseSource>()) }
+    single { RoomSyncOutbox(databaseSource = get()) }
+    single { RoomSyncDeltaApplier(databaseSource = get(), outbox = get()) }
+    single {
+        RoomMnemonicImageUploader(
+            assets = get(), upload = get<KlafServerImageRestClient>()::upload,
+        )
+    }
+    single {
+        val identity = get<AccountDeviceIdentity>()
+        val rest = get<KlafServerSyncRestClient>()
+        ManualRoomSyncCoordinator(
+            databaseSource = get(),
+            outbox = get(),
+            applier = get(),
+            deviceIdProvider = { identity.current().id },
+            sendRequest = rest::sync,
+            prepareImages = get<RoomMnemonicImageUploader>()::prepare,
+            fetchBootstrap = rest::bootstrap,
+            confirmAppliedRevision = { email, deviceId, revision ->
+                rest.confirmAppliedRevision(email, deviceId, revision)
+                Unit
+            },
+        )
+    }
+    single<IDeckReviewResultRepository> {
+        val databaseSource = get<RoomDatabaseSource>()
+        if (databaseSource is ActiveLocalRoomDatabase) {
+            RoomDeckReviewResultRepository(databaseSource)
+        } else {
+            LegacyDeckReviewResultRepository(updateDeck = get(), saveDeckReviewInfo = get())
+        }
+    }
 }
 
 private fun Module.commonUseCaseModule() {
@@ -294,6 +343,9 @@ private fun Module.commonUseCaseModule() {
             deckRepetitionInfoRepository = get(),
             coroutineContextProvider = get(),
         )
+    }
+    factory {
+        SaveCompletedDeckReviewUseCase(repository = get(), coroutineContextProvider = get())
     }
     factory {
         SynchronizeLocalAndRemoteDataUseCase(

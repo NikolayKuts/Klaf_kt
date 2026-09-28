@@ -15,6 +15,8 @@ sealed interface IDeckListNavigationEvent {
 
     data object ToDataSynchronizationDialog : IDeckListNavigationEvent
 
+    data object ToConflictResolutionScreen : IDeckListNavigationEvent
+
     data class ToSigningTypeChoosingDialog(
         val fromSourceDestination: NavigationDestination,
     ) : IDeckListNavigationEvent

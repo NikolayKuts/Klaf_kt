@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.kuts.domain.managers.MnemonicGenerationLaunchExtras
+import com.kuts.domain.managers.IReviewReminderScopeProvider
+import com.kuts.domain.managers.IClientSessionScope
 import com.kuts.domain.managers.VocabularySourceAnalysisLaunchExtras
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.EventMessageView
@@ -44,6 +46,8 @@ class MainActivity : AppCompatActivity() {
     private val notificationPermissionBinder: INotificationPermissionBinder by inject()
     private val microphonePermissionBinder: IMicrophonePermissionBinder by inject()
     private val notificationPermissionManager: INotificationPermissionManager by inject()
+    private val reminderScope: IReviewReminderScopeProvider by inject()
+    private val klafServerSession: IClientSessionScope by inject()
     private var shouldCheckNotificationPermission by mutableStateOf(false)
 
     private val launchRequests = MutableSharedFlow<AppLaunchNavigationRequest>(
@@ -114,6 +118,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun Intent.toLaunchNavigationRequest(): AppLaunchNavigationRequest? {
+        val notificationSession = getStringExtra(com.kuts.domain.managers.ClientSessionLaunchExtras.SESSION_ID_KEY)
+        if (notificationSession != null && notificationSession != klafServerSession.clientSessionId) return null
         toMnemonicGenerationLaunchNavigationRequest()?.let { request -> return request }
         toVocabularySourceAnalysisLaunchNavigationRequest()?.let { request -> return request }
 
@@ -130,6 +136,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 AppLaunchNavigationExtras.DESTINATION_DECK_REPETITION -> {
+                    val incomingScope = getStringExtra(AppLaunchNavigationExtras.REMINDER_ACCOUNT_SCOPE_KEY)
+                    if (incomingScope != reminderScope.currentScope()) return null
                     val deckId = getLaunchIntExtra(AppLaunchNavigationExtras.DECK_ID_KEY)
                         ?: AppLaunchNavigationExtras.DEFAULT_DECK_ID
                     val deckName = getStringExtra(AppLaunchNavigationExtras.DECK_NAME_KEY)

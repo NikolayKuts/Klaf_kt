@@ -1,6 +1,7 @@
 package com.kuts.domain.useCases
 
 import com.kuts.domain.common.ICoroutineContextProvider
+import com.kuts.domain.common.ReviewedDeckCardAdditionException
 import com.kuts.domain.entities.Card
 import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.IDeckRepository
@@ -21,6 +22,7 @@ class AddNewCardIntoDeckUseCase(
             localStorageTransactionRepository.performWithTransaction {
                 val originalDeck = deckRepository.getDeckById(deckId = card.deckId)
                     ?: throw Exception("Fetching deck is failed")
+                if (originalDeck.reviewCount != 0) throw ReviewedDeckCardAdditionException()
 
                 cardRepository.insertCard(card = card)
                 val actualCardQuantity =

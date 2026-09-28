@@ -8,6 +8,9 @@ import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.kuts.domain.managers.MnemonicGenerationLaunchExtras
+import com.kuts.domain.managers.ClientSessionLaunchExtras
+import com.kuts.klaf.networking.klafServer.IKlafServerSession
+import com.kuts.klaf.server.contract.requestClientSessionId
 import com.kuts.domain.managers.MnemonicGenerationSource
 import com.kuts.domain.managers.MnemonicGenerationType
 import com.kuts.klaf.common.notifications.NotificationChannelInitializer.Companion.MNEMONIC_GENERATION_SUCCESS_CHANNEL_ID
@@ -38,6 +41,7 @@ private const val APP_DESTINATION_CARD_EDITING = "card_editing"
 class KlafFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
 
     private val pushTokenManager: KlafPushTokenManager by inject()
+    private val klafServerSession: IKlafServerSession by inject()
     private val mnemonicGenerationNotifier: MnemonicGenerationNotifier by inject()
     private val vocabularySourceAnalysisNotifier: VocabularySourceAnalysisNotifier by inject()
     private val vocabularySourceTranscriptionNotifier: VocabularySourceTranscriptionNotifier by inject()
@@ -51,6 +55,10 @@ class KlafFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
         super.onMessageReceived(message)
 
         val data = message.data
+        if (requestClientSessionId(data["requestId"].orEmpty()) != klafServerSession.clientSessionId) {
+            logD("Klaf push ignored: originating session is no longer active")
+            return
+        }
         when (data[PUSH_TYPE_KEY]) {
             VOCABULARY_SOURCE_ANALYSIS_COMPLETED_TYPE -> showVocabularySourceAnalysisCompleted(data = data)
             VOCABULARY_SOURCE_TRANSCRIPTION_COMPLETED_TYPE -> showVocabularySourceTranscriptionCompleted(data = data)
@@ -77,6 +85,7 @@ class KlafFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
         vocabularySourceAnalysisNotifier.showSuccess(
             sourceId = sourceId,
             sourceTitle = data[SOURCE_TITLE_KEY].orEmpty().ifBlank { "Vocabulary source" },
+            clientSessionId = requestClientSessionId(data["requestId"].orEmpty()),
         )
         logD("Klaf push vocabulary source analysis notification shown: sourceId=$sourceId")
     }
@@ -91,6 +100,7 @@ class KlafFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
         vocabularySourceTranscriptionNotifier.showSuccess(
             sourceId = sourceId,
             sourceTitle = data[SOURCE_TITLE_KEY].orEmpty().ifBlank { "Vocabulary source" },
+            clientSessionId = requestClientSessionId(data["requestId"].orEmpty()),
         )
         logD("Klaf push vocabulary source transcription notification shown: sourceId=$sourceId")
     }
@@ -108,6 +118,7 @@ class KlafFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
         mnemonicGenerationNotifier.showSuccess(
             type = type,
             source = source,
+            clientSessionId = requestClientSessionId(data["requestId"].orEmpty()),
         )
         logD("Klaf push mnemonic notification shown: type=$type")
     }
@@ -158,6 +169,7 @@ class KlafFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
     private fun Map<String, String>.toWordInsightsPendingIntent(): PendingIntent? {
         val deckId = get(APP_DECK_ID_KEY)?.toIntOrNull() ?: return null
         val cardId = get(APP_CARD_ID_KEY)?.toIntOrNull() ?: return null
+        val originatingSessionId = requestClientSessionId(get("requestId").orEmpty())
         val launchIntent = packageManager
             .getLaunchIntentForPackage(packageName)
             ?.apply {
@@ -166,6 +178,7 @@ class KlafFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
                 putExtra(APP_DESTINATION_KEY, APP_DESTINATION_CARD_EDITING)
                 putExtra(APP_DECK_ID_KEY, deckId)
                 putExtra(APP_CARD_ID_KEY, cardId)
+                putExtra(ClientSessionLaunchExtras.SESSION_ID_KEY, originatingSessionId)
             }
             ?: return null
 

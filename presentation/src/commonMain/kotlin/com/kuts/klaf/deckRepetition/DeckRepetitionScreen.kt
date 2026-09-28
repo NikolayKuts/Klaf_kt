@@ -265,104 +265,110 @@ private fun DeckRepetitionContent(
             else -> parentHeightPx
         }
 
-        Row {
-            Text(
-                text = stringResource(
-                    resource = Res.string.deck_review_stat_reviewed_cards,
-                    deckReviewState.reviewedCardsCount
-                )
-            )
-
-            Spacer(Modifier.width(10.dp))
-
-            Text(
-                text = stringResource(
-                    resource = Res.string.deck_review_stat_max_time,
-                    deckReviewState.maxTime.timeAsString
-                )
-            )
-
-            Spacer(Modifier.width(10.dp))
-
-            Text(
-                text = stringResource(
-                    resource = Res.string.deck_review_stat_left_time,
-                    deckReviewState.leftTime.timeAsString
-                )
-            )
-        }
-
-        Box(
+        Column(
             modifier = Modifier
                 .fillParentMaxWidth()
-                .height(density.run { contentHeight.toDp() })
-                .padding(16.dp)
+                .height(density.run { contentHeight.toDp() }),
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                DeckInfo(
-                    deckName = deckName,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.size(8.dp))
-
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    OrderPointers(
-                        order = deckRepetitionState.repetitionOrder,
-                        onSwitchIconClick = onSwitchRepetitionOrderClick,
-                        modifier = Modifier.align(Alignment.CenterStart)
+            Row {
+                Text(
+                    text = stringResource(
+                        resource = Res.string.deck_review_stat_reviewed_cards,
+                        deckReviewState.reviewedCardsCount
                     )
-                    Timer(
-                        timerState = timerState,
-                        modifier = Modifier.align(Alignment.Center)
+                )
+
+                Spacer(Modifier.width(10.dp))
+
+                Text(
+                    text = stringResource(
+                        resource = Res.string.deck_review_stat_max_time,
+                        deckReviewState.maxTime.timeAsString
                     )
-                }
-
-                DeckCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .padding(vertical = 8.dp),
-                    deckRepetitionState = deckRepetitionState,
-                    isMnemonicImageVisible = isMnemonicImageVisible,
-                    onMnemonicImageVisibilityChange = { isMnemonicImageVisible = it },
-                    onWordClick = onWordClick,
                 )
 
-                InsightsSheetHandle(
-                    modifier = Modifier
-                        .padding(bottom = 8.dp),
-                    isEnabled = areInsightsAvailable,
-                    onClick = onShowInsightsClick,
-                )
+                Spacer(Modifier.width(10.dp))
 
-                RepetitionButtons(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    deckRepetitionState = deckRepetitionState,
-                    screenState = screenState,
-                    onStartButtonClick = onStartButtonClick,
-                    onEasyButtonClick = onEasyButtonClick,
-                    onGoodButtonClick = onGoodButtonClick,
-                    onHardButtonClick = onHardButtonClick,
-                    onCardButtonClick = onCardButtonClick,
+                Text(
+                    text = stringResource(
+                        resource = Res.string.deck_review_stat_left_time,
+                        deckReviewState.leftTime.timeAsString
+                    )
                 )
             }
 
-            AdditionalButtons(
+            Box(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 32.dp),
-                additionalButtonsEnabled = mainButtonState == ButtonState.PRESSED,
-                onDeleteClick = { deckRepetitionState.card?.id?.let(onDeleteCardClick) },
-                onAddClick = onAddCardClick,
-                onEditClick = { deckRepetitionState.card?.id?.let(onEditCardClick) },
-                onCommonButtonClick = onCommonButtonClick,
-            )
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    DeckInfo(
+                        deckName = deckName,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.size(8.dp))
+
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        OrderPointers(
+                            order = deckRepetitionState.repetitionOrder,
+                            onSwitchIconClick = onSwitchRepetitionOrderClick,
+                            modifier = Modifier.align(Alignment.CenterStart)
+                        )
+                        Timer(
+                            timerState = timerState,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+
+                    DeckCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(vertical = 8.dp),
+                        deckRepetitionState = deckRepetitionState,
+                        isMnemonicImageVisible = isMnemonicImageVisible,
+                        onMnemonicImageVisibilityChange = { isMnemonicImageVisible = it },
+                        onWordClick = onWordClick,
+                    )
+
+                    InsightsSheetHandle(
+                        modifier = Modifier
+                            .padding(bottom = 8.dp),
+                        isEnabled = areInsightsAvailable,
+                        onClick = onShowInsightsClick,
+                    )
+
+                    RepetitionButtons(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 48.dp),
+                        deckRepetitionState = deckRepetitionState,
+                        screenState = screenState,
+                        onStartButtonClick = onStartButtonClick,
+                        onEasyButtonClick = onEasyButtonClick,
+                        onGoodButtonClick = onGoodButtonClick,
+                        onHardButtonClick = onHardButtonClick,
+                        onCardButtonClick = onCardButtonClick,
+                    )
+                }
+
+                AdditionalButtons(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 32.dp),
+                    additionalButtonsEnabled = mainButtonState == ButtonState.PRESSED,
+                    onDeleteClick = { deckRepetitionState.card?.id?.let(onDeleteCardClick) },
+                    onAddClick = onAddCardClick,
+                    onEditClick = { deckRepetitionState.card?.id?.let(onEditCardClick) },
+                    onCommonButtonClick = onCommonButtonClick,
+                )
+            }
         }
     }
 

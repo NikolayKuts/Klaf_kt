@@ -7,7 +7,9 @@ import com.kuts.klaf.common.localStore.AppLocalStore
 import java.io.File
 import okio.Path.Companion.toPath
 
-internal class DesktopAppPreferencesDataStoreFactory : IAppPreferencesDataStoreFactory {
+internal class DesktopAppPreferencesDataStoreFactory(
+    private val appDir: File = File(System.getProperty("user.home"), ".klaf_kt"),
+) : IAppPreferencesDataStoreFactory {
 
     override fun create(): DataStore<Preferences> {
         return PreferenceDataStoreFactory.createWithPath(
@@ -16,7 +18,6 @@ internal class DesktopAppPreferencesDataStoreFactory : IAppPreferencesDataStoreF
     }
 
     private fun appLocalStoreFilePath(): String {
-        val appDir = File(System.getProperty("user.home"), ".klaf_kt")
         if (!appDir.exists()) {
             appDir.mkdirs()
         }

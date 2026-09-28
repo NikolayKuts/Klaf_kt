@@ -31,6 +31,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+internal fun List<Deck>.availableMoveTargets(sourceDeckId: Int): List<Deck> = filter { deck ->
+    deck.id != sourceDeckId && deck.reviewCount == 0
+}
+
 class CardTransferringViewModel(
     private val sourceDeckId: Int,
     fetchDeckById: FetchDeckByIdUseCase,
@@ -63,7 +67,7 @@ class CardTransferringViewModel(
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
             // logE("Failed to fetch decks for transferring\n${throwable.stackTraceToString()}")
             eventMessage.tryEmitAsNegative(resId = Res.string.problem_fetching_decks)
-        }.filterNotCurrentDecks()
+        }.map { fetchedDecks -> fetchedDecks.availableMoveTargets(sourceDeckId) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -222,12 +226,6 @@ class CardTransferringViewModel(
     private fun handleNativeWordVisibilityIconClick() {
         listHeaderState.update { state ->
             state.copy(nativeWordsVisible = !state.nativeWordsVisible)
-        }
-    }
-
-    private fun Flow<List<Deck>>.filterNotCurrentDecks(): Flow<List<Deck>> {
-        return map { fetchedDecks ->
-            fetchedDecks.filterNot { deck -> deck.id == sourceDeckId }
         }
     }
 

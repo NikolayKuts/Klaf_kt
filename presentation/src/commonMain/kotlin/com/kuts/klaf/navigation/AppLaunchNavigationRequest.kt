@@ -38,6 +38,8 @@ object AppLaunchNavigationExtras {
     const val DECK_ID_KEY = "launch_deck_id"
     const val DECK_NAME_KEY = "launch_deck_name"
     const val CARD_ID_KEY = "launch_card_id"
+    const val REMINDER_ACCOUNT_SCOPE_KEY = "launch_reminder_account_scope"
+
 
     const val DESTINATION_DECK_LIST = "deck_list"
     const val DESTINATION_INTERIM_CARD_ADDITION = "interim_card_addition"

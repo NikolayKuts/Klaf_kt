@@ -71,6 +71,8 @@ class IosAuthenticationSessionManager(
 }
 
 class IosNoOpWordAutocompleteRepository : IWordAutocompleteRepository {
+    override val isEnabled: Boolean = false
+
     override suspend fun fetchAutocomplete(prefix: String): List<AutocompleteWord> = emptyList()
 }
 

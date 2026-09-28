@@ -51,6 +51,30 @@ private fun VocabularySourceTranscriptionCoordinator.startTest() = start(1, "Sou
 @OptIn(ExperimentalCoroutinesApi::class)
 class VocabularySourceTranscriptionCoordinatorTest {
     @Test
+    fun logoutCancelsActiveWorkAndRemovesRetainedResults() = runTest {
+        val repository = CoordinatorTestRepository()
+        val background = CoordinatorTestBackground()
+        val coordinator = VocabularySourceTranscriptionCoordinator(
+            TranscribeVocabularySourceAudioUseCase(repository), background, backgroundScope,
+        )
+        assertTrue(coordinator.startTest())
+        runCurrent()
+        coordinator.cancelAll()
+        assertTrue(repository.cancelled)
+        assertNull(coordinator.observe(1).first())
+        assertEquals(listOf(VocabularySourceTranscriptionOutcome.Cancelled to false), background.outcomes)
+
+        repository.result.complete(VocabularySourceTranscriptionUpdate.Success(
+            VocabularySourceTranscriptionResult("New session", emptyList()),
+        ))
+        assertTrue(coordinator.startTest())
+        runCurrent()
+        assertFalse(coordinator.observe(1).first()!!.isActive)
+        coordinator.cancelAll()
+        assertNull(coordinator.observe(1).first())
+    }
+
+    @Test
     fun detachingScreenDoesNotCancelAndReturningScreenReceivesRetainedResult() = runTest {
         val repository = CoordinatorTestRepository()
         val background = CoordinatorTestBackground()

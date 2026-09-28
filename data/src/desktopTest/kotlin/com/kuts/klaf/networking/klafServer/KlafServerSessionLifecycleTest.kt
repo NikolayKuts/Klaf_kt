@@ -58,6 +58,63 @@ private suspend fun withSessionServer(
 class KlafServerSessionLifecycleTest {
 
     @Test
+    fun offlineLogoutRotatesSessionWithoutConnecting() = runBlocking {
+        val connected = AtomicInteger()
+        withSessionServer(handler = { connected.incrementAndGet(); awaitCancellation() }) { session ->
+            val before = session.clientSessionId
+            val oldRequest = session.nextRequestId("old-work")
+            withTimeout(2_000) { session.endUserSession() }
+            kotlin.test.assertNotEquals(before, session.clientSessionId)
+            assertEquals(0, connected.get())
+            assertFailsWith<kotlinx.coroutines.CancellationException> {
+                session.request(WordInsightsGenerateRequest(oldRequest, "word"))
+            }
+            assertEquals(0, connected.get())
+        }
+    }
+
+    @Test
+    fun logoutDuringHandshakeCancelsOldRequestWithoutShowingFailure() = runBlocking {
+        val connected = CompletableDeferred<Unit>()
+        withSessionServer(handler = { connected.complete(Unit); awaitCancellation() }) { session ->
+            val requestId = session.nextRequestId("work")
+            val pending = async { runCatching { session.request(WordInsightsGenerateRequest(requestId, "word")) } }
+            withTimeout(10_000) { connected.await() }
+            withTimeout(2_000) { session.endUserSession() }
+            kotlin.test.assertIs<kotlinx.coroutines.CancellationException>(
+                withTimeout(2_000) { pending.await() }.exceptionOrNull(),
+            )
+        }
+    }
+
+    @Test
+    fun onlineLogoutSendsSessionEndAndFailsOldPendingRequest() = runBlocking {
+        val started = CompletableDeferred<Unit>()
+        val ended = CompletableDeferred<String>()
+        val reconnected = CompletableDeferred<Unit>()
+        val connections = AtomicInteger()
+        withSessionServer(handler = {
+            send(sessionTestJson.encodeToString<KlafServerMessage>(KlafServerReadyMessage()))
+            if (connections.incrementAndGet() == 2) reconnected.complete(Unit)
+            for (frame in incoming) {
+                val request = sessionTestJson.decodeFromString<KlafServerClientMessage>((frame as Frame.Text).readText())
+                if (request is com.kuts.klaf.server.contract.ClientSessionEndRequest) {
+                    ended.complete(request.clientSessionId)
+                } else started.complete(Unit)
+            }
+        }) { session ->
+            val oldSession = session.clientSessionId
+            val pending = async { runCatching { session.request(WordInsightsGenerateRequest("work-$oldSession-0", "word")) } }
+            started.await()
+            withTimeout(2_000) { session.endUserSession() }
+            assertEquals(oldSession, withTimeout(2_000) { ended.await() })
+            kotlin.test.assertIs<kotlinx.coroutines.CancellationException>(pending.await().exceptionOrNull())
+            kotlin.test.assertNotEquals(oldSession, session.clientSessionId)
+            withTimeout(2_000) { reconnected.await() }
+        }
+    }
+
+    @Test
     fun closeBeforeReadyFailsPromptlyInsteadOfWaitingForHandshakeTimeout() = runBlocking {
         withSessionServer(handler = { close() }) { session ->
             assertFailsWith<IllegalStateException> {
@@ -93,6 +150,8 @@ class KlafServerSessionLifecycleTest {
                 awaitCancellation()
             }
         }) { session ->
+            // Measure replay separately from cold JVM/HTTP initialization.
+            session.connect()
             val response = withTimeout(5_000) { session.request(WordInsightsGenerateRequest("req-replay", "word")) }
             assertEquals("req-replay", (response as WordInsightsGeneratedMessage).requestId)
             assertEquals(2, connections.get())

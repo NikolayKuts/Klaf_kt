@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 9,
-    "identityHash": "3cd7575fac1334be734459b9976a690a",
+    "identityHash": "2fd74cdbb782241a72b014eaf71e5c3e",
     "entities": [
       {
         "tableName": "decks",
@@ -90,7 +90,7 @@
       },
       {
         "tableName": "cards",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`deckId` INTEGER NOT NULL, `nativeWord` TEXT NOT NULL, `foreignWord` TEXT NOT NULL, `ipa` TEXT NOT NULL, `wordMeaningInsightsJson` TEXT NOT NULL, `mnemonicJson` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`deckId` INTEGER NOT NULL, `nativeWord` TEXT NOT NULL, `foreignWord` TEXT NOT NULL, `ipa` TEXT NOT NULL, `wordMeaningInsightsJson` TEXT NOT NULL, `mnemonicJson` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`deckId`) REFERENCES `decks`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "deckId",
@@ -140,7 +140,31 @@
           "columnNames": [
             "id"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_cards_deckId",
+            "unique": false,
+            "columnNames": [
+              "deckId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cards_deckId` ON `${TABLE_NAME}` (`deckId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "decks",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "deckId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       },
       {
         "tableName": "storage_save_version_table_name",
@@ -233,7 +257,7 @@
       },
       {
         "tableName": "vocabulary_source_items",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sourceId` INTEGER NOT NULL, `foreignWord` TEXT NOT NULL, `transcription` TEXT NOT NULL DEFAULT '', `nativeWord` TEXT NOT NULL, `originalText` TEXT NOT NULL, `partOfSpeech` TEXT NOT NULL, `cefrLevel` TEXT, `confidence` TEXT NOT NULL, `category` TEXT NOT NULL, `status` TEXT NOT NULL, `sourceExample` TEXT NOT NULL, `explanation` TEXT NOT NULL, `knownMeaningsSnapshot` TEXT NOT NULL, `alreadyExists` INTEGER NOT NULL, `occurrencesJson` TEXT NOT NULL, `createdCardId` INTEGER, `targetDeckId` INTEGER, `firstOccurrenceOrder` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sourceId` INTEGER NOT NULL, `foreignWord` TEXT NOT NULL, `nativeWord` TEXT NOT NULL, `originalText` TEXT NOT NULL, `partOfSpeech` TEXT NOT NULL, `cefrLevel` TEXT, `confidence` TEXT NOT NULL, `category` TEXT NOT NULL, `status` TEXT NOT NULL, `sourceExample` TEXT NOT NULL, `explanation` TEXT NOT NULL, `knownMeaningsSnapshot` TEXT NOT NULL, `alreadyExists` INTEGER NOT NULL, `occurrencesJson` TEXT NOT NULL, `createdCardId` INTEGER, `targetDeckId` INTEGER, `firstOccurrenceOrder` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
         "fields": [
           {
             "fieldPath": "sourceId",
@@ -246,13 +270,6 @@
             "columnName": "foreignWord",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "transcription",
-            "columnName": "transcription",
-            "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "''"
           },
           {
             "fieldPath": "nativeWord",
@@ -390,7 +407,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3cd7575fac1334be734459b9976a690a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2fd74cdbb782241a72b014eaf71e5c3e')"
     ]
   }
 }

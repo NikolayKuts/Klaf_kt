@@ -64,6 +64,7 @@ private suspend fun withTemporaryRoomDatabase(
         }
     }
     val database = Room.databaseBuilder<KlafRoomDatabase>(databaseFile.absolutePath)
+        .addMigrations(*com.kuts.klaf.room.databases.BranchIntegrationMigrations.all)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .addMigrations(Migrations.from8To9, Migrations.from9To10, Migrations.from10To11, Migrations.from11To12)

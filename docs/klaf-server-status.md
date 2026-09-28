@@ -5,8 +5,49 @@ It should be removed or replaced by permanent documentation after the full imple
 
 ## Current Phase
 
-Branch comparison and user decisions are complete for the inspected overlaps.
-Only documentation has changed; merge/implementation await the user's go-ahead.
+Local branch integration is complete (2026-09-29): `remote-storage-server`
+(`2e00cee`) is merged into `mnemonic-voice-dictation`, following the requirements
+checkpoint `101d11c`. No push or deployment is included.
+
+- Combined textual conflicts, retaining both storage and voice functionality.
+  Client Room schema is version 15. Explicit integration migrations handle both
+  historical branch layouts without destructive fallback; a preserved voice-v12
+  schema fixture supports regression coverage alongside the storage schemas.
+- Added account-scoped Ignored Words, complete guest source/item/rule transfer
+  and source-only retry support. The two new ownership tests were first run red,
+  demonstrating missing transfer behavior before its implementation.
+- Added device-session end signaling, server operation/upload cancellation,
+  namespace rotation and late push/notification rejection on account transitions.
+  Ordinary disconnections retain existing transcription behavior.
+- Final combined Gradle run succeeded: 515 tests total, 514 passed, zero failures
+  or errors, and one optional imported-baseline smoke test skipped. Module totals:
+  data 136, domain 46, contract 11, presentation 73, DI 18, server 231 (one skipped).
+  Android `compileDebugKotlin` and Desktop `compileKotlin` both succeeded.
+  The run included all six test suites with `--continue --max-workers=2`.
+- Verification follow-up: fixed an Android push map-receiver compile error,
+  normalized the voice branch's missing source URL SQL default while preserving
+  its rows, and added online session reconnection coverage. Account changes
+  reconnect only a previously ready connection using the new session namespace;
+  offline logout still makes no connection attempt. Both branch-layout migration
+  tests and guest ownership/transfer regressions passed in the final run.
+- Earlier verification found that the existing clean-close replay test
+  exceeded its aggregate five-second window across cold client initialization
+  plus reconnect. A focused run reproduced this: the request was sent and the
+  connection closed, but the outer deadline cancelled it before replay. The test
+  now connects initially before measuring replay, without changing production
+  timeouts or relaxing the replay deadline. It passed in the final combined run.
+- Follow-up review prevents ended requests from surfacing generic failures in
+  the next account: request failures and transcription events are converted to
+  cancellation when their originating namespace has changed. The online logout
+  regression asserts cancellation specifically; logout during the initial
+  handshake is also covered. All six client lifecycle regressions passed.
+- Android application compilation exposed a module boundary issue in notification
+  routing: the activity referenced the data-layer session interface directly.
+  A domain-only `IClientSessionScope` now exposes the rotating namespace; common
+  DI binds the existing session to it. The default-binding regression asserts
+  both interfaces resolve to the same instance. DI tests and final Android
+  compilation verified this fix. A JUnit return-type error in the new server
+  logout test was also fixed; the final server suite passed.
 
 - Compared clean branch heads `mnemonic-voice-dictation` (`a0b44a3`) and
   `remote-storage-server` (`2e00cee`), with common base `e6f6297`. A `merge-tree`
@@ -20,50 +61,36 @@ Only documentation has changed; merge/implementation await the user's go-ahead.
   device's session/work; other devices of the account are unaffected. Offline
   logout is immediate and cancels local work; undeliverable cancellation may
   leave server work running, but its results are rejected locally. No queued
-  logout is introduced. Current AI operations use request/source
-  IDs without storage-account binding; existing explicit cancellation is
-  per-request, not a server-side account logout operation.
+  logout is introduced. Integration now uses a rotating originating device
+  session namespace for cancellation/results, with automated lifecycle coverage.
 - User confirmed Vocabulary Sources and their associated persisted feature data
   are part of account-owned content. Sign-up must copy/verify/transfer them with
   decks/cards, preserving links and supporting source-only guest databases;
-  sign-in still leaves the guest database untouched. Existing transfer code only
-  handles decks/cards and needs integration changes and recovery/isolation tests.
+  sign-in still leaves the guest database untouched. Transfer implementation has
+  been extended; recovery/isolation tests passed in the combined verification.
 - User agreed to cross-device source-data synchronization as a separate phase
   immediately after the merge, with its own conflict rules/tests. The current
-  storage protocol continues to contain deck/card operations only. No protocol,
-  transfer or repository implementation changed during decision gathering.
-- No implementation, merge, runtime/device test or backup modification was
-  performed for this decision. Build/tests must be run after integration.
+  storage protocol continues to contain deck/card operations only.
+- No original backup, real account database, sibling project or live device was
+  modified. Runtime/device testing remains separate from disposable test fixtures.
 
-### Integration Work and Validation Still Required
+### Remaining Verification and Next Phase
 
-- Resolve the 19 textual conflicts by retaining both feature sets: speech/push
-  and themed AI server functionality, plus account-scoped Room/REST storage,
-  manual sync/events, image delivery and conflict resolution. Preserve combined
-  ignore rules; do not restore generated artifacts or real secret files.
-- Room versions 9-12 describe different schemas in the two branches. Use a new
-  combined version above 14 and branch-aware migration paths/fixtures as needed;
-  retain decks/cards, review/sync metadata and constraints. Resetting only the
-  authorized old source/voice tables is permitted, not destructive database
-  fallback. Validate migration from both branch layouts using disposable copies.
-- Wire Ignored Words and source repositories to the selected database and its
-  transactions. Extend sign-up copy/verification/retry logic to complete feature
-  data, including guests with sources but no decks/cards.
-- Isolate AI requests/results/notification navigation by device login session;
-  apply the agreed logout cancellation and stale-result rejection without
-  stopping other devices or shared server infrastructure. Account switches and
-  sign-up must not leak an old source/card ID into a different database context.
-- Check source-to-card additions against the existing reviewed-deck restriction
-  and manual-sync edit pause; ordinary generated cards still use the deck/card
-  outbox. Keep source records local until the separate synchronization phase.
-- Cover online/offline logout, late results and notifications, other-device
-  isolation, source-only guest transfer, interrupted/retried transfers, account
-  isolation, both branch migrations and source-to-card sync behavior. Run both
-  branches' relevant test suites and Android/Desktop builds after integration;
-  keep the known LoKdroid iOS publication issue explicitly unverified/unresolved.
-- Extra comparison checks: automatically merged string-resource XML parses with
-  no duplicate names; `git diff --check` passes for decision documentation.
-  These static checks are not a build, migration or runtime validation.
+- No merged physical-device acceptance, notification-tap/visual smoke check,
+  real AI inference, or deployment was performed. Historical device results
+  below belong to the pre-integration branches.
+- The optional `ManualImportedDesktopSmokeTest` was not enabled against a real
+  imported baseline. Automated migration/REST tests used disposable fixtures.
+- iOS remains unverified with the known unresolved LoKdroid native publication
+  issue; Android/Desktop success does not resolve it.
+- Implement cross-device Vocabulary Source synchronization as the next separate
+  phase, after agreeing its conflict rules and test scenarios. Source-to-card
+  additions already use the deck/card outbox and respect review/sync edit gates.
+
+### Prior Branch History (Before Integration)
+
+The entries below describe validation and decisions on the mnemonic branch
+before the current merge; their test totals are not combined-branch results.
 
 MVP implementation is in local testing/review.
 

@@ -18,7 +18,6 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TransferCardsToDeckUseCaseTest {
@@ -283,7 +282,7 @@ class TransferCardsToDeckUseCaseTest {
         sourceCards.forEach { sourceCard ->
             val movedCard = targetCards.firstOrNull { it.foreignWord == sourceCard.foreignWord }
             assertNotNull(movedCard)
-            assertTrue(actual = movedCard.id != sourceCard.id)
+            assertEquals(expected = sourceCard.id, actual = movedCard.id)
             assertEquals(expected = TARGET_DECK_ID, actual = movedCard.deckId)
             assertEquals(expected = sourceCard.nativeWord, actual = movedCard.nativeWord)
             assertEquals(expected = sourceCard.ipa, actual = movedCard.ipa)
@@ -325,7 +324,7 @@ class TransferCardsToDeckUseCaseTest {
             reviewPassDates = listOf(id * 10L, id * 20L),
             scheduledReviewDates = listOf(id * 30L),
             scheduledDateInterval = scheduledDateInterval,
-            reviewCount = id + 6,
+            reviewCount = if (id == TARGET_DECK_ID) 0 else id + 6,
             cardQuantity = cardQuantity,
             lastFirstReviewDuration = lastFirstReviewDuration,
             lastSecondReviewDuration = lastSecondReviewDuration,
@@ -374,7 +373,7 @@ class TransferCardsToDeckUseCaseTest {
         }
 
         override suspend fun insertCard(card: Card): Int {
-            val id = if (card.id == 0 || cardsById.containsKey(card.id)) nextId++ else card.id
+            val id = if (card.id == 0) nextId++ else card.id
             cardsById[id] = card.copy(id = id)
             return id
         }

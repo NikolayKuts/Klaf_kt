@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancelAndJoin
 import kotlin.random.Random
 
 private const val COMPLETED_TRANSCRIPTION_RETENTION_MILLIS = 15 * 60 * 1_000L
@@ -112,6 +113,15 @@ class VocabularySourceTranscriptionCoordinator(
 
     fun cancel(sourceId: Int) {
         entries.value[sourceId]?.job?.cancel()
+    }
+
+    suspend fun cancelAll() {
+        var previous: Map<Int, TranscriptionEntry>
+        do {
+            previous = entries.value
+        } while (!entries.compareAndSet(previous, emptyMap()))
+        previous.values.forEach { it.job.cancel() }
+        previous.values.forEach { it.job.cancelAndJoin() }
     }
 
     fun clearCompleted(sourceId: Int, operationId: Long) {

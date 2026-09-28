@@ -2,6 +2,8 @@ package com.kuts.klaf.networking.klafServer
 
 import com.kuts.domain.entities.KlafServerConnectionState
 import com.kuts.klaf.server.contract.AudioUploadFrameCodec
+import com.kuts.klaf.server.contract.ClientSessionEndRequest
+import com.kuts.klaf.server.contract.requestClientSessionId
 import com.kuts.klaf.server.contract.KLAF_SERVER_WEBSOCKET_PATH
 import com.kuts.klaf.server.contract.KlafServerCancelRequest
 import com.kuts.klaf.server.contract.KlafServerClientMessage
@@ -61,6 +63,7 @@ private const val RECONNECT_INITIAL_DELAY_MILLIS = 1_000L
 private const val RECONNECT_MAX_DELAY_MILLIS = 10_000L
 private const val CONNECTION_WATCH_INTERVAL_MILLIS = 15_000L
 private const val AUDIO_UPLOAD_WINDOW_BYTES = 2 * 1024 * 1024L
+private val CLIENT_SESSION_ID_PATTERN = Regex("[0-9a-f]{1,16}")
 
 sealed interface VocabularySourceTranscriptionSessionEvent {
     data class UploadProgress(val uploadedBytes: Long, val totalBytes: Long) : VocabularySourceTranscriptionSessionEvent
@@ -92,9 +95,9 @@ private data class ConnectionWatchSnapshot(
     val manualDisconnect: Boolean,
 )
 
-interface IKlafServerSession {
+interface IKlafServerSession : com.kuts.domain.managers.IClientSessionScope {
     val connectionState: StateFlow<KlafServerConnectionState>
-    val clientSessionId: String
+    override val clientSessionId: String
 
     suspend fun connect()
 
@@ -115,6 +118,8 @@ interface IKlafServerSession {
     suspend fun nextRequestId(prefix: String): String
 
     suspend fun disconnect()
+
+    suspend fun endUserSession() = disconnect()
 }
 
 class KlafServerSession(
@@ -146,7 +151,9 @@ class KlafServerSession(
     private var reconnectJob: Job? = null
     private var connectionWatchJob: Job? = null
     private var readySignal: CompletableDeferred<Unit>? = null
-    override val clientSessionId = Random.nextLong().toULong().toString(radix = 16)
+    @Volatile
+    override var clientSessionId = Random.nextLong().toULong().toString(radix = 16)
+        private set
     private var nextRequestSequence = 0L
     private var manualDisconnectRequested = false
 
@@ -178,10 +185,13 @@ class KlafServerSession(
     }
 
     override suspend fun request(message: KlafServerClientMessage): KlafServerMessage {
-        val activeSession = ensureConnected()
+        val originatingSession = clientSessionId
+        requireCurrentSessionRequest(message.requestId)
+        val activeSession = connectForUserSession(originatingSession)
         val response = CompletableDeferred<KlafServerMessage>()
         val requestStartedAt = TimeSource.Monotonic.markNow()
         requestMutex.withLock {
+            if (originatingSession != clientSessionId) throw CancellationException("User session changed")
             pendingRequests[message.requestId] = PendingKlafServerRequest(
                 message = message,
                 response = response,
@@ -205,6 +215,7 @@ class KlafServerSession(
                 scheduleReconnect(reason = sendFailure)
             }
             val serverMessage = response.await()
+            if (originatingSession != clientSessionId) throw CancellationException("User session changed")
             logRequestCompleted(
                 request = message,
                 response = serverMessage,
@@ -224,6 +235,7 @@ class KlafServerSession(
             requestMutex.withLock {
                 pendingRequests.remove(message.requestId)
             }
+            if (originatingSession != clientSessionId) throw CancellationException("User session changed")
             logE(
                 "Klaf Server request failed: requestId=${message.requestId}, " +
                     "type=${message::class.simpleName}, elapsed=${requestStartedAt.elapsedNow().asLogValue()}, " +
@@ -242,7 +254,9 @@ class KlafServerSession(
         declaredByteSize: Long,
         audioStreamProvider: suspend (sendChunk: suspend (ByteArray) -> Unit) -> Unit,
     ): Flow<VocabularySourceTranscriptionSessionEvent> = flow {
-        val activeSession = ensureConnected()
+        val originatingSession = clientSessionId
+        requireCurrentSessionRequest(requestId)
+        val activeSession = connectForUserSession(originatingSession)
         val eventChannel = Channel<VocabularySourceTranscriptionSessionEvent>(capacity = Channel.BUFFERED)
         val acknowledgements = Channel<Long>(capacity = Channel.CONFLATED)
         val pending = PendingTranscriptionRequest(
@@ -252,6 +266,7 @@ class KlafServerSession(
             acknowledgements = acknowledgements,
         )
         requestMutex.withLock {
+            if (originatingSession != clientSessionId) throw CancellationException("User session changed")
             pendingTranscriptionRequests[requestId] = pending
         }
 
@@ -264,7 +279,7 @@ class KlafServerSession(
                 fileName = fileName,
                 audioFormat = audioFormat,
                 declaredByteSize = declaredByteSize,
-                clientSessionId = clientSessionId,
+                clientSessionId = originatingSession,
             )
             sendRequest(session = activeSession, message = startRequest)
 
@@ -323,6 +338,7 @@ class KlafServerSession(
             }
 
             for (event in eventChannel) {
+                if (originatingSession != clientSessionId) throw CancellationException("User session changed")
                 emit(event)
                 if (event is VocabularySourceTranscriptionSessionEvent.Completed) {
                     break
@@ -335,6 +351,9 @@ class KlafServerSession(
                 cancelRequest(requestId = requestId)
             }
             throw cancellation
+        } catch (failure: Throwable) {
+            if (originatingSession != clientSessionId) throw CancellationException("User session changed")
+            throw failure
         } finally {
             requestMutex.withLock {
                 pendingTranscriptionRequests.remove(requestId)
@@ -380,6 +399,53 @@ class KlafServerSession(
 
     override suspend fun nextRequestId(prefix: String): String = requestMutex.withLock {
         "$prefix-$clientSessionId-${nextRequestSequence++}"
+    }
+
+    override suspend fun endUserSession() {
+        val wasConnected = connectionState.value is KlafServerConnectionState.Ready
+        val previousSession = requestMutex.withLock {
+            clientSessionId.also {
+                clientSessionId = Random.nextLong().toULong().toString(radix = 16)
+            }
+        }
+        // Never connect or queue a logout: only signal an already-open connection.
+        withTimeoutOrNull(500L) {
+            runCatching {
+                val active = lifecycleMutex.withLock { session } ?: return@runCatching
+                sendRequest(active, ClientSessionEndRequest("session-end-$previousSession-0", previousSession))
+            }
+        }
+        disconnect()
+        // Keep the application-level connection available, but never replay the ended session.
+        if (wasConnected) {
+            val nextSession = clientSessionId
+            scope.launch {
+                if (nextSession != clientSessionId) return@launch
+                try {
+                    connect()
+                } catch (cancellation: CancellationException) {
+                    throw cancellation
+                } catch (failure: Throwable) {
+                    logE("Klaf Server reconnection after account change failed: $failure")
+                }
+            }
+        }
+    }
+
+    private fun requireCurrentSessionRequest(requestId: String) {
+        val originatingSession = requestClientSessionId(requestId)
+        if (originatingSession.matches(CLIENT_SESSION_ID_PATTERN) && originatingSession != clientSessionId) {
+            throw CancellationException("Request belongs to an ended user session")
+        }
+    }
+
+    private suspend fun connectForUserSession(originatingSession: String): DefaultClientWebSocketSession = try {
+        ensureConnected().also {
+            if (originatingSession != clientSessionId) throw CancellationException("User session changed")
+        }
+    } catch (failure: Throwable) {
+        if (originatingSession != clientSessionId) throw CancellationException("User session changed")
+        throw failure
     }
 
     override suspend fun disconnect() {

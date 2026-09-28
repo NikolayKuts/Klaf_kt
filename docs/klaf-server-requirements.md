@@ -94,7 +94,10 @@ Klaf Server uses `baseInstructions` for a short shared Klaf application context 
 
 ## Transport
 
-The Klaf app should communicate with the Klaf server through WebSocket-style communication, similar to the current AgentDriver client/server usage. REST should not be the MVP direction.
+AI feature commands use the Klaf WebSocket protocol. The merged account/storage
+functionality uses REST for account and manual synchronization operations plus
+the separate `/sync-events` WebSocket for state updates. These transports coexist
+in one server; the AI-only WebSocket decision does not prohibit storage REST.
 
 Long-running operations, such as subtitle analysis, should therefore be handled through the WebSocket protocol rather than long blocking HTTP requests.
 

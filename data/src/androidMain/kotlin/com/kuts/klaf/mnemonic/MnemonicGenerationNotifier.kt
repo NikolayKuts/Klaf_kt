@@ -18,6 +18,7 @@ import com.kuts.klaf.data.R
 class MnemonicGenerationNotifier(
     private val context: Context,
     private val notificationManager: NotificationManager,
+    private val sessionIdProvider: () -> String = { "" },
 ) {
 
     companion object {
@@ -43,6 +44,7 @@ class MnemonicGenerationNotifier(
     fun showSuccess(
         type: MnemonicGenerationType,
         source: MnemonicGenerationSource,
+        clientSessionId: String = sessionIdProvider(),
     ) {
         notificationManager.notify(
             type.resultNotificationId(),
@@ -53,7 +55,7 @@ class MnemonicGenerationNotifier(
                 .setCategory(NotificationCompat.CATEGORY_STATUS)
                 .setColor(Color.GREEN)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(createResultPendingIntent(type, source))
+                .setContentIntent(createResultPendingIntent(type, source, clientSessionId))
                 .setAutoCancel(true)
                 .build(),
         )
@@ -81,6 +83,7 @@ class MnemonicGenerationNotifier(
     private fun createResultPendingIntent(
         type: MnemonicGenerationType,
         source: MnemonicGenerationSource,
+        clientSessionId: String = sessionIdProvider(),
     ): PendingIntent? {
         val (launchDestination, deckId) = when (source) {
             is MnemonicGenerationSource.CardCreation -> {
@@ -95,6 +98,7 @@ class MnemonicGenerationNotifier(
             .getLaunchIntentForPackage(context.packageName)
             ?.apply {
                 action = ACTION_OPEN_RESULT
+                putExtra(com.kuts.domain.managers.ClientSessionLaunchExtras.SESSION_ID_KEY, clientSessionId)
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 putExtra(MnemonicGenerationLaunchExtras.DESTINATION_KEY, launchDestination)
                 putExtra(MnemonicGenerationLaunchExtras.DECK_ID_KEY, deckId)

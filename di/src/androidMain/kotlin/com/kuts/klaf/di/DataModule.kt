@@ -21,7 +21,10 @@ import com.kuts.domain.managers.IKlafServerConnectionManager
 import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
+import com.kuts.domain.managers.IAccountSession
 import com.kuts.domain.managers.IDeckReviewScheduler
+import com.kuts.domain.managers.IReviewReminderScopeProvider
+import com.kuts.domain.managers.IAccountScopedDeckReviewNotifier
 import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
 import com.kuts.domain.managers.ITextToSpeechManager
@@ -43,6 +46,8 @@ import com.kuts.domain.repositories.IWordMeaningInsightsRepository
 import com.kuts.klaf.cardManagement.common.ICambridgeWordDataProvider
 import com.kuts.klaf.common.AndroidAppMaintenanceManager
 import com.kuts.klaf.common.AndroidDeckReviewingReminder
+import com.kuts.klaf.common.AndroidScopedDeckReminderActions
+import com.kuts.klaf.common.AndroidScopedReminderStartupRecovery
 import com.kuts.klaf.common.AndroidOldAppKlafDataTransferRepository
 import com.kuts.klaf.common.AppReopeningWorker
 import com.kuts.klaf.common.CoroutineContextProvider
@@ -67,24 +72,48 @@ import com.kuts.klaf.firestore.repositoryImplementations.AndroidStorageSaveVersi
 import com.kuts.klaf.firestore.repositoryImplementations.AndroidWordAutocompleteFirestore
 import com.kuts.klaf.networking.AndroidCardAudioPlayer
 import com.kuts.klaf.mnemonic.AndroidMnemonicImageAssetRepository
+import com.kuts.klaf.mnemonic.CachedMnemonicImageAssetRepository
+import com.kuts.klaf.networking.klafServer.KlafServerImageRestClient
+import java.io.File
+import java.security.MessageDigest
 import com.kuts.klaf.mnemonic.AndroidApplicationVisibilityTracker
 import com.kuts.klaf.mnemonic.AndroidMnemonicGenerationBackgroundManager
 import com.kuts.klaf.mnemonic.AndroidMnemonicGenerationDiagnostics
 import com.kuts.klaf.mnemonic.MnemonicGenerationNotifier
 import com.kuts.klaf.networking.klafServer.AndroidKlafServerForegroundReconnecter
+import com.kuts.klaf.networking.klafServer.AndroidAccountDeviceStore
+import com.kuts.klaf.networking.klafServer.AccountDeviceIdentity
+import com.kuts.klaf.networking.klafServer.AndroidPendingSignUpAttemptStore
 import com.kuts.klaf.networking.klafServer.IKlafServerSession
 import com.kuts.klaf.networking.klafServer.KlafServerConnectionManager
 import com.kuts.klaf.networking.klafServer.KlafServerHttpClientFactory
+import com.kuts.klaf.networking.klafServer.KlafServerAccountRestClient
+import com.kuts.klaf.networking.klafServer.KlafServerSyncRestClient
+import com.kuts.klaf.networking.klafServer.KlafServerSyncEventConnector
+import com.kuts.klaf.networking.klafServer.SyncEventConnector
 import com.kuts.klaf.networking.klafServer.KlafServerMnemonicAssociationRepository
 import com.kuts.klaf.networking.klafServer.KlafServerMnemonicImageRepository
 import com.kuts.klaf.networking.klafServer.KlafServerSession
+import com.kuts.klaf.networking.klafServer.PersistentAccountDeviceProvider
+import com.kuts.klaf.networking.klafServer.PendingSignUpAttemptStore
+import com.kuts.klaf.networking.klafServer.ServerAccountSession
 import com.kuts.klaf.networking.klafServer.KlafServerWordMeaningInsightsRepository
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.push.AndroidKlafServerPushTokenRegistrar
 import com.kuts.klaf.push.KlafPushTokenManager
+import com.kuts.klaf.room.databases.ActiveLocalRoomDatabase
+import com.kuts.klaf.room.databases.AndroidSelectedAccountStore
+
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
+import com.kuts.klaf.room.databases.RoomDatabaseSource
+import com.kuts.klaf.room.databases.RoomReminderSelectionObserver
+import com.kuts.klaf.room.databases.ScopedDeckReminderActions
+import com.kuts.klaf.room.databases.ScopedKlafRoomDatabaseFactory
+import com.kuts.klaf.room.databases.StaticRoomDatabaseSource
+import com.kuts.klaf.room.repositoryImplementations.DeckReviewInfoRepositoryRoom
+import com.kuts.klaf.room.repositoryImplementations.GuestAccountDataTransfer
 import com.kuts.klaf.speech.AndroidSpeechRecognitionManager
 import com.kuts.klaf.speech.AndroidTextToSpeechManager
 import com.kuts.domain.managers.IVocabularySourceTranscriptionBackgroundManager
@@ -136,11 +165,20 @@ private fun Module.androidRepositoryModule() {
     }
 
     single<IDeckRepetitionInfoRepository> {
-        DataStoreDeckRepetitionInfoRepository(
-            dataStore = get(qualifier = named(name = DECK_REPETITION_INFOS_DATA_STORE)),
-        )
+        val databaseSource = get<RoomDatabaseSource>()
+        if (databaseSource is ActiveLocalRoomDatabase) {
+            DeckReviewInfoRepositoryRoom(databaseSource)
+        } else {
+            DataStoreDeckRepetitionInfoRepository(
+                dataStore = get(qualifier = named(name = DECK_REPETITION_INFOS_DATA_STORE)),
+            )
+        }
     }
-    single<IWordAutocompleteRepository> { AndroidWordAutocompleteFirestore(firestore = get()) }
+    single<IWordAutocompleteRepository> {
+        selectWordAutocompleteRepository(get<RoomDatabaseSource>() is ActiveLocalRoomDatabase) {
+            AndroidWordAutocompleteFirestore(firestore = get())
+        }
+    }
     single<ICrashlyticsRepository> { AndroidCrashlyticsRepositoryFirebase(firebaseCrashlytics = get()) }
     single<IAuthenticationRepository> {
         AndroidAuthenticationRepositoryFirebase(
@@ -149,16 +187,40 @@ private fun Module.androidRepositoryModule() {
         )
     }
     single<IAuthenticationSessionManager> { AndroidFirebaseAuthenticationSessionManager(auth = get()) }
+    single { PersistentAccountDeviceProvider(AndroidAccountDeviceStore(androidContext())) }
+    single {
+        AccountDeviceIdentity(
+            provider = get(),
+            name = android.os.Build.MODEL.orEmpty().ifBlank { "Android" },
+            platform = "ANDROID",
+        )
+    }
+    single<PendingSignUpAttemptStore> { AndroidPendingSignUpAttemptStore(androidContext()) }
+    single { KlafServerAccountRestClient(get<KlafServerEndpointConfig>().restBaseUrl(),
+        KlafServerHttpClientFactory().create()) }
+    single { KlafServerSyncRestClient(get<KlafServerEndpointConfig>().restBaseUrl(),
+        KlafServerHttpClientFactory().create()) }
+    single<IAccountSession> {
+        val identity = get<AccountDeviceIdentity>()
+        ServerAccountSession(
+            accounts = get(),
+            localDatabase = get(),
+            guestTransfer = GuestAccountDataTransfer(get()),
+            deviceProvider = identity::current,
+            pendingSignUp = get(),
+        )
+    }
     single<IWordInfoRepository> {
         YandexWordInfoRepository(
             client = YandexSecureHttpClientFactory().create(),
         )
     }
     single<IKlafServerSession> {
+        val endpoint = get<KlafServerEndpointConfig>()
         KlafServerSession(
-            host = com.kuts.klaf.SecretConstants.KlafServer.hostOrNull().orEmpty(),
-            port = com.kuts.klaf.SecretConstants.KlafServer.PORT,
-            isSecure = com.kuts.klaf.SecretConstants.KlafServer.IS_SECURE,
+            host = endpoint.host,
+            port = endpoint.port,
+            isSecure = endpoint.isSecure,
             httpClient = KlafServerHttpClientFactory().create(),
         )
     }
@@ -195,7 +257,24 @@ private fun Module.androidRepositoryModule() {
         KlafServerMnemonicImageRepository(klafServerSession = get())
     }
     single<IMnemonicImageAssetRepository> {
-        AndroidMnemonicImageAssetRepository(context = androidContext())
+        val context = androidContext()
+        val local = AndroidMnemonicImageAssetRepository(context)
+        if (get<RoomDatabaseSource>() !is ActiveLocalRoomDatabase) local else {
+            val source = get<ActiveLocalRoomDatabase>()
+            val identity = get<AccountDeviceIdentity>()
+            val remote = get<KlafServerImageRestClient>()
+            CachedMnemonicImageAssetRepository(
+                local = local,
+                selectedEmail = { source.selection.value.accountEmail },
+                cacheForAccount = { email ->
+                    val key = MessageDigest.getInstance("SHA-256").digest(email.toByteArray())
+                        .joinToString("") { "%02x".format(it) }
+                    AndroidMnemonicImageAssetRepository(context, File(context.filesDir, "mnemonic-remote-cache/$key"))
+                },
+                download = { email, asset -> remote.download(email, identity.current().id, asset) },
+                ioContext = get<ICoroutineContextProvider>().io,
+            )
+        }
     }
     single<IMnemonicImageRemoteRepository> {
         AndroidMnemonicImageRemoteRepository(
@@ -213,8 +292,43 @@ private fun Module.androidRepositoryModule() {
 }
 
 private fun Module.infrastructureModule() {
+    single { KlafServerEndpointConfig(BuildConfig.KLAF_CLIENT_SERVER_HOST, BuildConfig.KLAF_CLIENT_SERVER_PORT) }
+    single<SyncEventConnector> {
+        KlafServerSyncEventConnector(
+            get<KlafServerEndpointConfig>().restBaseUrl(), KlafServerHttpClientFactory().create(),
+        )
+    }
+    single { KlafServerImageRestClient(get<KlafServerEndpointConfig>().restBaseUrl(), KlafServerHttpClientFactory().create()) }
     single<KlafRoomDatabase> { KlafRoomDatabaseProvider.getInstance(context = androidContext()) }
+    single<RoomDatabaseSource> {
+        val context = androidContext()
+        val useScopedStorage = useAccountScopedStorage(
+            requestedMode = BuildConfig.KLAF_CLIENT_STORAGE_MODE,
+            isolatedTestIdentity = context.packageName == "com.kuts.klaf.remote.storage.test",
+            legacyDatabaseExists = context.getDatabasePath("klaf_kt.db").exists(),
+        )
+        if (useScopedStorage) get<ActiveLocalRoomDatabase>() else StaticRoomDatabaseSource(database = get())
+    }
+    single<ActiveLocalRoomDatabase> {
+        ActiveLocalRoomDatabase(
+            factory = ScopedKlafRoomDatabaseFactory(context = androidContext()),
+            accountStore = AndroidSelectedAccountStore(context = androidContext()),
+            selectionObserver = RoomReminderSelectionObserver(reminders = get()),
+            beforeSelectionChange = {
+                get<com.kuts.domain.managers.VocabularySourceTranscriptionCoordinator>().cancelAll()
+                get<IKlafServerSession>().endUserSession()
+                (androidContext().getSystemService(android.content.Context.NOTIFICATION_SERVICE) as
+                    android.app.NotificationManager).cancelAll()
+            },
+        )
+    }
+    single<ScopedDeckReminderActions> { AndroidScopedDeckReminderActions(context = androidContext()) }
+    single<IReviewReminderScopeProvider> { AndroidSelectedAccountStore(context = androidContext()) }
+    single { AndroidSelectedAccountStore(context = androidContext()) }
     single { WorkManager.getInstance(androidContext()) }
+    single(createdAtStart = true) {
+        AndroidScopedReminderStartupRecovery(selectedAccount = get(), workManager = get())
+    }
     single<ICoroutineContextProvider> { CoroutineContextProvider() }
     single<IDeckReviewScheduler> { AndroidDeckReviewingReminder(context = androidContext()) }
 
@@ -270,18 +384,21 @@ private fun Module.dataManagerBindings() {
         MnemonicGenerationNotifier(
             context = androidContext(),
             notificationManager = get(),
+            sessionIdProvider = { get<IKlafServerSession>().clientSessionId },
         )
     }
     single {
         VocabularySourceAnalysisNotifier(
             context = androidContext(),
             notificationManager = get(),
+            sessionIdProvider = { get<IKlafServerSession>().clientSessionId },
         )
     }
     single {
         VocabularySourceTranscriptionNotifier(
             context = androidContext(),
             notificationManager = get(),
+            sessionIdProvider = { get<IKlafServerSession>().clientSessionId },
         )
     }
     single {
@@ -347,16 +464,19 @@ private fun Module.workerModule() {
         DeckRepetitionReminder(
             appContext = get(),
             parameters = get(),
-            deckReviewNotifier = get(),
+            selectedAccount = get(),
+            scopedNotifier = get(),
         )
     }
     worker {
         DeckRepetitionReminderChecker(
             context = get(),
             params = get(),
-            deckReviewNotifier = get(),
+            scopedNotifier = get<IAccountScopedDeckReviewNotifier>(),
             fetchAllDecks = get(),
             crashlytics = get(),
+            selectedAccount = get(),
+            activeLocalDatabase = get(),
         )
     }
     worker {
@@ -374,6 +494,8 @@ private fun Module.workerModule() {
             parameters = get(),
             fetchAllDecksUseCase = get(),
             deckReviewingReminder = get<IDeckReviewScheduler>(),
+            selectedAccount = get(),
+            activeLocalDatabase = get(),
         )
     }
 }

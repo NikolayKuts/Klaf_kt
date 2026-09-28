@@ -40,8 +40,7 @@ import com.kuts.domain.repositories.ICrashlyticsRepository
 import com.kuts.domain.useCases.DeleteCardsFromDeckUseCase
 import com.kuts.domain.useCases.FetchCardsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
-import com.kuts.domain.useCases.SaveDeckReviewInfoUseCase
-import com.kuts.domain.useCases.UpdateDeckUseCase
+import com.kuts.domain.useCases.SaveCompletedDeckReviewUseCase
 import com.kuts.klaf.common.ButtonState
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.RepetitionTimer
@@ -74,6 +73,22 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+private const val HARD_WORD_POSITION_SHIFT = 5
+private const val GOOD_WORD_POSITION_SHIFT = 10
+
+internal fun calculateReviewedCardInsertionIndex(
+    level: DifficultyRecallingLevel,
+    remainingCardCount: Int,
+): Int {
+    require(remainingCardCount >= 0) { "Remaining card count cannot be negative" }
+    val lastRemainingIndex = (remainingCardCount - 1).coerceAtLeast(0)
+    return when (level) {
+        EASY -> remainingCardCount
+        GOOD -> GOOD_WORD_POSITION_SHIFT.coerceAtMost(lastRemainingIndex)
+        HARD -> HARD_WORD_POSITION_SHIFT.coerceAtMost(lastRemainingIndex)
+    }
+}
+
 class DeckReviewViewModel(
     private val deckId: Int,
     private val stateStore: IDeckReviewStateStore,
@@ -81,20 +96,13 @@ class DeckReviewViewModel(
     fetchDeckById: FetchDeckByIdUseCase,
     override val timer: RepetitionTimer,
     override val audioPlayer: IAudioPlayerManager,
-    private val updateDeck: UpdateDeckUseCase,
+    private val saveCompletedReview: SaveCompletedDeckReviewUseCase,
     private val deleteCardsFromDeck: DeleteCardsFromDeckUseCase,
     private val deckReviewScheduler: IDeckReviewScheduler,
-    private val saveDeckReviewInfo: SaveDeckReviewInfoUseCase,
     private val deckReviewNotifier: IDeckReviewNotifierManager,
     private val crashlytics: ICrashlyticsRepository,
     private val coroutineContextProvider: ICoroutineContextProvider,
 ) : BaseDeckReviewViewModel() {
-
-    companion object Companion {
-
-        private const val HARD_WORD_POSITION_SHIFT = 5
-        private const val GOOD_WORD_POSITION_SHIFT = 10
-    }
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
@@ -484,24 +492,9 @@ class DeckReviewViewModel(
         return cardsToReview.value.toMutableList().apply {
             removeAt(0)
             add(
-                index = calculateNewPositionForMovingCard(level = level, updatedCards = this),
+                index = calculateReviewedCardInsertionIndex(level = level, remainingCardCount = size),
                 element = cardForMoving
             )
-        }
-    }
-
-    private fun calculateNewPositionForMovingCard(
-        level: DifficultyRecallingLevel,
-        updatedCards: List<Card>,
-    ): Int {
-
-        val calculateNewPosition: (positionShift: Int) -> Int = { positionShift ->
-            if (positionShift >= updatedCards.lastIndex) updatedCards.lastIndex else positionShift
-        }
-        return when (level) {
-            EASY -> updatedCards.size
-            GOOD -> calculateNewPosition(GOOD_WORD_POSITION_SHIFT)
-            HARD -> calculateNewPosition(HARD_WORD_POSITION_SHIFT)
         }
     }
 
@@ -594,8 +587,6 @@ class DeckReviewViewModel(
                 UNASSIGNED_LONG_VALUE to DeckReviewPassSuccessMark.UNASSIGNED
             }
 
-            updateDeck.invoke(updatedDeck = updatedDeck)
-
             // logD("Deck updated successfully")
             // logD("currentIterationSuccessMark for DeckRepetitionInfo -> $currentIterationSuccessMark")
 
@@ -613,7 +604,7 @@ class DeckReviewViewModel(
 
             // logD("deckRepetitionInfo -> $deckRepetitionInfo")
 
-            saveDeckReviewInfo.invoke(deckRepetitionInfo = deckRepetitionInfo)
+            saveCompletedReview(updatedDeck = updatedDeck, reviewInfo = deckRepetitionInfo)
             // logD("Deck repetition info saved successfully")
 
             val infoEvent = manageSchedulingAndNotificationState(

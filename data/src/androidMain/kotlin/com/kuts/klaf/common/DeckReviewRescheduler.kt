@@ -10,6 +10,8 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.useCases.FetchAllDecksUseCase
+import com.kuts.klaf.room.databases.ActiveLocalRoomDatabase
+import com.kuts.klaf.room.databases.AndroidSelectedAccountStore
 import com.lib.lokdroid.core.logD
 import com.lib.lokdroid.core.logE
 
@@ -18,6 +20,8 @@ class DeckReviewRescheduler(
     private val parameters: WorkerParameters,
     private var fetchAllDecksUseCase: FetchAllDecksUseCase,
     private var deckReviewingReminder: IDeckReviewScheduler,
+    private val selectedAccount: AndroidSelectedAccountStore,
+    private val activeLocalDatabase: ActiveLocalRoomDatabase,
 ) : CoroutineWorker(
     appContext = appContext,
     params = parameters
@@ -41,14 +45,23 @@ class DeckReviewRescheduler(
     override suspend fun doWork(): Result = try {
         logD("doWork() called")
 
-        val decks = fetchAllDecksUseCase.invoke()
-
-        decks.forEach { deck ->
-            deckReviewingReminder.schedule(
-                deckName = deck.name,
-                deckId = deck.id,
-                atTime = deck.scheduledDate ?: return@forEach
-            )
+        if (selectedAccount.areScopedRemindersActive()) {
+            activeLocalDatabase.transaction {
+                activeLocalDatabase.current().deckDao().getAllDecks().forEach { deck ->
+                    deck.scheduledIterationDates.lastOrNull()?.let { atTime ->
+                        deckReviewingReminder.schedule(deck.name, deck.id, atTime)
+                    }
+                }
+            }
+        } else {
+            val decks = fetchAllDecksUseCase.invoke()
+            decks.forEach { deck ->
+                deckReviewingReminder.schedule(
+                    deckName = deck.name,
+                    deckId = deck.id,
+                    atTime = deck.scheduledDate ?: return@forEach
+                )
+            }
         }
 
         Result.success()

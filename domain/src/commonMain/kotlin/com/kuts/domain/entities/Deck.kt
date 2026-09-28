@@ -17,6 +17,9 @@ data class Deck(
     val lastReviewPassDuration: Long = 0,
     val isLastPassSucceeded: Boolean = true,
     val id: Int = 0,
+    val syncId: String = "",
+    val lastChangedServerRevision: Long = 0L,
+    val reviewInfo: DeckRepetitionInfo? = null,
 ) {
 
     companion object {

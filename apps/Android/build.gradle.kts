@@ -27,6 +27,11 @@ android {
     }
 
     buildTypes {
+        create("remoteStorageTest") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".remote.storage.test"
+            matchingFallbacks += listOf("debug")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -35,6 +40,8 @@ android {
             )
         }
     }
+
+    testBuildType = providers.gradleProperty("klafAndroidTestBuildType").orNull ?: "debug"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -74,6 +81,11 @@ dependencies {
     testImplementation(libs.tests.coroutine)
     androidTestImplementation(libs.tests.junit.android)
     androidTestImplementation(libs.tests.espresso)
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation(libs.room.runtime)
+    androidTestImplementation(libs.sqlite.bundled)
+    androidTestImplementation(project(Modules.Data))
 
     /** Koin **/
     implementation(libs.koin.android)

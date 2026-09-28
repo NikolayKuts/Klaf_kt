@@ -6,38 +6,52 @@ import com.kuts.domain.entities.VocabularySourceItem
 import com.kuts.domain.entities.VocabularySourceItemStatus
 import com.kuts.domain.repositories.IVocabularySourceRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
+import com.kuts.klaf.room.databases.RoomDatabaseSource
+import com.kuts.klaf.room.databases.StaticRoomDatabaseSource
 import com.kuts.klaf.room.entities.RoomVocabularySource
 import com.kuts.klaf.room.toDomainEntity
 import com.kuts.klaf.room.toRoomEntity
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class VocabularySourceRepositoryRoom(
-    private val roomDatabase: KlafRoomDatabase,
+    private val databaseSource: RoomDatabaseSource,
 ) : IVocabularySourceRepository {
 
+    constructor(roomDatabase: KlafRoomDatabase) : this(StaticRoomDatabaseSource(roomDatabase))
+
+    private val roomDatabase: KlafRoomDatabase
+        get() = databaseSource.current()
+
     override fun observeSources(): Flow<List<VocabularySource>> {
-        return roomDatabase.vocabularySourceDao()
-            .getObservableSources()
-            .simplifiedItemMap { source -> source.toDomainEntity() }
+        return databaseSource.databases.flatMapLatest { database ->
+            database.vocabularySourceDao().getObservableSources()
+                .simplifiedItemMap { source -> source.toDomainEntity() }
+        }
     }
 
     override fun observeSourceById(sourceId: Int): Flow<VocabularySource?> {
-        return roomDatabase.vocabularySourceDao()
-            .getObservableSourceById(sourceId = sourceId)
-            .map { source: RoomVocabularySource? -> source?.toDomainEntity() }
+        return databaseSource.databases.flatMapLatest { database ->
+            database.vocabularySourceDao().getObservableSourceById(sourceId = sourceId)
+                .map { source: RoomVocabularySource? -> source?.toDomainEntity() }
+        }
     }
 
     override fun observeItemsBySourceId(sourceId: Int): Flow<List<VocabularySourceItem>> {
-        return roomDatabase.vocabularySourceItemDao()
-            .getObservableItemsBySourceId(sourceId = sourceId)
-            .simplifiedItemMap { item -> item.toDomainEntity() }
+        return databaseSource.databases.flatMapLatest { database ->
+            database.vocabularySourceItemDao().getObservableItemsBySourceId(sourceId = sourceId)
+                .simplifiedItemMap { item -> item.toDomainEntity() }
+        }
     }
 
     override fun observeAllItems(): Flow<List<VocabularySourceItem>> {
-        return roomDatabase.vocabularySourceItemDao()
-            .getObservableItems()
-            .simplifiedItemMap { item -> item.toDomainEntity() }
+        return databaseSource.databases.flatMapLatest { database ->
+            database.vocabularySourceItemDao().getObservableItems()
+                .simplifiedItemMap { item -> item.toDomainEntity() }
+        }
     }
 
     override suspend fun fetchSources(): List<VocabularySource> {
@@ -91,8 +105,9 @@ class VocabularySourceRepositoryRoom(
     }
 
     override suspend fun removeSource(sourceId: Int) {
-        roomDatabase.vocabularySourceItemDao().deleteItemsBySourceId(sourceId = sourceId)
-        roomDatabase.vocabularySourceDao().deleteSource(sourceId = sourceId)
+        val database = roomDatabase
+        database.vocabularySourceItemDao().deleteItemsBySourceId(sourceId = sourceId)
+        database.vocabularySourceDao().deleteSource(sourceId = sourceId)
     }
 
     override suspend fun removeItemsBySourceId(sourceId: Int) {

@@ -11,6 +11,24 @@ import kotlin.test.assertNull
 
 class KlafServerProtocolTest {
 
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+        explicitNulls = false
+        classDiscriminator = "type"
+    }
+
+    @Test
+    fun `session end message round trips and extracts namespace from hyphenated prefix`() {
+        val request = ClientSessionEndRequest("session-end-a1b2-0", "a1b2")
+        assertEquals(request, json.decodeFromString<KlafServerClientMessage>(
+            json.encodeToString<KlafServerClientMessage>(request),
+        ))
+        assertEquals("a1b2", requestClientSessionId(request.requestId))
+        assertEquals("a1b2", requestClientSessionId("source-transcription-a1b2-12"))
+        assertEquals("", requestClientSessionId("unscoped"))
+    }
+
     @kotlin.test.Test
     fun binaryFrameRejectsEmptyRequestId() {
         kotlin.test.assertNull(AudioUploadFrameCodec.decode(byteArrayOf(0, 0, 1)))
@@ -22,13 +40,6 @@ class KlafServerProtocolTest {
     @kotlin.test.Test
     fun binaryFrameRejectsMalformedUtf8RequestId() {
         kotlin.test.assertNull(AudioUploadFrameCodec.decode(byteArrayOf(0, 1, 0xFF.toByte(), 1)))
-    }
-
-    private val json = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-        explicitNulls = false
-        classDiscriminator = "type"
     }
 
     @Test

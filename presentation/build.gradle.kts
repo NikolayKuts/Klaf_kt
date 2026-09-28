@@ -30,6 +30,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(Modules.Domain))
+                implementation(project(Modules.KlafServerContract))
                 implementation(libs.core.coroutines.core)
                 implementation(libs.kotlin.serilization)
                 implementation(libs.core.datetime)

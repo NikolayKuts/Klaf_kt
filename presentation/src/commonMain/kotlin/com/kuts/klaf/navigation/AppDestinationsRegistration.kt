@@ -18,6 +18,7 @@ import com.kuts.klaf.common.NavigationDestination
 import com.kuts.klaf.common.externalActions.IExternalAppActions
 import com.kuts.klaf.deckList.common.DeckListScreen
 import com.kuts.klaf.deckList.dataSynchronization.DataSynchronizationDialog
+import com.kuts.klaf.deckList.conflictResolution.ConflictResolutionRoute
 import com.kuts.klaf.deckList.deckCreation.DeckCreationDialog
 import com.kuts.klaf.deckList.deckDeleting.DeckDeletingDialog
 import com.kuts.klaf.deckList.deckNavigation.DeckNavigationDialog
@@ -52,6 +53,10 @@ internal fun NavGraphBuilder.registerAppDestinations(
             externalAppActions = externalAppActions,
             onRestartApp = onRestartApp,
         )
+    }
+
+    buildComposable<AppDestination.SyncConflictResolution> { _, _ ->
+        ConflictResolutionRoute(onClose = navController::popBackStack)
     }
 
     buildComposableWithEntry<AppDestination.VocabularySourceList> { backStackEntry ->

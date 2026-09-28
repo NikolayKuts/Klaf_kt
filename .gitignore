@@ -32,6 +32,7 @@ buildSrc/build/tmp/jar/MANIFEST.MF
 /klaf-server/secrets/
 **/firebase-service-account*.json
 
+
 # Android Studio/Gradle problem report
 /build/reports/problems/problems-report.html
 **/build/reports/problems/problems-report.html
@@ -49,4 +50,11 @@ buildSrc/build/tmp/jar/MANIFEST.MF
 /hs_err_pid*.log
 /replay_pid*.log
 *.hprof
+# JVM crash diagnostics (local only)
+hs_err_pid*.log
+replay_pid*.log
+
 /codex-alt
+
+# Private local handoff/audit notes (never publish)
+/.local-notes/

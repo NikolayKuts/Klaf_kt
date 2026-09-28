@@ -4,11 +4,22 @@ import com.kuts.domain.entities.MnemonicImageAsset
 import com.kuts.domain.entities.MnemonicImageAssetStorage
 import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.util.UUID
 
-class DesktopMnemonicImageAssetRepository : IMnemonicImageAssetRepository {
+class DesktopMnemonicImageAssetRepository(
+    private val appDirectory: File = File(System.getProperty("user.home"), ".klaf_kt"),
+) : IMnemonicImageAssetRepository {
 
-    private val rootDirectory = File(appDirectory(), ROOT_DIRECTORY_NAME).apply { mkdirs() }
+    private companion object {
+        private const val ROOT_DIRECTORY_NAME = "mnemonic-images"
+        private const val DRAFT_DIRECTORY_NAME = "drafts"
+        private const val SAVED_DIRECTORY_NAME = "saved"
+        private const val DEFAULT_IMAGE_EXTENSION = "png"
+    }
+
+    private val rootDirectory = File(appDirectory, ROOT_DIRECTORY_NAME).apply { mkdirs() }
     private val draftDirectory = File(rootDirectory, DRAFT_DIRECTORY_NAME).apply { mkdirs() }
     private val savedDirectory = File(rootDirectory, SAVED_DIRECTORY_NAME).apply { mkdirs() }
 
@@ -46,14 +57,22 @@ class DesktopMnemonicImageAssetRepository : IMnemonicImageAssetRepository {
     }
 
     override suspend fun importSavedImage(assetId: String, imageBytes: ByteArray): MnemonicImageAsset {
-        findSavedFile(assetId = assetId)?.delete()
+        require(isSafeMnemonicImageId(assetId)) { "Invalid mnemonic image asset ID" }
+        val previousFile = findSavedFile(assetId = assetId)
 
         val targetFile = savedFile(
             assetId = assetId,
             imageExtension = detectImageExtension(imageBytes = imageBytes),
         )
 
-        targetFile.writeBytes(imageBytes)
+        val temporary = File.createTempFile("image-import-", ".tmp", savedDirectory)
+        try {
+            temporary.writeBytes(imageBytes)
+            Files.move(temporary.toPath(), targetFile.toPath(), REPLACE_EXISTING)
+            if (previousFile != targetFile) previousFile?.delete()
+        } finally {
+            temporary.delete()
+        }
 
         return targetFile.toMnemonicImageAsset(
             assetId = assetId,
@@ -88,10 +107,6 @@ class DesktopMnemonicImageAssetRepository : IMnemonicImageAssetRepository {
             draftDirectory.deleteRecursively()
         }
         draftDirectory.mkdirs()
-    }
-
-    private fun appDirectory(): File {
-        return File(System.getProperty("user.home"), ".klaf_kt").apply { mkdirs() }
     }
 
     private fun draftFile(
@@ -167,10 +182,4 @@ class DesktopMnemonicImageAssetRepository : IMnemonicImageAssetRepository {
         )
     }
 
-    private companion object {
-        private const val ROOT_DIRECTORY_NAME = "mnemonic-images"
-        private const val DRAFT_DIRECTORY_NAME = "drafts"
-        private const val SAVED_DIRECTORY_NAME = "saved"
-        private const val DEFAULT_IMAGE_EXTENSION = "png"
-    }
 }

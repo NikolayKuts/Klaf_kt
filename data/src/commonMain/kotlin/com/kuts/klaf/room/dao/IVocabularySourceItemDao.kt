@@ -31,6 +31,9 @@ interface IVocabularySourceItemDao {
     )
     suspend fun getItemsBySourceId(sourceId: Int): List<RoomVocabularySourceItem>
 
+    @Query("SELECT * FROM $VOCABULARY_SOURCE_ITEM_TABLE_NAME ORDER BY id ASC")
+    suspend fun getItems(): List<RoomVocabularySourceItem>
+
     @Query("SELECT * FROM $VOCABULARY_SOURCE_ITEM_TABLE_NAME WHERE id = :itemId")
     suspend fun getItemById(itemId: Int): RoomVocabularySourceItem?
 

@@ -3,12 +3,19 @@ package com.kuts.klaf.room.repositoryImplementations
 import com.kuts.domain.entities.IgnoredVocabularyWord
 import com.kuts.domain.repositories.IIgnoredVocabularyWordRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
+import com.kuts.klaf.room.databases.RoomDatabaseSource
+import com.kuts.klaf.room.databases.StaticRoomDatabaseSource
 import com.kuts.klaf.room.toDomainEntity
 import com.kuts.klaf.room.toRoomEntity
 
 class IgnoredVocabularyWordRepositoryRoom(
-    private val roomDatabase: KlafRoomDatabase,
+    private val databaseSource: RoomDatabaseSource,
 ) : IIgnoredVocabularyWordRepository {
+
+    constructor(roomDatabase: KlafRoomDatabase) : this(StaticRoomDatabaseSource(roomDatabase))
+
+    private val roomDatabase: KlafRoomDatabase
+        get() = databaseSource.current()
 
     override suspend fun fetchWords(): List<IgnoredVocabularyWord> = roomDatabase
         .ignoredVocabularyWordDao()

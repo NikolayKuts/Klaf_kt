@@ -13,15 +13,14 @@ import com.kuts.domain.managers.IDeckReviewNotifierManager
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.ICrashlyticsRepository
-import com.kuts.domain.repositories.IDeckRepetitionInfoRepository
+import com.kuts.domain.repositories.IDeckReviewResultRepository
 import com.kuts.domain.repositories.IDeckRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IStorageTransactionRepository
 import com.kuts.domain.useCases.DeleteCardsFromDeckUseCase
 import com.kuts.domain.useCases.FetchCardsUseCase
 import com.kuts.domain.useCases.FetchDeckByIdUseCase
-import com.kuts.domain.useCases.SaveDeckReviewInfoUseCase
-import com.kuts.domain.useCases.UpdateDeckUseCase
+import com.kuts.domain.useCases.SaveCompletedDeckReviewUseCase
 import com.kuts.klaf.common.MainDispatcherRule
 import com.kuts.klaf.common.RepetitionTimer
 import com.kuts.klaf.deckRepetition.DeckReviewViewModel
@@ -39,125 +38,15 @@ import org.junit.Rule
 import org.junit.Test
 import kotlin.coroutines.CoroutineContext
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class DeckReviewViewModelRegressionTest {
+private class FakeCompletedReviewRepository(
+    private val deckRepository: FakeDeckRepository,
+) : IDeckReviewResultRepository {
 
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+    val savedResults = mutableListOf<Pair<Deck, DeckRepetitionInfo>>()
 
-    @Test
-    fun `editing the first card before answering can finish repetition before full pass`() =
-        runTest(context = mainDispatcherRule.dispatcher) {
-            val deckId = 1
-            val initialCards = listOf(
-                createCard(deckId = deckId, id = 1),
-                createCard(deckId = deckId, id = 2),
-                createCard(deckId = deckId, id = 3),
-                createCard(deckId = deckId, id = 4),
-            )
-            val deck = Deck(
-                name = "Test deck",
-                creationDate = 1L,
-                cardQuantity = initialCards.size,
-                id = deckId,
-            )
-
-            val stateStore = DeckReviewSavedStateHandleStateStore(SavedStateHandle()).apply {
-                repetitionCards.value = initialCards
-            }
-            val coroutineContextProvider = TestCoroutineContextProvider(io = mainDispatcherRule.dispatcher)
-            val deckRepository = FakeDeckRepository(initialDeck = deck)
-            val cardRepository = FakeCardRepository(initialCards = initialCards)
-            val repetitionInfoRepository = FakeDeckRepetitionInfoRepository()
-
-            val viewModel = DeckReviewViewModel(
-                deckId = deckId,
-                stateStore = stateStore,
-                fetchCards = FetchCardsUseCase(cardRepository = cardRepository),
-                fetchDeckById = FetchDeckByIdUseCase(deckRepository = deckRepository),
-                timer = RepetitionTimer(coroutineContextProvider = coroutineContextProvider),
-                audioPlayer = FakeAudioPlayerManager(),
-                updateDeck = UpdateDeckUseCase(
-                    deckRepository = deckRepository,
-                    localStorageSaveVersionRepository = FakeStorageSaveVersionRepository(),
-                    localStorageTransactionRepository = FakeStorageTransactionRepository(),
-                    coroutineContextProvider = coroutineContextProvider,
-                ),
-                deleteCardsFromDeck = DeleteCardsFromDeckUseCase(
-                    deckRepository = deckRepository,
-                    cardRepository = cardRepository,
-                    localStorageSaveVersionRepository = FakeStorageSaveVersionRepository(),
-                    localStorageTransactionRepository = FakeStorageTransactionRepository(),
-                    coroutineContextProvider = coroutineContextProvider,
-                ),
-                deckReviewScheduler = FakeDeckReviewScheduler(),
-                saveDeckReviewInfo = SaveDeckReviewInfoUseCase(
-                    deckRepetitionInfoRepository = repetitionInfoRepository,
-                    coroutineContextProvider = coroutineContextProvider,
-                ),
-                deckReviewNotifier = FakeDeckReviewNotifierManager(),
-                crashlytics = FakeCrashlyticsRepository(),
-                coroutineContextProvider = coroutineContextProvider,
-            )
-
-            runCurrent()
-            viewModel.startRepeating()
-            runCurrent()
-            viewModel.pauseTimerCounting()
-            runCurrent()
-
-            repeat(times = 3) { iteration ->
-                val editedFirstCard = initialCards[0].copy(
-                    foreignWord = "foreign-1-edited-$iteration",
-                )
-
-                // This simulates an edit-return path where the source emits cards in
-                // a different order, but the active review queue must remain unchanged.
-                cardRepository.emitCards(
-                    cards = listOf(
-                        initialCards[1],
-                        initialCards[3],
-                        editedFirstCard,
-                        initialCards[2],
-                    )
-                )
-                runCurrent()
-
-                assertEquals(
-                    listOf(1, 2, 3, 4),
-                    stateStore.repetitionCards.value.map { it.id }
-                )
-                assertEquals(
-                    editedFirstCard.foreignWord,
-                    stateStore.repetitionCards.value.first().foreignWord
-                )
-            }
-
-            viewModel.moveCardByDifficultyRecallingLevel(level = EASY)
-            runCurrent()
-            viewModel.pauseTimerCounting()
-            runCurrent()
-            assertTrue(deckRepository.insertedDecks.isEmpty())
-
-            viewModel.moveCardByDifficultyRecallingLevel(level = EASY)
-            runCurrent()
-            viewModel.pauseTimerCounting()
-            runCurrent()
-
-            assertTrue(
-                "Repetition should still be active after only two answers out of four cards",
-                deckRepository.insertedDecks.isEmpty()
-            )
-        }
-
-    private fun createCard(deckId: Int, id: Int): Card {
-        return Card(
-            deckId = deckId,
-            nativeWord = "native-$id",
-            foreignWord = "foreign-$id",
-            ipa = emptyList(),
-            id = id,
-        )
+    override suspend fun save(updatedDeck: Deck, reviewInfo: DeckRepetitionInfo) {
+        savedResults += updatedDeck to reviewInfo
+        deckRepository.insertDeck(updatedDeck)
     }
 }
 
@@ -167,8 +56,7 @@ private class TestCoroutineContextProvider(
 
 private class FakeAudioPlayerManager : IAudioPlayerManager {
 
-    override val loadingState: StateFlow<LoadingState<Unit, Unit>> =
-        MutableStateFlow(LoadingState.Non)
+    override val loadingState: StateFlow<LoadingState<Unit, Unit>> = MutableStateFlow(LoadingState.Non)
 
     override fun onCreate() = Unit
 
@@ -321,13 +209,120 @@ private class FakeStorageTransactionRepository : IStorageTransactionRepository {
     }
 }
 
-private class FakeDeckRepetitionInfoRepository : IDeckRepetitionInfoRepository {
+@OptIn(ExperimentalCoroutinesApi::class)
+class DeckReviewViewModelRegressionTest {
 
-    override fun fetchDeckRepetitionInfo(deckId: Int): Flow<DeckRepetitionInfo?> {
-        return flowOf(null)
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
+    @Test
+    fun `editing the first card before answering can finish repetition before full pass`() =
+        runTest(context = mainDispatcherRule.dispatcher) {
+            val deckId = 1
+            val initialCards = listOf(
+                createCard(deckId = deckId, id = 1),
+                createCard(deckId = deckId, id = 2),
+                createCard(deckId = deckId, id = 3),
+                createCard(deckId = deckId, id = 4),
+            )
+            val deck = Deck(
+                name = "Test deck",
+                creationDate = 1L,
+                cardQuantity = initialCards.size,
+                id = deckId,
+            )
+
+            val stateStore = DeckReviewSavedStateHandleStateStore(SavedStateHandle()).apply {
+                repetitionCards.value = initialCards
+            }
+            val coroutineContextProvider = TestCoroutineContextProvider(io = mainDispatcherRule.dispatcher)
+            val deckRepository = FakeDeckRepository(initialDeck = deck)
+            val cardRepository = FakeCardRepository(initialCards = initialCards)
+            val completedReviewRepository = FakeCompletedReviewRepository(deckRepository)
+
+            val viewModel = DeckReviewViewModel(
+                deckId = deckId,
+                stateStore = stateStore,
+                fetchCards = FetchCardsUseCase(cardRepository = cardRepository),
+                fetchDeckById = FetchDeckByIdUseCase(deckRepository = deckRepository),
+                timer = RepetitionTimer(coroutineContextProvider = coroutineContextProvider),
+                audioPlayer = FakeAudioPlayerManager(),
+                deleteCardsFromDeck = DeleteCardsFromDeckUseCase(
+                    deckRepository = deckRepository,
+                    cardRepository = cardRepository,
+                    localStorageSaveVersionRepository = FakeStorageSaveVersionRepository(),
+                    localStorageTransactionRepository = FakeStorageTransactionRepository(),
+                    coroutineContextProvider = coroutineContextProvider,
+                ),
+                deckReviewScheduler = FakeDeckReviewScheduler(),
+                saveCompletedReview = SaveCompletedDeckReviewUseCase(
+                    repository = completedReviewRepository,
+                    coroutineContextProvider = coroutineContextProvider,
+                ),
+                deckReviewNotifier = FakeDeckReviewNotifierManager(),
+                crashlytics = FakeCrashlyticsRepository(),
+                coroutineContextProvider = coroutineContextProvider,
+            )
+
+            runCurrent()
+            viewModel.startRepeating()
+            runCurrent()
+            viewModel.pauseTimerCounting()
+            runCurrent()
+
+            repeat(times = 3) { iteration ->
+                val editedFirstCard = initialCards[0].copy(
+                    foreignWord = "foreign-1-edited-$iteration",
+                )
+
+                // This simulates an edit-return path where the source emits cards in
+                // a different order, but the active review queue must remain unchanged.
+                cardRepository.emitCards(
+                    cards = listOf(
+                        initialCards[1],
+                        initialCards[3],
+                        editedFirstCard,
+                        initialCards[2],
+                    )
+                )
+                runCurrent()
+
+                assertEquals(
+                    listOf(1, 2, 3, 4),
+                    stateStore.repetitionCards.value.map { it.id }
+                )
+                assertEquals(
+                    editedFirstCard.foreignWord,
+                    stateStore.repetitionCards.value.first().foreignWord
+                )
+            }
+
+            viewModel.moveCardByDifficultyRecallingLevel(level = EASY)
+            runCurrent()
+            viewModel.pauseTimerCounting()
+            runCurrent()
+            assertTrue(deckRepository.insertedDecks.isEmpty())
+
+            viewModel.moveCardByDifficultyRecallingLevel(level = EASY)
+            runCurrent()
+            viewModel.pauseTimerCounting()
+            runCurrent()
+
+            assertTrue(
+                "Repetition should still be active after only two answers out of four cards",
+                deckRepository.insertedDecks.isEmpty()
+            )
+            assertTrue("No completed review should be saved after only two answers",
+                completedReviewRepository.savedResults.isEmpty())
+        }
+
+    private fun createCard(deckId: Int, id: Int): Card {
+        return Card(
+            deckId = deckId,
+            nativeWord = "native-$id",
+            foreignWord = "foreign-$id",
+            ipa = emptyList(),
+            id = id,
+        )
     }
-
-    override suspend fun saveDeckRepetitionInfo(info: DeckRepetitionInfo) = Unit
-
-    override suspend fun removeDeckRepetitionInfo(deckId: Int) = Unit
 }

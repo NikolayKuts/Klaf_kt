@@ -1,6 +1,7 @@
 package com.kuts.klaf.room.entities
 
 import androidx.room.Entity
+import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 import com.kuts.klaf.room.entities.RoomVocabularySource.Companion.VOCABULARY_SOURCE_TABLE_NAME
 
@@ -8,6 +9,7 @@ import com.kuts.klaf.room.entities.RoomVocabularySource.Companion.VOCABULARY_SOU
 data class RoomVocabularySource(
     val title: String,
     val description: String,
+    @ColumnInfo(defaultValue = "''")
     val url: String = "",
     val rawText: String,
     val cleanText: String,

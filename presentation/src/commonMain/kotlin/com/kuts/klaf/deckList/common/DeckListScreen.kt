@@ -47,6 +47,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CancellationException
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -81,6 +82,7 @@ import com.kuts.klaf.common.rememberAsMutableStateOf
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent.ToCardTransferringScreen
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent.ToChatGptWithDeckContentPrompt
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent.ToDataSynchronizationDialog
+import com.kuts.klaf.deckList.common.IDeckListNavigationEvent.ToConflictResolutionScreen
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent.ToDeckCreationDialog
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent.ToDeckNavigationDialog
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent.ToDeckRepetitionScreen
@@ -127,6 +129,10 @@ internal fun DeckListScreen(
         when (event) {
             ToDataSynchronizationDialog -> {
                 navController.navigate(route = AppDestination.DataSynchronizationDialog())
+            }
+
+            ToConflictResolutionScreen -> {
+                navController.navigate(route = AppDestination.SyncConflictResolution)
             }
 
             ToDeckCreationDialog -> {
@@ -233,6 +239,25 @@ internal fun DeckListScreen(
     Surface {
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
+        val accountSyncStatus = viewModel.accountSyncStatus.collectAsState().value
+        var showAccountSyncDetails by remember { mutableStateOf(false) }
+        var accountSyncHistory by remember(accountSyncStatus.accountEmail) {
+            mutableStateOf<AccountSyncHistoryState>(AccountSyncHistoryState.Loading)
+        }
+
+        LaunchedEffect(showAccountSyncDetails, accountSyncStatus.accountEmail) {
+            val accountEmail = accountSyncStatus.accountEmail
+            if (showAccountSyncDetails && accountEmail != null) {
+                accountSyncHistory = AccountSyncHistoryState.Loading
+                accountSyncHistory = try {
+                    AccountSyncHistoryState.Loaded(viewModel.recentSyncHistory(accountEmail))
+                } catch (failure: CancellationException) {
+                    throw failure
+                } catch (_: Exception) {
+                    AccountSyncHistoryState.Failed
+                }
+            }
+        }
 
         val closeDrawerAndPerform: (performBlock: () -> Unit) -> Unit = { performBlock ->
             scope.launch {
@@ -285,6 +310,8 @@ internal fun DeckListScreen(
         ) {
             DeckListContent(
                 decks = viewModel.deckSource.collectAsState().value,
+                accountSyncStatus = accountSyncStatus,
+                onAccountSyncStatusClick = { showAccountSyncDetails = true },
                 shouldSynchronizationIndicatorBeShown = viewModel.shouldSynchronizationIndicatorBeShown
                     .collectAsState()
                     .value,
@@ -306,6 +333,21 @@ internal fun DeckListScreen(
                 },
             )
         }
+        if (showAccountSyncDetails && accountSyncStatus.accountEmail != null) {
+            AccountSyncDetailsDialog(
+                status = accountSyncStatus,
+                history = accountSyncHistory,
+                onDismiss = { showAccountSyncDetails = false },
+                onSynchronize = {
+                    showAccountSyncDetails = false
+                    viewModel.synchronizeData()
+                },
+                onResolve = {
+                    showAccountSyncDetails = false
+                    navController.navigate(AppDestination.SyncConflictResolution)
+                },
+            )
+        }
     }
 }
 
@@ -313,6 +355,8 @@ internal fun DeckListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun DeckListContent(
     decks: List<Deck>?,
+    accountSyncStatus: AccountSyncStatus,
+    onAccountSyncStatusClick: () -> Unit,
     shouldSynchronizationIndicatorBeShown: Boolean,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     onRefresh: () -> Unit,
@@ -355,6 +399,11 @@ private fun DeckListContent(
                     visible = shouldSynchronizationIndicatorBeShown,
                     modifier = Modifier.offset(y = pullOffsetY),
                 )
+            }
+            if (accountSyncStatus.indicator != AccountSyncIndicator.HIDDEN) {
+                Box(modifier = Modifier.align(Alignment.TopEnd)) {
+                    AccountSyncStatusIndicator(accountSyncStatus, onAccountSyncStatusClick)
+                }
             }
         }
     }

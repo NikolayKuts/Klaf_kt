@@ -5,6 +5,9 @@ import com.kuts.domain.entities.CardMnemonic
 import com.kuts.domain.entities.CefrLevel
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.entities.IgnoredVocabularyWord
+import com.kuts.domain.entities.DeckRepetitionInfo
+import com.kuts.domain.common.DeckReviewPassSuccessMark
+
 import com.kuts.domain.entities.StorageSaveVersion
 import com.kuts.domain.entities.VocabularySource
 import com.kuts.domain.entities.VocabularySourceItem
@@ -34,6 +37,21 @@ private val cardJson = Json {
     explicitNulls = false
 }
 
+internal fun RoomDeck.toReviewInfo(): DeckRepetitionInfo? {
+    val currentDuration = reviewCurrentDuration ?: return null
+    return DeckRepetitionInfo(
+        deckId = id,
+        currentDuration = currentDuration,
+        previousDuration = requireNotNull(reviewPreviousDuration),
+        scheduledDate = requireNotNull(reviewScheduledDate),
+        previousScheduledDate = requireNotNull(reviewPreviousScheduledDate),
+        lastIterationDate = reviewLastIterationDate,
+        repetitionQuantity = repetitionQuantity,
+        currentIterationSuccessMark = DeckReviewPassSuccessMark.valueOf(requireNotNull(reviewCurrentSuccessMark)),
+        previousIterationSuccessMark = DeckReviewPassSuccessMark.valueOf(requireNotNull(reviewPreviousSuccessMark)),
+    )
+}
+
 fun RoomDeck.toDomainEntity(): Deck = Deck(
     name = name,
     creationDate = creationDate,
@@ -46,8 +64,10 @@ fun RoomDeck.toDomainEntity(): Deck = Deck(
     lastSecondReviewDuration = lastSecondRepetitionDuration,
     lastReviewPassDuration = lastRepetitionIterationDuration,
     isLastPassSucceeded = isLastIterationSucceeded,
-    id = id
-
+    id = id,
+    syncId = syncId,
+    lastChangedServerRevision = lastChangedServerRevision,
+    reviewInfo = toReviewInfo(),
 )
 
 fun Deck.toRoomEntity(): RoomDeck = RoomDeck(
@@ -63,6 +83,15 @@ fun Deck.toRoomEntity(): RoomDeck = RoomDeck(
     lastRepetitionIterationDuration = lastReviewPassDuration,
     isLastIterationSucceeded = isLastPassSucceeded,
     id = id,
+    syncId = syncId.ifBlank(::newSyncId),
+    lastChangedServerRevision = lastChangedServerRevision,
+    reviewCurrentDuration = reviewInfo?.currentDuration,
+    reviewPreviousDuration = reviewInfo?.previousDuration,
+    reviewScheduledDate = reviewInfo?.scheduledDate,
+    reviewPreviousScheduledDate = reviewInfo?.previousScheduledDate,
+    reviewLastIterationDate = reviewInfo?.lastIterationDate,
+    reviewCurrentSuccessMark = reviewInfo?.currentIterationSuccessMark?.name,
+    reviewPreviousSuccessMark = reviewInfo?.previousIterationSuccessMark?.name,
 )
 
 fun RoomCard.toDomainEntity(): Card = Card(
@@ -72,7 +101,9 @@ fun RoomCard.toDomainEntity(): Card = Card(
     ipa = cardJson.decodeFromString(string = ipa),
     wordMeaningInsights = wordMeaningInsights,
     mnemonic = mnemonicJson.toCardMnemonic(),
-    id = id
+    id = id,
+    syncId = syncId,
+    lastChangedServerRevision = lastChangedServerRevision,
 )
 
 fun Card.toRoomEntity(): RoomCard = RoomCard(
@@ -82,7 +113,9 @@ fun Card.toRoomEntity(): RoomCard = RoomCard(
     ipa = cardJson.encodeToString(value = ipa),
     wordMeaningInsights = wordMeaningInsights,
     mnemonicJson = cardJson.encodeToString(value = mnemonic),
-    id = id
+    id = id,
+    syncId = syncId.ifBlank(::newSyncId),
+    lastChangedServerRevision = lastChangedServerRevision,
 )
 
 fun StorageSaveVersion.toRoomEntity(): RoomStorageSaveVersion = RoomStorageSaveVersion(

@@ -49,6 +49,8 @@ import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
+import com.kuts.klaf.room.databases.RoomDatabaseSource
+import com.kuts.klaf.room.databases.StaticRoomDatabaseSource
 import com.kuts.klaf.vocabularySource.NoOpVocabularySourceAnalysisBackgroundManager
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -103,6 +105,7 @@ private fun Module.iosRepositoryModule() {
 
 private fun Module.iosInfrastructureModule() {
     single<KlafRoomDatabase> { KlafRoomDatabaseProvider.getInstance() }
+    single<RoomDatabaseSource> { StaticRoomDatabaseSource(database = get()) }
     single<ICoroutineContextProvider> { IosCoroutineContextProvider() }
 }
 

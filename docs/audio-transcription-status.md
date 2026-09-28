@@ -2,9 +2,18 @@
 
 ## Current Focus
 
+- Storage/voice integration implements explicit account-transition cancellation:
+  cancel active local transcription and clear retained results, rotate the device
+  session namespace, signal cancellation only over an existing connection, and
+  reject late results/notification taps. Ordinary disconnect/reconnect retention
+  remains unchanged. Combined tests and Android/Desktop compilation passed;
+  validation details are tracked in `klaf-server-status.md`;
+  no merged physical-device or real-inference check is claimed.
+
 - Theme consistency follow-up (2026-09-28) is implemented and tested: server log
-  UI and source-detail components consume central light/dark palettes. Current
-  full-suite total is 116 passing tests, including seven new theme regressions;
+  UI and source-detail components consume central light/dark palettes. The
+  pre-integration full-suite total was 116 passing tests, including seven new
+  theme regressions;
   details are in server and transcript-vocabulary status documents. This does
   not change the explicit killed-process recovery deferral below.
 - The 2026-09-28 audit of staged/unstaged/new changes on

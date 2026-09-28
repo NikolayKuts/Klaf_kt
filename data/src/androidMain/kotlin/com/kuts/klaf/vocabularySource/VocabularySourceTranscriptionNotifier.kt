@@ -16,6 +16,7 @@ import com.kuts.klaf.data.R
 class VocabularySourceTranscriptionNotifier(
     private val context: Context,
     private val notificationManager: NotificationManager,
+    private val sessionIdProvider: () -> String = { "" },
 ) {
 
     companion object {
@@ -39,6 +40,7 @@ class VocabularySourceTranscriptionNotifier(
     fun showSuccess(
         sourceId: Int,
         sourceTitle: String,
+        clientSessionId: String = sessionIdProvider(),
     ) {
         val contentText = context.getString(
             R.string.vocabulary_source_transcription_succeeded,
@@ -54,7 +56,7 @@ class VocabularySourceTranscriptionNotifier(
                 .setCategory(NotificationCompat.CATEGORY_STATUS)
                 .setColor(Color.GREEN)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(createResultPendingIntent(sourceId = sourceId))
+                .setContentIntent(createResultPendingIntent(sourceId = sourceId, clientSessionId = clientSessionId))
                 .setAutoCancel(true)
                 .build(),
         )
@@ -84,11 +86,12 @@ class VocabularySourceTranscriptionNotifier(
         )
     }
 
-    private fun createResultPendingIntent(sourceId: Int): PendingIntent? {
+    private fun createResultPendingIntent(sourceId: Int, clientSessionId: String = sessionIdProvider()): PendingIntent? {
         val launchIntent = context.packageManager
             .getLaunchIntentForPackage(context.packageName)
             ?.apply {
                 action = ACTION_OPEN_RESULT
+                putExtra(com.kuts.domain.managers.ClientSessionLaunchExtras.SESSION_ID_KEY, clientSessionId)
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 putExtra(VocabularySourceAnalysisLaunchExtras.SOURCE_ID_KEY, sourceId)
             }

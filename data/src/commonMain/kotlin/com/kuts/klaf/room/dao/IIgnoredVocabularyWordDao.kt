@@ -16,6 +16,9 @@ interface IIgnoredVocabularyWordDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertWords(words: List<RoomIgnoredVocabularyWord>)
 
+    @Query("DELETE FROM $IGNORED_VOCABULARY_WORD_TABLE_NAME")
+    suspend fun deleteWords()
+
     companion object {
 
         const val IGNORED_VOCABULARY_WORD_TABLE_NAME = "ignored_vocabulary_words"
