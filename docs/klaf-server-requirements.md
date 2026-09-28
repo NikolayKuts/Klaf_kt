@@ -13,6 +13,48 @@ It should be removed or replaced by permanent documentation after the full imple
   or log entries. The server uses a module-local theme configuration rather than
   depending on the client presentation module.
 
+## Branch Integration Decisions (2026-09-28)
+
+- Merge preparation targets `mnemonic-voice-dictation`, bringing in
+  `remote-storage-server`. Review conflicts and clarify material behavior before
+  performing the merge.
+- Existing Vocabulary Source, subtitle and voice-feature data need not be
+  preserved or migrated; these feature tables may start empty. This permission
+  does not cover decks, cards, account/synchronization data or original backups.
+- Explicit logout must cancel unfinished feature work from the user context
+  being left, rather than retain it for later delivery. When the server receives
+  the logout/cancellation signal, it must stop the affected work and release its
+  associated resources/sessions without stopping unrelated work. Late results
+  must not be applied or opened in the next account or guest context.
+- Logout ends the originating device's session and its unfinished work only.
+  Other devices signed into the same account must keep their sessions and work.
+  Cleanup must target the session being left, not a later session on that device.
+- Logout remains an immediate local action, including when offline: cancel local
+  work from the session being left and reject its later results/notification
+  navigation. When connected, send server cancellation for that device session.
+  Without connectivity, server processing may finish because cancellation cannot
+  be delivered; its result must not be adopted after logout. Do not wait for
+  server confirmation or create a queued logout for later guest-mode delivery.
+- Vocabulary Sources and their associated persisted feature data are an integral
+  part of the user's data, scoped to the selected account/guest database rather
+  than a store shared across users. This includes saved text, source items and
+  the feature's Ignored Words records.
+- Sign-up transfers all such guest feature data along with decks/cards into the
+  new account's local database, including when no guest decks/cards exist.
+  Preserve source/item/deck/card links and verify the complete copied data before
+  removing transferred guest records. Retry/interruption must not lose data or
+  duplicate it. Sign-in to an existing account still leaves guest data untouched.
+- Permission to reset pre-merge Vocabulary Source/voice data is a one-time
+  integration permission, not permission to drop newly created feature data
+  during later sign-up/account changes.
+- Cross-device synchronization of Vocabulary Sources and associated feature data
+  is a separate follow-up immediately after the merge, not part of integration.
+  Integration provides account ownership and local sign-up transfer; the storage
+  protocol continues to synchronize decks/cards only. Source synchronization
+  needs its own agreed conflict rules and tests before implementation.
+- Shared server-wide AgentDriver sessions are not automatically user-owned;
+  the cleanup design must distinguish shared infrastructure from affected work.
+
 ## Goal
 
 Create a separate Gradle module for a Klaf server application inside the existing `Klaf_kt` Gradle project.

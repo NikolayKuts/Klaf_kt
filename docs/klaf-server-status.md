@@ -5,6 +5,66 @@ It should be removed or replaced by permanent documentation after the full imple
 
 ## Current Phase
 
+Branch comparison and user decisions are complete for the inspected overlaps.
+Only documentation has changed; merge/implementation await the user's go-ahead.
+
+- Compared clean branch heads `mnemonic-voice-dictation` (`a0b44a3`) and
+  `remote-storage-server` (`2e00cee`), with common base `e6f6297`. A `merge-tree`
+  simulation found 19 conflicted paths without changing branches or the index.
+  Main overlaps: divergent Room schema versions, dependency wiring, server
+  lifecycle, Android notification navigation and card-insights behavior.
+- Vocabulary Source/voice data may start empty, but deck/card/sync data and
+  immutable backups must remain protected.
+- User chose cancellation on explicit logout rather than retaining unfinished
+  feature results across account changes. Logout ends only the originating
+  device's session/work; other devices of the account are unaffected. Offline
+  logout is immediate and cancels local work; undeliverable cancellation may
+  leave server work running, but its results are rejected locally. No queued
+  logout is introduced. Current AI operations use request/source
+  IDs without storage-account binding; existing explicit cancellation is
+  per-request, not a server-side account logout operation.
+- User confirmed Vocabulary Sources and their associated persisted feature data
+  are part of account-owned content. Sign-up must copy/verify/transfer them with
+  decks/cards, preserving links and supporting source-only guest databases;
+  sign-in still leaves the guest database untouched. Existing transfer code only
+  handles decks/cards and needs integration changes and recovery/isolation tests.
+- User agreed to cross-device source-data synchronization as a separate phase
+  immediately after the merge, with its own conflict rules/tests. The current
+  storage protocol continues to contain deck/card operations only. No protocol,
+  transfer or repository implementation changed during decision gathering.
+- No implementation, merge, runtime/device test or backup modification was
+  performed for this decision. Build/tests must be run after integration.
+
+### Integration Work and Validation Still Required
+
+- Resolve the 19 textual conflicts by retaining both feature sets: speech/push
+  and themed AI server functionality, plus account-scoped Room/REST storage,
+  manual sync/events, image delivery and conflict resolution. Preserve combined
+  ignore rules; do not restore generated artifacts or real secret files.
+- Room versions 9-12 describe different schemas in the two branches. Use a new
+  combined version above 14 and branch-aware migration paths/fixtures as needed;
+  retain decks/cards, review/sync metadata and constraints. Resetting only the
+  authorized old source/voice tables is permitted, not destructive database
+  fallback. Validate migration from both branch layouts using disposable copies.
+- Wire Ignored Words and source repositories to the selected database and its
+  transactions. Extend sign-up copy/verification/retry logic to complete feature
+  data, including guests with sources but no decks/cards.
+- Isolate AI requests/results/notification navigation by device login session;
+  apply the agreed logout cancellation and stale-result rejection without
+  stopping other devices or shared server infrastructure. Account switches and
+  sign-up must not leak an old source/card ID into a different database context.
+- Check source-to-card additions against the existing reviewed-deck restriction
+  and manual-sync edit pause; ordinary generated cards still use the deck/card
+  outbox. Keep source records local until the separate synchronization phase.
+- Cover online/offline logout, late results and notifications, other-device
+  isolation, source-only guest transfer, interrupted/retried transfers, account
+  isolation, both branch migrations and source-to-card sync behavior. Run both
+  branches' relevant test suites and Android/Desktop builds after integration;
+  keep the known LoKdroid iOS publication issue explicitly unverified/unresolved.
+- Extra comparison checks: automatically merged string-resource XML parses with
+  no duplicate names; `git diff --check` passes for decision documentation.
+  These static checks are not a build, migration or runtime validation.
+
 MVP implementation is in local testing/review.
 
 - Commit preparation (2026-09-28): user authorized a local snapshot of all
