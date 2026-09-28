@@ -29,6 +29,7 @@ buildSrc/build/tmp/jar/MANIFEST.MF
 /presentation/src/androidMain/kotlin/com/kuts/klaf/common/SecretConstants.kt
 /presentation/src/commonMain/kotlin/com/kuts/klaf/common/SecretConstants.kt
 /klaf-server/src/main/kotlin/com/kuts/klaf/server/SecretConstants.kt
+/klaf-server/secrets/
 
 # Android Studio/Gradle problem report
 /build/reports/problems/problems-report.html
@@ -41,4 +42,12 @@ buildSrc/build/tmp/jar/MANIFEST.MF
 # Gradle outputs (all modules)
 **/build/
 /.kotlin/
+**/.kotlin/
+
+# JVM crash diagnostics (local only)
+hs_err_pid*.log
+replay_pid*.log
 /codex-alt
+
+# Private local handoff/audit notes (never publish)
+/.local-notes/

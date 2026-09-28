@@ -1,6 +1,7 @@
 package com.kuts.klaf.di
 
 import com.kuts.domain.managers.IDeckReviewNotifierManager
+import com.kuts.domain.managers.IAccountScopedDeckReviewNotifier
 import com.kuts.klaf.common.notifications.AndroidDeckReviewNotifier
 import com.kuts.klaf.common.permissions.AndroidMokoMicrophonePermissionManager
 import com.kuts.klaf.common.permissions.IMicrophonePermissionBinder
@@ -22,9 +23,11 @@ internal val androidPresentationModule = module {
         AndroidDeckReviewNotifier(
             context = androidContext(),
             notificationManager = get(),
+            reminderScope = get(),
         )
     }
     single<IDeckReviewNotifierManager> { get<AndroidDeckReviewNotifier>() }
+    single<IAccountScopedDeckReviewNotifier> { get<AndroidDeckReviewNotifier>() }
     single { AndroidMokoNotificationPermissionManager(context = androidContext(), appLocalStore = get()) }
     single<INotificationPermissionManager> { get<AndroidMokoNotificationPermissionManager>() }
     single<INotificationPermissionBinder> { get<AndroidMokoNotificationPermissionManager>() }

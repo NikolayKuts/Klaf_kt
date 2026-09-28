@@ -19,10 +19,10 @@ class CreateInterimDeckUseCase(
 
     suspend operator fun invoke() {
         withContext(context = coroutineContextProvider.io) {
-            val interimDeck = deckRepository.getDeckById(deckId = Deck.INTERIM_DECK_ID)
+            localStorageTransactionRepository.performWithTransaction {
+                val interimDeck = deckRepository.getDeckById(deckId = Deck.INTERIM_DECK_ID)
 
-            interimDeck.ifNull {
-                localStorageTransactionRepository.performWithTransaction {
+                interimDeck.ifNull {
                     deckRepository.insertDeck(
                         deck = Deck(
                             name = Deck.INTERIM_DECK_NAME,

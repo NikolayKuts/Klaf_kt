@@ -5,16 +5,20 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.kuts.domain.managers.IDeckReviewNotifierManager
+import com.kuts.domain.managers.IAccountScopedDeckReviewNotifier
+import com.kuts.domain.managers.IReviewReminderScopeProvider
 import com.kuts.klaf.navigation.AppLaunchNavigationExtras
 import com.kuts.klaf.presentation.R
 
 class AndroidDeckReviewNotifier(
     private val context: Context,
-    private val notificationManager: NotificationManager
-) : IDeckReviewNotifierManager {
+    private val notificationManager: NotificationManager,
+    private val reminderScope: IReviewReminderScopeProvider,
+) : IDeckReviewNotifierManager, IAccountScopedDeckReviewNotifier {
 
     companion object Companion {
 
@@ -26,10 +30,20 @@ class AndroidDeckReviewNotifier(
     }
 
     override fun showNotification(deckName: String, deckId: Int) {
-        val notification = createDeckRepetitionNotification(deckName = deckName, deckId = deckId)
+        showIfCurrent(reminderScope.currentScope(), deckName, deckId)
+    }
 
-        notificationManager.notify(deckId, notification)
-        showSummeryNotificationIfSdkLessThan24AndMoreThan22()
+    override fun showIfCurrent(accountScope: String?, deckName: String, deckId: Int) {
+        if (reminderScope.currentScope() != accountScope) return
+        val notification = createDeckRepetitionNotification(deckName, deckId, accountScope)
+        if (accountScope == null) notificationManager.notify(deckId, notification)
+        else notificationManager.notify(accountScope, deckId, notification)
+        if (reminderScope.currentScope() != accountScope) {
+            if (accountScope == null) notificationManager.cancel(deckId)
+            else notificationManager.cancel(accountScope, deckId)
+        } else {
+            showSummeryNotificationIfSdkLessThan24AndMoreThan22()
+        }
     }
 
     override fun showCommonNotification() {
@@ -37,6 +51,7 @@ class AndroidDeckReviewNotifier(
     }
 
     override fun removeNotificationFromNotificationBar(deckId: Int) {
+        reminderScope.currentScope()?.let { scope -> notificationManager.cancel(scope, deckId) }
         notificationManager.cancel(deckId)
     }
 
@@ -53,7 +68,7 @@ class AndroidDeckReviewNotifier(
         }
     }
 
-    private fun createDeckRepetitionNotification(deckName: String, deckId: Int): Notification {
+    private fun createDeckRepetitionNotification(deckName: String, deckId: Int, scope: String?): Notification {
         return NotificationCompat.Builder(context, DECK_REPETITION_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_deck_repetition_notification_24)
             .setContentTitle(context.getString(R.string.app_name))
@@ -63,7 +78,7 @@ class AndroidDeckReviewNotifier(
             .setGroupIfSdkLessThan24(groupKey = DECK_REPETITION_GROUP_KEY)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setContentIntent(createDeckRepetitionPendingIntent(deckId = deckId, deckName = deckName))
+            .setContentIntent(createDeckRepetitionPendingIntent(deckId = deckId, deckName = deckName, scope = scope))
             .build()
     }
 
@@ -127,7 +142,8 @@ class AndroidDeckReviewNotifier(
 
     private fun createDeckRepetitionPendingIntent(
         deckId: Int,
-        deckName: String
+        deckName: String,
+        scope: String?,
     ): PendingIntent {
         val intent = createBaseMainActivityIntent().apply {
             putExtra(
@@ -136,6 +152,10 @@ class AndroidDeckReviewNotifier(
             )
             putExtra(AppLaunchNavigationExtras.DECK_ID_KEY, deckId)
             putExtra(AppLaunchNavigationExtras.DECK_NAME_KEY, deckName)
+            scope?.let { scope ->
+                putExtra(AppLaunchNavigationExtras.REMINDER_ACCOUNT_SCOPE_KEY, scope)
+                data = Uri.parse("klaf://review-navigation/${Uri.encode(scope)}/$deckId")
+            }
         }
 
         return createPendingIntent(requestCode = deckId, intent = intent)

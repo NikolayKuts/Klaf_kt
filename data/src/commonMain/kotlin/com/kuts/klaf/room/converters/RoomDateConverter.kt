@@ -15,6 +15,11 @@ class RoomDateConverter {
         isLenient = true
         explicitNulls = false
     }
+    private val importJson = Json {
+        ignoreUnknownKeys = false
+        isLenient = true
+        explicitNulls = false
+    }
 
     @TypeConverter
     fun fromDateListToString(lastRepetitionDates: List<Long>): String {
@@ -46,6 +51,23 @@ class RoomDateConverter {
         }
 
         return WordMeaningInsights.EMPTY
+    }
+
+    fun fromStringToWordMeaningInsightsStrict(insightsAsJson: String): WordMeaningInsights =
+        json.decodeFromString<WordMeaningInsightsPayload>(insightsAsJson).toDomainEntity()
+
+    /** Migration must fail rather than silently replace unrecognized legacy details with EMPTY. */
+    fun fromStringToWordMeaningInsightsForImport(insightsAsJson: String): WordMeaningInsights {
+        if (insightsAsJson.isBlank()) return WordMeaningInsights.EMPTY
+        val direct = runCatching { importJson.decodeFromString<WordMeaningInsightsPayload>(insightsAsJson) }.getOrNull()
+        val payload = direct ?: runCatching {
+            val unwrapped = importJson.decodeFromString<String>(insightsAsJson)
+            importJson.decodeFromString<WordMeaningInsightsPayload>(unwrapped)
+        }.getOrElse { throw IllegalArgumentException("Unrecognized word meaning insights", it) }
+        require(payload.isWordValid && payload.invalidReason.isBlank()) {
+            "Legacy word validity details cannot be represented without loss"
+        }
+        return payload.toDomainEntity()
     }
 
     private fun decodeInsightsOrNull(payload: String): WordMeaningInsights? {

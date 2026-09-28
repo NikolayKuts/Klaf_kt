@@ -97,6 +97,9 @@ internal sealed interface AppDestination {
     ) : AppDestination
 
     @Serializable
+    data object SyncConflictResolution : AppDestination
+
+    @Serializable
     data class SigningTypeChoosingDialog(
         val fromSourceDestination: NavigationDestination,
     ) : AppDestination

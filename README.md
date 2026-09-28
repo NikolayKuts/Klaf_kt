@@ -72,6 +72,13 @@ cleanup rules, platform limits, and diagnostics.
 
 ## Run
 
+### Local configuration and privacy
+
+Keep actual `local.properties`, Android `google-services.json`, server service
+credentials and private handoff notes outside Git. Use only dummy credentials
+in test fixtures and generic paths/accounts in documentation. The ignored
+`.local-notes/` directory is machine-local and must never be force-added.
+
 ### Android
 
 Use Android Studio, or run:

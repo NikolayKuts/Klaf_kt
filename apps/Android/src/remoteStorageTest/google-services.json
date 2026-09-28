@@ -1,0 +1,23 @@
+{
+  "project_info": {
+    "project_number": "1234567890",
+    "project_id": "klaf-remote-storage-local-test",
+    "storage_bucket": "klaf-remote-storage-local-test.invalid"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1234567890:android:0123456789abcdef012345",
+        "android_client_info": {
+          "package_name": "com.kuts.klaf.remote.storage.test"
+        }
+      },
+      "api_key": [
+        {
+          "current_key": "not-a-real-firebase-key"
+        }
+      ]
+    }
+  ],
+  "configuration_version": "1"
+}

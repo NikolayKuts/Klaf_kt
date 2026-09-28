@@ -48,7 +48,7 @@ MVP implementation is in local testing/review.
   - recreates the feature session and retries once after request/session failure.
 - Verified `:klaf-server-contract:compileKotlinMetadata` successfully.
 - Fixed the Klaf server Ktor engine type after the first compile attempt.
-- Bumped AgentDriver SDK version to `0.10.10-SNAPSHOT` in `C:\Users\kutsn\StudioProjects\AgentDriver`.
+- Bumped AgentDriver SDK version to `0.10.10-SNAPSHOT` in `C:\Users\<user>\StudioProjects\AgentDriver`.
 - Updated Klaf version catalog to consume AgentDriver `0.10.10-SNAPSHOT`.
 - Published AgentDriver `0.10.10-SNAPSHOT` to Maven local with `publishSdkToMavenLocal`.
 - Verified `:klaf-server:compileKotlin --refresh-dependencies --no-configuration-cache` successfully.

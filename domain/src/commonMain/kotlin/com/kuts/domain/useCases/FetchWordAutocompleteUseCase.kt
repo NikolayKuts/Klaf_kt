@@ -10,6 +10,8 @@ class FetchWordAutocompleteUseCase(
     private val coroutineContextProvider: ICoroutineContextProvider,
 ) {
 
+    val isEnabled: Boolean get() = wordAutocompleteRepository.isEnabled
+
     suspend operator fun invoke(prefix: String): List<AutocompleteWord> {
         return withContext(context = coroutineContextProvider.io) {
             wordAutocompleteRepository.fetchAutocomplete(prefix = prefix)

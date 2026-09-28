@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -116,6 +118,7 @@ private fun AuthenticationContent(
 ) {
     val inputState by viewModel.typingState.collectAsState()
     val loadingState = viewModel.screenLoadingState.collectAsState().value
+    val pendingDeviceEmail by viewModel.pendingDeviceRegistrationEmail.collectAsState()
     val keyboardController = LocalSoftwareKeyboardController.current
 
     AdaptiveScalableBox { adaptiveModifier ->
@@ -144,6 +147,7 @@ private fun AuthenticationContent(
                 typingState = inputState,
                 actionLabelText = stringResource(resource = actionLabelTextRes),
                 isLoading = loadingState is LoadingState.Loading,
+                isPasswordless = viewModel.isPasswordless,
                 isPasswordConfirmationEnabled = isPasswordConfirmationEnabled,
                 onEmailChange = viewModel::updateEmail,
                 onPasswordChange = viewModel::updatePassword,
@@ -159,6 +163,27 @@ private fun AuthenticationContent(
             }
         }
     }
+
+    if (pendingDeviceEmail != null) {
+        val isLoading = loadingState is LoadingState.Loading
+        AlertDialog(
+            onDismissRequest = { if (!isLoading) viewModel.cancelDeviceRegistration() },
+            title = { Text(stringResource(Res.string.authentication_register_device_title)) },
+            text = {
+                Text(stringResource(Res.string.authentication_register_device_message, pendingDeviceEmail.orEmpty()))
+            },
+            confirmButton = {
+                TextButton(onClick = viewModel::registerDevice, enabled = !isLoading) {
+                    Text(stringResource(Res.string.authentication_register_device_action))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::cancelDeviceRegistration, enabled = !isLoading) {
+                    Text(stringResource(Res.string.authentication_register_device_cancel))
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -167,6 +192,7 @@ private fun AuthenticationView(
     typingState: AuthenticationTypingState,
     actionLabelText: String,
     isLoading: Boolean,
+    isPasswordless: Boolean,
     isPasswordConfirmationEnabled: Boolean,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
@@ -201,6 +227,7 @@ private fun AuthenticationView(
             onValueChange = onEmailChange,
             labelText = stringResource(resource = Res.string.authentication_email_label),
             isError = typingState.emailHolder.isError,
+            enabled = !isLoading,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
 
@@ -212,6 +239,7 @@ private fun AuthenticationView(
             onValueChange = onPasswordChange,
             labelText = stringResource(resource = Res.string.authentication_password_label),
             isError = typingState.passwordHolder.isError,
+            enabled = !isPasswordless && !isLoading,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation(),
         )
@@ -224,6 +252,7 @@ private fun AuthenticationView(
                 onValueChange = onPasswordConfirmationChange,
                 labelText = stringResource(resource = Res.string.authentication_password_confirmation),
                 isError = typingState.passwordConfirmationHolder?.isError ?: false,
+                enabled = !isPasswordless && !isLoading,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = PasswordVisualTransformation(),
             )
@@ -252,6 +281,7 @@ private fun AuthenticationTextField(
     onValueChange: (String) -> Unit,
     labelText: String,
     isError: Boolean,
+    enabled: Boolean,
     keyboardOptions: KeyboardOptions,
     visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
@@ -262,6 +292,7 @@ private fun AuthenticationTextField(
         label = { Text(text = labelText, fontStyle = FontStyle.Italic) },
         singleLine = true,
         isError = isError,
+        enabled = enabled,
         colors = TextFieldDefaults.colors(
             focusedContainerColor = MainTheme.colors.authenticationScreen.textFieldBackground,
             unfocusedContainerColor = MainTheme.colors.authenticationScreen.textFieldBackground,

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kuts.domain.common.CoroutineStateHolder.Companion.launchWithState
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.common.ICoroutineContextProvider
+import com.kuts.domain.common.ReviewedDeckCardAdditionException
 import com.kuts.domain.entities.Card
 import com.kuts.domain.ipa.toRowInfos
 import com.kuts.domain.managers.IAudioPlayerManager
@@ -30,6 +31,12 @@ import com.kuts.klaf.cardManagement.common.toTrimmedDomainEntities
 import com.kuts.klaf.common.permissions.IMicrophonePermissionManager
 import com.kuts.klaf.common.tryEmitAsNegative
 import com.kuts.klaf.common.tryEmitAsPositive
+import org.jetbrains.compose.resources.StringResource
+
+internal fun Throwable.additionFailureMessage(): StringResource = when (this) {
+    is ReviewedDeckCardAdditionException -> Res.string.card_addition_reviewed_deck
+    else -> Res.string.exception_adding_card
+}
 
 class CardAdditionViewModel(
     deckId: Int,
@@ -133,7 +140,7 @@ class CardAdditionViewModel(
                 }
             }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
                 // logE("Failed to add card\n${throwable.stackTraceToString()}")
-                eventMessage.tryEmitAsNegative(resId = Res.string.exception_adding_card)
+                eventMessage.tryEmitAsNegative(resId = throwable.additionFailureMessage())
             }
         }
     }

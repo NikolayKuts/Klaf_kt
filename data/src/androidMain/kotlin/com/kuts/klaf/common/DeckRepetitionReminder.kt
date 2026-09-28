@@ -3,13 +3,15 @@ package com.kuts.klaf.common
 import android.content.Context
 import androidx.work.*
 import com.kuts.domain.common.UNASSIGNED_INT_VALUE
-import com.kuts.domain.managers.IDeckReviewNotifierManager
+import com.kuts.domain.managers.IAccountScopedDeckReviewNotifier
+import com.kuts.klaf.room.databases.AndroidSelectedAccountStore
 import java.util.concurrent.TimeUnit
 
 class DeckRepetitionReminder(
     private val appContext: Context,
     private val parameters: WorkerParameters,
-    private val deckReviewNotifier: IDeckReviewNotifierManager,
+    private val selectedAccount: AndroidSelectedAccountStore,
+    private val scopedNotifier: IAccountScopedDeckReviewNotifier,
 ) : CoroutineWorker(
     appContext = appContext,
     params = parameters
@@ -50,7 +52,9 @@ class DeckRepetitionReminder(
     }
 
     override suspend fun doWork(): Result {
-        deckReviewNotifier.showNotification(
+        if (selectedAccount.areScopedRemindersActive()) return Result.success()
+        scopedNotifier.showIfCurrent(
+            accountScope = null,
             deckName = parameters.inputData.getString(DECK_NAME) ?: "",
             deckId = parameters.inputData.getInt(DECK_ID, UNASSIGNED_INT_VALUE)
         )

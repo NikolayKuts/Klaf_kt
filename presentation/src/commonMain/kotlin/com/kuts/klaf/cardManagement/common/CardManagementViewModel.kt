@@ -633,17 +633,21 @@ abstract class CardManagementViewModel(
                 textFieldValueIpaHoldersState.value = emptyList()
                 clearMnemonicDraftForWordChange(newWord = word)
 
-                autocompleteState.launchUpdateWithState(
-                    scope = viewModelScope,
-                    context = coroutineContextProvider.io
-                ) {
-                    AutocompleteState(
-                        prefix = word,
-                        autocomplete = fetchWordAutocomplete(prefix = word),
-                        isActive = true,
-                    )
-                }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
-                    // logE("fetchWordAutocomplete() caught ERROR: ${throwable.stackTraceToString()}")
+                if (fetchWordAutocomplete.isEnabled) {
+                    autocompleteState.launchUpdateWithState(
+                        scope = viewModelScope,
+                        context = coroutineContextProvider.io
+                    ) {
+                        AutocompleteState(
+                            prefix = word,
+                            autocomplete = fetchWordAutocomplete(prefix = word),
+                            isActive = true,
+                        )
+                    }.onExceptionWithCrashlyticsReport(crashlytics = crashlytics) { _, throwable ->
+                        // logE("fetchWordAutocomplete() caught ERROR: ${throwable.stackTraceToString()}")
+                    }
+                } else {
+                    autocompleteState.value = AutocompleteState()
                 }
             }
         } else {

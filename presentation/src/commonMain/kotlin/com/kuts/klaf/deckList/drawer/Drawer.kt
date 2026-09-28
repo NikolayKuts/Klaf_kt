@@ -11,6 +11,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
@@ -86,12 +87,15 @@ fun Drawer(
                         iconRes = Res.drawable.ic_logout_24,
                         text = stringResource(resource = Res.string.log_out_action),
                         onClick = onLogOutClick,
+                        enabled = state.canSignOut,
                     )
-                    DrawerItem(
-                        iconRes = Res.drawable.ic_delete_account_24,
-                        text = stringResource(resource = Res.string.account_deleting_action),
-                        onClick = onDeleteAccountClick,
-                    )
+                    if (state.canDeleteAccount) {
+                        DrawerItem(
+                            iconRes = Res.drawable.ic_delete_account_24,
+                            text = stringResource(resource = Res.string.account_deleting_action),
+                            onClick = onDeleteAccountClick,
+                        )
+                    }
                 } else {
                     DrawerItem(
                         iconRes = Res.drawable.ic_login_24,
@@ -212,9 +216,12 @@ private fun DrawerItem(
     iconRes: DrawableResource,
     text: String,
     onClick: () -> Unit,
+    enabled: Boolean = true,
 ) {
     Row(
-        modifier = Modifier.clickable { onClick() },
+        modifier = Modifier
+            .alpha(if (enabled) 1f else 0.4f)
+            .clickable(enabled = enabled, onClick = onClick),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(

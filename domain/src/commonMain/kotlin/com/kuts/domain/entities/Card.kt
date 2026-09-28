@@ -11,5 +11,7 @@ data class Card(
     val ipa: List<IpaHolder>,
     val wordMeaningInsights: WordMeaningInsights = WordMeaningInsights.EMPTY,
     val mnemonic: CardMnemonic = CardMnemonic.EMPTY,
-    val id: Int = 0
+    val id: Int = 0,
+    val syncId: String = "",
+    val lastChangedServerRevision: Long = 0L,
 )

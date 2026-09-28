@@ -7,6 +7,10 @@ import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
+import com.kuts.domain.managers.AccountOperationException
+import com.kuts.domain.managers.ImageSynchronizationException
+import com.kuts.klaf.authentication.accountErrorMessage
+import com.kuts.klaf.authentication.imageSyncErrorMessage
 import com.kuts.domain.common.IDataSynchronizationState
 import com.kuts.domain.common.IDataSynchronizationState.Failed
 import com.kuts.domain.common.IDataSynchronizationState.Initial
@@ -31,9 +35,11 @@ import com.kuts.klaf.deckList.common.IDeckListNavigationDestination.DataSynchron
 import com.kuts.klaf.deckList.common.IDeckListNavigationDestination.Unspecified
 import com.kuts.klaf.deckList.common.IDeckListNavigationEvent.*
 import com.kuts.klaf.deckList.drawer.DrawerViewState
+import com.kuts.klaf.server.contract.SyncHistoryItem
 import com.lib.lokdroid.core.logE
 import com.lib.lokdroid.core.logV
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 class DeckListViewModel(
@@ -50,11 +56,28 @@ class DeckListViewModel(
     private val observeKlafServerConnectionState: ObserveKlafServerConnectionStateUseCase,
     private val retryKlafServerConnectionUseCase: RetryKlafServerConnectionUseCase,
     private val coroutineContextProvider: ICoroutineContextProvider,
+    private val accountGateway: AccountDeckListGateway? = null,
+    private val accountStatusGateway: AccountSyncStatusGateway? = null,
 ) : BaseDeckListViewModel() {
+
+    private companion object {
+
+        private const val DEFAULT_CHAT_GPT_URL = "https://chatgpt.com/"
+    }
+
+    private val syncRouter = DeckListSyncRouter(
+        accountGateway = accountGateway,
+        legacySignedIn = authenticationSessionManager::isSignedIn,
+        networkConnected = appMaintenanceManager::isNetworkConnected,
+        startLegacyWorker = appMaintenanceManager::performDataSynchronization,
+    )
 
     override val eventMessage = MutableSharedFlow<EventMessage>(extraBufferCapacity = 1)
 
     override val dataSynchronizationState = MutableStateFlow<IDataSynchronizationState>(Initial)
+
+    override val accountSyncStatus = (accountStatusGateway?.status ?: flowOf(AccountSyncStatus()))
+        .stateIn(viewModelScope, SharingStarted.Eagerly, AccountSyncStatus())
 
     override val deckSource: StateFlow<List<Deck>?> = (fetchDeckSource() as Flow<List<Deck>?>)
         .catchWithCrashlyticsReport(crashlytics = crashlytics) { throwable ->
@@ -100,7 +123,11 @@ class DeckListViewModel(
                 // logE("Failed to create interim deck\n${throwable.stackTraceToString()}")
                 crashlytics.report(exception = throwable)
             }
-        observeDataSynchronizationStateWorker()
+        if (accountGateway == null) observeDataSynchronizationStateWorker()
+        accountGateway?.selectedAccountEmail
+            ?.ensureGuestInterimDeck(createInterimDeck::invoke, crashlytics::report)
+            ?.catch { failure -> crashlytics.report(exception = failure) }
+            ?.launchIn(scope = viewModelScope)
         appMaintenanceManager.scheduleDeckRepetitionChecking()
         observeAuthenticationState()
     }
@@ -196,21 +223,52 @@ class DeckListViewModel(
     }
 
     override fun synchronizeData() {
-        if (!authenticationSessionManager.isSignedIn()) {
-            viewModelScope.launch {
-                val source = NavigationDestination.DATA_SYNCHRONIZATION_DIALOG
-                emitNavigationEvent(value = ToSigningTypeChoosingDialog(fromSourceDestination = source))
-            }
-        } else {
-            if (appMaintenanceManager.isNetworkConnected()) {
-                appMaintenanceManager.performDataSynchronization()
-            } else {
-                eventMessage.tryEmitAsNegative(
-                    resId = Res.string.data_synchronization_network_connection_warning
-                )
+        viewModelScope.launch {
+            try {
+                if (accountGateway?.selectedAccountEmail?.firstOrNull() != null) {
+                    dataSynchronizationState.value = Synchronizing("...")
+                }
+                when (syncRouter.synchronize()) {
+                    DeckListSyncStart.NEEDS_SIGN_IN -> {
+                        dataSynchronizationState.value = Initial
+                        val source = NavigationDestination.DATA_SYNCHRONIZATION_DIALOG
+                        emitNavigationEvent(value = ToSigningTypeChoosingDialog(fromSourceDestination = source))
+                    }
+                    DeckListSyncStart.NETWORK_UNAVAILABLE -> {
+                        dataSynchronizationState.value = Initial
+                        eventMessage.tryEmitAsNegative(
+                            resId = Res.string.data_synchronization_network_connection_warning,
+                        )
+                    }
+                    DeckListSyncStart.LEGACY_STARTED -> Unit
+                    DeckListSyncStart.APPLIED -> {
+                        dataSynchronizationState.value = SuccessfullyFinished
+                        eventMessage.tryEmitAsPositive(
+                            resId = Res.string.data_synchronization_dialog_data_synchronized,
+                        )
+                    }
+                    DeckListSyncStart.NEEDS_RESOLUTION -> {
+                        dataSynchronizationState.value = Failed
+                        emitNavigationEvent(value = ToConflictResolutionScreen)
+                    }
+                }
+            } catch (failure: CancellationException) {
+                throw failure
+            } catch (failure: Exception) {
+                dataSynchronizationState.value = Failed
+                crashlytics.report(exception = failure)
+                eventMessage.tryEmitAsNegative(resId = when (failure) {
+                    is AccountOperationException -> accountErrorMessage(failure)
+                    is ImageSynchronizationException -> imageSyncErrorMessage(failure)
+                    else -> Res.string.problem_with_data_synchronization
+                })
             }
         }
     }
+
+    override suspend fun recentSyncHistory(accountEmail: String): List<SyncHistoryItem> =
+        requireNotNull(accountStatusGateway) { "Recent history requires account storage" }
+            .recentHistory(accountEmail)
 
     override fun handleNavigation(event: IDeckListNavigationEvent) {
         val targetEvent = when (event) {
@@ -253,6 +311,25 @@ class DeckListViewModel(
     }
 
     override fun logOut() {
+        if (accountGateway != null) {
+            if (!accountSignOutAllowed(true, dataSynchronizationState.value, accountSyncStatus.value)) return
+            viewModelScope.launch {
+                drawerActionLoadingState.value = true
+                try {
+                    accountGateway.signOut()
+                    emitNavigationEvent(value = ToPrevious)
+                    eventMessage.tryEmitAsPositive(resId = Res.string.log_out_success_message)
+                } catch (failure: CancellationException) {
+                    throw failure
+                } catch (failure: Exception) {
+                    crashlytics.report(exception = failure)
+                    eventMessage.tryEmitAsNegative(resId = Res.string.log_out_failure_message)
+                } finally {
+                    drawerActionLoadingState.value = false
+                }
+            }
+            return
+        }
         authenticationInteractor.logOut().onEach { loadingState ->
             drawerActionLoadingState.value = loadingState is LoadingState.Loading
 
@@ -274,6 +351,7 @@ class DeckListViewModel(
     }
 
     override fun deleteAccount() {
+        if (accountGateway != null) return
         authenticationInteractor.deleteAccount().flowOn(context = coroutineContextProvider.io)
             .onEach { loadingState ->
                 drawerActionLoadingState.value = loadingState is LoadingState.Loading
@@ -371,14 +449,20 @@ class DeckListViewModel(
     }
 
     private fun observeAuthenticationState() {
+        val emailSource = accountGateway?.selectedAccountEmail
+            ?: authenticationInteractor.getObservableAuthenticationState().map { it.email }
         combine(
-            authenticationInteractor.getObservableAuthenticationState(),
+            emailSource,
             observeKlafServerConnectionState(),
-        ) { authenticationState, connectionState ->
+            dataSynchronizationState,
+            accountSyncStatus,
+        ) { email, connectionState, synchronizationState, accountStatus ->
             DrawerViewState(
-                signedIn = authenticationState.email.isNotNull(),
-                userEmail = authenticationState.email,
+                signedIn = email != null,
+                userEmail = email,
                 klafServerConnectionState = connectionState,
+                canDeleteAccount = accountGateway == null,
+                canSignOut = accountSignOutAllowed(accountGateway != null, synchronizationState, accountStatus),
             )
         }.flowOn(coroutineContextProvider.io)
             .onEach { drawerViewState -> drawerState.emit(drawerViewState) }
@@ -419,8 +503,4 @@ class DeckListViewModel(
         eventMessage.tryEmitAsNegative(resId = messageId)
     }
 
-    private companion object {
-
-        private const val DEFAULT_CHAT_GPT_URL = "https://chatgpt.com/"
-    }
 }

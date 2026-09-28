@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.kuts.domain.managers.MnemonicGenerationLaunchExtras
+import com.kuts.domain.managers.IReviewReminderScopeProvider
 import com.kuts.domain.managers.VocabularySourceAnalysisLaunchExtras
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.EventMessageView
@@ -43,6 +44,7 @@ class MainActivity : AppCompatActivity() {
     private val notificationPermissionBinder: INotificationPermissionBinder by inject()
     private val microphonePermissionBinder: IMicrophonePermissionBinder by inject()
     private val notificationPermissionManager: INotificationPermissionManager by inject()
+    private val reminderScope: IReviewReminderScopeProvider by inject()
     private var shouldCheckNotificationPermission by mutableStateOf(false)
 
     private val launchRequests = MutableSharedFlow<AppLaunchNavigationRequest>(
@@ -127,6 +129,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 AppLaunchNavigationExtras.DESTINATION_DECK_REPETITION -> {
+                    val incomingScope = getStringExtra(AppLaunchNavigationExtras.REMINDER_ACCOUNT_SCOPE_KEY)
+                    if (incomingScope != reminderScope.currentScope()) return null
                     val deckId = getIntExtra(
                         AppLaunchNavigationExtras.DECK_ID_KEY,
                         AppLaunchNavigationExtras.DEFAULT_DECK_ID,

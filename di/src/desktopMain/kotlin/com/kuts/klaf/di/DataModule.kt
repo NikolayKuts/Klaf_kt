@@ -12,6 +12,7 @@ import com.kuts.domain.managers.IKlafServerConnectionManager
 import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAudioPlayerManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
+import com.kuts.domain.managers.IAccountSession
 import com.kuts.domain.managers.IDeckReviewScheduler
 import com.kuts.domain.managers.IMnemonicGenerationBackgroundManager
 import com.kuts.domain.managers.ISpeechRecognitionManager
@@ -35,19 +36,41 @@ import com.kuts.domain.repositories.IWordMeaningInsightsRepository
 import com.kuts.klaf.common.CoroutineContextProvider
 import com.kuts.klaf.mnemonic.DesktopNoOpMnemonicImageRemoteRepository
 import com.kuts.klaf.mnemonic.DesktopMnemonicImageAssetRepository
+import com.kuts.klaf.mnemonic.CachedMnemonicImageAssetRepository
+import com.kuts.klaf.networking.klafServer.KlafServerImageRestClient
+import java.security.MessageDigest
 import com.kuts.klaf.mnemonic.NoOpMnemonicGenerationBackgroundManager
 import com.kuts.klaf.networking.klafServer.IKlafServerSession
+import com.kuts.klaf.networking.klafServer.DesktopAccountDeviceStore
+import com.kuts.klaf.networking.klafServer.AccountDeviceIdentity
+import com.kuts.klaf.networking.klafServer.DesktopPendingSignUpAttemptStore
 import com.kuts.klaf.networking.klafServer.KlafServerConnectionManager
 import com.kuts.klaf.networking.klafServer.KlafServerHttpClientFactory
+import com.kuts.klaf.networking.klafServer.KlafServerAccountRestClient
+import com.kuts.klaf.networking.klafServer.KlafServerSyncRestClient
+import com.kuts.klaf.networking.klafServer.KlafServerSyncEventConnector
+import com.kuts.klaf.networking.klafServer.SyncEventConnector
 import com.kuts.klaf.networking.klafServer.KlafServerMnemonicAssociationRepository
 import com.kuts.klaf.networking.klafServer.KlafServerMnemonicImageRepository
 import com.kuts.klaf.networking.klafServer.KlafServerSession
+import com.kuts.klaf.networking.klafServer.PersistentAccountDeviceProvider
+import com.kuts.klaf.networking.klafServer.PendingSignUpAttemptStore
+import com.kuts.klaf.networking.klafServer.ServerAccountSession
 import com.kuts.klaf.networking.klafServer.KlafServerWordMeaningInsightsRepository
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
+import com.kuts.klaf.room.databases.ActiveLocalRoomDatabase
+import com.kuts.klaf.room.databases.DesktopSelectedAccountStore
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.KlafRoomDatabaseProvider
+import com.kuts.klaf.room.databases.RoomDatabaseSource
+import com.kuts.klaf.room.databases.ScopedKlafRoomDatabaseFactory
+import com.kuts.klaf.room.databases.StaticRoomDatabaseSource
+import com.kuts.klaf.room.repositoryImplementations.DeckReviewInfoRepositoryRoom
+import com.kuts.klaf.room.repositoryImplementations.GuestAccountDataTransfer
 import com.kuts.klaf.vocabularySource.NoOpVocabularySourceAnalysisBackgroundManager
+import java.io.File
+import java.util.Properties
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,6 +80,17 @@ import kotlinx.coroutines.flow.update
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+
+internal fun findDeveloperLocalProperties(): File? {
+    var directory = File(System.getProperty("user.dir")).absoluteFile
+    repeat(4) {
+        if (File(directory, "settings.gradle.kts").isFile) {
+            return File(directory, "local.properties").takeIf(File::isFile)
+        }
+        directory = directory.parentFile ?: return null
+    }
+    return null
+}
 
 internal val desktopDataModule = module {
     desktopRepositoryModule()
@@ -86,6 +120,25 @@ private fun Module.desktopRepositoryModule() {
     single<IAuthenticationSessionManager> {
         DesktopAuthenticationSessionManager(authenticationRepository = get())
     }
+    single { PersistentAccountDeviceProvider(DesktopAccountDeviceStore(get<DesktopStorageConfiguration>().directory)) }
+    single { AccountDeviceIdentity(provider = get(), name = "Desktop", platform = "DESKTOP") }
+    single<PendingSignUpAttemptStore> {
+        DesktopPendingSignUpAttemptStore(get<DesktopStorageConfiguration>().directory)
+    }
+    single { KlafServerAccountRestClient(get<KlafServerEndpointConfig>().restBaseUrl(),
+        KlafServerHttpClientFactory().create()) }
+    single { KlafServerSyncRestClient(get<KlafServerEndpointConfig>().restBaseUrl(),
+        KlafServerHttpClientFactory().create()) }
+    single<IAccountSession> {
+        val identity = get<AccountDeviceIdentity>()
+        ServerAccountSession(
+            accounts = get(),
+            localDatabase = get(),
+            guestTransfer = GuestAccountDataTransfer(get()),
+            deviceProvider = identity::current,
+            pendingSignUp = get(),
+        )
+    }
     single<IWordInfoRepository> {
         YandexWordInfoRepository(
             client = YandexSecureHttpClientFactory().create(),
@@ -93,10 +146,11 @@ private fun Module.desktopRepositoryModule() {
     }
     single<IWordAutocompleteRepository> { DesktopWordAutocompleteRepository() }
     single<IKlafServerSession> {
+        val endpoint = get<KlafServerEndpointConfig>()
         KlafServerSession(
-            host = com.kuts.klaf.SecretConstants.KlafServer.hostOrNull().orEmpty(),
-            port = com.kuts.klaf.SecretConstants.KlafServer.PORT,
-            isSecure = com.kuts.klaf.SecretConstants.KlafServer.IS_SECURE,
+            host = endpoint.host,
+            port = endpoint.port,
+            isSecure = endpoint.isSecure,
             httpClient = KlafServerHttpClientFactory().create(),
         )
     }
@@ -117,15 +171,67 @@ private fun Module.desktopRepositoryModule() {
     single<IMnemonicImageRepository> {
         KlafServerMnemonicImageRepository(klafServerSession = get())
     }
-    single<IMnemonicImageAssetRepository> { DesktopMnemonicImageAssetRepository() }
+    single<IMnemonicImageAssetRepository> {
+        val directory = get<DesktopStorageConfiguration>().directory
+        val local = DesktopMnemonicImageAssetRepository(directory)
+        if (!get<DesktopStorageConfiguration>().useAccountScopedStorage) local else {
+            val source = get<ActiveLocalRoomDatabase>()
+            val identity = get<AccountDeviceIdentity>()
+            val remote = get<KlafServerImageRestClient>()
+            CachedMnemonicImageAssetRepository(
+                local = local,
+                selectedEmail = { source.selection.value.accountEmail },
+                cacheForAccount = { email ->
+                    val key = MessageDigest.getInstance("SHA-256").digest(email.toByteArray())
+                        .joinToString("") { "%02x".format(it) }
+                    DesktopMnemonicImageAssetRepository(File(directory, "mnemonic-remote-cache/$key"))
+                },
+                download = { email, asset -> remote.download(email, identity.current().id, asset) },
+                ioContext = get<ICoroutineContextProvider>().io,
+            )
+        }
+    }
     single<IMnemonicImageRemoteRepository> { DesktopNoOpMnemonicImageRemoteRepository() }
-    single<IDeckRepetitionInfoRepository> { DesktopInMemoryDeckRepetitionInfoRepository() }
+    single { KlafServerImageRestClient(get<KlafServerEndpointConfig>().restBaseUrl(), KlafServerHttpClientFactory().create()) }
+    single<IDeckRepetitionInfoRepository> {
+        val databaseSource = get<RoomDatabaseSource>()
+        if (databaseSource is ActiveLocalRoomDatabase) {
+            DeckReviewInfoRepositoryRoom(databaseSource)
+        } else {
+            DesktopInMemoryDeckRepetitionInfoRepository()
+        }
+    }
     single<IOldAppKlafDataTransferRepository> { DesktopNoOpOldAppKlafDataTransferRepository() }
     single<ICrashlyticsRepository> { DesktopNoOpCrashlyticsRepository() }
 }
 
 private fun Module.desktopInfrastructureModule() {
+    single { DesktopStorageConfiguration.fromEnvironment() }
+    single {
+        val properties = Properties().apply {
+            findDeveloperLocalProperties()?.inputStream()?.use(::load)
+        }
+        KlafServerEndpointConfig(
+            host = properties.getProperty("klaf.client.server.host", "127.0.0.1").trim(),
+            port = properties.getProperty("klaf.client.server.port", "8090").trim().toInt(),
+        )
+    }
     single<KlafRoomDatabase> { KlafRoomDatabaseProvider.getInstance() }
+    single<SyncEventConnector> {
+        KlafServerSyncEventConnector(
+            get<KlafServerEndpointConfig>().restBaseUrl(), KlafServerHttpClientFactory().create(),
+        )
+    }
+    single<RoomDatabaseSource> {
+        if (get<DesktopStorageConfiguration>().useAccountScopedStorage) get<ActiveLocalRoomDatabase>()
+        else StaticRoomDatabaseSource(database = get())
+    }
+    single<ActiveLocalRoomDatabase> {
+        ActiveLocalRoomDatabase(
+            factory = ScopedKlafRoomDatabaseFactory(get<DesktopStorageConfiguration>().directory),
+            accountStore = DesktopSelectedAccountStore(get<DesktopStorageConfiguration>().directory),
+        )
+    }
     single<ICoroutineContextProvider> { CoroutineContextProvider() }
 }
 
@@ -192,6 +298,8 @@ private class DesktopAuthenticationSessionManager(
 }
 
 private class DesktopWordAutocompleteRepository : IWordAutocompleteRepository {
+    override val isEnabled: Boolean = false
+
     override suspend fun fetchAutocomplete(prefix: String): List<AutocompleteWord> = emptyList()
 }
 

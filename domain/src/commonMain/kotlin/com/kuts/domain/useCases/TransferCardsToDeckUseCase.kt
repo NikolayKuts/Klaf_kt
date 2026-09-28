@@ -7,8 +7,6 @@ import com.kuts.domain.repositories.ICardRepository
 import com.kuts.domain.repositories.IDeckRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IStorageTransactionRepository
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class TransferCardsToDeckUseCase(
@@ -22,47 +20,51 @@ class TransferCardsToDeckUseCase(
     suspend operator fun invoke(sourceDeck: Deck, targetDeck: Deck, vararg cardsToMove: Card) {
         withContext(context = coroutineContextProvider.io) {
             localStorageTransactionRepository.performWithTransaction {
-                val sourceDurationPerCard = sourceDeck.sourceDurationPerCard()
-                val targetDurationPerCard = targetDeck.sourceDurationPerCard()
+                require(sourceDeck.id != targetDeck.id) { "Source and destination decks must differ" }
+                require(cardsToMove.isNotEmpty()) { "No cards selected for transfer" }
+                require(cardsToMove.map(Card::id).distinct().size == cardsToMove.size) {
+                    "A card cannot be transferred twice in one operation"
+                }
 
-                val updatedSourceIterationDuration =
-                    (sourceDeck.lastReviewPassDuration - sourceDurationPerCard * cardsToMove.size)
-                        .coerceAtLeast(0L)
+                val currentSource = requireNotNull(deckRepository.getDeckById(sourceDeck.id)) {
+                    "Source deck no longer exists"
+                }
+                val currentTarget = requireNotNull(deckRepository.getDeckById(targetDeck.id)) {
+                    "Destination deck no longer exists"
+                }
+                check(currentTarget.reviewCount == 0) { "Cannot move cards into a reviewed deck" }
 
+                val currentCardsById = cardRepository.fetchCardsByDeckId(currentSource.id).associateBy(Card::id)
+                val cards = cardsToMove.map { selected ->
+                    requireNotNull(currentCardsById[selected.id]) { "Card ${selected.id} is no longer in the source deck" }
+                }
 
-                val updatedTargetIterationDuration = if (targetDeck.cardQuantity > 0) {
-                    (targetDeck.lastReviewPassDuration + targetDurationPerCard * cardsToMove.size)
+                val sourceDurationPerCard = currentSource.sourceDurationPerCard()
+                val targetDurationPerCard = currentTarget.sourceDurationPerCard()
+
+                val updatedSourceIterationDuration = (
+                    currentSource.lastReviewPassDuration - sourceDurationPerCard * cards.size
+                ).coerceAtLeast(0L)
+
+                val updatedTargetIterationDuration = if (currentTarget.cardQuantity > 0) {
+                    (currentTarget.lastReviewPassDuration + targetDurationPerCard * cards.size)
                         .coerceAtLeast(0L)
                 } else {
-                    (sourceDurationPerCard * cardsToMove.size).coerceAtLeast(0L)
+                    (sourceDurationPerCard * cards.size).coerceAtLeast(0L)
                 }
 
-                cardsToMove.map { card ->
-                    card.id to Card(
-                        deckId = targetDeck.id,
-                        nativeWord = card.nativeWord,
-                        foreignWord = card.foreignWord,
-                        ipa = card.ipa,
-                        wordMeaningInsights = card.wordMeaningInsights,
-                    )
-                }.onEach { (oldId, updatedCard) ->
-                    cardRepository.deleteCard(cardId = oldId)
-                    cardRepository.insertCard(card = updatedCard)
+                cards.forEach { card ->
+                    cardRepository.insertCard(card = card.copy(deckId = currentTarget.id))
                 }
-
-                sourceDeck.lastFirstReviewDuration
 
                 updateDeck(
-                    deck = sourceDeck,
+                    deck = currentSource,
                     iterationDuration = updatedSourceIterationDuration,
                 )
                 updateDeck(
-                    deck = targetDeck,
+                    deck = currentTarget,
                     iterationDuration = updatedTargetIterationDuration,
                 )
-
-                updateDeckReviewInfo(sourceDeck)
-                updateDeckReviewInfo(targetDeck)
 
                 localStorageSaveVersionRepository.increaseVersion()
             }
@@ -87,9 +89,5 @@ class TransferCardsToDeckUseCase(
         } else {
             0L
         }
-    }
-
-    private fun updateDeckReviewInfo(deck: Deck) {
-       // TODO (implement updating deck review info)
     }
 }

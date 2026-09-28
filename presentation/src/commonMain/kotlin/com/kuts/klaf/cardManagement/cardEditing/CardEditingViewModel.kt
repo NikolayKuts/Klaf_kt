@@ -61,6 +61,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import org.jetbrains.compose.resources.StringResource
 
+internal fun shouldPersistAutoFetchedInsights(insights: WordMeaningInsights, foreignWord: String): Boolean =
+    insights.hasData() && insights.meanings.any { it.translation.isNotBlank() } &&
+        insights.word.trim().lowercase() == foreignWord.trim().lowercase()
+
 class CardEditingViewModel(
     private val deckId: Int,
     cardId: Int,
@@ -416,11 +420,16 @@ class CardEditingViewModel(
                 return@launchWithState
             }
 
-            val insights = fetchWordMeaningInsights(word = foreignWord)
+            val insights = sanitizeInsights(fetchWordMeaningInsights(word = foreignWord))
             logD(
                 "auto-load fetched insights for cardId=${card.id}, " +
                     "word=${foreignWord.asLogWord()}, meanings=${insights.meanings.size}"
             )
+            if (!shouldPersistAutoFetchedInsights(insights, foreignWord)) {
+                logD("auto-save skipped: no valid insights for cardId=${card.id}")
+                setInsightsIdle(word = foreignWord)
+                return@launchWithState
+            }
             val latestCard = fetchCard(cardId = card.id).firstOrNull() ?: return@launchWithState
 
             if (latestCard.hasValidInsightsForCurrentWord()) {
