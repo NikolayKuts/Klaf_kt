@@ -23,6 +23,9 @@ interface IVocabularySourceDao {
     @Query("SELECT * FROM $VOCABULARY_SOURCE_TABLE_NAME WHERE id = :sourceId")
     suspend fun getSourceById(sourceId: Int): RoomVocabularySource?
 
+    @Query("SELECT * FROM $VOCABULARY_SOURCE_TABLE_NAME WHERE syncId = :syncId")
+    suspend fun getSourceBySyncId(syncId: String): RoomVocabularySource?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSource(source: RoomVocabularySource): Long
 

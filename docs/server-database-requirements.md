@@ -683,13 +683,15 @@ Branch integration decision (2026-09-28): Vocabulary Sources, items and Ignored
 Words are account-owned local data. Sign-up transfers the complete guest feature
 data together with decks/cards, preserving links and supporting retries and
 source-only guest databases. Sign-in leaves guest data untouched. Integration
-tests cover ownership, transfer and source-to-card compatibility; cross-device
-source synchronization remains a separate follow-up phase after the merge.
+tests cover ownership, transfer and source-to-card compatibility. Cross-device
+source synchronization was authorized as the next phase on 2026-09-29; its
+whole-source conflict/TDD requirements are in `klaf-server-requirements.md`.
 The user permits a one-time reset of old source/voice data only, not of deck/card
 or sync data and not of newly created future sources.
 
 The older Phase 1 scope below explains the storage branch's original boundaries;
-the integration decisions above supersede its deferral of local ownership/tests.
+the integration and follow-up decisions above supersede its deferral of source
+ownership, synchronization and tests.
 Later phase: `VocabularySource` and `VocabularySourceItem`. Their screen and
 Room tables already exist in this branch and remain accessible; Phase 1 does
 not hide or disable them. Phase 1 does not import, synchronize, or test source

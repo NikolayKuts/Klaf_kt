@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.kuts.klaf.room.newSyncId
 import com.kuts.klaf.room.entities.RoomVocabularySourceItem.Companion.VOCABULARY_SOURCE_ITEM_TABLE_NAME
 
 @Entity(
@@ -11,6 +12,7 @@ import com.kuts.klaf.room.entities.RoomVocabularySourceItem.Companion.VOCABULARY
     indices = [
         Index(value = ["sourceId"]),
         Index(value = ["createdCardId"]),
+        Index(value = ["syncId"], unique = true),
     ],
 )
 data class RoomVocabularySourceItem(
@@ -41,6 +43,8 @@ data class RoomVocabularySourceItem(
     val updatedAt: Long,
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+    @ColumnInfo(defaultValue = "''")
+    val syncId: String = newSyncId(),
 ) {
 
     companion object {

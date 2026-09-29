@@ -3,6 +3,7 @@ package com.kuts.klaf.room.entities
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import androidx.room.ColumnInfo
 import com.kuts.klaf.room.entities.RoomIgnoredVocabularyWord.Companion.IGNORED_VOCABULARY_WORD_TABLE_NAME
 
 @Entity(
@@ -24,6 +25,8 @@ data class RoomIgnoredVocabularyWord(
     val createdAt: Long,
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+    @ColumnInfo(defaultValue = "0")
+    val lastChangedServerRevision: Long = 0L,
 ) {
 
     companion object {

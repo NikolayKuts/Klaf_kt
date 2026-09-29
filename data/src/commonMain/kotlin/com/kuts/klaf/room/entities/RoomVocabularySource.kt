@@ -3,9 +3,11 @@ package com.kuts.klaf.room.entities
 import androidx.room.Entity
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
+import androidx.room.Index
+import com.kuts.klaf.room.newSyncId
 import com.kuts.klaf.room.entities.RoomVocabularySource.Companion.VOCABULARY_SOURCE_TABLE_NAME
 
-@Entity(tableName = VOCABULARY_SOURCE_TABLE_NAME)
+@Entity(tableName = VOCABULARY_SOURCE_TABLE_NAME, indices = [Index(value = ["syncId"], unique = true)])
 data class RoomVocabularySource(
     val title: String,
     val description: String,
@@ -19,6 +21,10 @@ data class RoomVocabularySource(
     val lastAnalyzedAt: Long?,
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+    @ColumnInfo(defaultValue = "''")
+    val syncId: String = newSyncId(),
+    @ColumnInfo(defaultValue = "0")
+    val lastChangedServerRevision: Long = 0L,
 ) {
 
     companion object {

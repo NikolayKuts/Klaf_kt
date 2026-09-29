@@ -14,6 +14,10 @@ import com.kuts.klaf.server.contract.SyncDeck
 import com.kuts.klaf.server.contract.SyncOperation
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import com.kuts.klaf.server.contract.SyncVocabularySource
+import com.kuts.klaf.server.contract.SyncIgnoredVocabularyWord
+import com.kuts.klaf.room.identity
+import com.kuts.klaf.room.toSyncWord
 
 private val roomConverter = RoomDateConverter()
 
@@ -47,6 +51,8 @@ private fun initialUploadRows(
     email: String,
     decks: List<RoomDeck>,
     cards: List<RoomCard>,
+    sources: List<SyncVocabularySource> = emptyList(),
+    ignoredWords: List<SyncIgnoredVocabularyWord> = emptyList(),
 ): List<RoomPendingSyncOperation> {
     val deckSyncIds = decks.associate { it.id to it.syncId }
     check(decks.all { it.id != 0 && it.syncId.isNotBlank() && it.lastChangedServerRevision == 0L })
@@ -59,6 +65,10 @@ private fun initialUploadRows(
             "guest-card-${card.syncId}",
             card.toInitialSyncCard(requireNotNull(deckSyncIds[card.deckId])),
         )
+    } + sources.sortedBy { it.syncId }.map {
+        SyncOperation.UpsertVocabularySource("guest-source-${it.syncId}", it)
+    } + ignoredWords.sortedBy { it.identity() }.map {
+        SyncOperation.AddIgnoredVocabularyWord("guest-${it.identity()}", it)
     }
     return operations.map { operation ->
         RoomPendingSyncOperation(
@@ -97,7 +107,8 @@ class GuestAccountDataTransfer(
                     val existingCards = account.cardDao().getAllCards()
                     val existingPending = account.pendingSyncOperationDao().allPending()
                     if (existingDecks.isNotEmpty() || existingCards.isNotEmpty() || existingPending.isNotEmpty()) {
-                        val expected = initialUploadRows(email, existingDecks, existingCards)
+                        val expected = initialUploadRows(email, existingDecks, existingCards, account.syncSources(),
+                            account.ignoredVocabularyWordDao().getWords().map { it.toSyncWord() })
                         check(expected.isNotEmpty() && existingPending.map { it.copy(id = 0L) } == expected) {
                             "Account database is not a verified completed guest transfer"
                         }
@@ -105,7 +116,13 @@ class GuestAccountDataTransfer(
                 }
                 return@withGuestAndAccount
             }
-            val pending = initialUploadRows(email, accountDecks, cards)
+            val portableSources = guest.syncSources().map { source -> source.copy(items = source.items.map { item ->
+                val guestInterimId = decks.firstOrNull { it.id == Deck.INTERIM_DECK_ID }?.syncId
+                if (guestInterimId != null && item.targetDeckSyncId == guestInterimId) {
+                    item.copy(targetDeckSyncId = accountInterimDeckSyncId(email))
+                } else item
+            }) }
+            val pending = initialUploadRows(email, accountDecks, cards, portableSources, ignoredWords.map { it.toSyncWord() })
 
             account.performInTransaction {
                 val existingDecks = account.deckDao().getAllDecks()

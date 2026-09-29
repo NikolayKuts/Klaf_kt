@@ -71,6 +71,10 @@ class ManualRoomSyncCoordinator(
         ConflictResolutionAction.ACCEPT_SERVER -> resolveAllWithServer()
         ConflictResolutionAction.KEEP_LOCAL_DECK -> resolveLocalDeckEdits()
         ConflictResolutionAction.KEEP_LOCAL_CARD -> resolveLocalCardEdits()
+        ConflictResolutionAction.KEEP_LOCAL_SOURCE -> runAttempt { accountId ->
+            resolver.keepLocalSources(accountId)
+            synchronizeSelected(accountId)
+        }
         ConflictResolutionAction.RESCUE_MOVED_CARD -> resolveMovedCardRescue()
         ConflictResolutionAction.RESTORE_DELETED_DECK -> resolveDeletedDeckWithLocalCardEdits()
         ConflictResolutionAction.KEEP_REMOVAL_RETAIN_SCHEDULE -> resolveRemovalAfterReview(false)
@@ -145,6 +149,7 @@ class ManualRoomSyncCoordinator(
     private suspend fun synchronizeSelected(accountId: String): ManualSyncResult {
         check(databaseSource.selection.value.accountEmail == accountId) { "Selected account changed" }
         val deviceId = deviceIdProvider().also { require(it.isNotBlank()) { "Device ID is required" } }
+        outbox.prepareVocabularyUpload(accountId)
         val revision = outbox.confirmedRevision(accountId)
         val pending = outbox.pendingForAccount(accountId)
         val savedConflict = conflictStore.current(accountId)
@@ -172,7 +177,7 @@ class ManualRoomSyncCoordinator(
             check(databaseSource.selection.value.accountEmail == accountId) {
                 "Selected account changed during synchronization"
             }
-            if (snapshot.decks.isNotEmpty() || snapshot.cards.isNotEmpty()) {
+            if (snapshot.decks.isNotEmpty() || snapshot.cards.isNotEmpty() || snapshot.sources.isNotEmpty() || snapshot.ignoredWords.isNotEmpty()) {
                 if (safeForInitialSnapshot) {
                     applier.applyInitialSnapshot(accountId, snapshot, pending.map { it.operation.operationId })
                     confirmAppliedRevision(accountId, deviceId, snapshot.revision)
@@ -186,9 +191,10 @@ class ManualRoomSyncCoordinator(
         val request = SyncRequest(
             email = accountId,
             deviceId = deviceId,
-            protocolVersion = 2,
+            protocolVersion = 3,
             baseRevision = revision,
             operations = pending.map(PendingSyncOperation::operation),
+            includeVocabularySnapshot = databaseSource.current().syncCheckpointDao().current()?.vocabularySyncInitialized != true,
         )
         prepareImages(request)
         val response = sendRequest(request)

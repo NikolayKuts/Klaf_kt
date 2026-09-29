@@ -5,6 +5,7 @@ import com.kuts.klaf.room.databases.ActiveLocalRoomDatabase
 import com.kuts.klaf.room.databases.RoomDatabaseSource
 import com.kuts.klaf.room.databases.StaticRoomDatabaseSource
 import com.kuts.klaf.room.entities.RoomPendingSyncOperation
+import com.kuts.klaf.room.clearMissingVocabularyLinks
 import com.kuts.klaf.server.contract.SyncOperation
 import com.kuts.domain.repositories.IStorageTransactionRepository
 import kotlinx.serialization.encodeToString
@@ -29,13 +30,17 @@ class StorageTransactionRepositoryRoom(
             }
             val beforeDecks = database.deckDao().getAllDecks()
             val beforeCards = database.cardDao().getAllCards()
+            val beforeSources = database.syncSources()
+            val beforeIgnored = database.ignoredVocabularyWordDao().getWords()
             val result = block()
+            clearMissingVocabularyLinks(database.vocabularySourceItemDao(), database.deckDao(), database.cardDao())
             val planned = planSyncOperations(
                 beforeDecks = beforeDecks,
                 beforeCards = beforeCards,
                 afterDecks = database.deckDao().getAllDecks(),
                 afterCards = database.cardDao().getAllCards(),
-            )
+            ) + planVocabularyChanges(beforeSources, database.syncSources(), beforeIgnored,
+                database.ignoredVocabularyWordDao().getWords())
             val alreadyQueuedDeckIds = database.pendingSyncOperationDao().pendingForAccount(accountId)
                 .mapNotNull { row ->
                     (Json.decodeFromString<SyncOperation>(row.operationJson) as? SyncOperation.AddDeck)?.deck?.syncId

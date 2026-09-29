@@ -6,7 +6,7 @@
 |---|-------|--------|-------|
 | 0 | Requirements gathering | ✅ Complete for MVP | Deferred features have separate follow-up decisions. |
 | 0.5 | Test-first scenario suite | ✅ Focused executable coverage | The 31 setup-only client umbrella cases and obsolete in-place migration placeholders were mapped to real Room/REST/domain tests and retired. Desktop/server regression passes; device acceptance remains under phase 7. |
-| 1 | Database technology & schema design | 🔄 In Progress | Room Multiplatform on server; combined client schema v15 includes account-scoped source/voice tables, review summaries and the outbox/checkpoint/conflict snapshot. |
+| 1 | Database technology & schema design | 🔄 In Progress | Room Multiplatform on server; client schema v16/server v7 now include synchronized source/item identities and feature revisions alongside review summaries and outbox/checkpoint/conflicts. |
 | 2 | Server-side DB module & repository layer | 🔄 In Progress | Account/device, deck/card, revision, accepted-change history, and payload fingerprints are persisted. |
 | 3 | REST synchronization protocol | 🔄 In Progress | Server push/pull, recent-history REST read, shared Android/Desktop HTTP transport, local outbox/checkpoint, durable conflicts, safe disjoint deck-add partial apply with an account-scoped edit pause, bulk and per-conflict deck/card edit resolution, server-side `/sync-events`, and a shared client event observer exist. The conflict route runs in ordinary Room/REST mode by default and in isolated account test mode; explicit legacy recovery remains available. |
 | 4 | Client-side integration (replace Firestore) | 🔄 In Progress | Scoped Room/reminders, passwordless account UI, and Room/WebSocket sync are now the ordinary Android/Desktop defaults and remain available in isolated test configurations. Existing legacy-database installations still require a guarded clean cutover. |
@@ -16,6 +16,25 @@
 
 ## Current Focus
 
+- 2026-09-29 pre-commit review: corrected stale source conflict snapshots after
+  later accepted operations in one batch; added update/deletion regressions and
+  refactored source/item mapping to named arguments. Review regression: 555
+  total, 554 passed, one optional smoke skipped, no failures/errors. Scoped
+  staged privacy/whitespace checks pass; user authorized the local snapshot.
+  Details are in `klaf-server-status.md`; no live data/backups were modified.
+
+- 2026-09-29: Vocabulary Source cross-device synchronization implemented using
+  TDD. Source/analysis aggregates and Ignored Words now use transactional outbox,
+  manual REST push/pull/bootstrap, revisions and durable conflict choices.
+  Existing local sources survive migration and become pending first uploads;
+  upgraded clients also receive a missing feature baseline even when the global
+  revision was already confirmed. Portable links and deletion cleanup are
+  covered by real Room/live REST regressions. Final regression: 553 total,
+  552 passed, one existing optional smoke skipped, no failures/errors. Android
+  debug APK and Desktop compilation passed; details and deployment instructions
+  are maintained in `klaf-server-status.md`. Real device acceptance
+  remains separate; no protected backup or live account was modified.
+
 - Branch integration into `mnemonic-voice-dictation` is complete and validated
   locally (2026-09-29). Client schema v15 migrates both historical branch
   layouts, preserving deck/card/review/sync data. Guest sign-up now transfers
@@ -23,7 +42,8 @@
   Device-session cancellation and source-to-card edit restrictions are integrated.
   Current validation/merge state is recorded in `klaf-server-status.md`; the
   device checks below belong to the earlier storage branch, not a merged build.
-  Cross-device source synchronization remains the agreed next separate phase.
+  Cross-device source synchronization was subsequently implemented in the
+  follow-up above; merge-only validation remains a historical checkpoint.
 
 - 2026-09-28 expanded pre-commit privacy audit completed: inspected all 840
   indexed paths / 780 text files, including all 17 Markdown files and README.

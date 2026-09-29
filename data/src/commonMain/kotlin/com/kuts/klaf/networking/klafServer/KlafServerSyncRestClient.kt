@@ -89,7 +89,7 @@ class KlafServerSyncRestClient(
             setBody(json.encodeToString(SyncPositionConfirmationRequest(
                 email = email,
                 deviceId = deviceId,
-                protocolVersion = 2,
+                protocolVersion = 3,
                 revision = revision,
             )))
         }

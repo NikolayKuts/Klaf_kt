@@ -52,6 +52,27 @@ sealed interface SyncOperation {
     val operationId: String
 
     @Serializable
+    @SerialName("UPSERT_VOCABULARY_SOURCE")
+    data class UpsertVocabularySource(
+        override val operationId: String,
+        val source: SyncVocabularySource,
+    ) : SyncOperation
+
+    @Serializable
+    @SerialName("DELETE_VOCABULARY_SOURCE")
+    data class DeleteVocabularySource(
+        override val operationId: String,
+        val sourceSyncId: String,
+    ) : SyncOperation
+
+    @Serializable
+    @SerialName("ADD_IGNORED_VOCABULARY_WORD")
+    data class AddIgnoredVocabularyWord(
+        override val operationId: String,
+        val word: SyncIgnoredVocabularyWord,
+    ) : SyncOperation
+
+    @Serializable
     @SerialName("ADD_DECK")
     data class AddDeck(override val operationId: String, val deck: SyncDeck) : SyncOperation
 
@@ -128,6 +149,7 @@ data class SyncRequest(
     val protocolVersion: Int,
     val baseRevision: Long,
     val operations: List<SyncOperation>,
+    val includeVocabularySnapshot: Boolean = false,
 )
 
 @Serializable
@@ -168,6 +190,7 @@ data class SyncConflict(
     val serverChanges: List<SyncHistoryItem>,
     val serverDeck: SyncDeck? = null,
     val serverCard: SyncCard? = null,
+    val serverSource: SyncVocabularySource? = null,
 )
 
 @Serializable
@@ -187,6 +210,9 @@ data class SyncDelta(
     val deletedDeckSyncIds: List<String>,
     val deletedCardSyncIds: List<String>,
     val history: List<SyncHistoryItem>,
+    val sources: List<SyncVocabularySource> = emptyList(),
+    val deletedSourceSyncIds: List<String> = emptyList(),
+    val ignoredWords: List<SyncIgnoredVocabularyWord> = emptyList(),
 )
 
 @Serializable
@@ -194,4 +220,6 @@ data class SyncBootstrapResponse(
     val revision: Long,
     val decks: List<SyncDeck>,
     val cards: List<SyncCard>,
+    val sources: List<SyncVocabularySource> = emptyList(),
+    val ignoredWords: List<SyncIgnoredVocabularyWord> = emptyList(),
 )

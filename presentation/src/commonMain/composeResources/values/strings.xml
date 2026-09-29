@@ -97,6 +97,7 @@
         <string name="sync_conflicts_accept_server">Accept server changes</string>
         <string name="sync_conflicts_keep_local_deck">Keep my deck changes</string>
         <string name="sync_conflicts_keep_local_card">Keep my card changes</string>
+        <string name="sync_conflicts_keep_local_source">Keep my source and word list</string>
         <string name="sync_conflicts_rescue_card">Keep the moved card</string>
         <string name="sync_conflicts_restore_deck">Restore my deck and cards</string>
         <string name="sync_conflicts_keep_removal_schedule">Keep card removal and review schedule</string>

@@ -27,6 +27,7 @@ import com.kuts.klaf.presentation.resources.sync_conflicts_accept_server
 import com.kuts.klaf.presentation.resources.sync_conflicts_close
 import com.kuts.klaf.presentation.resources.sync_conflicts_history
 import com.kuts.klaf.presentation.resources.sync_conflicts_keep_local_card
+import com.kuts.klaf.presentation.resources.sync_conflicts_keep_local_source
 import com.kuts.klaf.presentation.resources.sync_conflicts_keep_local_deck
 import com.kuts.klaf.presentation.resources.sync_conflicts_keep_removal_due_now
 import com.kuts.klaf.presentation.resources.sync_conflicts_keep_removal_schedule
@@ -49,6 +50,7 @@ private fun ConflictResolutionAction.label() = when (this) {
     ConflictResolutionAction.ACCEPT_SERVER -> Res.string.sync_conflicts_accept_server
     ConflictResolutionAction.KEEP_LOCAL_DECK -> Res.string.sync_conflicts_keep_local_deck
     ConflictResolutionAction.KEEP_LOCAL_CARD -> Res.string.sync_conflicts_keep_local_card
+    ConflictResolutionAction.KEEP_LOCAL_SOURCE -> Res.string.sync_conflicts_keep_local_source
     ConflictResolutionAction.RESCUE_MOVED_CARD -> Res.string.sync_conflicts_rescue_card
     ConflictResolutionAction.RESTORE_DELETED_DECK -> Res.string.sync_conflicts_restore_deck
     ConflictResolutionAction.KEEP_REMOVAL_RETAIN_SCHEDULE -> Res.string.sync_conflicts_keep_removal_schedule

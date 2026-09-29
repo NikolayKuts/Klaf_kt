@@ -48,12 +48,43 @@ It should be removed or replaced by permanent documentation after the full imple
   integration permission, not permission to drop newly created feature data
   during later sign-up/account changes.
 - Cross-device synchronization of Vocabulary Sources and associated feature data
-  is a separate follow-up immediately after the merge, not part of integration.
-  Integration provides account ownership and local sign-up transfer; the storage
-  protocol continues to synchronize decks/cards only. Source synchronization
-  needs its own agreed conflict rules and tests before implementation.
+  was separated from branch integration. The follow-up was authorized on
+  2026-09-29 under the requirements below; it extends the deck/card protocol.
 - Shared server-wide AgentDriver sessions are not automatically user-owned;
   the cleanup design must distinguish shared infrastructure from affected work.
+
+## Vocabulary Source Synchronization (2026-09-29)
+
+- User authorized the follow-up phase: persist and manually synchronize saved
+  Vocabulary Sources and their associated account-owned feature data between
+  Android, Desktop and the server. Saving a source must no longer leave the
+  synchronization indicator green while its changes are pending upload.
+- Extend the existing offline-first Room/REST path, transaction guarantees,
+  revision tracking, retry safety and conflict reporting. Do not introduce
+  automatic data synchronization or change guest/sign-in/sign-up ownership.
+- Preserve sources already saved after integration; the prior permission to
+  start feature tables empty does not authorize deleting this new data.
+- User agreed to resolve concurrent changes to the same source as a whole:
+  source text/metadata and its analyzed word list form one conflict unit. Offer
+  accepting the server version or retaining the local version; do not silently
+  combine different analyses. Changes to different sources merge automatically.
+  The earlier deck/card conflict decisions remain applicable; no silent
+  last-write-wins policy is authorized.
+- Implement using TDD: write and run tests against the current behavior first,
+  confirm meaningful failures, then implement the missing behavior and rerun.
+- Keep the existing reviewed-deck restriction when source words create cards.
+  Preserve portable source/item/card/deck links, account isolation, guest
+  ownership and recoverable sign-up transfer. Do not send local integer IDs as
+  references between devices.
+- Existing local sources must become pending first-upload data after upgrade,
+  without deleting/recreating them. A previously confirmed global revision is
+  not proof that an older client has downloaded Vocabulary Source data.
+- Keep source-word links consistent when a card/deck is deleted: clear obsolete
+  references without deleting the analyzed word or resetting its ADDED status.
+  Deleting a source removes its analysis, not independently created cards.
+- Conflict snapshots must describe the final committed source state of the
+  response, including later accepted operations in the same request. Accepting
+  the server version must not restore an obsolete intermediate version.
 
 ## Goal
 

@@ -40,7 +40,7 @@ import com.kuts.klaf.room.entities.RoomVocabularySourceItem
         RoomSyncCheckpoint::class,
         RoomSyncConflictSnapshot::class,
     ],
-    version = 15,
+    version = 16,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),

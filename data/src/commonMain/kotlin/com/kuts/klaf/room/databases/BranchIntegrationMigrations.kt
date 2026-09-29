@@ -21,13 +21,13 @@ private val integrationTableStatements = listOf(
 /** Versions 9-12 were independently used by the storage and voice branches. */
 object BranchIntegrationMigrations {
 
-    val all: Array<Migration> = (8..14).map { version ->
+    val all: Array<Migration> = (8..14).map<Int, Migration> { version ->
         object : Migration(version, 15) {
             override fun migrate(connection: SQLiteConnection) {
                 normalize(connection)
             }
         }
-    }.toTypedArray()
+    }.toTypedArray() + VocabularySourceSyncMigration
 
     private fun normalize(connection: SQLiteConnection) {
         if ("syncId" !in columns(connection, "cards")) {

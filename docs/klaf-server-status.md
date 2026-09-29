@@ -5,6 +5,107 @@ It should be removed or replaced by permanent documentation after the full imple
 
 ## Current Phase
 
+Vocabulary Source synchronization implementation and automated verification
+complete (2026-09-29). Device deployment/acceptance remains separate.
+
+### Pre-commit Review (2026-09-29)
+
+- User reports the updated feature appears to work and authorized review,
+  targeted refactoring/regression tests and a local commit. Rechecking all
+  uncommitted files, including the user's two launch-command comments.
+- Review found a stale source conflict snapshot when a later operation in the
+  same request was accepted. A failing live REST regression reproduced it;
+  the server now captures final committed source snapshots for conflicts.
+  A complementary regression verifies later deletion returns absence instead
+  of resurrecting the source. All 21 source REST scenarios pass.
+- Refactored source/item persistence mapping to named constructor arguments,
+  making field correspondence and portable/local identity links explicit.
+  User launch-command comments in both entry points are preserved.
+- Final six-suite review regression: 555 total, 554 passed, zero failures/errors,
+  one existing optional imported-baseline smoke skipped. Totals: data 150,
+  domain 46, contract 13, presentation 76, DI 18, server 252 (one skipped).
+  Android debug APK assembly and Desktop compilation use the combined command
+  recorded below. iOS and exhaustive device/AI acceptance remain unverified;
+  the user's general working smoke report is not exhaustive device coverage.
+- Prepared local snapshot under the user's explicit authorization. Staged
+  whitespace checks pass; 45 changed/new text files have no matches for the
+  checked private-key/provider-token, personal email/home-path or LAN-address
+  patterns. The same sensitive patterns have no matches in indexed text.
+  Actual local properties, client/server SecretConstants and Firebase secrets
+  remain ignored/untracked; the only indexed Google-services JSON is the
+  pre-existing dummy isolated-test fixture. Required schema exports/history
+  remain; no database/cache/build artifact or private notes were staged.
+  This is a scoped pattern/index audit, not a complete historical/binary audit.
+  No push, live account/server restart, device deployment or protected backup
+  modification was performed.
+
+### Completed Vocabulary Source Follow-up
+
+- Sources, complete analyzed word lists and additive Ignored Words now use the
+  existing manual Room/REST synchronization path. Local changes and durable
+  outbox operations are committed together; the pending indicator becomes
+  yellow when connected, with existing gray/error/conflict priorities retained.
+- Client schema 16 adds stable source/item identities and feature revision
+  tracking through a non-destructive 15 -> 16 migration. Server schema 7 adds
+  account-scoped feature tables through its 6 -> 7 auto-migration. Existing
+  client sources become first-upload data, without deleting or re-importing.
+- Protocol 3 covers source upsert/delete and ignored rules; the updated server
+  continues accepting deck/card protocol versions 1 and 2. Older clients that
+  already confirmed the global revision receive an explicit initial feature
+  snapshot, tracked by a durable vocabularySyncInitialized checkpoint flag.
+- Whole-source conflicts include text/metadata and analyzed words. Bulk and
+  per-source choices accept the server or keep/re-upload the local aggregate.
+  Different sources merge automatically, including independent remote sources
+  when every local operation conflicts. Conflicts remain durable across retry.
+  A keep-local operation cannot restore missing card/deck links silently.
+- Portable sync IDs map links to each device's own integer IDs. Card/deck
+  deletion clears obsolete source links transactionally without removing the
+  source word or its ADDED status, including deletions by old deck/card clients.
+  Source deletion removes its word list, not independently created cards.
+- Preserved guest sign-up transfer/retry, sign-in isolation, account separation
+  and sync edit gates. Lost-response retries retain exact operation identities;
+  invalid source batches roll back server data, history and revision together.
+  Ignored rules merge as a normalized union using canonical server values.
+- TDD baseline: 13 new Room tests ran with 9 expected failures and 4 existing
+  guarantees passing; the initial seven live REST/two-client tests failed for
+  missing feature synchronization. Migration and nullable-omission tests also
+  failed meaningfully before implementation. Additional regressions exposed
+  lost local identity on restore, missing independent partial downloads,
+  divergent ignored-rule values, upgrade baseline omissions and dangling links;
+  each was run red before its corresponding fix.
+- Final six-suite regression: 553 tests total, 552 passed, zero failures/errors,
+  one existing optional imported-baseline smoke skipped. Module totals: data
+  150, domain 46, contract 13, presentation 76, DI 18, server 250 (one skipped).
+  The 19 real REST/two-client source scenarios include independently keeping
+  one local analysis and accepting another server analysis. Android debug APK
+  assembly and Desktop compilation passed in the same combined Gradle run:
+  `:data:desktopTest :domain:desktopTest :klaf-server-contract:jvmTest
+  :presentation:desktopTest :di:desktopTest :klaf-server:test
+  :Android:assembleDebug :Desktop:compileKotlin --continue --max-workers=2`.
+  Existing Gradle/KMP/deprecation warnings remain; none failed this build.
+- Changed/new text privacy scan covered 43 files with no private-key/token,
+  personal email/home path or LAN-address matches. Real local properties,
+  runtime secrets and Firebase configuration remain ignored/untracked.
+  Protected backups, live server/account, physical devices and sibling worktrees
+  were not modified. No commit, push or deployment was performed.
+
+### Run the Updated Feature
+
+- Restart the server from this updated checkout and rebuild/update both clients
+  before testing protocol 3. Existing account/source data is preserved by the
+  migrations; no database reset or backup re-import is needed.
+- Save/edit a Vocabulary Source: with a connected status channel it becomes
+  pending/yellow. Explicitly synchronize, then synchronize the second device.
+  Concurrent analyses of one source open the existing conflict screen with
+  local/server text/word previews and whole-source choices.
+- Real Android/Desktop acceptance and iOS compilation were not performed by
+  this follow-up; automated REST tests used disposable loopback servers/databases
+  and no paid AI requests. The existing opt-in imported-baseline smoke stays
+  skipped. Deferred image conflict previews and killed-process recovery remain
+  outside this feature.
+
+### Historical Merge Validation (Before This Follow-up)
+
 Local branch integration is complete (2026-09-29): `remote-storage-server`
 (`2e00cee`) is merged into `mnemonic-voice-dictation`, following the requirements
 checkpoint `101d11c`. No push or deployment is included.
@@ -70,7 +171,8 @@ checkpoint `101d11c`. No push or deployment is included.
   been extended; recovery/isolation tests passed in the combined verification.
 - User agreed to cross-device source-data synchronization as a separate phase
   immediately after the merge, with its own conflict rules/tests. The current
-  storage protocol continues to contain deck/card operations only.
+  storage protocol at that checkpoint contained deck/card operations only;
+  the completed follow-up above extends it to source data.
 - No original backup, real account database, sibling project or live device was
   modified. Runtime/device testing remains separate from disposable test fixtures.
 
@@ -83,9 +185,9 @@ checkpoint `101d11c`. No push or deployment is included.
   imported baseline. Automated migration/REST tests used disposable fixtures.
 - iOS remains unverified with the known unresolved LoKdroid native publication
   issue; Android/Desktop success does not resolve it.
-- Implement cross-device Vocabulary Source synchronization as the next separate
-  phase, after agreeing its conflict rules and test scenarios. Source-to-card
-  additions already use the deck/card outbox and respect review/sync edit gates.
+- Cross-device Vocabulary Source synchronization was subsequently implemented
+  in the follow-up above. Source-to-card additions continue using the deck/card
+  outbox and respecting review/sync edit gates.
 
 ### Prior Branch History (Before Integration)
 

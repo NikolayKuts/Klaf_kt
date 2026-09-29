@@ -4,6 +4,7 @@ import com.kuts.domain.common.ConflictResolutionAction
 import com.kuts.klaf.server.contract.SyncConflict
 import com.kuts.klaf.server.contract.SyncOperation
 import com.kuts.klaf.server.contract.SyncResponse
+import com.kuts.klaf.server.contract.SyncVocabularySource
 
 data class ConflictUiEntry(
     val operationId: String,
@@ -19,6 +20,10 @@ data class ConflictResolutionUiModel(
     val availableActions: Set<ConflictResolutionAction>,
     val manualSelectionAvailable: Boolean,
 )
+
+private fun SyncVocabularySource.describeAnalysis(): String =
+    "$title: ${items.size} words; text: ${cleanText.ifBlank { rawText }.take(200)}; " +
+        "words: ${items.take(10).joinToString { it.foreignWord }}" + if (items.size > 10) " …" else ""
 
 private fun SyncConflict.canKeepDeckEdit(response: SyncResponse): Boolean {
     val edit = localOperation as? SyncOperation.EditDeck ?: return false
@@ -64,9 +69,18 @@ private fun SyncOperation.describe(
         "${deckNames[sourceDeckSyncId] ?: sourceDeckSyncId} to ${deckNames[targetDeckSyncId] ?: targetDeckSyncId}"
     is SyncOperation.FinishReview -> "Complete review of deck ${deckNames[deckSyncId] ?: deckSyncId}"
     is SyncOperation.MakeDeckDueNow -> "Make deck ${deckNames[deckSyncId] ?: deckSyncId} due for review now"
+    is SyncOperation.UpsertVocabularySource -> "Save source and analysis: ${source.describeAnalysis()}"
+    is SyncOperation.DeleteVocabularySource -> "Delete vocabulary source $sourceSyncId and its word list"
+    is SyncOperation.AddIgnoredVocabularyWord -> "Ignore word ${word.foreignWord}: ${word.nativeWord}"
 }
 
 private fun SyncConflict.describeServer(response: SyncResponse, deckNames: Map<String, String>): String {
+    if (reason == "SOURCE_LINK_MISSING") return "A linked card or deck is missing on the server"
+    serverSource?.let { return "Server source and analysis: ${it.describeAnalysis()}" }
+    if (localOperation is SyncOperation.UpsertVocabularySource || localOperation is SyncOperation.DeleteVocabularySource) {
+        return if (reason == "SOURCE_LINK_MISSING") "A linked card or deck is missing on the server" else
+            "The source is absent or was deleted on the server"
+    }
     if (isMoveIntoReviewedDeck()) {
         return "Destination deck ${requireNotNull(serverDeck).name} was reviewed before this move; " +
             "choose another unreviewed deck to keep the card"
@@ -95,6 +109,10 @@ fun SyncResponse.toConflictResolutionUiModel(
 ): ConflictResolutionUiModel {
     val operations = conflicts.map(SyncConflict::localOperation)
     val availableActions = mutableSetOf(ConflictResolutionAction.ACCEPT_SERVER)
+    if (conflicts.isNotEmpty() && conflicts.all {
+        it.reason != "SOURCE_LINK_MISSING" && (it.localOperation is SyncOperation.UpsertVocabularySource ||
+            it.localOperation is SyncOperation.DeleteVocabularySource)
+    }) availableActions += ConflictResolutionAction.KEEP_LOCAL_SOURCE
     if (conflicts.isNotEmpty() && conflicts.all { it.canKeepDeckEdit(this) }) {
         availableActions += ConflictResolutionAction.KEEP_LOCAL_DECK
     }
@@ -159,6 +177,8 @@ fun SyncResponse.toConflictResolutionUiModel(
                         is SyncOperation.EditCard -> if (conflict.canKeepCardEdit(this@toConflictResolutionUiModel)) {
                             add(ConflictResolutionAction.KEEP_LOCAL_CARD)
                         }
+                        is SyncOperation.UpsertVocabularySource, is SyncOperation.DeleteVocabularySource ->
+                            if (conflict.reason != "SOURCE_LINK_MISSING") add(ConflictResolutionAction.KEEP_LOCAL_SOURCE)
                         is SyncOperation.DeleteCard -> if (conflict.isReviewedCardRemoval()) {
                             add(ConflictResolutionAction.KEEP_REMOVAL_RETAIN_SCHEDULE)
                             add(ConflictResolutionAction.KEEP_REMOVAL_DUE_NOW)
@@ -175,11 +195,14 @@ fun SyncResponse.toConflictResolutionUiModel(
         },
         availableActions = availableActions,
         manualSelectionAvailable = conflicts.size > 1 &&
-            conflicts.all { it.localOperation is SyncOperation.EditDeck || it.localOperation is SyncOperation.EditCard } &&
+            conflicts.all { it.localOperation is SyncOperation.EditDeck || it.localOperation is SyncOperation.EditCard ||
+                it.localOperation is SyncOperation.UpsertVocabularySource || it.localOperation is SyncOperation.DeleteVocabularySource } &&
             conflicts.map { conflict ->
                 when (val operation = conflict.localOperation) {
                     is SyncOperation.EditDeck -> "deck:${operation.deckSyncId}"
                     is SyncOperation.EditCard -> "card:${operation.cardSyncId}"
+                    is SyncOperation.UpsertVocabularySource -> "source:${operation.source.syncId}"
+                    is SyncOperation.DeleteVocabularySource -> "source:${operation.sourceSyncId}"
                     else -> error("Unexpected structural conflict")
                 }
             }.distinct().size == conflicts.size,

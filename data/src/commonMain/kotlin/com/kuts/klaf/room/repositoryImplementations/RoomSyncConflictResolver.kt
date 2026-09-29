@@ -14,6 +14,16 @@ import com.kuts.klaf.server.contract.SyncOperation
 import com.kuts.klaf.server.contract.SyncResponse
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import com.kuts.klaf.room.applySyncVocabularySource
+import com.kuts.klaf.room.entities.RoomVocabularySource
+import com.kuts.klaf.room.entities.RoomVocabularySourceItem
+
+private data class LocalSourceIdentity(val source: RoomVocabularySource, val items: List<RoomVocabularySourceItem>)
+
+private suspend fun captureLocalSourceIdentities(database: KlafRoomDatabase): Map<String, LocalSourceIdentity> =
+    database.vocabularySourceDao().getSources().associate { source ->
+        source.syncId to LocalSourceIdentity(source, database.vocabularySourceItemDao().getItemsBySourceId(source.id))
+    }
 
 /** Applies explicit choices to a saved conflict in one Room transaction. */
 class RoomSyncConflictResolver(
@@ -27,23 +37,32 @@ class RoomSyncConflictResolver(
 
     suspend fun acceptServerForAll(accountId: String): Long = resolve(accountId) { _, _ -> }
 
-    suspend fun resolveSelected(accountId: String, decisions: List<ConflictResolutionDecision>): Long = resolve(
-        accountId = accountId,
-        beforeServerDelta = { _, response -> validateSelectedDecisions(response, decisions) },
-    ) { database, response ->
-        val decisionsById = decisions.associateBy(ConflictResolutionDecision::operationId)
-        response.conflicts.forEach { conflict ->
-            when (decisionsById.getValue(conflict.operationId).action) {
-                ConflictResolutionAction.ACCEPT_SERVER -> Unit
-                ConflictResolutionAction.KEEP_LOCAL_DECK -> rebaseDeckEdit(
-                    database, accountId, response.revision,
-                    conflict.localOperation as SyncOperation.EditDeck,
-                )
-                ConflictResolutionAction.KEEP_LOCAL_CARD -> rebaseCardEdit(
-                    database, accountId, response.revision,
-                    conflict.localOperation as SyncOperation.EditCard,
-                )
-                else -> error("Structural manual choice is not supported yet")
+    suspend fun resolveSelected(accountId: String, decisions: List<ConflictResolutionDecision>): Long {
+        var localSources = emptyMap<String, LocalSourceIdentity>()
+        return resolve(
+            accountId = accountId,
+            beforeServerDelta = { database, response ->
+                validateSelectedDecisions(response, decisions)
+                localSources = captureLocalSourceIdentities(database)
+            },
+        ) { database, response ->
+            val decisionsById = decisions.associateBy(ConflictResolutionDecision::operationId)
+            response.conflicts.forEach { conflict ->
+                when (decisionsById.getValue(conflict.operationId).action) {
+                    ConflictResolutionAction.ACCEPT_SERVER -> Unit
+                    ConflictResolutionAction.KEEP_LOCAL_DECK -> rebaseDeckEdit(
+                        database, accountId, response.revision,
+                        conflict.localOperation as SyncOperation.EditDeck,
+                    )
+                    ConflictResolutionAction.KEEP_LOCAL_CARD -> rebaseCardEdit(
+                        database, accountId, response.revision,
+                        conflict.localOperation as SyncOperation.EditCard,
+                    )
+                    ConflictResolutionAction.KEEP_LOCAL_SOURCE -> rebaseSource(
+                        database, accountId, response.revision, conflict.localOperation, localSources,
+                    )
+                    else -> error("Structural manual choice is not supported yet")
+                }
             }
         }
     }
@@ -55,6 +74,44 @@ class RoomSyncConflictResolver(
             }
         }
         edits.forEach { edit -> rebaseDeckEdit(database, accountId, response.revision, edit) }
+    }
+
+    suspend fun keepLocalSources(accountId: String): Long {
+        var localSources = emptyMap<String, LocalSourceIdentity>()
+        return resolve(accountId, beforeServerDelta = { database, response ->
+            require(response.conflicts.none { it.reason == "SOURCE_LINK_MISSING" }) { "Missing source links need resolution" }
+            localSources = captureLocalSourceIdentities(database)
+        }) { database, response ->
+            response.conflicts.forEach { conflict -> rebaseSource(database, accountId, response.revision, conflict.localOperation, localSources) }
+        }
+    }
+
+    private suspend fun rebaseSource(database: KlafRoomDatabase, accountId: String, revision: Long, operation: SyncOperation,
+        localSources: Map<String, LocalSourceIdentity>) {
+        val rebased = when (operation) {
+            is SyncOperation.UpsertVocabularySource -> {
+                val source = operation.source.copy(lastChangedServerRevision = revision)
+                if (database.vocabularySourceDao().getSourceBySyncId(source.syncId) == null) {
+                    localSources[source.syncId]?.let {
+                        database.vocabularySourceDao().insertSource(it.source)
+                        database.vocabularySourceItemDao().insertItems(it.items)
+                    }
+                }
+                applySyncVocabularySource(source, database.vocabularySourceDao(), database.vocabularySourceItemDao(),
+                    database.deckDao(), database.cardDao())
+                operation.copy(operationId = newSyncId(), source = source)
+            }
+            is SyncOperation.DeleteVocabularySource -> {
+                database.vocabularySourceDao().getSourceBySyncId(operation.sourceSyncId)?.let {
+                    database.vocabularySourceItemDao().deleteItemsBySourceId(it.id)
+                    database.vocabularySourceDao().deleteSource(it.id)
+                }
+                operation.copy(operationId = newSyncId())
+            }
+            else -> error("Keep-local source choice requires a source operation")
+        }
+        database.pendingSyncOperationDao().insert(RoomPendingSyncOperation(accountId, rebased.operationId, revision,
+            json.encodeToString<SyncOperation>(rebased)))
     }
 
     suspend fun keepLocalCardEdits(accountId: String): Long = resolve(accountId) { database, response ->
@@ -371,6 +428,8 @@ class RoomSyncConflictResolver(
             when (val operation = conflict.localOperation) {
                 is SyncOperation.EditDeck -> "deck:${operation.deckSyncId}"
                 is SyncOperation.EditCard -> "card:${operation.cardSyncId}"
+                is SyncOperation.UpsertVocabularySource -> "source:${operation.source.syncId}"
+                is SyncOperation.DeleteVocabularySource -> "source:${operation.sourceSyncId}"
                 else -> error("Structural per-conflict resolution is not supported")
             }
         }
@@ -394,6 +453,10 @@ class RoomSyncConflictResolver(
                         edit.card.deckSyncId !in response.delta.deletedDeckSyncIds
                     ) { "Card cannot be rebased onto this server result" }
                 }
+                ConflictResolutionAction.KEEP_LOCAL_SOURCE -> require(
+                    conflict.reason != "SOURCE_LINK_MISSING" && (conflict.localOperation is SyncOperation.UpsertVocabularySource ||
+                        conflict.localOperation is SyncOperation.DeleteVocabularySource),
+                ) { "Source cannot be kept with missing card/deck links" }
                 else -> error("Structural manual choice is not supported yet")
             }
         }
@@ -497,7 +560,21 @@ class RoomSyncConflictResolver(
                 pendingOperations[conflict.operationId] == conflict.localOperation
             }) { "Saved conflict no longer matches the local operation" }
             beforeServerDelta(database, response)
-            applier.applyRows(database, response.delta)
+            val sourceConflicts = response.conflicts.filter {
+                it.localOperation is SyncOperation.UpsertVocabularySource || it.localOperation is SyncOperation.DeleteVocabularySource
+            }
+            val serverSources = sourceConflicts.mapNotNull { it.serverSource }
+            val absentIds = sourceConflicts.filter { it.serverSource == null }.map {
+                when (val operation = it.localOperation) {
+                    is SyncOperation.UpsertVocabularySource -> operation.source.syncId
+                    is SyncOperation.DeleteVocabularySource -> operation.sourceSyncId
+                    else -> error("Not a source conflict")
+                }
+            }
+            applier.applyRows(database, response.delta.copy(
+                sources = (response.delta.sources + serverSources).associateBy { it.syncId }.values.toList(),
+                deletedSourceSyncIds = (response.delta.deletedSourceSyncIds + absentIds).distinct(),
+            ))
             afterServerDelta(database, response)
             database.syncConflictSnapshotDao().clear()
         }

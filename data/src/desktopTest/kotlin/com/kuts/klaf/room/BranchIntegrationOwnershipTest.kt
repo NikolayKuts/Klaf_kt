@@ -64,7 +64,7 @@ class BranchIntegrationOwnershipTest {
         }
         assertTrue(cards.fetchAllCards().isEmpty())
         assertEquals(1, addItems(deck, listOf(item)))
-        assertEquals(2, source.current().pendingSyncOperationDao().allPending().size)
+        assertEquals(4, source.current().pendingSyncOperationDao().allPending().size)
         val added = sources.fetchItemsBySourceId(sourceId).single()
         assertEquals(VocabularySourceItemStatus.ADDED, added.status)
         assertEquals(cards.fetchAllCards().single().id, added.createdCardId)
@@ -73,7 +73,7 @@ class BranchIntegrationOwnershipTest {
             addItems(deck, listOf(item.copy(foreignWord = "second")))
         }
         assertEquals(1, cards.fetchAllCards().size)
-        assertEquals(2, source.current().pendingSyncOperationDao().allPending().size)
+        assertEquals(4, source.current().pendingSyncOperationDao().allPending().size)
     }
 
     @Test
@@ -122,6 +122,10 @@ class BranchIntegrationOwnershipTest {
         source.selectAccount("alice@example.com")
         assertEquals(expected, sources.fetchSources())
         assertEquals(1, sources.fetchItemsBySourceId(sourceId).size)
-        assertTrue(source.current().pendingSyncOperationDao().allPending().isEmpty())
+        val pending = source.current().pendingSyncOperationDao().allPending()
+        assertEquals(1, pending.size)
+        assertTrue(kotlinx.serialization.json.Json.decodeFromString<com.kuts.klaf.server.contract.SyncOperation>(
+            pending.single().operationJson,
+        ) is com.kuts.klaf.server.contract.SyncOperation.UpsertVocabularySource)
     }
 }

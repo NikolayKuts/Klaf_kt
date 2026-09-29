@@ -10,6 +10,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import com.kuts.klaf.server.contract.SyncOperation
+import com.kuts.klaf.room.identity
+import com.kuts.klaf.room.toSyncWord
+import kotlinx.serialization.json.Json
 
 enum class SyncIndicatorState { HIDDEN, GREEN, YELLOW, RED, GRAY, SYNCING }
 
@@ -47,7 +51,20 @@ class RoomSyncStatusObserver(
         } else {
             val database = selection.database
             combine(
-                database.pendingSyncOperationDao().observePendingCount(email),
+                combine(database.pendingSyncOperationDao().observePendingForAccount(email),
+                    database.vocabularySourceDao().getObservableSources(), database.ignoredVocabularyWordDao().observeWords()) { rows, sources, words ->
+                    val operations = rows.map { Json.decodeFromString<SyncOperation>(it.operationJson) }
+                    val sourceIds = operations.mapNotNull {
+                        when (it) {
+                            is SyncOperation.UpsertVocabularySource -> it.source.syncId
+                            is SyncOperation.DeleteVocabularySource -> it.sourceSyncId
+                            else -> null
+                        }
+                    }.toSet()
+                    val wordIds = operations.filterIsInstance<SyncOperation.AddIgnoredVocabularyWord>().map { it.word.identity() }.toSet()
+                    rows.size + sources.count { it.lastChangedServerRevision == 0L && it.syncId !in sourceIds } +
+                        words.count { it.lastChangedServerRevision == 0L && it.toSyncWord().identity() !in wordIds }
+                },
                 database.syncCheckpointDao().observeCurrent(),
                 database.syncConflictSnapshotDao().observeCurrent(),
                 events,
@@ -66,7 +83,7 @@ class RoomSyncStatusObserver(
                     channel == SyncEventChannelState.CONNECTED && serverRevision != null &&
                         serverRevision < confirmedRevision -> SyncIndicatorState.RED
                     channel != SyncEventChannelState.CONNECTED || serverRevision == null -> SyncIndicatorState.GRAY
-                    checkpoint == null || pendingCount > 0 || serverRevision > confirmedRevision ->
+                    checkpoint == null || !checkpoint.vocabularySyncInitialized || pendingCount > 0 || serverRevision > confirmedRevision ->
                         SyncIndicatorState.YELLOW
                     else -> SyncIndicatorState.GREEN
                 }

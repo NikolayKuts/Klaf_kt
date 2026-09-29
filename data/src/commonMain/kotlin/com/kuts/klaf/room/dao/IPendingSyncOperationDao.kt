@@ -15,6 +15,9 @@ interface IPendingSyncOperationDao {
     @Query("SELECT * FROM pending_sync_operations WHERE accountId = :accountId ORDER BY id")
     suspend fun pendingForAccount(accountId: String): List<RoomPendingSyncOperation>
 
+    @Query("SELECT * FROM pending_sync_operations WHERE accountId = :accountId ORDER BY id")
+    fun observePendingForAccount(accountId: String): Flow<List<RoomPendingSyncOperation>>
+
     @Query("SELECT COUNT(*) FROM pending_sync_operations WHERE accountId = :accountId")
     fun observePendingCount(accountId: String): Flow<Int>
 

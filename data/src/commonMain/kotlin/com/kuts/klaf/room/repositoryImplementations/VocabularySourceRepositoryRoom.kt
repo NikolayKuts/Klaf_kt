@@ -79,8 +79,12 @@ class VocabularySourceRepositoryRoom(
     }
 
     override suspend fun saveSource(source: VocabularySource): Int {
+        val existing = roomDatabase.vocabularySourceDao().getSourceById(source.id)
         val sourceId = roomDatabase.vocabularySourceDao()
-            .insertSource(source = source.toRoomEntity())
+            .insertSource(source = source.toRoomEntity().let { row ->
+                if (existing == null) row else row.copy(syncId = existing.syncId,
+                    lastChangedServerRevision = existing.lastChangedServerRevision)
+            })
             .toInt()
 
         return source.id.takeIf { it > 0 } ?: sourceId
@@ -88,7 +92,10 @@ class VocabularySourceRepositoryRoom(
 
     override suspend fun saveItems(items: List<VocabularySourceItem>) {
         roomDatabase.vocabularySourceItemDao()
-            .insertItems(items = items.map { item -> item.toRoomEntity() })
+            .insertItems(items = items.map { item ->
+                val existing = roomDatabase.vocabularySourceItemDao().getItemById(item.id)
+                item.toRoomEntity().let { row -> if (existing == null) row else row.copy(syncId = existing.syncId) }
+            })
     }
 
     override suspend fun replaceNotAddedItemsBySourceId(
@@ -96,12 +103,15 @@ class VocabularySourceRepositoryRoom(
         items: List<VocabularySourceItem>,
     ) {
         val itemDao = roomDatabase.vocabularySourceItemDao()
+        val oldItems = itemDao.getItemsBySourceId(sourceId).associateBy { it.id }
 
         itemDao.deleteItemsBySourceIdExceptStatus(
             sourceId = sourceId,
             status = VocabularySourceItemStatus.ADDED.name,
         )
-        itemDao.insertItems(items = items.map { item -> item.toRoomEntity() })
+        itemDao.insertItems(items = items.map { item ->
+            item.toRoomEntity().let { row -> oldItems[item.id]?.let { row.copy(syncId = it.syncId) } ?: row }
+        })
     }
 
     override suspend fun removeSource(sourceId: Int) {

@@ -17,6 +17,9 @@ import com.kuts.klaf.server.contract.SyncDelta
 import com.kuts.klaf.server.contract.SyncResponse
 import com.kuts.klaf.server.contract.accountInterimDeckSyncId
 import kotlinx.serialization.json.Json
+import com.kuts.klaf.room.applySyncVocabularySource
+import com.kuts.klaf.room.clearMissingVocabularyLinks
+import com.kuts.klaf.room.toRoomWord
 
 /** Applies a response only when every submitted operation was resolved without conflicts. */
 class RoomSyncDeltaApplier(
@@ -65,6 +68,8 @@ class RoomSyncDeltaApplier(
                 deletedDeckSyncIds = emptyList(),
                 deletedCardSyncIds = emptyList(),
                 history = emptyList(),
+                sources = snapshot.sources,
+                ignoredWords = snapshot.ignoredWords,
             ))
         }
     }
@@ -144,6 +149,25 @@ class RoomSyncDeltaApplier(
             check(cards.getCardQuantityInDeck(deck.id) == incoming.cardQuantity) {
                 "Server card count does not match deck ${incoming.syncId}"
             }
+        }
+        require(delta.sources.map { it.syncId }.distinct().size == delta.sources.size &&
+            delta.sources.none { it.syncId in delta.deletedSourceSyncIds }) { "Invalid source delta identities" }
+        delta.deletedSourceSyncIds.forEach { syncId ->
+            database.vocabularySourceDao().getSourceBySyncId(syncId)?.let {
+                database.vocabularySourceItemDao().deleteItemsBySourceId(it.id)
+                database.vocabularySourceDao().deleteSource(it.id)
+            }
+        }
+        delta.sources.forEach { incoming ->
+            applySyncVocabularySource(incoming, database.vocabularySourceDao(), database.vocabularySourceItemDao(), decks, cards)
+        }
+        clearMissingVocabularyLinks(database.vocabularySourceItemDao(), decks, cards)
+        delta.ignoredWords.forEach { incoming ->
+            val row = incoming.toRoomWord(delta.toRevision)
+            val existing = database.ignoredVocabularyWordDao().getWords().firstOrNull {
+                it.languageKey == row.languageKey && it.foreignWordKey == row.foreignWordKey && it.nativeWordKey == row.nativeWordKey
+            }
+            database.ignoredVocabularyWordDao().replaceSyncedWords(listOf(row.copy(id = existing?.id ?: 0)))
         }
     }
 

@@ -21,6 +21,7 @@ import com.lib.lokdroid.core.log
 import com.lib.lokdroid.data.default_implementation.FormatterBuilder
 import org.koin.core.context.startKoin
 
+/** .\gradlew.bat :Desktop:run **/
 fun main() = application {
     startDesktopKoin()
 
