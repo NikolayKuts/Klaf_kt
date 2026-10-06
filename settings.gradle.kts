@@ -46,7 +46,9 @@ include(":data")
 include(":presentation")
 include(":di")
 include(":klaf-server-contract")
-include(":klaf-server")
+if (file("klaf-server/build.gradle.kts").isFile) {
+    include(":klaf-server")
+}
 
 project(":Android").projectDir = file("apps/Android")
 project(":Desktop").projectDir = file("apps/Desktop")

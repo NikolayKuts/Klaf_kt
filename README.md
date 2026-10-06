@@ -32,6 +32,8 @@ Android currently has the most complete platform integration. Desktop and iOS al
 - `presentation` - Compose Multiplatform UI, navigation, and view models
 - `di` - platform-specific dependency wiring
 - `build-logic` - custom Gradle plugins and build logic
+- `klaf-server-contract` - public client/server protocol
+- `klaf-server` - optional private Git submodule for the server application
 - `preview` - screenshots and GIF previews used in the README
 
 ## Tech Stack
@@ -69,6 +71,18 @@ cleanup rules, platform limits, and diagnostics.
 - Android Studio or IntelliJ IDEA for Android/Desktop work
 - Xcode for iOS work
 - Android SDK for the Android app
+
+## Private Server Submodule
+
+The server implementation is maintained in a private repository. A normal
+checkout of this public repository does not require access to it; Gradle includes
+`:klaf-server` only when the submodule has been initialized.
+
+Contributors with access to the private repository can run
+`git submodule update --init klaf-server` from the project root. Keep server
+credentials and machine-local configuration in ignored files inside the
+submodule. When changing server code, commit and push it in `klaf-server` first,
+then commit the updated submodule reference in this repository.
 
 ## Local Configuration
 

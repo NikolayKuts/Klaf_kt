@@ -1,0 +1,3 @@
+[submodule "klaf-server"]
+	path = klaf-server
+	url = https://github.com/NikolayKuts/Klaf-server.git
