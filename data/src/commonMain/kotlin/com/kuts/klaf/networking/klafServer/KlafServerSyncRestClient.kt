@@ -32,6 +32,7 @@ class SyncHttpException(
 class KlafServerSyncRestClient(
     baseUrl: String,
     private val httpClient: HttpClient,
+    private val signer: KlafAuthenticatedRequestSigner? = null,
 ) {
 
     private val endpointBase = baseUrl.trimEnd('/')
@@ -50,33 +51,43 @@ class KlafServerSyncRestClient(
     suspend fun bootstrap(email: String, deviceId: String): SyncBootstrapResponse = klafServerRequest(
         SYNC_REQUEST_TIMEOUT_MILLIS,
     ) {
-        val response = httpClient.get("$endpointBase/api/v1/sync/bootstrap") {
-            url {
-                parameters.append("email", email)
-                parameters.append("deviceId", deviceId)
+        val body = requestWithProof("GET", "/api/v1/sync/bootstrap", email) { proof ->
+            httpClient.get("$endpointBase/api/v1/sync/bootstrap") {
+                url {
+                    parameters.append("email", email)
+                    parameters.append("deviceId", deviceId)
+                }
+                proof?.let { headers.append("Authorization", it.authorization); headers.append("DPoP", it.dpop) }
             }
         }
-        json.decodeFromString<SyncBootstrapResponse>(response.successBody())
+        json.decodeFromString<SyncBootstrapResponse>(body)
     }
 
     suspend fun sync(request: SyncRequest): SyncResponse = klafServerRequest(SYNC_REQUEST_TIMEOUT_MILLIS) {
-        val response = httpClient.post("$endpointBase/api/v1/sync") {
-            contentType(ContentType.Application.Json)
-            setBody(json.encodeToString(request))
+        val encoded = json.encodeToString(request)
+        val body = requestWithProof("POST", "/api/v1/sync", request.email) { proof ->
+            httpClient.post("$endpointBase/api/v1/sync") {
+                contentType(ContentType.Application.Json)
+                proof?.let { headers.append("Authorization", it.authorization); headers.append("DPoP", it.dpop) }
+                setBody(encoded)
+            }
         }
-        json.decodeFromString<SyncResponse>(response.successBody())
+        json.decodeFromString<SyncResponse>(body)
     }
 
     suspend fun recentHistory(email: String, deviceId: String): SyncHistoryResponse = klafServerRequest(
         SYNC_REQUEST_TIMEOUT_MILLIS,
     ) {
-        val response = httpClient.get("$endpointBase/api/v1/sync/history") {
-            url {
-                parameters.append("email", email)
-                parameters.append("deviceId", deviceId)
+        val body = requestWithProof("GET", "/api/v1/sync/history", email) { proof ->
+            httpClient.get("$endpointBase/api/v1/sync/history") {
+                url {
+                    parameters.append("email", email)
+                    parameters.append("deviceId", deviceId)
+                }
+                proof?.let { headers.append("Authorization", it.authorization); headers.append("DPoP", it.dpop) }
             }
         }
-        json.decodeFromString<SyncHistoryResponse>(response.successBody())
+        json.decodeFromString<SyncHistoryResponse>(body)
     }
 
     suspend fun confirmAppliedRevision(
@@ -84,25 +95,43 @@ class KlafServerSyncRestClient(
         deviceId: String,
         revision: Long,
     ): SyncPositionConfirmationResponse = klafServerRequest(SYNC_REQUEST_TIMEOUT_MILLIS) {
-        val response = httpClient.post("$endpointBase/api/v1/sync/confirm") {
-            contentType(ContentType.Application.Json)
-            setBody(json.encodeToString(SyncPositionConfirmationRequest(
-                email = email,
-                deviceId = deviceId,
-                protocolVersion = 3,
-                revision = revision,
-            )))
+        val encoded = json.encodeToString(SyncPositionConfirmationRequest(
+            email = email,
+            deviceId = deviceId,
+            protocolVersion = 3,
+            revision = revision,
+        ))
+        val body = requestWithProof("POST", "/api/v1/sync/confirm", email) { proof ->
+            httpClient.post("$endpointBase/api/v1/sync/confirm") {
+                contentType(ContentType.Application.Json)
+                proof?.let { headers.append("Authorization", it.authorization); headers.append("DPoP", it.dpop) }
+                setBody(encoded)
+            }
         }
-        json.decodeFromString<SyncPositionConfirmationResponse>(response.successBody())
+        json.decodeFromString<SyncPositionConfirmationResponse>(body)
     }
 
-    private suspend fun HttpResponse.successBody(): String {
-        val body = bodyAsText()
-        if (status.value !in 200..299) {
-            val code = runCatching { json.decodeFromString<SyncErrorBody>(body).code }
-                .getOrDefault("HTTP_ERROR")
-            throw SyncHttpException(status.value, code)
+    private suspend fun requestWithProof(
+        method: String,
+        path: String,
+        email: String,
+        send: suspend (AccessProofHeaders?) -> HttpResponse,
+    ): String {
+        var nonce: String? = null
+        for (attempt in 0..1) {
+            val proof = signer?.headers(email, method, endpointBase + path, nonce)
+            val response = send(proof)
+            val body = response.bodyAsText()
+            val code = runCatching { json.decodeFromString<SyncErrorBody>(body).code }.getOrDefault("HTTP_ERROR")
+            val challenge = response.headers["DPoP-Nonce"]
+            if (signer != null && attempt == 0 && response.status.value == 401 &&
+                code == "DPOP_NONCE_REQUIRED" && challenge != null && challenge.length in 16..128) {
+                nonce = challenge
+                continue
+            }
+            if (response.status.value !in 200..299) throw SyncHttpException(response.status.value, code)
+            return body
         }
-        return body
+        throw AccountOperationException(com.kuts.domain.managers.AccountFailure.INVALID_RESPONSE)
     }
 }

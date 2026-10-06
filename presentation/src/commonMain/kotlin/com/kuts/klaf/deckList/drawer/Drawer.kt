@@ -19,6 +19,7 @@ import com.kuts.domain.entities.KlafServerConnectionState
 import com.kuts.klaf.presentation.resources.Res
 import com.kuts.klaf.presentation.resources.account_deleting_action
 import com.kuts.klaf.presentation.resources.drawer_klaf_server_label
+import com.kuts.klaf.presentation.resources.authentication_approval_drawer
 import com.kuts.klaf.presentation.resources.drawer_klaf_server_retry
 import com.kuts.klaf.presentation.resources.drawer_klaf_server_status_connecting
 import com.kuts.klaf.presentation.resources.drawer_klaf_server_status_not_ready
@@ -73,6 +74,14 @@ fun Drawer(
                     state = state,
                     onRetry = onKlafServerRetry,
                 )
+
+                state.pendingEnrollment?.let { pending ->
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(Res.string.authentication_approval_drawer, pending.email),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 

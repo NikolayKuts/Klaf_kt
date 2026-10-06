@@ -1,6 +1,7 @@
 package com.kuts.klaf.networking.klafServer
 
 import com.kuts.domain.managers.AccountSignInResult
+import com.kuts.domain.managers.AccountSignUpResult
 import com.kuts.domain.managers.AccountOperationException
 import com.kuts.domain.managers.AccountFailure
 import com.kuts.domain.managers.IAccountSession
@@ -68,6 +69,9 @@ class ServerAccountSession(
         pendingDeviceRegistrationEmail = null
     }
 
+    override suspend fun signUp(email: String, password: String): AccountSignUpResult =
+        throw AccountOperationException(AccountFailure.INVALID_REQUEST, "Secure account enrollment is not wired yet")
+
     override suspend fun signIn(email: String): AccountSignInResult = sessionMutex.withLock {
         if (pendingSignUp.read() != null) throw AccountOperationException(AccountFailure.PENDING_SIGNUP)
         val device = deviceProvider()
@@ -83,6 +87,9 @@ class ServerAccountSession(
         localDatabase.selectAccount(normalizedEmail)
         AccountSignInResult.SignedIn
     }
+
+    override suspend fun signIn(email: String, password: String): AccountSignInResult =
+        throw AccountOperationException(AccountFailure.INVALID_REQUEST, "Secure account login is not wired yet")
 
     override suspend fun registerDevice(email: String) = sessionMutex.withLock {
         val device = deviceProvider()

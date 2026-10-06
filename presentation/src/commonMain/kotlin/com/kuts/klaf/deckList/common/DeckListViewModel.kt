@@ -7,6 +7,7 @@ import com.kuts.domain.common.CoroutineStateHolder.Companion.onException
 import com.kuts.domain.common.CoroutineStateHolder.Companion.onExceptionWithCrashlyticsReport
 import com.kuts.domain.managers.IAppMaintenanceManager
 import com.kuts.domain.managers.IAuthenticationSessionManager
+import com.kuts.domain.managers.IAccountSession
 import com.kuts.domain.managers.AccountOperationException
 import com.kuts.domain.managers.ImageSynchronizationException
 import com.kuts.klaf.authentication.accountErrorMessage
@@ -58,6 +59,7 @@ class DeckListViewModel(
     private val coroutineContextProvider: ICoroutineContextProvider,
     private val accountGateway: AccountDeckListGateway? = null,
     private val accountStatusGateway: AccountSyncStatusGateway? = null,
+    private val accountSession: IAccountSession? = null,
 ) : BaseDeckListViewModel() {
 
     private companion object {
@@ -451,18 +453,21 @@ class DeckListViewModel(
     private fun observeAuthenticationState() {
         val emailSource = accountGateway?.selectedAccountEmail
             ?: authenticationInteractor.getObservableAuthenticationState().map { it.email }
+        val pendingSource = accountSession?.pendingEnrollment ?: flowOf(null)
         combine(
             emailSource,
             observeKlafServerConnectionState(),
             dataSynchronizationState,
             accountSyncStatus,
-        ) { email, connectionState, synchronizationState, accountStatus ->
+            pendingSource,
+        ) { email, connectionState, synchronizationState, accountStatus, pending ->
             DrawerViewState(
                 signedIn = email != null,
                 userEmail = email,
                 klafServerConnectionState = connectionState,
                 canDeleteAccount = accountGateway == null,
                 canSignOut = accountSignOutAllowed(accountGateway != null, synchronizationState, accountStatus),
+                pendingEnrollment = pending,
             )
         }.flowOn(coroutineContextProvider.io)
             .onEach { drawerViewState -> drawerState.emit(drawerViewState) }

@@ -67,10 +67,12 @@ kotlin {
         val desktopMain by getting {
             dependencies {
                 implementation(libs.ktor.client.cio)
+                implementation("net.java.dev.jna:jna-platform:5.19.1")
             }
         }
         val desktopTest by getting {
             dependencies {
+                implementation("io.ktor:ktor-client-mock:3.5.1")
                 implementation(libs.ktor.server.core)
                 implementation(libs.ktor.server.cio)
                 implementation(libs.ktor.server.websockets)
@@ -96,6 +98,14 @@ kotlin {
                 implementation(libs.ktor.client.okhttp)
 
                 implementation(libs.lokdroid)
+            }
+        }
+        val androidInstrumentedTest by getting {
+            dependencies {
+                implementation(libs.tests.kotlin)
+                implementation(libs.tests.junit.android)
+                implementation(libs.androidx.runner)
+                implementation(libs.androidx.core)
             }
         }
     }

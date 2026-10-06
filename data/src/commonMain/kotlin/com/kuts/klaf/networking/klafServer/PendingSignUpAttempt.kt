@@ -7,6 +7,7 @@ data class PendingSignUpAttempt(
     val email: String,
     val deviceId: String,
     val requestId: String,
+    val kind: String = "ACCOUNT",
 )
 
 interface PendingSignUpAttemptStore {

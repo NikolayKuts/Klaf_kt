@@ -89,6 +89,8 @@ import com.kuts.klaf.presentation.resources.ic_close_24
 import com.kuts.klaf.presentation.resources.ic_confirmation_24
 import com.kuts.klaf.presentation.resources.ic_logout_24
 import com.kuts.klaf.presentation.resources.mnemonic_comment_clear_action
+import com.kuts.klaf.presentation.resources.mnemonic_connection_connecting
+import com.kuts.klaf.presentation.resources.mnemonic_connection_retry
 import com.kuts.klaf.presentation.resources.mnemonic_image_comment_label
 import com.kuts.klaf.presentation.resources.mnemonic_image_request_action
 import com.kuts.klaf.presentation.resources.mnemonic_management_comment_label
@@ -107,6 +109,14 @@ import kotlin.math.absoluteValue
 
 private const val MNEMONIC_TAB_COLLAPSED_LENGTH = 3
 private const val MNEMONIC_TAB_COLLAPSED_SUFFIX = ".."
+
+internal enum class MnemonicConnectionHint { CONNECTING, RETRY }
+
+internal fun mnemonicConnectionHint(state: KlafServerConnectionState): MnemonicConnectionHint? = when (state) {
+    KlafServerConnectionState.Ready -> null
+    is KlafServerConnectionState.Reconnecting -> MnemonicConnectionHint.CONNECTING
+    KlafServerConnectionState.Disconnected, is KlafServerConnectionState.Error -> MnemonicConnectionHint.RETRY
+}
 
 private data class MnemonicDetailSectionUi(
     val title: String,
@@ -230,6 +240,20 @@ private fun MnemonicManagementContent(
         )
 
         Text(text = foreignWord)
+
+        mnemonicConnectionHint(connectionState)?.let { hint ->
+            Text(
+                text = stringResource(when (hint) {
+                    MnemonicConnectionHint.CONNECTING -> Res.string.mnemonic_connection_connecting
+                    MnemonicConnectionHint.RETRY -> Res.string.mnemonic_connection_retry
+                }),
+                color = when (hint) {
+                    MnemonicConnectionHint.CONNECTING -> MaterialTheme.colorScheme.onSurfaceVariant
+                    MnemonicConnectionHint.RETRY -> MaterialTheme.colorScheme.error
+                },
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
 
         MnemonicAssociationRequestSection(
             mnemonicState = mnemonicState,

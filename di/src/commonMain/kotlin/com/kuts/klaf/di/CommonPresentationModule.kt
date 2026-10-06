@@ -111,6 +111,7 @@ internal val commonPresentationModule = module {
             coroutineContextProvider = get(),
             accountGateway = if (accountMode) get() else null,
             accountStatusGateway = if (accountMode) get() else null,
+            accountSession = if (accountMode) get() else null,
         )
     }
 

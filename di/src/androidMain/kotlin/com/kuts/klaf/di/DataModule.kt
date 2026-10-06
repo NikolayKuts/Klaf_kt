@@ -97,6 +97,9 @@ import com.kuts.klaf.networking.klafServer.KlafServerSession
 import com.kuts.klaf.networking.klafServer.PersistentAccountDeviceProvider
 import com.kuts.klaf.networking.klafServer.PendingSignUpAttemptStore
 import com.kuts.klaf.networking.klafServer.ServerAccountSession
+import com.kuts.klaf.networking.klafServer.createAndroidSecureAccountSession
+import com.kuts.klaf.networking.klafServer.createAndroidAuthenticatedRequestSigner
+import com.kuts.klaf.networking.klafServer.KlafAuthenticatedRequestSigner
 import com.kuts.klaf.networking.klafServer.KlafServerWordMeaningInsightsRepository
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
@@ -198,16 +201,22 @@ private fun Module.androidRepositoryModule() {
     single<PendingSignUpAttemptStore> { AndroidPendingSignUpAttemptStore(androidContext()) }
     single { KlafServerAccountRestClient(get<KlafServerEndpointConfig>().restBaseUrl(),
         KlafServerHttpClientFactory().create()) }
+    single<KlafAuthenticatedRequestSigner> {
+        createAndroidAuthenticatedRequestSigner(get<KlafServerEndpointConfig>().restBaseUrl(), androidContext(),
+            KlafServerHttpClientFactory().create())
+    }
     single { KlafServerSyncRestClient(get<KlafServerEndpointConfig>().restBaseUrl(),
-        KlafServerHttpClientFactory().create()) }
+        KlafServerHttpClientFactory().create(), get()) }
     single<IAccountSession> {
         val identity = get<AccountDeviceIdentity>()
-        ServerAccountSession(
-            accounts = get(),
+        createAndroidSecureAccountSession(
+            serverOrigin = get<KlafServerEndpointConfig>().restBaseUrl(),
+            httpClient = KlafServerHttpClientFactory().create(),
+            context = androidContext(),
             localDatabase = get(),
             guestTransfer = GuestAccountDataTransfer(get()),
             deviceProvider = identity::current,
-            pendingSignUp = get(),
+            pendingEnrollment = get(),
         )
     }
     single<IWordInfoRepository> {
@@ -222,12 +231,16 @@ private fun Module.androidRepositoryModule() {
             port = endpoint.port,
             isSecure = endpoint.isSecure,
             httpClient = KlafServerHttpClientFactory().create(),
+            authenticatedRequestSigner = get<KlafAuthenticatedRequestSigner>(),
+            selectedAccountEmail = get<IAccountSession>().selectedAccountEmail,
         )
     }
     single<IKlafServerConnectionManager> {
         KlafServerConnectionManager(
             klafServerSession = get(),
             coroutineContextProvider = get(),
+            selectedAccountEmail = get<IAccountSession>().selectedAccountEmail,
+            sameAccountSignInEpoch = get<IAccountSession>().sameAccountSignInEpoch,
         )
     }
     single(createdAtStart = true) {
@@ -295,10 +308,11 @@ private fun Module.infrastructureModule() {
     single { KlafServerEndpointConfig(BuildConfig.KLAF_CLIENT_SERVER_HOST, BuildConfig.KLAF_CLIENT_SERVER_PORT) }
     single<SyncEventConnector> {
         KlafServerSyncEventConnector(
-            get<KlafServerEndpointConfig>().restBaseUrl(), KlafServerHttpClientFactory().create(),
+            get<KlafServerEndpointConfig>().restBaseUrl(), KlafServerHttpClientFactory().create(), get(),
         )
     }
-    single { KlafServerImageRestClient(get<KlafServerEndpointConfig>().restBaseUrl(), KlafServerHttpClientFactory().create()) }
+    single { KlafServerImageRestClient(get<KlafServerEndpointConfig>().restBaseUrl(),
+        KlafServerHttpClientFactory().create(), get<KlafAuthenticatedRequestSigner>()) }
     single<KlafRoomDatabase> { KlafRoomDatabaseProvider.getInstance(context = androidContext()) }
     single<RoomDatabaseSource> {
         val context = androidContext()

@@ -58,6 +58,9 @@ import com.kuts.klaf.networking.klafServer.KlafServerSession
 import com.kuts.klaf.networking.klafServer.PersistentAccountDeviceProvider
 import com.kuts.klaf.networking.klafServer.PendingSignUpAttemptStore
 import com.kuts.klaf.networking.klafServer.ServerAccountSession
+import com.kuts.klaf.networking.klafServer.createDesktopSecureAccountSession
+import com.kuts.klaf.networking.klafServer.createDesktopAuthenticatedRequestSigner
+import com.kuts.klaf.networking.klafServer.KlafAuthenticatedRequestSigner
 import com.kuts.klaf.networking.klafServer.KlafServerWordMeaningInsightsRepository
 import com.kuts.klaf.networking.yandexApi.YandexSecureHttpClientFactory
 import com.kuts.klaf.networking.yandexApi.YandexWordInfoRepository
@@ -132,16 +135,22 @@ private fun Module.desktopRepositoryModule() {
     }
     single { KlafServerAccountRestClient(get<KlafServerEndpointConfig>().restBaseUrl(),
         KlafServerHttpClientFactory().create()) }
+    single<KlafAuthenticatedRequestSigner> {
+        createDesktopAuthenticatedRequestSigner(get<KlafServerEndpointConfig>().restBaseUrl(),
+            get<DesktopStorageConfiguration>().directory, KlafServerHttpClientFactory().create())
+    }
     single { KlafServerSyncRestClient(get<KlafServerEndpointConfig>().restBaseUrl(),
-        KlafServerHttpClientFactory().create()) }
+        KlafServerHttpClientFactory().create(), get()) }
     single<IAccountSession> {
         val identity = get<AccountDeviceIdentity>()
-        ServerAccountSession(
-            accounts = get(),
+        createDesktopSecureAccountSession(
+            serverOrigin = get<KlafServerEndpointConfig>().restBaseUrl(),
+            httpClient = KlafServerHttpClientFactory().create(),
+            storageDirectory = get<DesktopStorageConfiguration>().directory,
             localDatabase = get(),
             guestTransfer = GuestAccountDataTransfer(get()),
             deviceProvider = identity::current,
-            pendingSignUp = get(),
+            pendingEnrollment = get(),
         )
     }
     single<IWordInfoRepository> {
@@ -157,12 +166,16 @@ private fun Module.desktopRepositoryModule() {
             port = endpoint.port,
             isSecure = endpoint.isSecure,
             httpClient = KlafServerHttpClientFactory().create(),
+            authenticatedRequestSigner = get<KlafAuthenticatedRequestSigner>(),
+            selectedAccountEmail = get<IAccountSession>().selectedAccountEmail,
         )
     }
     single<IKlafServerConnectionManager> {
         KlafServerConnectionManager(
             klafServerSession = get(),
             coroutineContextProvider = get(),
+            selectedAccountEmail = get<IAccountSession>().selectedAccountEmail,
+            sameAccountSignInEpoch = get<IAccountSession>().sameAccountSignInEpoch,
         )
     }
     single<IWordMeaningInsightsRepository> {
@@ -197,7 +210,8 @@ private fun Module.desktopRepositoryModule() {
         }
     }
     single<IMnemonicImageRemoteRepository> { DesktopNoOpMnemonicImageRemoteRepository() }
-    single { KlafServerImageRestClient(get<KlafServerEndpointConfig>().restBaseUrl(), KlafServerHttpClientFactory().create()) }
+    single { KlafServerImageRestClient(get<KlafServerEndpointConfig>().restBaseUrl(),
+        KlafServerHttpClientFactory().create(), get<KlafAuthenticatedRequestSigner>()) }
     single<IDeckRepetitionInfoRepository> {
         val databaseSource = get<RoomDatabaseSource>()
         if (databaseSource is ActiveLocalRoomDatabase) {
@@ -224,7 +238,7 @@ private fun Module.desktopInfrastructureModule() {
     single<KlafRoomDatabase> { KlafRoomDatabaseProvider.getInstance() }
     single<SyncEventConnector> {
         KlafServerSyncEventConnector(
-            get<KlafServerEndpointConfig>().restBaseUrl(), KlafServerHttpClientFactory().create(),
+            get<KlafServerEndpointConfig>().restBaseUrl(), KlafServerHttpClientFactory().create(), get(),
         )
     }
     single<RoomDatabaseSource> {

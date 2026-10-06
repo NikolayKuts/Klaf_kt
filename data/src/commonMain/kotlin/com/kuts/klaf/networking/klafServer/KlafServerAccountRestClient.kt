@@ -20,6 +20,13 @@ internal fun accountHttpFailure(status: Int, code: String): AccountFailure = whe
     code == "ACCOUNT_NOT_FOUND" -> AccountFailure.ACCOUNT_NOT_FOUND
     code == "ACCOUNT_EXISTS" -> AccountFailure.ACCOUNT_EXISTS
     code == "DEVICE_NOT_REGISTERED" || code == "DEVICE_ALREADY_REGISTERED" -> AccountFailure.DEVICE_REGISTRATION
+    code == "SIGN_IN_REQUIRED" || code == "AUTHENTICATION_REQUIRED" -> AccountFailure.SIGN_IN_REQUIRED
+    code == "INVALID_CREDENTIALS" -> AccountFailure.INVALID_CREDENTIALS
+    code == "RESET_TOKEN_INVALID" -> AccountFailure.RESET_TOKEN_INVALID
+    code == "REGISTRATION_NOT_APPROVED" || code == "DEVICE_NOT_APPROVED" -> AccountFailure.APPROVAL_PENDING
+    code == "INVALID_DEVICE_PROOF" -> AccountFailure.DEVICE_PROOF
+    code == "AUTH_BUSY" -> AccountFailure.SERVER_BUSY
+    code == "AUTH_THROTTLED" || code == "AUTH_RATE_LIMITED" -> AccountFailure.THROTTLED
     code == "INVALID_REQUEST" -> AccountFailure.INVALID_REQUEST
     else -> AccountFailure.INVALID_RESPONSE
 }
@@ -61,7 +68,9 @@ private data class AccountErrorBody(val code: String)
 class AccountHttpException(
     val statusCode: Int,
     val errorCode: String,
-) : AccountOperationException(accountHttpFailure(statusCode, errorCode), "Klaf account HTTP $statusCode: $errorCode")
+    retryAfterSeconds: Int? = null,
+) : AccountOperationException(accountHttpFailure(statusCode, errorCode), "Klaf account HTTP $statusCode: $errorCode",
+    retryAfterSeconds = retryAfterSeconds)
 
 class KlafServerAccountRestClient(
     baseUrl: String,

@@ -24,6 +24,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
@@ -88,14 +89,13 @@ class KlafServerSessionLifecycleTest {
     }
 
     @Test
-    fun onlineLogoutSendsSessionEndAndFailsOldPendingRequest() = runBlocking {
+    fun onlineLogoutSendsSessionEndAndWaitsForNewAccountBeforeReconnecting() = runBlocking {
         val started = CompletableDeferred<Unit>()
         val ended = CompletableDeferred<String>()
-        val reconnected = CompletableDeferred<Unit>()
         val connections = AtomicInteger()
         withSessionServer(handler = {
             send(sessionTestJson.encodeToString<KlafServerMessage>(KlafServerReadyMessage()))
-            if (connections.incrementAndGet() == 2) reconnected.complete(Unit)
+            connections.incrementAndGet()
             for (frame in incoming) {
                 val request = sessionTestJson.decodeFromString<KlafServerClientMessage>((frame as Frame.Text).readText())
                 if (request is com.kuts.klaf.server.contract.ClientSessionEndRequest) {
@@ -110,7 +110,8 @@ class KlafServerSessionLifecycleTest {
             assertEquals(oldSession, withTimeout(2_000) { ended.await() })
             kotlin.test.assertIs<kotlinx.coroutines.CancellationException>(pending.await().exceptionOrNull())
             kotlin.test.assertNotEquals(oldSession, session.clientSessionId)
-            withTimeout(2_000) { reconnected.await() }
+            delay(300)
+            assertEquals(1, connections.get())
         }
     }
 

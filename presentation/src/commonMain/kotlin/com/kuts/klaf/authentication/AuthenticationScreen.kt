@@ -21,6 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -40,6 +43,7 @@ import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.common.AuthenticationAction.SIGN_IN
 import com.kuts.domain.common.AuthenticationAction.SIGN_UP
 import com.kuts.domain.common.LoadingState
+import com.kuts.domain.managers.AccountEnrollmentStatus
 import com.kuts.domain.common.ifTrue
 import com.kuts.klaf.common.AdaptiveScalableBox
 import com.kuts.klaf.common.BaseMainViewModel
@@ -119,7 +123,20 @@ private fun AuthenticationContent(
     val inputState by viewModel.typingState.collectAsState()
     val loadingState = viewModel.screenLoadingState.collectAsState().value
     val pendingDeviceEmail by viewModel.pendingDeviceRegistrationEmail.collectAsState()
+    val pendingApprovalRequestId by viewModel.pendingApprovalRequestId.collectAsState()
+    val pendingApprovalStatus by viewModel.pendingApprovalStatus.collectAsState()
+    val resetCompleted by viewModel.passwordResetCompleted.collectAsState()
+    var resetDialogOpen by remember { mutableStateOf(false) }
+    var resetToken by remember { mutableStateOf("") }
+    var resetPassword by remember { mutableStateOf("") }
+    var resetConfirmation by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val closeResetDialog = {
+        resetDialogOpen = false
+        resetToken = ""
+        resetPassword = ""
+        resetConfirmation = ""
+    }
 
     AdaptiveScalableBox { adaptiveModifier ->
         val authUiConfig: Triple<StringResource, () -> Unit, Boolean> = when (action) {
@@ -140,20 +157,46 @@ private fun AuthenticationContent(
         val isPasswordConfirmationEnabled = authUiConfig.third
 
         Box(modifier = adaptiveModifier.padding(horizontal = 16.dp)) {
-            AuthenticationView(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .fillMaxWidth(),
-                typingState = inputState,
-                actionLabelText = stringResource(resource = actionLabelTextRes),
-                isLoading = loadingState is LoadingState.Loading,
-                isPasswordless = viewModel.isPasswordless,
-                isPasswordConfirmationEnabled = isPasswordConfirmationEnabled,
-                onEmailChange = viewModel::updateEmail,
-                onPasswordChange = viewModel::updatePassword,
-                onPasswordConfirmationChange = viewModel::updatePasswordConfirmation,
-                onConfirmationClick = onConfirmationClick,
-            )
+            Column(modifier = Modifier.align(Alignment.Center).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                AuthenticationView(
+                    modifier = Modifier.fillMaxWidth(),
+                    typingState = inputState,
+                    actionLabelText = stringResource(resource = actionLabelTextRes),
+                    isLoading = loadingState is LoadingState.Loading,
+                    isPasswordless = viewModel.isPasswordless,
+                    isPasswordConfirmationEnabled = isPasswordConfirmationEnabled,
+                    onEmailChange = viewModel::updateEmail,
+                    onPasswordChange = viewModel::updatePassword,
+                    onPasswordConfirmationChange = viewModel::updatePasswordConfirmation,
+                    onConfirmationClick = onConfirmationClick,
+                )
+                if (pendingApprovalRequestId != null) {
+                    Spacer(modifier = Modifier.size(12.dp))
+                    val message = when (pendingApprovalStatus) {
+                        AccountEnrollmentStatus.APPROVED -> Res.string.authentication_approval_approved
+                        AccountEnrollmentStatus.EXPIRED -> Res.string.authentication_approval_expired
+                        AccountEnrollmentStatus.AWAITING_APPROVAL, null -> Res.string.authentication_approval_awaiting
+                    }
+                    Text(stringResource(message))
+                    TextButton(onClick = viewModel::checkPendingApproval,
+                        enabled = loadingState !is LoadingState.Loading) {
+                        Text(stringResource(Res.string.authentication_approval_check))
+                    }
+                    if (pendingApprovalStatus == AccountEnrollmentStatus.APPROVED) {
+                        TextButton(onClick = viewModel::completePendingApproval,
+                            enabled = loadingState !is LoadingState.Loading) {
+                            Text(stringResource(Res.string.authentication_approval_complete))
+                        }
+                    }
+                }
+                if (action == SIGN_IN && !viewModel.isPasswordless) {
+                    TextButton(onClick = { resetDialogOpen = true },
+                        enabled = loadingState !is LoadingState.Loading) {
+                        Text(stringResource(Res.string.authentication_reset_action))
+                    }
+                }
+            }
         }
 
         LaunchedEffect(key1 = loadingState) {
@@ -179,6 +222,41 @@ private fun AuthenticationContent(
             },
             dismissButton = {
                 TextButton(onClick = viewModel::cancelDeviceRegistration, enabled = !isLoading) {
+                    Text(stringResource(Res.string.authentication_register_device_cancel))
+                }
+            },
+        )
+    }
+
+    LaunchedEffect(resetCompleted) {
+        if (resetCompleted) {
+            closeResetDialog()
+        }
+    }
+    if (resetDialogOpen) {
+        val isLoading = loadingState is LoadingState.Loading
+        AlertDialog(
+            onDismissRequest = { if (!isLoading) closeResetDialog() },
+            title = { Text(stringResource(Res.string.authentication_reset_title)) },
+            text = {
+                Column {
+                    OutlinedTextField(value = resetToken, onValueChange = { resetToken = it },
+                        label = { Text(stringResource(Res.string.authentication_reset_token)) },
+                        enabled = !isLoading, visualTransformation = PasswordVisualTransformation())
+                    OutlinedTextField(value = resetPassword, onValueChange = { resetPassword = it },
+                        label = { Text(stringResource(Res.string.authentication_password_label)) },
+                        enabled = !isLoading, visualTransformation = PasswordVisualTransformation())
+                    OutlinedTextField(value = resetConfirmation, onValueChange = { resetConfirmation = it },
+                        label = { Text(stringResource(Res.string.authentication_password_confirmation)) },
+                        enabled = !isLoading, visualTransformation = PasswordVisualTransformation())
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.resetPassword(resetToken, resetPassword, resetConfirmation) },
+                    enabled = !isLoading) { Text(stringResource(Res.string.authentication_reset_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = closeResetDialog, enabled = !isLoading) {
                     Text(stringResource(Res.string.authentication_register_device_cancel))
                 }
             },

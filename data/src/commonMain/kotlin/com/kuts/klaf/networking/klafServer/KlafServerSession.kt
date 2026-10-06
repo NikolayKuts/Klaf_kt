@@ -1,6 +1,8 @@
 package com.kuts.klaf.networking.klafServer
 
 import com.kuts.domain.entities.KlafServerConnectionState
+import com.kuts.domain.managers.AccountFailure
+import com.kuts.domain.managers.AccountOperationException
 import com.kuts.klaf.server.contract.AudioUploadFrameCodec
 import com.kuts.klaf.server.contract.ClientSessionEndRequest
 import com.kuts.klaf.server.contract.requestClientSessionId
@@ -45,6 +47,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -127,6 +130,8 @@ class KlafServerSession(
     private val port: Int,
     private val isSecure: Boolean,
     private val httpClient: HttpClient,
+    private val authenticatedRequestSigner: KlafAuthenticatedRequestSigner? = null,
+    private val selectedAccountEmail: Flow<String?>? = null,
 ) : IKlafServerSession {
 
     private val json = Json {
@@ -156,6 +161,12 @@ class KlafServerSession(
         private set
     private var nextRequestSequence = 0L
     private var manualDisconnectRequested = false
+
+    init {
+        require((authenticatedRequestSigner == null) == (selectedAccountEmail == null)) {
+            "WebSocket signer and selected account flow must be configured together."
+        }
+    }
 
     override val connectionState: StateFlow<KlafServerConnectionState> = mutableConnectionState.asStateFlow()
 
@@ -402,7 +413,6 @@ class KlafServerSession(
     }
 
     override suspend fun endUserSession() {
-        val wasConnected = connectionState.value is KlafServerConnectionState.Ready
         val previousSession = requestMutex.withLock {
             clientSessionId.also {
                 clientSessionId = Random.nextLong().toULong().toString(radix = 16)
@@ -416,20 +426,7 @@ class KlafServerSession(
             }
         }
         disconnect()
-        // Keep the application-level connection available, but never replay the ended session.
-        if (wasConnected) {
-            val nextSession = clientSessionId
-            scope.launch {
-                if (nextSession != clientSessionId) return@launch
-                try {
-                    connect()
-                } catch (cancellation: CancellationException) {
-                    throw cancellation
-                } catch (failure: Throwable) {
-                    logE("Klaf Server reconnection after account change failed: $failure")
-                }
-            }
-        }
+        // Reconnect only after the account selection has published its new credentials.
     }
 
     private fun requireCurrentSessionRequest(requestId: String) {
@@ -504,13 +501,26 @@ class KlafServerSession(
                 "attempt=$connectionAttempt",
         )
         val scheme = if (isSecure) "wss" else "ws"
+        val httpScheme = if (isSecure) "https" else "http"
         val newReadySignal = CompletableDeferred<Unit>()
         mutableConnectionState.value = KlafServerConnectionState.Reconnecting(attempt = connectionAttempt)
 
         var openedSession: DefaultClientWebSocketSession? = null
         try {
+            val proof = authenticatedRequestSigner?.let { signer ->
+                val email = selectedAccountEmail?.first()?.takeIf(String::isNotBlank)
+                    ?: throw IllegalStateException("Sign in to use Klaf Server AI features.")
+                KlafServerWebSocketAuthorizer("$httpScheme://$normalizedHost:$port", httpClient, signer)
+                    .authorizationHeaders(email)
+            }
             val newSession = httpClient.webSocketSession(
                 urlString = "$scheme://$normalizedHost:$port$KLAF_SERVER_WEBSOCKET_PATH",
+                block = {
+                    proof?.let {
+                        headers.append("Authorization", it.authorization)
+                        headers.append("DPoP", it.dpop)
+                    }
+                },
             )
             openedSession = newSession
             lifecycleMutex.withLock {
@@ -805,6 +815,10 @@ class KlafServerSession(
             } catch (cancellation: CancellationException) {
                 throw cancellation
             } catch (throwable: Throwable) {
+                if (throwable is AccountOperationException && throwable.failure == AccountFailure.SIGN_IN_REQUIRED) {
+                    failPendingAfterAuthorizationLoss(throwable)
+                    return
+                }
                 logE(
                     "Klaf Server reconnect attempt failed: " +
                         "attempt=$attempt, pendingRequests=${pendingRequestCount()}, failure=$throwable",
@@ -812,6 +826,24 @@ class KlafServerSession(
                 attempt++
                 delayMillis = (delayMillis * 2).coerceAtMost(RECONNECT_MAX_DELAY_MILLIS)
             }
+        }
+    }
+
+    private suspend fun failPendingAfterAuthorizationLoss(failure: AccountOperationException) {
+        lifecycleMutex.withLock {
+            manualDisconnectRequested = true
+            mutableConnectionState.value = KlafServerConnectionState.Error(
+                message = "Klaf Server AI authorization is no longer valid.",
+            )
+        }
+        requestMutex.withLock {
+            pendingRequests.values.forEach { it.response.completeExceptionally(failure) }
+            pendingRequests.clear()
+            pendingTranscriptionRequests.values.forEach {
+                it.acknowledgements.close(failure)
+                it.channel.close(failure)
+            }
+            pendingTranscriptionRequests.clear()
         }
     }
 
