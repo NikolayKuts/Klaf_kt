@@ -3,6 +3,18 @@
 This file is a temporary working document for the Klaf server implementation.
 It should be removed or replaced by permanent documentation after the full implementation is finished.
 
+## Local public origin configuration (2026-10-07)
+
+- Ordinary Android Studio Run must start the server without a separate
+  `KLAF_PUBLIC_ORIGIN` environment variable when the configured bind host is
+  `127.0.0.1` or `localhost`: derive `http://<bind-host>:<port>` for DPoP.
+- The ignored local server `SecretConstants.kt` may explicitly set a
+  `PUBLIC_ORIGIN` for a future externally visible HTTPS address. Retain an
+  explicit process environment/JVM-property override for controlled runs.
+- Never infer a client origin from a non-loopback bind host (including
+  `0.0.0.0`); require an explicit origin in that case. An explicitly supplied
+  invalid origin must fail startup rather than silently fall back.
+
 ## Live verification storage safety (2026-10-06)
 
 - Permit an explicit absolute server storage root for disposable live checks;

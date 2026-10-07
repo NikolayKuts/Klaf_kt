@@ -1,5 +1,21 @@
 # Klaf Server Status
 
+## Current focus (2026-10-07): one-click local server startup
+
+After intentionally clearing local server data, ordinary Android Studio Run
+failed before startup because `KLAF_PUBLIC_ORIGIN` was absent. The operator
+approved deriving a loopback origin from the existing local bind host/port,
+while keeping an optional explicit local `PUBLIC_ORIGIN` for a future tunnel
+and rejecting implicit origins for non-loopback binds. The new config test
+failed first with the missing-origin error, then passed after implementation.
+The ignored local `SecretConstants.kt` and tracked example now have a blank
+optional `PUBLIC_ORIGIN`; process overrides retain precedence. The focused
+config tests passed, the full `:klaf-server:test` suite passed, and the focused
+tests passed again after removing a dependency on the operator's ignored
+local config from one test. Manual Android Studio Run without environment
+variables remains to be checked by the operator. No data migration or
+signing-key recovery is required for the intentional full reset.
+
 ## Current SDK dependency (2026-10-06)
 
 AgentDriver account-scoped SDK changes are assigned `0.10.13-SNAPSHOT`, and

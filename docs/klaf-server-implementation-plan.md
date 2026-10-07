@@ -1,5 +1,16 @@
 # Klaf Server Authentication Implementation Plan
 
+## Local public origin Run configuration (2026-10-07)
+
+Tests for loopback derivation, explicit override and non-loopback failure were
+added before implementation; the missing-origin test failed RED and then
+passed GREEN. Optional ignored `SecretConstants.Server.PUBLIC_ORIGIN` now
+feeds the server configuration, with process overrides taking precedence and
+invalid supplied origins failing startup. The full `:klaf-server:test` suite
+passed. An ordinary Android Studio Run without setting `KLAF_PUBLIC_ORIGIN`
+remains the operator's manual check. Do not use signing-key recovery for a
+deliberately cleared server registry.
+
 ## Platform validation scheduling (2026-10-06)
 
 The operator is continuing on Windows and has deferred Ubuntu-native Klaf
