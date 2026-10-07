@@ -482,6 +482,12 @@ It should be removed or replaced by permanent documentation after the full imple
   sign-up (recoverable guest-data transfer) and existing-account sign-in
   (no guest-data transfer). This does not require password re-entry after every
   app/server restart or routine token renewal of an already valid login.
+- If an applicant repeats sign-up from the same device with the same password
+  after operator approval but before completion, recover the existing request
+  and report its actual `APPROVED` status. The client must show that approval
+  and offer explicit password re-entry/completion without requesting another
+  operator approval, creating another account/device, or issuing credentials
+  from the repeated sign-up response alone.
 - Approve/reject registration requests in the server application's window.
   Show a request list with the account and device name and actions to approve
   or reject. A separate web administration panel is not required for the first

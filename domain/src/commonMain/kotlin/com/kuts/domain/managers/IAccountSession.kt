@@ -14,7 +14,10 @@ sealed interface AccountSignInResult {
 
 sealed interface AccountSignUpResult {
 
-    data class PendingApproval(val requestId: String) : AccountSignUpResult
+    data class PendingApproval(
+        val requestId: String,
+        val status: AccountEnrollmentStatus = AccountEnrollmentStatus.AWAITING_APPROVAL,
+    ) : AccountSignUpResult
 }
 
 enum class AccountEnrollmentKind { ACCOUNT, DEVICE }
@@ -54,6 +57,10 @@ interface IAccountSession {
 
     suspend fun signOut()
 
-    suspend fun resetPassword(email: String, token: String, newPassword: String): Unit =
+    suspend fun resetPassword(
+        email: String,
+        token: String,
+        newPassword: String,
+    ): Unit =
         throw AccountOperationException(AccountFailure.INVALID_REQUEST)
 }

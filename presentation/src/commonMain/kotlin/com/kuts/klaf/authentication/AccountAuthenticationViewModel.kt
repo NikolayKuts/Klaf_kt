@@ -26,6 +26,7 @@ import com.kuts.klaf.presentation.resources.authentication_warning_type_email
 import com.kuts.klaf.presentation.resources.authentication_warning_invalid_password
 import com.kuts.klaf.presentation.resources.authentication_warning_invalid_password_confirmation
 import com.kuts.klaf.presentation.resources.authentication_approval_awaiting
+import com.kuts.klaf.presentation.resources.authentication_approval_approved
 import com.kuts.klaf.presentation.resources.account_error_connection
 import com.kuts.klaf.presentation.resources.account_error_timeout
 import com.kuts.klaf.presentation.resources.account_error_not_found
@@ -173,7 +174,7 @@ class AccountAuthenticationViewModel(
         viewModelScope.launch(coroutineContextProvider.io) {
             try {
                 when (val result = accountSession.signUp(email, password)) {
-                    is AccountSignUpResult.PendingApproval -> markPendingApproval(result.requestId)
+                    is AccountSignUpResult.PendingApproval -> markPendingApproval(result.requestId, result.status)
                 }
             } catch (failure: CancellationException) {
                 screenLoadingState.value = LoadingState.Non
@@ -206,7 +207,11 @@ class AccountAuthenticationViewModel(
         pendingDeviceRegistrationEmail.value = null
     }
 
-    override fun resetPassword(token: String, newPassword: String, confirmation: String) {
+    override fun resetPassword(
+        token: String,
+        newPassword: String,
+        confirmation: String,
+    ) {
         val email = validatedEmail() ?: return
         if (token.isBlank()) {
             eventMessage.tryEmitAsNegative(Res.string.authentication_reset_token_required)
@@ -278,9 +283,12 @@ class AccountAuthenticationViewModel(
         }
     }
 
-    private fun markPendingApproval(requestId: String) {
+    private fun markPendingApproval(
+        requestId: String,
+        status: AccountEnrollmentStatus = AccountEnrollmentStatus.AWAITING_APPROVAL,
+    ) {
         pendingApprovalRequestId.value = requestId
-        pendingApprovalStatus.value = null
+        pendingApprovalStatus.value = status
         typingState.update { state ->
             state.copy(
                 passwordHolder = state.passwordHolder.copy(text = "", isError = false),
@@ -288,7 +296,10 @@ class AccountAuthenticationViewModel(
             )
         }
         screenLoadingState.value = LoadingState.Non
-        eventMessage.tryEmitAsNeutral(Res.string.authentication_approval_awaiting)
+        eventMessage.tryEmitAsNeutral(when (status) {
+            AccountEnrollmentStatus.APPROVED -> Res.string.authentication_approval_approved
+            else -> Res.string.authentication_approval_awaiting
+        })
     }
 
     private fun validatedEmail(): String? {

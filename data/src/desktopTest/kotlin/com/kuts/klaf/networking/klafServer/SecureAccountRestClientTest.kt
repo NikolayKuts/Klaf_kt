@@ -110,6 +110,24 @@ class SecureAccountRestClientTest {
     }
 
     @Test
+    fun `approved registration retry preserves approved status`() = runBlocking {
+        val http = HttpClient(MockEngine {
+            respond("""{"requestId":"pending-request-id-123456789","status":"APPROVED"}""", HttpStatusCode.Accepted)
+        })
+        try {
+            val client = SecureAccountRestClient("https://example.test", http, testProofFactory())
+
+            val result = client.submitRegistration("alice@example.test", "long-secret-phrase",
+                AccountDevice("phone", "Phone", "ANDROID"))
+
+            assertEquals("pending-request-id-123456789", result.requestId)
+            assertEquals(EnrollmentApprovalStatus.APPROVED, result.status)
+        } finally {
+            http.close()
+        }
+    }
+
+    @Test
     fun `new device sign in awaits approval and completion issues tokens only after approval`() = runBlocking {
         val calls = mutableListOf<String>()
         val http = HttpClient(MockEngine { request ->

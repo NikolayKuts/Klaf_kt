@@ -16,6 +16,38 @@
 
 ## Current Focus
 
+- 2026-10-07 post-import review complete: removed the temporary
+  existing-account Android-backup importer, its Gradle task, storage hook and
+  importer-only tests. Kept the compact display of the persisted import
+  history. Reviewed the uncommitted auth-recovery diff, extended its UI test
+  through password reentry, and applied the local Kotlin declaration-wrapping
+  rule to changed code. `:klaf-server:test :data:desktopTest
+  :presentation:desktopTest` passed: 732 tests, zero failures/errors, two
+  skipped. `git diff --check` passed in both repositories. Recovery backups
+  and live data were not changed. The operator subsequently authorized local
+  commits; push remains pending.
+
+- 2026-10-07: completed a one-time legacy Android backup import into the current
+  password-authenticated account. The operator supplied a path with an extra
+  space; the matching protected `klaf_backup` contains the known 35-file
+  Room/WAL/SHM export and 19 saved PNGs. All 35 original files still match
+  the 2026-09-28 SHA-256 manifest; no review DataStore file is present. The
+  live server has one registered/authenticated account and device, one empty
+  interim deck, zero cards and images, and revision 1 before import. The old
+  bootstrap creates a new account and was not used. A new guarded offline
+  existing-account importer passed synthetic TDD coverage, the full server
+  test suite (83 suites, zero failures), and a disposable snapshot trial with
+  all 57 decks, 1093 cards and 19 PNGs. The server was closed normally; a
+  full pre-import copy of its storage was SHA-256 checked outside the repo.
+  Live import produced revision 2, 57 decks, 1093 cards and 19 image files;
+  SQLite integrity and foreign keys passed, image hashes matched, and the
+  existing auth account and device remain. Server restarted successfully.
+  Android manual sync advanced the device's last-confirmed revision from 1 to
+  2, and imported decks appeared in the Android list. A particular saved PNG
+  has not yet been visually opened on the device; server copies were hash-
+  verified. The import history UI was bounded with a test-first regression;
+  that display change requires a new client build to appear on the device.
+
 - 2026-09-29 pre-commit review: corrected stale source conflict snapshots after
   later accepted operations in one batch; added update/deletion regressions and
   refactored source/item mapping to named arguments. Review regression: 555

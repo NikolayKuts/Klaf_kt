@@ -661,6 +661,20 @@ attempting to reconcile its old local database with the new server database.
 The fresh app registers as a new device for the migrated account and downloads
 the initialized server data on the user's first manual synchronization.
 
+For the later password-authenticated server, the operator may instead import
+this legacy backup into an already registered account. That one-time path must
+preserve the account's authentication, device registrations and sync continuity;
+it must reject a target with populated content rather than merge ambiguously,
+and must not run the old new-account bootstrap against the live registry. Use a
+verified disposable copy of the Room/WAL/SHM export,
+leave the original backup unchanged, and require an explicit no-review choice
+when the matching review DataStore is absent. Import saved mnemonic image
+files separately from card metadata, preserving asset IDs and checking file
+contents. Validate the complete result and its availability to the connected
+Android device before discarding any working copy.
+After the one-time import is verified, remove its temporary executable tooling
+from the server module; retain the migration record and recovery backups.
+
 Desktop follows the same first-connection process: it starts with an empty
 local database, registers as a new device, and downloads the initialized server
 data when the user starts its first synchronization. The manually imported

@@ -1,5 +1,34 @@
 # Klaf Server Status
 
+## Review (2026-10-07): post-import cleanup and auth-retry regression
+
+The one-time existing-account Android-backup importer and Gradle task were
+removed after the successful live migration. The permanent sync-history UI
+summary remains because the import event is stored in the account history.
+The uncommitted auth-retry flow was reviewed; the UI regression now checks
+that an already-approved retry still requires password reentry before account
+activation. Changed Kotlin declarations with more than two parameters use
+one parameter per line. The combined server/data/presentation suite passed:
+732 tests, zero failures/errors, two skipped. No live data or recovery backup
+was changed. The operator subsequently authorized local commits; push remains
+pending.
+
+## Current focus (2026-10-07): approved sign-up retry recovery
+
+Operator reproduced a repeated Android sign-up showing `AWAITING_APPROVAL`
+after the only registration had already been approved. Live registry inspection
+showed one approved registration and no active account/device; the server's
+idempotent retry branch hard-coded the pending status. The new server regression
+test failed RED at the `APPROVED` assertion, then passed GREEN after the retry
+response began reporting the stored status. Client transport/session/UI tests
+now cover immediate `APPROVED` display without automatic account activation,
+guest transfer, or password retention. Focused tests and full
+`:klaf-server:test :data:desktopTest :presentation:desktopTest` passed;
+`:Android:assembleDebug` and `:Desktop:compileKotlin` passed. Manual Android/server verification remains:
+the running server and installed app still need to be restarted/updated with
+these builds. The operator reviewed the result and authorized local commits;
+push remains pending.
+
 ## Current focus (2026-10-07): one-click local server startup
 
 After intentionally clearing local server data, ordinary Android Studio Run

@@ -25,4 +25,14 @@ class AccountSyncHistoryTest {
 
         assertEquals("4718a51d…, interim deck", entry.affectedItemsSummary())
     }
+
+    @Test
+    fun `bulk legacy import history is summarized instead of listing every sync id`() {
+        val entry = SyncHistoryItem(
+            "legacy-import", 2L, "SERVER_IMPORT", "IMPORT_ANDROID_BACKUP",
+            (1..1150).map { "legacy-id-$it" }, 123L,
+        )
+
+        assertEquals("1150 imported items", entry.affectedItemsSummary())
+    }
 }

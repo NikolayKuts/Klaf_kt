@@ -41,12 +41,19 @@ private data class EnrollmentCompletionBody(val requestId: String, val password:
 private data class RefreshCredentialsBody(val refreshToken: String, val operationId: String)
 
 @Serializable
-private data class PasswordResetRequest(val email: String, val token: String, val password: String)
+private data class PasswordResetRequest(
+    val email: String,
+    val token: String,
+    val password: String,
+)
 
 @Serializable
 internal data class SecureLoginTokens(val accessToken: String, val refreshToken: String)
 
-internal data class PendingEnrollment(val requestId: String)
+internal data class PendingEnrollment(
+    val requestId: String,
+    val status: EnrollmentApprovalStatus = EnrollmentApprovalStatus.AWAITING_APPROVAL,
+)
 
 internal enum class EnrollmentKind { ACCOUNT, DEVICE }
 
@@ -58,13 +65,32 @@ internal sealed interface SecureSignInResult {
 }
 
 internal interface SecureAccountGateway {
-    suspend fun submitRegistration(email: String, password: String, device: AccountDevice): PendingEnrollment
-    suspend fun signIn(email: String, password: String, device: AccountDevice): SecureSignInResult
+    suspend fun submitRegistration(
+        email: String,
+        password: String,
+        device: AccountDevice,
+    ): PendingEnrollment
+
+    suspend fun signIn(
+        email: String,
+        password: String,
+        device: AccountDevice,
+    ): SecureSignInResult
+
     suspend fun enrollmentStatus(requestId: String): EnrollmentApprovalStatus
-    suspend fun completeEnrollment(requestId: String, password: String, kind: EnrollmentKind): SecureLoginTokens
+    suspend fun completeEnrollment(
+        requestId: String,
+        password: String,
+        kind: EnrollmentKind,
+    ): SecureLoginTokens
+
     suspend fun refresh(refreshToken: String, operationId: String): SecureLoginTokens
     suspend fun logout(accessToken: String)
-    suspend fun resetPassword(email: String, token: String, password: String) {
+    suspend fun resetPassword(
+        email: String,
+        token: String,
+        password: String,
+    ) {
         throw UnsupportedOperationException("Password reset is not supported by this gateway")
     }
 }
@@ -85,38 +111,45 @@ internal class SecureAccountRestClient(
         requireSafeAuthOrigin(endpointBase)
     }
 
-    override suspend fun submitRegistration(email: String, password: String, device: AccountDevice): PendingEnrollment =
-        klafServerRequest(requestTimeoutMillis) {
-            require(AccountPasswordPolicy.isValid(password))
-            val (_, body) = postWithProof("/api/v1/auth/registrations", json.encodeToString(
-                NewAccountBody(email, password, device.id, device.name, device.platform),
-            ))
-            val enrollment = json.decodeFromString<EnrollmentResponse>(body)
-            if (enrollment.status != "AWAITING_APPROVAL" || enrollment.requestId.length !in 16..128) {
-                throw com.kuts.domain.managers.AccountOperationException(
-                    com.kuts.domain.managers.AccountFailure.INVALID_RESPONSE)
-            }
-            PendingEnrollment(enrollment.requestId)
+    override suspend fun submitRegistration(
+        email: String,
+        password: String,
+        device: AccountDevice,
+    ): PendingEnrollment = klafServerRequest(requestTimeoutMillis) {
+        require(AccountPasswordPolicy.isValid(password))
+        val (_, body) = postWithProof("/api/v1/auth/registrations", json.encodeToString(
+            NewAccountBody(email, password, device.id, device.name, device.platform),
+        ))
+        val enrollment = json.decodeFromString<EnrollmentResponse>(body)
+        val status = EnrollmentApprovalStatus.entries.firstOrNull { it.name == enrollment.status }
+        if (status == null || status == EnrollmentApprovalStatus.EXPIRED ||
+            enrollment.requestId.length !in 16..128) {
+            throw invalidResponse()
         }
+        PendingEnrollment(enrollment.requestId, status)
+    }
 
-    override suspend fun signIn(email: String, password: String, device: AccountDevice): SecureSignInResult =
-        klafServerRequest(requestTimeoutMillis) {
-            require(AccountPasswordPolicy.isValid(password))
-            val (status, body) = postWithProof("/api/v1/auth/sign-in", json.encodeToString(
-                NewAccountBody(email, password, device.id, device.name, device.platform),
-            ))
-            when (status) {
-                200 -> SecureSignInResult.Authenticated(validatedTokens(body))
-                202 -> {
-                    val enrollment = json.decodeFromString<EnrollmentResponse>(body)
-                    if (enrollment.status != "AWAITING_APPROVAL" || enrollment.requestId.length !in 16..128) {
-                        throw invalidResponse()
-                    }
-                    SecureSignInResult.Pending(enrollment.requestId)
+    override suspend fun signIn(
+        email: String,
+        password: String,
+        device: AccountDevice,
+    ): SecureSignInResult = klafServerRequest(requestTimeoutMillis) {
+        require(AccountPasswordPolicy.isValid(password))
+        val (status, body) = postWithProof("/api/v1/auth/sign-in", json.encodeToString(
+            NewAccountBody(email, password, device.id, device.name, device.platform),
+        ))
+        when (status) {
+            200 -> SecureSignInResult.Authenticated(validatedTokens(body))
+            202 -> {
+                val enrollment = json.decodeFromString<EnrollmentResponse>(body)
+                if (enrollment.status != "AWAITING_APPROVAL" || enrollment.requestId.length !in 16..128) {
+                    throw invalidResponse()
                 }
-                else -> throw invalidResponse()
+                SecureSignInResult.Pending(enrollment.requestId)
             }
+            else -> throw invalidResponse()
         }
+    }
 
     override suspend fun enrollmentStatus(requestId: String): EnrollmentApprovalStatus =
         klafServerRequest(requestTimeoutMillis) {
@@ -155,13 +188,16 @@ internal class SecureAccountRestClient(
         if (status != 204) throw invalidResponse()
     }
 
-    override suspend fun resetPassword(email: String, token: String, password: String): Unit =
-        klafServerRequest(requestTimeoutMillis) {
-            require(AccountPasswordPolicy.isValid(password) && token.isNotBlank())
-            val (status, _) = postWithProof("/api/v1/auth/password/reset",
-                json.encodeToString(PasswordResetRequest(email, token, password)))
-            if (status != 204) throw invalidResponse()
-        }
+    override suspend fun resetPassword(
+        email: String,
+        token: String,
+        password: String,
+    ): Unit = klafServerRequest(requestTimeoutMillis) {
+        require(AccountPasswordPolicy.isValid(password) && token.isNotBlank())
+        val (status, _) = postWithProof("/api/v1/auth/password/reset",
+            json.encodeToString(PasswordResetRequest(email, token, password)))
+        if (status != 204) throw invalidResponse()
+    }
 
     private fun validatedTokens(body: String): SecureLoginTokens = json.decodeFromString<SecureLoginTokens>(body).also {
         if (it.accessToken.isBlank() || it.refreshToken.isBlank()) throw invalidResponse()
@@ -170,7 +206,11 @@ internal class SecureAccountRestClient(
     private fun invalidResponse() = com.kuts.domain.managers.AccountOperationException(
         com.kuts.domain.managers.AccountFailure.INVALID_RESPONSE)
 
-    private suspend fun postWithProof(path: String, body: String, accessToken: String? = null): Pair<Int, String> {
+    private suspend fun postWithProof(
+        path: String,
+        body: String,
+        accessToken: String? = null,
+    ): Pair<Int, String> {
         val url = endpointBase + path
         var nonce: String? = null
         for (attempt in 0..1) {

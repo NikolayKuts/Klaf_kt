@@ -39,10 +39,14 @@ sealed interface AccountSyncHistoryState {
 internal fun SyncHistoryItem.deviceName(devices: List<AccountSyncDevice>): String =
     devices.firstOrNull { it.id == deviceId }?.name ?: deviceId
 
-internal fun SyncHistoryItem.affectedItemsSummary(): String = affectedSyncIds.joinToString { id ->
-    if (id.startsWith("account-interim:")) "interim deck"
-    else if (id.length > SYNC_HISTORY_ID_PREFIX_LENGTH) "${id.take(SYNC_HISTORY_ID_PREFIX_LENGTH)}…"
-    else id
+internal fun SyncHistoryItem.affectedItemsSummary(): String = if (action == "IMPORT_ANDROID_BACKUP") {
+    "${affectedSyncIds.size} imported items"
+} else {
+    affectedSyncIds.joinToString { id ->
+        if (id.startsWith("account-interim:")) "interim deck"
+        else if (id.length > SYNC_HISTORY_ID_PREFIX_LENGTH) "${id.take(SYNC_HISTORY_ID_PREFIX_LENGTH)}…"
+        else id
+    }
 }
 
 internal fun accountSignOutAllowed(

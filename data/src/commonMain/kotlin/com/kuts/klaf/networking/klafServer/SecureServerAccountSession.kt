@@ -72,7 +72,10 @@ internal class SecureServerAccountSession(
             pendingStore.write(it)
             pendingState.value = it.toDomain()
         }
-        AccountSignUpResult.PendingApproval(request.requestId)
+        AccountSignUpResult.PendingApproval(
+            requestId = request.requestId,
+            status = AccountEnrollmentStatus.entries.first { it.name == request.status.name },
+        )
     }
 
     override suspend fun signIn(email: String, password: String): AccountSignInResult = sessionMutex.withLock {
@@ -148,7 +151,11 @@ internal class SecureServerAccountSession(
         }
     }
 
-    override suspend fun resetPassword(email: String, token: String, newPassword: String): Unit =
+    override suspend fun resetPassword(
+        email: String,
+        token: String,
+        newPassword: String,
+    ): Unit =
         sessionMutex.withLock {
             authProvider().resetPassword(email.trim().lowercase(), token, newPassword)
         }

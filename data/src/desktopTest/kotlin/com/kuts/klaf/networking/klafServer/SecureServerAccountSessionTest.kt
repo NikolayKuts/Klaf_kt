@@ -2,6 +2,7 @@ package com.kuts.klaf.networking.klafServer
 
 import com.kuts.domain.entities.Deck
 import com.kuts.domain.managers.AccountEnrollmentKind
+import com.kuts.domain.managers.AccountEnrollmentStatus
 import com.kuts.domain.managers.AccountSignInResult
 import com.kuts.domain.managers.AccountSignUpResult
 import com.kuts.klaf.room.databases.ActiveLocalRoomDatabase
@@ -73,6 +74,13 @@ class SecureServerAccountSessionTest {
             assertEquals("guest", decks.fetchAllDecks().single().name)
             assertEquals("pending-id-123456789", attempts.read()?.requestId)
             assertEquals(AccountEnrollmentKind.ACCOUNT, session.pendingEnrollment.first()?.kind)
+            assertEquals(null, credentials.saved)
+
+            gateway.registrationStatus = EnrollmentApprovalStatus.APPROVED
+            val recovered = assertIs<AccountSignUpResult.PendingApproval>(
+                session.signUp("alice@example.test", "long-secret-phrase"))
+            assertEquals(AccountEnrollmentStatus.APPROVED, recovered.status)
+            assertEquals(null, database.selection.value.accountEmail)
             assertEquals(null, credentials.saved)
 
             gateway.status = EnrollmentApprovalStatus.APPROVED
@@ -205,18 +213,35 @@ class SecureServerAccountSessionTest {
         override suspend fun read(origin: String, email: String) = saved
         override suspend fun write(session: ProtectedAuthSession) { saved = session }
         override suspend fun remove(origin: String, email: String) { saved = null }
-        override suspend fun <T> withRefreshLock(origin: String, email: String, action: suspend () -> T): T = action()
+        override suspend fun <T> withRefreshLock(
+            origin: String,
+            email: String,
+            action: suspend () -> T,
+        ): T = action()
     }
 
     private class FakeGateway : SecureAccountGateway {
         var status = EnrollmentApprovalStatus.AWAITING_APPROVAL
+        var registrationStatus = EnrollmentApprovalStatus.AWAITING_APPROVAL
         var signInResult: SecureSignInResult = SecureSignInResult.Authenticated(SecureLoginTokens("access", "refresh"))
         var failLogout = false
-        override suspend fun submitRegistration(email: String, password: String, device: AccountDevice) =
-            PendingEnrollment("pending-id-123456789")
-        override suspend fun signIn(email: String, password: String, device: AccountDevice) = signInResult
+        override suspend fun submitRegistration(
+            email: String,
+            password: String,
+            device: AccountDevice,
+        ) =
+            PendingEnrollment("pending-id-123456789", registrationStatus)
+        override suspend fun signIn(
+            email: String,
+            password: String,
+            device: AccountDevice,
+        ) = signInResult
         override suspend fun enrollmentStatus(requestId: String) = status
-        override suspend fun completeEnrollment(requestId: String, password: String, kind: EnrollmentKind) =
+        override suspend fun completeEnrollment(
+            requestId: String,
+            password: String,
+            kind: EnrollmentKind,
+        ) =
             SecureLoginTokens("access", "refresh")
         override suspend fun refresh(refreshToken: String, operationId: String) = SecureLoginTokens("access", "refresh")
         override suspend fun logout(accessToken: String) {

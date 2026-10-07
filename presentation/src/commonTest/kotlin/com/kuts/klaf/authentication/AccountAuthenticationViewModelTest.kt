@@ -203,6 +203,36 @@ class AccountAuthenticationViewModelTest {
     }
 
     @Test
+    fun `repeated signup after approval shows approved immediately but still needs password reentry`() =
+        runTest(dispatcher) {
+            val account = FakeAccountSession().apply {
+                signUpResult = AccountSignUpResult.PendingApproval("pending-id-123456789",
+                    AccountEnrollmentStatus.APPROVED)
+            }
+            val viewModel = AccountAuthenticationViewModel(account, contextProvider())
+            viewModel.updateEmail("alice@example.test")
+            viewModel.updatePassword("long-secret-phrase")
+            viewModel.updatePasswordConfirmation("long-secret-phrase")
+
+            viewModel.signUp()
+            advanceUntilIdle()
+
+            assertEquals(AccountEnrollmentStatus.APPROVED, viewModel.pendingApprovalStatus.value)
+            assertEquals("", viewModel.typingState.value.passwordHolder.text)
+            assertEquals(0, account.completionCalls)
+            viewModel.completePendingApproval()
+            advanceUntilIdle()
+            assertEquals(0, account.completionCalls)
+
+            viewModel.updatePassword("long-secret-phrase")
+            viewModel.completePendingApproval()
+            advanceUntilIdle()
+            assertEquals(1, account.completionCalls)
+            assertEquals(AuthenticationAction.SIGN_UP,
+                (viewModel.screenLoadingState.value as LoadingState.Success<*>).data)
+        }
+
+    @Test
     fun `sign in failures show specific messages and release loading state`() = runTest(dispatcher) {
         val expected = mapOf(
             AccountFailure.CONNECTION to Res.string.account_error_connection,
@@ -321,13 +351,14 @@ class AccountAuthenticationViewModelTest {
         var lastSignInPassword: String? = null
         var lastSignUpPassword: String? = null
         var signInResult: AccountSignInResult = AccountSignInResult.DeviceRegistrationRequired("alice@example.test")
+        var signUpResult: AccountSignUpResult = AccountSignUpResult.PendingApproval("pending-id-123456789")
         var completionCalls = 0
         var resetCalls = 0
 
         override suspend fun signUp(email: String, password: String): AccountSignUpResult {
             lastSignUpPassword = password
             signUp(email)
-            return AccountSignUpResult.PendingApproval("pending-id-123456789")
+            return signUpResult
         }
 
         override suspend fun signIn(email: String, password: String): AccountSignInResult {
@@ -360,7 +391,11 @@ class AccountAuthenticationViewModelTest {
 
         override suspend fun signOut() = Unit
 
-        override suspend fun resetPassword(email: String, token: String, newPassword: String) {
+        override suspend fun resetPassword(
+            email: String,
+            token: String,
+            newPassword: String,
+        ) {
             resetCalls++
             exception?.let { throw it }
         }

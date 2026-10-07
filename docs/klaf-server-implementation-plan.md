@@ -1,5 +1,15 @@
 # Klaf Server Authentication Implementation Plan
 
+## Approved sign-up retry recovery (2026-10-07)
+
+Server RED regression confirmed the approved retry returned `AWAITING_APPROVAL`.
+Server response and client transport/session/UI status propagation are now
+implemented with explicit password re-entry still required. Focused and full
+server/data/presentation desktop tests, Android debug assembly, and Desktop
+application compilation passed.
+Manual Android/server verification remains. The operator reviewed the fix and
+authorized local commits; push remains pending.
+
 ## Local public origin Run configuration (2026-10-07)
 
 Tests for loopback derivation, explicit override and non-loopback failure were

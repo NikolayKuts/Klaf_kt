@@ -1,5 +1,22 @@
 # Manual Android Backup Bootstrap
 
+## Existing password-authenticated account (2026-10-07, completed)
+
+The one-time offline importer into an approved account was removed after the
+successful migration. It is not a supported repeatable Gradle task. Do not
+point the older new-account `importAndroidBackup` task at an existing account.
+Restore from the preserved server-storage backup if this migration must be
+recovered.
+
+The live import followed a disposable-snapshot trial:
+57 decks, 1093 cards and 19 saved images at server revision 2. The server DB
+passed SQLite integrity and foreign-key checks; the PNGs matched the source
+hashes. Android manual sync advanced its confirmed revision from 1 to 2 and
+the imported decks appeared. Opening one saved image on the device remains
+the final visual check.
+
+## Historical new-account bootstrap
+
 This is a developer-assisted, one-time import. Do not run it on the real backup
 until the export and target server root have been checked. Keep the original
 files outside the repository as recovery copies.
