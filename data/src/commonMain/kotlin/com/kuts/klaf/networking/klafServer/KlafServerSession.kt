@@ -494,14 +494,14 @@ class KlafServerSession(
 
         val normalizedHost = host.trim()
         require(normalizedHost.isNotBlank()) { "Klaf Server host must not be blank." }
+        val origin = klafServerHttpOrigin(normalizedHost, port, isSecure)
+        val socketBase = klafServerWebSocketBaseUrl(origin)
 
         lifecycleMutex.withLock { manualDisconnectRequested = false }
         logD(
-            "Klaf Server connection opening: host=$normalizedHost, port=$port, secure=$isSecure, " +
+            "Klaf Server connection opening: secure=$isSecure, " +
                 "attempt=$connectionAttempt",
         )
-        val scheme = if (isSecure) "wss" else "ws"
-        val httpScheme = if (isSecure) "https" else "http"
         val newReadySignal = CompletableDeferred<Unit>()
         mutableConnectionState.value = KlafServerConnectionState.Reconnecting(attempt = connectionAttempt)
 
@@ -510,11 +510,11 @@ class KlafServerSession(
             val proof = authenticatedRequestSigner?.let { signer ->
                 val email = selectedAccountEmail?.first()?.takeIf(String::isNotBlank)
                     ?: throw IllegalStateException("Sign in to use Klaf Server AI features.")
-                KlafServerWebSocketAuthorizer("$httpScheme://$normalizedHost:$port", httpClient, signer)
+                KlafServerWebSocketAuthorizer(origin, httpClient, signer)
                     .authorizationHeaders(email)
             }
             val newSession = httpClient.webSocketSession(
-                urlString = "$scheme://$normalizedHost:$port$KLAF_SERVER_WEBSOCKET_PATH",
+                urlString = "$socketBase$KLAF_SERVER_WEBSOCKET_PATH",
                 block = {
                     proof?.let {
                         headers.append("Authorization", it.authorization)

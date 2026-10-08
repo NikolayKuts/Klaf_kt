@@ -1,5 +1,20 @@
 # Klaf Server Authentication Implementation Plan
 
+## Linux Tunnel client cutover (2026-10-08)
+
+Use the existing ignored client `SecretConstants.KlafServer` for Android and
+Desktop endpoint configuration. Remove the older Android `BuildConfig` and
+Desktop runtime `local.properties` endpoint paths without changing unrelated
+local settings. First add RED tests for default-port origin equivalence and
+HTTPS/WSS mapping; then keep REST, AI WebSocket proof, sync events, and client
+credentials on the same external origin. Verify the server's configured
+external origin against a loopback listener with a placeholder host. Run
+client/server regression builds and audit both Git histories and staged diffs
+for the real hostname before local commits. Push remains operator-controlled.
+Target-Linux runtime, Tunnel routing, sign-in, synchronization and AI feature
+checks are live gates. Windows-to-Linux account-content migration follows as
+a separate, backup-first operation after connectivity succeeds.
+
 ## Approved sign-up retry recovery (2026-10-07)
 
 Server RED regression confirmed the approved retry returned `AWAITING_APPROVAL`.
@@ -23,13 +38,11 @@ deliberately cleared server registry.
 
 ## Platform validation scheduling (2026-10-06)
 
-The operator is continuing on Windows and has deferred Ubuntu-native Klaf
-Server/runtime/isolation verification until a future explicit request. Do
-not treat WSL Ubuntu SDK test passes as validation of the target Ubuntu
-machine, and do not silently advance to Ubuntu setup or deployment. Keep
-Ubuntu verification as a release gate before claiming Linux support or
-migrating the server there; remind the operator at decisions that rely on
-that claim. Windows work may continue without waiting for Ubuntu.
+The operator originally continued on Windows and deferred Ubuntu-native Klaf
+Server/runtime/isolation verification. The 2026-10-08 Linux Tunnel cutover
+request activates that verification gate. Do not treat WSL Ubuntu SDK test
+passes as validation of the target Ubuntu machine; check the actual Linux
+runtime before claiming deployment readiness or migrating existing data.
 
 ## Resolved sign-in failure diagnosis (2026-10-06)
 

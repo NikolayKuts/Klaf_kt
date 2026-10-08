@@ -766,23 +766,30 @@ For this MVP, REST must expose synchronization operations. Database CRUD is an
 internal implementation concern of the client and server rather than a separate
 public API required by the UI flow.
 
-For development and local testing, Android and Desktop receive the server
-endpoint from developer-local configuration rather than an in-app settings
-screen. This configuration must use the Git-ignored root `local.properties`
-file and must not be committed to Git. It contains separate values for:
+Android and Desktop receive the Klaf Server endpoint from the existing
+Git-ignored client `data/src/commonMain/.../SecretConstants.kt` file. Both
+clients use its `KlafServer.HOST`, `PORT`, and `IS_SECURE` values; neither
+Android `BuildConfig` nor a Desktop runtime read of `local.properties` is the
+endpoint source. There is no in-app endpoint settings screen. The same shared
+source can be used if iOS later gains Klaf Server integration.
 
-- `klaf.server.bind.host` and `klaf.server.port`, used by Klaf Server;
-- `klaf.client.server.host` and `klaf.client.server.port`, used by Android and
-  Desktop clients.
+The real public hostname must not enter tracked source, documentation, tests,
+or Git history. A committed example may show only placeholder values. The
+client application binary still necessarily contains its configured endpoint;
+server-side authentication, not hostname secrecy, controls access.
+
+The root `local.properties` may continue to hold unrelated developer-local
+settings and must not be committed to Git. The remaining client setting includes:
+
 - `klaf.client.storage.mode`, optionally `room` (default) or `legacy`, used
   for the guarded clean-install client cutover.
 
-The separate host values allow the server to listen on all local interfaces
-while clients connect through the computer's LAN address.
-
-The local-development MVP uses plain `http://` for REST and `ws://` for
-`/sync-events` in the trusted local network. HTTPS/WSS becomes mandatory before
-the server is exposed outside that environment.
+For the Linux deployment, both clients use external HTTPS/WSS through
+Cloudflare Tunnel; `cloudflared` reaches the server over loopback HTTP on the
+same host. Client REST, WebSocket authorization, sync events, and stored
+credentials must use one consistent external origin. A default HTTPS port
+must not create a different textual DPoP origin. Plain HTTP/WS remains
+available only for explicit local development configurations.
 
 The synchronization WebSocket is an event channel, not a second write API:
 

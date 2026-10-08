@@ -11,12 +11,8 @@ val klafClientProperties = Properties().apply {
     val localFile = rootProject.file("local.properties")
     if (localFile.isFile) localFile.inputStream().use(::load)
 }
-val klafClientHost = klafClientProperties.getProperty("klaf.client.server.host", "127.0.0.1").trim()
-val klafClientPort = klafClientProperties.getProperty("klaf.client.server.port", "8090").trim().toInt()
 val klafClientStorageMode = (providers.gradleProperty("klafClientStorageMode").orNull
     ?: klafClientProperties.getProperty("klaf.client.storage.mode", "room")).trim().lowercase()
-require(klafClientHost.matches(Regex("[A-Za-z0-9._-]+"))) { "Invalid klaf.client.server.host" }
-require(klafClientPort in 1..65535) { "Invalid klaf.client.server.port" }
 require(klafClientStorageMode in setOf("legacy", "room")) { "Invalid klaf.client.storage.mode" }
 
 kotlin {
@@ -113,8 +109,6 @@ android {
     defaultConfig {
         minSdk = libs.versions.androidMinSdk.get().toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "KLAF_CLIENT_SERVER_HOST", "\"$klafClientHost\"")
-        buildConfigField("int", "KLAF_CLIENT_SERVER_PORT", klafClientPort.toString())
         buildConfigField("String", "KLAF_CLIENT_STORAGE_MODE", "\"$klafClientStorageMode\"")
     }
 

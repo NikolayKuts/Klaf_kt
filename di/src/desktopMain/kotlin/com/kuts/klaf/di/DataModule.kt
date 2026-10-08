@@ -2,6 +2,7 @@ package com.kuts.klaf.di
 
 import com.kuts.domain.common.AuthenticationAction
 import com.kuts.domain.common.ICoroutineContextProvider
+import com.kuts.klaf.SecretConstants
 import com.kuts.domain.common.IDataSynchronizationState
 import com.kuts.domain.common.LoadingState
 import com.kuts.domain.entities.AuthenticationState
@@ -77,7 +78,6 @@ import com.kuts.klaf.room.databases.StaticRoomDatabaseSource
 import com.kuts.klaf.room.repositoryImplementations.DeckReviewInfoRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.GuestAccountDataTransfer
 import java.io.File
-import java.util.Properties
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -227,12 +227,10 @@ private fun Module.desktopRepositoryModule() {
 private fun Module.desktopInfrastructureModule() {
     single { DesktopStorageConfiguration.fromEnvironment() }
     single {
-        val properties = Properties().apply {
-            findDeveloperLocalProperties()?.inputStream()?.use(::load)
-        }
         KlafServerEndpointConfig(
-            host = properties.getProperty("klaf.client.server.host", "127.0.0.1").trim(),
-            port = properties.getProperty("klaf.client.server.port", "8090").trim().toInt(),
+            host = SecretConstants.KlafServer.HOST,
+            port = SecretConstants.KlafServer.PORT,
+            isSecure = SecretConstants.KlafServer.IS_SECURE,
         )
     }
     single<KlafRoomDatabase> { KlafRoomDatabaseProvider.getInstance() }

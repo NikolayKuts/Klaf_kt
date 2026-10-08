@@ -1,5 +1,7 @@
 package com.kuts.klaf.di
 
+import com.kuts.klaf.networking.klafServer.klafServerHttpOrigin
+
 internal data class KlafServerEndpointConfig(
     val host: String,
     val port: Int,
@@ -11,5 +13,5 @@ internal data class KlafServerEndpointConfig(
         require(port in 1..65535) { "Klaf Server port is invalid" }
     }
 
-    fun restBaseUrl(): String = "${if (isSecure) "https" else "http"}://$host:$port"
+    fun restBaseUrl(): String = klafServerHttpOrigin(host, port, isSecure)
 }

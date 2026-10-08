@@ -26,11 +26,7 @@ class KlafServerSyncEventConnector(
 ) : SyncEventConnector {
 
     private val endpointBase = baseUrl.trimEnd('/')
-    private val socketBase = when {
-        baseUrl.startsWith("http://") -> "ws://${baseUrl.removePrefix("http://").trimEnd('/')}"
-        baseUrl.startsWith("https://") -> "wss://${baseUrl.removePrefix("https://").trimEnd('/')}"
-        else -> throw IllegalArgumentException("Sync event server URL must use HTTP or HTTPS")
-    }
+    private val socketBase = klafServerWebSocketBaseUrl(baseUrl)
     private val json = Json {
         ignoreUnknownKeys = true
         explicitNulls = false

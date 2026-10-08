@@ -3,13 +3,31 @@
 This file is a temporary working document for the Klaf server implementation.
 It should be removed or replaced by permanent documentation after the full implementation is finished.
 
+## Linux Tunnel deployment (2026-10-08)
+
+- Klaf Server and `cloudflared` run on the same Linux host. The server listens
+  only on loopback HTTP; the Tunnel forwards to that local listener. Android
+  and Desktop use HTTPS for REST and WSS for both WebSocket channels, with
+  normal TLS certificate validation.
+- The server's ignored local `SecretConstants.Server.PUBLIC_ORIGIN` is set to
+  the external HTTPS origin used by clients. DPoP verification uses that
+  origin, never the loopback listener or untrusted forwarded headers.
+- Do not put the real hostname in tracked source, tests, documentation, commit
+  messages, or Git history. Use placeholder domains in committed examples.
+- Linux runtime and Tunnel reachability must be verified on the target host;
+  Windows tests alone do not establish Linux readiness.
+- Move existing Windows account content and images only after connectivity
+  verification, as a separate operation. Retain Klaf data and sync history;
+  Codex's internal thread history is out of scope. Cross-OS signing-key
+  recovery must revoke old sessions and require fresh sign-in.
+
 ## Local public origin configuration (2026-10-07)
 
 - Ordinary Android Studio Run must start the server without a separate
   `KLAF_PUBLIC_ORIGIN` environment variable when the configured bind host is
   `127.0.0.1` or `localhost`: derive `http://<bind-host>:<port>` for DPoP.
 - The ignored local server `SecretConstants.kt` may explicitly set a
-  `PUBLIC_ORIGIN` for a future externally visible HTTPS address. Retain an
+  `PUBLIC_ORIGIN` for the externally visible HTTPS address. Retain an
   explicit process environment/JVM-property override for controlled runs.
 - Never infer a client origin from a non-loopback bind host (including
   `0.0.0.0`); require an explicit origin in that case. An explicitly supplied

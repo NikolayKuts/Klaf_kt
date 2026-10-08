@@ -16,6 +16,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.kuts.domain.common.ICoroutineContextProvider
+import com.kuts.klaf.SecretConstants
 import com.kuts.domain.entities.DeckRepetitionInfos
 import com.kuts.domain.managers.IKlafServerConnectionManager
 import com.kuts.domain.managers.IAppMaintenanceManager
@@ -305,7 +306,13 @@ private fun Module.androidRepositoryModule() {
 }
 
 private fun Module.infrastructureModule() {
-    single { KlafServerEndpointConfig(BuildConfig.KLAF_CLIENT_SERVER_HOST, BuildConfig.KLAF_CLIENT_SERVER_PORT) }
+    single {
+        KlafServerEndpointConfig(
+            host = SecretConstants.KlafServer.HOST,
+            port = SecretConstants.KlafServer.PORT,
+            isSecure = SecretConstants.KlafServer.IS_SECURE,
+        )
+    }
     single<SyncEventConnector> {
         KlafServerSyncEventConnector(
             get<KlafServerEndpointConfig>().restBaseUrl(), KlafServerHttpClientFactory().create(), get(),

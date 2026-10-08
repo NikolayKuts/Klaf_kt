@@ -16,6 +16,21 @@
 
 ## Current Focus
 
+- 2026-10-08 Linux Tunnel client cutover implemented locally. Android and
+  Desktop now share the existing ignored client
+  `SecretConstants.KlafServer`; Linux Server uses its separate ignored
+  `SecretConstants.Server.PUBLIC_ORIGIN`. A common origin builder omits default
+  HTTPS port 443 and supplies the REST/DPoP origin and WSS URLs consistently.
+  RED-then-GREEN endpoint tests, Android/Desktop compilation, focused server
+  configuration tests, and a separate full `:klaf-server:test` run passed.
+  An earlier duplicate concurrent full run was cancelled to avoid competing
+  test workers. Git-tracked files and both Git histories did not contain the
+  real hostname. The current public HTTPS route validates TLS but returns 502,
+  so target-Linux Tunnel and end-to-end checks remain blocked. Push remains
+  operator-controlled. The later data move must preserve Klaf account/deck/card/image/
+  sync content; Codex internal history is excluded, and re-sign-in is
+  acceptable.
+
 - 2026-10-07 post-import review complete: removed the temporary
   existing-account Android-backup importer, its Gradle task, storage hook and
   importer-only tests. Kept the compact display of the persisted import
