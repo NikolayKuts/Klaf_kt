@@ -1,5 +1,26 @@
 # Klaf Server Status
 
+## Live verification (2026-10-08): migrated image retrieval on Android
+
+Linux reports 19 migrated PNG files, and the Windows export has 19 matching
+card references. Android initially received decks/cards but not every saved
+mnemonic image. The prior editing UI waited for image resolution before showing
+mnemonic text, and the image cache suppressed download failures. Credential-free
+client diagnostics reproduced the request behavior on the connected device.
+The diagnostic Android build compiled and installed over the existing app
+without clearing its data (`:Android:installDebug --offline`, 2026-10-08).
+Live Android log now reports HTTP 200 for a saved-image GET after the operator
+opened an image. This proves successful authenticated image delivery for that
+request. Opening a second migrated card produced `AccountOperationException`
+without an HTTP response log about 15 seconds later, consistent with the
+image request timeout; its exact failure enum was not logged. Previously,
+failed downloads were suppressed and reopening retried. The
+delayed-text UI behavior is addressed for cards after a successful manual
+sync: their images are local before the sync reports success. No server image
+endpoint change was needed. Live Android sync completed all 19/19 migrated
+images before the app returned to green; an earlier timeout left it in an
+error state and a restart showed pending changes instead of green.
+
 ## Review (2026-10-07): post-import cleanup and auth-retry regression
 
 The one-time existing-account Android-backup importer and Gradle task were

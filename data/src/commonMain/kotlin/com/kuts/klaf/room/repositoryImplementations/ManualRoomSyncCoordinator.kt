@@ -39,6 +39,7 @@ class ManualRoomSyncCoordinator(
     private val partialApplier: RoomSyncPartialApplier = RoomSyncPartialApplier(databaseSource, outbox, applier),
     private val fetchBootstrap: (suspend (String, String) -> SyncBootstrapResponse)? = null,
     private val prepareImages: suspend (SyncRequest) -> Unit = {},
+    private val downloadImages: suspend (String) -> Unit = {},
 ) {
 
     constructor(
@@ -53,8 +54,9 @@ class ManualRoomSyncCoordinator(
         partialApplier: RoomSyncPartialApplier = RoomSyncPartialApplier(databaseSource, outbox, applier),
         fetchBootstrap: (suspend (String, String) -> SyncBootstrapResponse)? = null,
         prepareImages: suspend (SyncRequest) -> Unit = {},
+        downloadImages: suspend (String) -> Unit = {},
     ) : this(databaseSource, outbox, applier, { deviceId }, sendRequest, confirmAppliedRevision,
-        conflictStore, resolver, partialApplier, fetchBootstrap, prepareImages) {
+        conflictStore, resolver, partialApplier, fetchBootstrap, prepareImages, downloadImages) {
         require(deviceId.isNotBlank()) { "Device ID is required" }
     }
 
@@ -180,6 +182,7 @@ class ManualRoomSyncCoordinator(
             if (snapshot.decks.isNotEmpty() || snapshot.cards.isNotEmpty() || snapshot.sources.isNotEmpty() || snapshot.ignoredWords.isNotEmpty()) {
                 if (safeForInitialSnapshot) {
                     applier.applyInitialSnapshot(accountId, snapshot, pending.map { it.operation.operationId })
+                    downloadImages(accountId)
                     confirmAppliedRevision(accountId, deviceId, snapshot.revision)
                     return ManualSyncResult.Applied(snapshot.revision)
                 }
@@ -220,6 +223,7 @@ class ManualRoomSyncCoordinator(
             return ManualSyncResult.NeedsResolution(response)
         }
         applier.applyConflictFree(accountId, response)
+        downloadImages(accountId)
         confirmAppliedRevision(accountId, deviceId, response.revision)
         return ManualSyncResult.Applied(response.revision)
     }

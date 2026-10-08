@@ -10,6 +10,9 @@ import com.kuts.klaf.room.databases.ManualSyncInProgressException
 import com.kuts.klaf.room.repositoryImplementations.DeckRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.RoomSyncDeltaApplier
 import com.kuts.klaf.room.repositoryImplementations.RoomSyncOutbox
+import com.kuts.klaf.room.repositoryImplementations.RoomMnemonicImageDownloader
+import com.kuts.klaf.mnemonic.CachedMnemonicImageAssetRepository
+import com.kuts.klaf.mnemonic.DesktopMnemonicImageAssetRepository
 import com.kuts.klaf.room.repositoryImplementations.StorageTransactionRepositoryRoom
 import com.kuts.klaf.room.entities.RoomDeck
 import com.kuts.domain.entities.Deck
@@ -28,6 +31,7 @@ import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.async
@@ -201,6 +205,120 @@ class ManualRoomSyncAttemptStateTest {
         assertEquals(ManualSyncResult.Applied(0L), coordinator.synchronize())
         assertEquals(1, snapshotReads)
         assertEquals(1, deltaRequests)
+    }
+
+    @Test
+    fun `bootstrap sync waits for images and retries them after metadata was applied`() = withSource { source ->
+        val outbox = RoomSyncOutbox(source)
+        var downloads = 0
+        var confirmations = 0
+        val coordinator = ManualRoomSyncCoordinator(
+            databaseSource = source,
+            outbox = outbox,
+            applier = RoomSyncDeltaApplier(source, outbox),
+            deviceId = "device-a",
+            sendRequest = { request -> SyncResponse(
+                1L,
+                delta = SyncDelta(request.baseRevision, 1L,
+                    emptyList(), emptyList(), emptyList(), emptyList(), emptyList()),
+            ) },
+            confirmAppliedRevision = { _, _, _ -> confirmations++ },
+            fetchBootstrap = { _, _ -> SyncBootstrapResponse(
+                1L,
+                listOf(SyncDeck("deck-a", "Deck", 1L, cardQuantity = 1)),
+                listOf(SyncCard("card-a", "deck-a", "слово", "word")),
+            ) },
+            downloadImages = { account ->
+                assertEquals(ATTEMPT_ACCOUNT, account)
+                assertEquals("word", source.current().cardDao().getCardBySyncId("card-a")?.foreignWord)
+                downloads++
+                if (downloads == 1) error("image unavailable")
+            },
+        )
+
+        val failure = assertFailsWith<IllegalStateException> { coordinator.synchronize() }
+        assertEquals("image unavailable", failure.message)
+        assertEquals(ManualSyncAttemptState.Failed(ATTEMPT_ACCOUNT), coordinator.attemptState.value)
+        assertEquals(0, confirmations)
+        assertEquals(1L, outbox.confirmedRevision(ATTEMPT_ACCOUNT))
+        assertEquals(ManualSyncResult.Applied(1L), coordinator.synchronize())
+        assertEquals(2, downloads)
+        assertEquals(1, confirmations)
+    }
+
+    @Test
+    fun `delta sync downloads images before device confirmation`() = withSource { source ->
+        val events = mutableListOf<String>()
+        val outbox = RoomSyncOutbox(source)
+        val coordinator = ManualRoomSyncCoordinator(
+            databaseSource = source,
+            outbox = outbox,
+            applier = RoomSyncDeltaApplier(source, outbox),
+            deviceId = "device-a",
+            sendRequest = { request -> SyncResponse(
+                0L,
+                delta = SyncDelta(request.baseRevision, 0L,
+                    emptyList(), emptyList(), emptyList(), emptyList(), emptyList()),
+            ) },
+            confirmAppliedRevision = { _, _, _ -> events += "confirmed" },
+            downloadImages = { events += "images" },
+        )
+
+        assertEquals(ManualSyncResult.Applied(0L), coordinator.synchronize())
+        assertEquals(listOf("images", "confirmed"), events)
+    }
+
+    @Test
+    fun `bootstrap sync caches referenced images and never downloads them on card open`() = withSource { source ->
+        val imageId = "2720b4f1-1a0e-4292-a597-836e86f897ac"
+        val root = Files.createTempDirectory("klaf-sync-images-").toFile()
+        try {
+            val local = DesktopMnemonicImageAssetRepository(root.resolve("local"))
+            val cache = DesktopMnemonicImageAssetRepository(root.resolve("account"))
+            var downloads = 0
+            val images = CachedMnemonicImageAssetRepository(
+                local = local,
+                selectedEmail = { source.selection.value.accountEmail },
+                cacheForAccount = { cache },
+                download = { _, asset ->
+                    assertEquals(imageId, asset)
+                    downloads++
+                    byteArrayOf(0x89.toByte(), 80, 78, 71, 13, 10, 26, 10)
+                },
+                ioContext = Dispatchers.IO,
+            )
+            val outbox = RoomSyncOutbox(source)
+            val coordinator = ManualRoomSyncCoordinator(
+                databaseSource = source,
+                outbox = outbox,
+                applier = RoomSyncDeltaApplier(source, outbox),
+                deviceId = "device-a",
+                sendRequest = { request -> SyncResponse(
+                    1L,
+                    delta = SyncDelta(request.baseRevision, 1L,
+                        emptyList(), emptyList(), emptyList(), emptyList(), emptyList()),
+                ) },
+                confirmAppliedRevision = { _, _, _ -> },
+                fetchBootstrap = { _, _ -> SyncBootstrapResponse(
+                    1L,
+                    listOf(SyncDeck("deck-a", "Deck", 1L, cardQuantity = 1)),
+                    listOf(SyncCard(
+                        "card-a", "deck-a", "слово", "word",
+                        mnemonicJson = """{"selectedIllustration":{"imageUrl":"$imageId"}}""",
+                    )),
+                ) },
+                downloadImages = RoomMnemonicImageDownloader(source, images)::download,
+            )
+
+            assertEquals(ManualSyncResult.Applied(1L), coordinator.synchronize())
+            assertEquals(1, downloads)
+            assertEquals(imageId, images.resolveSavedImage(imageId)?.assetId)
+            assertEquals(1, downloads)
+            assertEquals(ManualSyncResult.Applied(1L), coordinator.synchronize())
+            assertEquals(1, downloads)
+        } finally {
+            root.deleteRecursively()
+        }
     }
 
     @Test

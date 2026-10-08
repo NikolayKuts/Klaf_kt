@@ -270,25 +270,27 @@ private fun Module.androidRepositoryModule() {
     single<IMnemonicImageRepository> {
         KlafServerMnemonicImageRepository(klafServerSession = get())
     }
-    single<IMnemonicImageAssetRepository> {
+    single<CachedMnemonicImageAssetRepository> {
         val context = androidContext()
         val local = AndroidMnemonicImageAssetRepository(context)
-        if (get<RoomDatabaseSource>() !is ActiveLocalRoomDatabase) local else {
-            val source = get<ActiveLocalRoomDatabase>()
-            val identity = get<AccountDeviceIdentity>()
-            val remote = get<KlafServerImageRestClient>()
-            CachedMnemonicImageAssetRepository(
-                local = local,
-                selectedEmail = { source.selection.value.accountEmail },
-                cacheForAccount = { email ->
-                    val key = MessageDigest.getInstance("SHA-256").digest(email.toByteArray())
-                        .joinToString("") { "%02x".format(it) }
-                    AndroidMnemonicImageAssetRepository(context, File(context.filesDir, "mnemonic-remote-cache/$key"))
-                },
-                download = { email, asset -> remote.download(email, identity.current().id, asset) },
-                ioContext = get<ICoroutineContextProvider>().io,
-            )
-        }
+        val source = get<ActiveLocalRoomDatabase>()
+        val identity = get<AccountDeviceIdentity>()
+        val remote = get<KlafServerImageRestClient>()
+        CachedMnemonicImageAssetRepository(
+            local = local,
+            selectedEmail = { source.selection.value.accountEmail },
+            cacheForAccount = { email ->
+                val key = MessageDigest.getInstance("SHA-256").digest(email.toByteArray())
+                    .joinToString("") { "%02x".format(it) }
+                AndroidMnemonicImageAssetRepository(context, File(context.filesDir, "mnemonic-remote-cache/$key"))
+            },
+            download = { email, asset -> remote.download(email, identity.current().id, asset) },
+            ioContext = get<ICoroutineContextProvider>().io,
+        )
+    }
+    single<IMnemonicImageAssetRepository> {
+        if (get<RoomDatabaseSource>() is ActiveLocalRoomDatabase) get<CachedMnemonicImageAssetRepository>()
+        else AndroidMnemonicImageAssetRepository(androidContext())
     }
     single<IMnemonicImageRemoteRepository> {
         AndroidMnemonicImageRemoteRepository(

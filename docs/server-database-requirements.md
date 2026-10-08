@@ -722,7 +722,7 @@ bootstrap.
 2026-09-28 scope extension: display existing mnemonic images on Android and
 Desktop. Copy saved image files from a working backup into account-specific
 server file storage, keeping the original backup immutable. Retrieve missing
-images on demand through REST and cache them per account for offline display.
+images through REST and cache them per account for offline display.
 Reuse existing card-management and review image UI. Missing files or network
 failure must not prevent use of the card; cancellation must remain cancellable.
 The read endpoint requires a registered device and a matching card reference,
@@ -734,11 +734,29 @@ different bytes under an existing ID are rejected, never overwritten. If an
 upload fails, keep the local card/outbox changes for retry and do not publish
 that sync batch. Only saved images referenced by pending card changes are
 uploaded, not unused drafts. Downloads reuse the existing account-scoped cache.
-Legacy missing image files remain valid references and do not prevent data
-sync; absence of bytes is not converted into deletion. Uploaded files from
+Legacy missing image files remain valid references; absence of bytes is not
+converted into deletion. Uploaded files from
 failed or rejected card changes are retained for safe retries; remote deletion
 and garbage collection remain deferred. Existing Firebase image-sync code
 must not be activated for the new Room/REST path.
+
+2026-10-08 change: an explicit manual synchronization on Android or Desktop
+must also download every missing saved image referenced by the selected
+account's synchronized cards. Do not report the synchronization as complete
+until all referenced image bytes are present in that account's local cache or
+existing local image storage. A missing server file, failed download, or
+invalid image must make the attempt retryable and visibly failed without
+discarding already-applied cards or successfully cached images. Repeating
+manual sync must retry only missing images, including when card metadata was
+already applied by an earlier attempt. Card/review screen opening must not
+start a separate image download; it reads local files after synchronization.
+After an app restart, the sync indicator must not show fully synchronized
+while referenced images are still missing locally.
+Cancellation and account switching must not cache or display another account's
+image. Unreferenced server files and unsaved drafts are not downloaded.
+Retry a transient connection failure or timeout for an image within the same
+manual sync attempt a bounded number of times; do not retry a missing file,
+invalid image, authorization failure, or cancellation automatically.
 
 Sign-in, sign-up and device registration must show actionable error messages
 for an unreachable server, timeout, missing account, existing account, device

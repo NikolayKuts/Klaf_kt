@@ -1,6 +1,7 @@
 package com.kuts.klaf.di
 
 import com.kuts.klaf.room.repositoryImplementations.RoomMnemonicImageUploader
+import com.kuts.klaf.room.repositoryImplementations.RoomMnemonicImageDownloader
 import com.kuts.klaf.networking.klafServer.KlafServerImageRestClient
 import com.kuts.domain.common.DataSynchronizationValidator
 import com.kuts.domain.interactors.AuthenticationInteractor
@@ -136,6 +137,7 @@ private fun Module.commonRepositoryModule() {
             assets = get(), upload = get<KlafServerImageRestClient>()::upload,
         )
     }
+    single { RoomMnemonicImageDownloader(get(), get()) }
     single {
         val identity = get<AccountDeviceIdentity>()
         val rest = get<KlafServerSyncRestClient>()
@@ -146,6 +148,7 @@ private fun Module.commonRepositoryModule() {
             deviceIdProvider = { identity.current().id },
             sendRequest = rest::sync,
             prepareImages = get<RoomMnemonicImageUploader>()::prepare,
+            downloadImages = get<RoomMnemonicImageDownloader>()::download,
             fetchBootstrap = rest::bootstrap,
             confirmAppliedRevision = { email, deviceId, revision ->
                 rest.confirmAppliedRevision(email, deviceId, revision)

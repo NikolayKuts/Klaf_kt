@@ -189,25 +189,28 @@ private fun Module.desktopRepositoryModule() {
     single<IMnemonicImageRepository> {
         KlafServerMnemonicImageRepository(klafServerSession = get())
     }
-    single<IMnemonicImageAssetRepository> {
+    single<CachedMnemonicImageAssetRepository> {
         val directory = get<DesktopStorageConfiguration>().directory
         val local = DesktopMnemonicImageAssetRepository(directory)
-        if (!get<DesktopStorageConfiguration>().useAccountScopedStorage) local else {
-            val source = get<ActiveLocalRoomDatabase>()
-            val identity = get<AccountDeviceIdentity>()
-            val remote = get<KlafServerImageRestClient>()
-            CachedMnemonicImageAssetRepository(
-                local = local,
-                selectedEmail = { source.selection.value.accountEmail },
-                cacheForAccount = { email ->
-                    val key = MessageDigest.getInstance("SHA-256").digest(email.toByteArray())
-                        .joinToString("") { "%02x".format(it) }
-                    DesktopMnemonicImageAssetRepository(File(directory, "mnemonic-remote-cache/$key"))
-                },
-                download = { email, asset -> remote.download(email, identity.current().id, asset) },
-                ioContext = get<ICoroutineContextProvider>().io,
-            )
-        }
+        val source = get<ActiveLocalRoomDatabase>()
+        val identity = get<AccountDeviceIdentity>()
+        val remote = get<KlafServerImageRestClient>()
+        CachedMnemonicImageAssetRepository(
+            local = local,
+            selectedEmail = { source.selection.value.accountEmail },
+            cacheForAccount = { email ->
+                val key = MessageDigest.getInstance("SHA-256").digest(email.toByteArray())
+                    .joinToString("") { "%02x".format(it) }
+                DesktopMnemonicImageAssetRepository(File(directory, "mnemonic-remote-cache/$key"))
+            },
+            download = { email, asset -> remote.download(email, identity.current().id, asset) },
+            ioContext = get<ICoroutineContextProvider>().io,
+        )
+    }
+    single<IMnemonicImageAssetRepository> {
+        val configuration = get<DesktopStorageConfiguration>()
+        if (configuration.useAccountScopedStorage) get<CachedMnemonicImageAssetRepository>()
+        else DesktopMnemonicImageAssetRepository(configuration.directory)
     }
     single<IMnemonicImageRemoteRepository> { DesktopNoOpMnemonicImageRemoteRepository() }
     single { KlafServerImageRestClient(get<KlafServerEndpointConfig>().restBaseUrl(),

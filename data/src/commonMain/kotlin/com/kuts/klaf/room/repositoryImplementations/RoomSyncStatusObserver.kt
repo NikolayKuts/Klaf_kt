@@ -42,6 +42,7 @@ class RoomSyncStatusObserver(
     private val databaseSource: ActiveLocalRoomDatabase,
     private val events: Flow<SyncEventFeedStatus>,
     private val attempts: Flow<ManualSyncAttemptState> = flowOf(ManualSyncAttemptState.Idle),
+    private val hasMissingImages: suspend (String) -> Boolean = { false },
 ) {
 
     val status: Flow<RoomSyncStatus> = databaseSource.selection.flatMapLatest { selection ->
@@ -85,6 +86,7 @@ class RoomSyncStatusObserver(
                     channel != SyncEventChannelState.CONNECTED || serverRevision == null -> SyncIndicatorState.GRAY
                     checkpoint == null || !checkpoint.vocabularySyncInitialized || pendingCount > 0 || serverRevision > confirmedRevision ->
                         SyncIndicatorState.YELLOW
+                    hasMissingImages(email) -> SyncIndicatorState.YELLOW
                     else -> SyncIndicatorState.GREEN
                 }
                 RoomSyncStatus(

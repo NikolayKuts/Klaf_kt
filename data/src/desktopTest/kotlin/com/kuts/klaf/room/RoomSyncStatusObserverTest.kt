@@ -32,6 +32,28 @@ private const val STATUS_BOB = "bob@example.test"
 class RoomSyncStatusObserverTest {
 
     @Test
+    fun `matching revisions are not green while saved images are missing after restart`() = withSource { source ->
+        source.selectAccount(STATUS_ALICE)
+        RoomSyncOutbox(source).applyAccepted(STATUS_ALICE, emptyList(), 1L) {}
+        val events = MutableStateFlow(connected(STATUS_ALICE, 1L))
+        var missing = true
+        val observer = RoomSyncStatusObserver(
+            databaseSource = source,
+            events = events,
+            hasMissingImages = { account ->
+                assertEquals(STATUS_ALICE, account)
+                missing
+            },
+        )
+
+        assertEquals(SyncIndicatorState.YELLOW, observer.status.first().indicator)
+        missing = false
+        events.value = connected(STATUS_ALICE, 2L)
+        events.value = connected(STATUS_ALICE, 1L)
+        assertEquals(SyncIndicatorState.GREEN, observer.await(SyncIndicatorState.GREEN).indicator)
+    }
+
+    @Test
     fun `Room and events update indicator without mixing guest or account state`() = withSource { source ->
         val events = MutableStateFlow(SyncEventFeedStatus())
         val attempts = MutableStateFlow<ManualSyncAttemptState>(ManualSyncAttemptState.Idle)

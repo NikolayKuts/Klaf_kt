@@ -19,6 +19,7 @@ import com.kuts.klaf.common.localStore.AppLocalStore
 import com.kuts.klaf.deckList.common.BaseDeckListViewModel
 import com.kuts.klaf.deckList.common.AccountDeckListGateway
 import com.kuts.klaf.deckList.common.AccountSyncStatusGateway
+import com.kuts.klaf.room.repositoryImplementations.RoomMnemonicImageDownloader
 import com.kuts.klaf.deckList.conflictResolution.AccountConflictGateway
 import com.kuts.klaf.networking.klafServer.SyncEventConnector
 import com.kuts.klaf.networking.klafServer.KlafServerSyncRestClient
@@ -67,6 +68,7 @@ internal val commonPresentationModule = module {
             identity = identity,
             connector = get<SyncEventConnector>(),
             coordinator = get(),
+            hasMissingImages = get<RoomMnemonicImageDownloader>()::hasMissingImages,
             historyReader = AccountSyncHistoryReader(
                 selectedEmail = { databaseSource.selection.value.accountEmail },
                 deviceId = { identity.current().id },

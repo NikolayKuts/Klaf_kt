@@ -93,6 +93,17 @@ not run; image conflict previews remain explicitly deferred.
 
 ## Mnemonic images and actionable errors (2026-09-28 extension)
 
+2026-10-08 update: manual sync now downloads every referenced saved image before
+success, skips files already cached, and retries only missing files after a
+failed attempt. Card opening no longer initiates an image request. New focused
+tests cover bootstrap and delta ordering, missing-file retry, local-only
+display, and account separation; the historical test totals below predate
+this update. A live Android/Linux check downloaded 15 previously missing
+images over two sync attempts; the first timed out without false success,
+and the next ended with all 19 cached. Current Windows regression ran 357
+Desktop tests with zero failures across data, DI, presentation, and domain;
+Android debug installation and Desktop compilation passed.
+
 Final regression: 423 executed tests passed, zero failures (117 data, 62
 presentation, 190 server, 18 DI, 30 domain, 6 Android unit tests). One existing
 opt-in server smoke was skipped. Android debug assembly and Desktop compilation

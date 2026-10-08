@@ -16,6 +16,25 @@
 
 ## Current Focus
 
+- 2026-10-08 manual-sync image completeness: Android and Desktop now download
+  saved images referenced by synchronized cards before the explicit sync
+  reports success. Missing/invalid/download-failed files fail the attempt;
+  already-applied metadata and cached files remain for retry. Card open reads
+  only local storage. New tests failed RED before implementation and passed
+  GREEN for bootstrap, delta ordering, retry, local-only display and account
+  separation. A live Android sync against the Linux server began with 4/19
+  images cached, reached 12/19 and correctly failed on a 15-second timeout
+  rather than claiming success. A bounded retry for transient image timeouts
+  and connection failures was added RED/GREEN; an authorization failure is not
+  retried. After app restart, the indicator initially showed pending changes
+  rather than green while images were missing. The next live sync resumed from
+  12/19 and showed success only after all 19/19 were cached. Full Windows
+  `:data:desktopTest :di:desktopTest :presentation:desktopTest
+  :Android:installDebug :Android:testDebugUnitTest :Desktop:compileKotlin
+  :domain:desktopTest` passed offline (357 Desktop tests, zero failures; Android
+  unit-test task produced no test XML). The Android APK was installed in place;
+  no Linux server code change is required. Live Desktop image sync was not rerun.
+
 - 2026-10-08 Linux Tunnel client cutover implemented locally. Android and
   Desktop now share the existing ignored client
   `SecretConstants.KlafServer`; Linux Server uses its separate ignored

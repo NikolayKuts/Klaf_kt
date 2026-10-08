@@ -67,6 +67,7 @@ internal class RoomAccountSyncStatusGateway(
     private val connector: SyncEventConnector,
     private val coordinator: ManualRoomSyncCoordinator,
     private val historyReader: AccountSyncHistoryReader,
+    private val hasMissingImages: suspend (String) -> Boolean,
 ) : AccountSyncStatusGateway {
 
     override suspend fun recentHistory(accountEmail: String): List<SyncHistoryItem> =
@@ -79,7 +80,12 @@ internal class RoomAccountSyncStatusGateway(
             connector = connector,
             scope = CoroutineScope(currentCoroutineContext()),
         )
-        val observer = RoomSyncStatusObserver(databaseSource, feed.state, coordinator.attemptState)
+        val observer = RoomSyncStatusObserver(
+            databaseSource,
+            feed.state,
+            coordinator.attemptState,
+            hasMissingImages,
+        )
         feed.start()
         try {
             emitAll(observer.status.map(RoomSyncStatus::toAccountSyncStatus))

@@ -63,12 +63,13 @@ rejected. The server stages new files before publishing them. This is not
 authentication: the trusted-network MVP's existing
 account/device identifiers remain the access model.
 
-Android/Desktop fetch a missing saved image when the existing mnemonic/review
-UI resolves its asset ID. Downloads are cached under
+Android/Desktop manual synchronization downloads all saved images referenced
+by the resulting account cards before reporting success. Downloads are cached under
 `mnemonic-remote-cache/<SHA-256-of-account-email>/mnemonic-images/saved` in
 the client app's storage. Cached images remain available offline. A missing
-file or unavailable server leaves the card usable without an image; reopen
-the screen once connectivity returns to retry. During manual sync, saved
+file or unavailable server makes synchronization fail; repeat the manual sync
+once connectivity returns to retry only missing files. Card/review screens do
+not download files themselves. During manual sync, saved
 images referenced by pending AddCard/EditCard operations are uploaded before
 the metadata request. Failure leaves the outbox intact for retry; immutable
 file IDs make a lost successful upload response safe to retry. Legacy missing

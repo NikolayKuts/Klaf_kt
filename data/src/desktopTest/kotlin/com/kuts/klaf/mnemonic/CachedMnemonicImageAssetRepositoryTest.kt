@@ -1,6 +1,8 @@
 package com.kuts.klaf.mnemonic
 
 import com.kuts.domain.repositories.IMnemonicImageAssetRepository
+import com.kuts.domain.managers.AccountFailure
+import com.kuts.domain.managers.AccountOperationException
 import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,12 +22,72 @@ private val PNG_BYTES = byteArrayOf(0x89.toByte(), 80, 78, 71, 13, 10, 26, 10)
 class CachedMnemonicImageAssetRepositoryTest {
 
     @Test
-    fun `download is cached once and remains available offline after repository recreation`() = withImages { local, cache ->
+    fun `card opening never downloads a missing image`() = withImages { local, cache ->
         var calls = 0
         val repository = CachedMnemonicImageAssetRepository(local, { "alice" }, cache, { _, _ ->
             calls++
             PNG_BYTES
         }, Dispatchers.IO)
+
+        assertNull(repository.resolveSavedImage(IMAGE_ID))
+        assertEquals(0, calls)
+    }
+
+    @Test
+    fun `manual sync downloads only missing images and retries failed files`() = withImages { local, cache ->
+        val secondId = "4697bfdf-c5e9-4408-a3df-87e1b161416a"
+        val calls = mutableListOf<String>()
+        var secondAvailable = false
+        val repository = CachedMnemonicImageAssetRepository(local, { "alice" }, cache, { _, id ->
+            calls += id
+            if (id == secondId && !secondAvailable) null else PNG_BYTES
+        }, Dispatchers.IO)
+
+        assertFailsWith<IllegalStateException> {
+            repository.cacheMissingImages("alice", listOf(IMAGE_ID, secondId))
+        }
+        assertNotNull(cache("alice").resolveSavedImage(IMAGE_ID))
+        assertNull(cache("alice").resolveSavedImage(secondId))
+        secondAvailable = true
+        repository.cacheMissingImages("alice", listOf(IMAGE_ID, secondId))
+        assertEquals(listOf(IMAGE_ID, secondId, secondId), calls)
+        assertNotNull(repository.resolveSavedImage(secondId))
+    }
+
+    @Test
+    fun `manual sync retries a transient image timeout without another sync action`() = withImages { local, cache ->
+        var calls = 0
+        val repository = CachedMnemonicImageAssetRepository(local, { "alice" }, cache, { _, _ ->
+            calls++
+            if (calls == 1) throw AccountOperationException(AccountFailure.TIMEOUT)
+            PNG_BYTES
+        }, Dispatchers.IO)
+
+        repository.cacheMissingImages("alice", listOf(IMAGE_ID))
+        assertEquals(2, calls)
+        assertNotNull(cache("alice").resolveSavedImage(IMAGE_ID))
+    }
+
+    @Test
+    fun `manual sync does not retry an authorization failure`() = withImages { local, cache ->
+        var calls = 0
+        val repository = CachedMnemonicImageAssetRepository(local, { "alice" }, cache, { _, _ ->
+            calls++
+            throw AccountOperationException(AccountFailure.DEVICE_PROOF)
+        }, Dispatchers.IO)
+
+        assertFailsWith<AccountOperationException> { repository.cacheMissingImages("alice", listOf(IMAGE_ID)) }
+        assertEquals(1, calls)
+    }
+
+    @Test
+    fun `manual sync caches once and image remains available offline after repository recreation`() = withImages { local, cache ->
+        var calls = 0
+        val repository = CachedMnemonicImageAssetRepository(local, { "alice" }, cache, { _, _ ->
+            calls++
+            PNG_BYTES
+        }, Dispatchers.IO)
+        repository.cacheMissingImages("alice", listOf(IMAGE_ID))
         coroutineScope {
             List(5) { async { assertNotNull(repository.resolveSavedImage(IMAGE_ID)) } }.awaitAll()
         }
@@ -41,6 +103,7 @@ class CachedMnemonicImageAssetRepositoryTest {
         val repository = CachedMnemonicImageAssetRepository(local, { email }, cache, { _, _ ->
             if (available) PNG_BYTES else null
         }, Dispatchers.IO)
+        repository.cacheMissingImages("alice", listOf(IMAGE_ID))
         assertNotNull(repository.resolveSavedImage(IMAGE_ID))
         available = false
         email = "bob"
@@ -61,6 +124,7 @@ class CachedMnemonicImageAssetRepositoryTest {
             email = "bob"
             PNG_BYTES
         }, Dispatchers.IO)
+        assertFailsWith<IllegalStateException> { switched.cacheMissingImages("alice", listOf(IMAGE_ID)) }
         assertNull(switched.resolveSavedImage(IMAGE_ID))
     }
 
@@ -70,9 +134,10 @@ class CachedMnemonicImageAssetRepositoryTest {
         val repository = CachedMnemonicImageAssetRepository(local, { "alice" }, cache, { _, _ ->
             if (valid) PNG_BYTES else "broken response".encodeToByteArray()
         }, Dispatchers.IO)
-        assertNull(repository.resolveSavedImage(IMAGE_ID))
+        assertFailsWith<IllegalStateException> { repository.cacheMissingImages("alice", listOf(IMAGE_ID)) }
         assertNull(cache("alice").resolveSavedImage(IMAGE_ID))
         valid = true
+        repository.cacheMissingImages("alice", listOf(IMAGE_ID))
         assertNotNull(repository.resolveSavedImage(IMAGE_ID))
     }
 
@@ -126,7 +191,9 @@ class CachedMnemonicImageAssetRepositoryTest {
         val cancelled = CachedMnemonicImageAssetRepository(local, { "alice" }, cache, { _, _ ->
             throw CancellationException("cancelled")
         }, Dispatchers.IO)
-        assertFailsWith<CancellationException> { cancelled.resolveSavedImage("another-id") }
+        assertFailsWith<CancellationException> {
+            cancelled.cacheMissingImages("alice", listOf("4697bfdf-c5e9-4408-a3df-87e1b161416a"))
+        }
     }
 
     private fun withImages(block: suspend (IMnemonicImageAssetRepository, (String) -> IMnemonicImageAssetRepository) -> Unit) = runBlocking {
