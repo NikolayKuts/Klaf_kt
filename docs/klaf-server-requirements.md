@@ -770,7 +770,11 @@ Review note: keeping mnemonic text and mnemonic image in one session creates a p
 
 AgentDriver SDK needs support for passing session-level developer instructions into Codex app-server `thread/start`, instead of wrapping the same instruction into every `turn/start` prompt.
 
-This has been implemented in the local AgentDriver working tree. Klaf Server targets the distinct `0.10.13-SNAPSHOT` coordinate for the current account-scoped SDK changes; the previous `0.10.12-SNAPSHOT` is historical. Publish the new SDK to Maven Local before a consuming build.
+This has been implemented in AgentDriver. Klaf Server must consume the current
+`0.10.14-SNAPSHOT` SDK and speech-runtime Gradle plugin together, including the
+FFmpeg provisioner fix. Publish both SDK sets and the plugin to Maven Local
+before a consuming build. Earlier `0.10.12` and `0.10.13` snapshots are
+historical checkpoints.
 
 The current SDK shape is:
 

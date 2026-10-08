@@ -1,5 +1,17 @@
 # Klaf Server Status
 
+## Current SDK dependency (2026-10-08)
+
+AgentDriver SDK and speech-runtime Gradle plugin `0.10.14-SNAPSHOT` were
+published to Maven Local on Windows, and Klaf's version catalog now targets
+that coordinate. The offline server, data, DI, presentation, and domain test
+suites passed (810 tests, zero failures, two skipped); Desktop compilation and
+Android debug assembly passed. One pre-existing server integration test still
+expected on-demand image downloading; its test expectation was updated to
+cache the image before card opening, then the focused test and full server
+suite passed. The Linux host must publish/install this version independently
+before live Vocabulary Source transcription can be retested.
+
 ## Live verification (2026-10-08): migrated image retrieval on Android
 
 Linux reports 19 migrated PNG files, and the Windows export has 19 matching
@@ -66,10 +78,10 @@ local config from one test. Manual Android Studio Run without environment
 variables remains to be checked by the operator. No data migration or
 signing-key recovery is required for the intentional full reset.
 
-## Current SDK dependency (2026-10-06)
+## Previous SDK dependency (2026-10-06)
 
-AgentDriver account-scoped SDK changes are assigned `0.10.13-SNAPSHOT`, and
-Klaf's version catalog targets that distinct coordinate. The earlier
+At that checkpoint, AgentDriver account-scoped SDK changes were assigned
+`0.10.13-SNAPSHOT`, and Klaf's version catalog targeted that coordinate. The earlier
 `0.10.12-SNAPSHOT` references below describe historical checkpoints, not the
 current dependency. Both server and client SDK sets, including the speech
 runtime Gradle plugin, were published to Maven Local; the offline
