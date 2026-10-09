@@ -2,6 +2,15 @@
 
 ## Current Focus
 
+- A bounded, message-free diagnostic for Vocabulary Source transcription
+  failures is implemented. It records exception types, relevant server/SDK
+  code locations, and the typed SDK error category when available; the client
+  still receives the generic error. The regression test first failed to
+  compile before implementation, then passed. The full `:klaf-server:test`
+  run was interrupted after more than five minutes without completion; no
+  full-suite result is claimed. Repeat the live Linux request with this build
+  to identify the root cause; no live Linux check has been performed yet.
+
 - Storage/voice integration implements explicit account-transition cancellation:
   cancel active local transcription and clear retained results, rotate the device
   session namespace, signal cancellation only over an existing connection, and

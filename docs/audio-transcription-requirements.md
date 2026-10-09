@@ -13,6 +13,11 @@ branch integration rules; cross-device source synchronization is a later phase.
 This document records agreed requirements for importing a local audio file and
 producing an English transcript for Klaf.
 
+When server-side transcription fails, the server log must identify the exception
+types and relevant code locations (including nested causes) without logging
+audio content, transcript text, credentials, or arbitrary exception messages.
+The client continues to receive a generic failure response.
+
 The later `vocabulary-source-audio-transcription-implementation-requirements.md`
 is authoritative for current Klaf UI timestamps and foreground-service scope.
 The demo gate below describes the earlier SDK verification phase, not a current
