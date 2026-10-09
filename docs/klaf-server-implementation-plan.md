@@ -81,11 +81,14 @@ and TCP-resume tests, followed by a full WSL Ubuntu SDK suite pass of 267/267.
 Production Ubuntu integration is still unverified. Resolve the
 public-contract status of the in-process `chatgptAuthTokens` refresh callback
 before treating synthetic 401 recovery as production auth approval.
-The runtime requires `KLAF_CODEX_OWNER_HOME`, `KLAF_CODEX_OWNER_EXE`, and
-`KLAF_CODEX_OWNER_ACCOUNT_ID` as explicit server-process environment settings.
-No desktop Codex-home fallback is allowed. The owner process starts lazily on
-the first AI request, and account workers remain alive until account block or
-server shutdown.
+The runtime requires an explicit dedicated owner home, executable, and account
+ID. They may come from `KLAF_CODEX_OWNER_HOME`, `KLAF_CODEX_OWNER_EXE`, and
+`KLAF_CODEX_OWNER_ACCOUNT_ID` in the server-process environment, or from the
+Git-ignored local `SecretConstants.Codex`; environment values take precedence.
+No desktop Codex-home fallback is allowed. A startup check warns about missing
+or invalid local owner readiness without blocking HTTP/sync startup. The owner
+process starts lazily on the first AI request, and account workers remain
+alive until account block or server shutdown.
 The opt-in `ManagedAccountCodexRuntimeLiveSmokeTest` uses
 `KLAF_CODEX_RUNTIME_LIVE_SMOKE=true` plus those owner settings to exercise
 concurrent text and image requests through the production factory. Ordinary

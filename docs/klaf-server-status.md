@@ -1,5 +1,19 @@
 # Klaf Server Status
 
+## Current focus (2026-10-09): Codex owner startup warning
+
+Implemented local `SecretConstants.Codex` fallback with environment override.
+The shared owner configuration, executable, and login are checked at Klaf
+Server startup; a sanitized error is logged without blocking HTTP/sync. The
+existing per-account SDK preflight remains lazy. Source precedence, blank
+override, missing owner settings/login, and executable sharing passed focused
+tests after RED failures. The full offline `:klaf-server:test` run passed on
+Windows (459 tests, zero failures/errors, two skipped). After allowing a
+symlinked Linux Codex executable in the readiness check, the focused config
+and owner tests passed again. Linux live verification remains pending; the
+Linux machine's Git-ignored `SecretConstants.kt` must gain the new `Codex`
+object before it can compile the updated server.
+
 ## Current SDK dependency (2026-10-08)
 
 AgentDriver SDK and speech-runtime Gradle plugin `0.10.14-SNAPSHOT` were

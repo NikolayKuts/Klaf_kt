@@ -42,6 +42,17 @@ It should be removed or replaced by permanent documentation after the full imple
 
 ## Unified Codex AI Runtime (2026-10-03)
 
+- The dedicated Codex login-owner home, executable path, and expected account
+  ID may be configured in the Git-ignored local `SecretConstants.Codex` object
+  for one-click IDE runs. Explicit process environment values override the
+  corresponding local values; a present but blank override is invalid. Never
+  fall back to the operator's ordinary Codex home or store auth tokens in
+  Kotlin source.
+- On Klaf Server startup, check the shared Codex owner configuration and local
+  login readiness. Log a conspicuous, sanitized error if it is unavailable,
+  while allowing the HTTP/sync server to start. Keep the per-account AgentDriver
+  preflight when each account runtime is created. Do not log credential data.
+
 - Complete the production cutover for all server AI features together: remove
   SIWC direct text routing and the per-image-request Codex process. Use one
   long-lived account-scoped AgentDriver/Codex runtime for text and image
