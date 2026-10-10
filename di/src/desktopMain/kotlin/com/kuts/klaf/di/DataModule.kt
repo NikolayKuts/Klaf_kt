@@ -41,6 +41,7 @@ import com.kuts.klaf.mnemonic.DesktopNoOpMnemonicImageRemoteRepository
 import com.kuts.klaf.mnemonic.DesktopMnemonicImageAssetRepository
 import com.kuts.klaf.mnemonic.CachedMnemonicImageAssetRepository
 import com.kuts.klaf.networking.klafServer.KlafServerImageRestClient
+import com.kuts.klaf.networking.klafServer.KlafServerWordAutocompleteRepository
 import java.security.MessageDigest
 import com.kuts.klaf.mnemonic.NoOpMnemonicGenerationBackgroundManager
 import com.kuts.klaf.networking.klafServer.IKlafServerSession
@@ -158,7 +159,20 @@ private fun Module.desktopRepositoryModule() {
             client = YandexSecureHttpClientFactory().create(),
         )
     }
-    single<IWordAutocompleteRepository> { DesktopWordAutocompleteRepository() }
+    single<IWordAutocompleteRepository> {
+        selectWordAutocompleteRepository(
+            useAccountScopedStorage = get<DesktopStorageConfiguration>().useAccountScopedStorage,
+            accountRepository = {
+                KlafServerWordAutocompleteRepository(
+                    baseUrl = get<KlafServerEndpointConfig>().restBaseUrl(),
+                    httpClient = KlafServerHttpClientFactory().create(),
+                    signer = get(),
+                    selectedAccountEmail = get<IAccountSession>().selectedAccountEmail,
+                )
+            },
+            legacyRepository = { DesktopWordAutocompleteRepository() },
+        )
+    }
     single<IKlafServerSession> {
         val endpoint = get<KlafServerEndpointConfig>()
         KlafServerSession(

@@ -75,6 +75,7 @@ import com.kuts.klaf.networking.AndroidCardAudioPlayer
 import com.kuts.klaf.mnemonic.AndroidMnemonicImageAssetRepository
 import com.kuts.klaf.mnemonic.CachedMnemonicImageAssetRepository
 import com.kuts.klaf.networking.klafServer.KlafServerImageRestClient
+import com.kuts.klaf.networking.klafServer.KlafServerWordAutocompleteRepository
 import java.io.File
 import java.security.MessageDigest
 import com.kuts.klaf.mnemonic.AndroidApplicationVisibilityTracker
@@ -179,9 +180,18 @@ private fun Module.androidRepositoryModule() {
         }
     }
     single<IWordAutocompleteRepository> {
-        selectWordAutocompleteRepository(get<RoomDatabaseSource>() is ActiveLocalRoomDatabase) {
-            AndroidWordAutocompleteFirestore(firestore = get())
-        }
+        selectWordAutocompleteRepository(
+            useAccountScopedStorage = get<RoomDatabaseSource>() is ActiveLocalRoomDatabase,
+            accountRepository = {
+                KlafServerWordAutocompleteRepository(
+                    baseUrl = get<KlafServerEndpointConfig>().restBaseUrl(),
+                    httpClient = KlafServerHttpClientFactory().create(),
+                    signer = get(),
+                    selectedAccountEmail = get<IAccountSession>().selectedAccountEmail,
+                )
+            },
+            legacyRepository = { AndroidWordAutocompleteFirestore(firestore = get()) },
+        )
     }
     single<ICrashlyticsRepository> { AndroidCrashlyticsRepositoryFirebase(firebaseCrashlytics = get()) }
     single<IAuthenticationRepository> {
