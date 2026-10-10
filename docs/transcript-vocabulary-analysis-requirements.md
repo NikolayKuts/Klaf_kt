@@ -16,6 +16,20 @@ vocabulary extraction in Klaf.
 
 ## Agreed Requirements
 
+### YouTube Source Link (2026-10-10)
+
+- The source detail screen shows an open-video button immediately to the right
+  of the editable URL field on Android and Desktop, but not on iOS for now.
+- The button uses the URL currently visible in the field, including unsaved
+  edits. It is visible but disabled when that URL is empty or is not a valid
+  HTTPS YouTube link. Accept `youtube.com` (including subdomains) and
+  `youtu.be` links, including watch, Shorts, live, and playlist formats.
+  Explicit standard HTTPS port `:443` is valid; nonstandard ports are not.
+- Open the link without adding a timestamp or modifying its path/query. On
+  Android, use the system's link handler so the user's preferred app can open
+  it; on Desktop, use the default browser. Keep the existing copy action.
+- An embedded player and synchronization with transcript words are deferred.
+
 ### UI Theme Consistency (2026-09-28)
 
 Source detail UI, its dialogs, disabled states, saved/edited markers, category

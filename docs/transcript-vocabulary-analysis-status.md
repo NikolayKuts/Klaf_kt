@@ -4,6 +4,10 @@ Working status file for the `VocabularySource` feature.
 
 ## Current Focus
 
+- The user reports that external YouTube opening works in a manual check;
+  platform-specific Android/Desktop checks were not separately recorded.
+  Verify URL-field layout at narrow widths and with larger text scaling.
+  iOS and timed playback remain deferred.
 - 2026-09-28 staged/unstaged audit complete. Domain/data/presentation regression
   tests and Android/Desktop compilation pass. Full audit details and remaining
   audio lifecycle gaps are recorded in `audio-transcription-status.md`.
@@ -12,6 +16,12 @@ Working status file for the `VocabularySource` feature.
 
 ## Completed
 
+- Added an open-video action beside the source URL field for Android/Desktop.
+  It uses the current unsaved URL, is disabled for invalid HTTPS YouTube links,
+  and preserves the existing copy action. URL validation tests passed on
+  Desktop; `:presentation:desktopTest`, `:Desktop:compileKotlin`, and
+  `:Android:assembleDebug` passed. A follow-up review added coverage and
+  support for explicit HTTPS port `:443`, while rejecting other ports.
 - Theme consistency (2026-09-28): source detail colors moved to the central
   `Color.kt` vocabulary-source palette wired into both `MainTheme` variants.
   Disabled controls, save/edit markers, occurrence highlights, category/CEFR

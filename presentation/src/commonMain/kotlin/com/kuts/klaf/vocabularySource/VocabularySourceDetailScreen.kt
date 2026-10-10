@@ -84,8 +84,10 @@ import com.kuts.domain.entities.VocabularySourceItemPartOfSpeech
 import com.kuts.domain.entities.VocabularySourceItemStatus
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.CustomCheckBox
+import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.ROUNDED_ELEMENT_SIZE
 import com.kuts.klaf.common.RoundButton
+import com.kuts.klaf.common.externalActions.IExternalAppActions
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.presentation.resources.Res
 import com.kuts.klaf.presentation.resources.ic_baseline_volume_up_24
@@ -129,6 +131,8 @@ import com.kuts.klaf.presentation.resources.vocabulary_source_audio_label
 import com.kuts.klaf.presentation.resources.vocabulary_source_audio_replace_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_audio_select_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_copy_url_action
+import com.kuts.klaf.presentation.resources.vocabulary_source_open_video_action
+import com.kuts.klaf.presentation.resources.vocabulary_source_open_video_failed
 import com.kuts.klaf.presentation.resources.vocabulary_source_speak_word_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_selected_items
 import com.kuts.klaf.presentation.resources.vocabulary_source_stale_items_warning
@@ -449,6 +453,7 @@ internal fun VocabularySourceDetailScreen(
     backStackEntry: NavBackStackEntry,
     sharedViewModel: BaseMainViewModel,
     sourceId: Int,
+    externalAppActions: IExternalAppActions,
 ) {
     val viewModel: VocabularySourceDetailViewModel = koinViewModel(
         viewModelStoreOwner = backStackEntry,
@@ -466,6 +471,17 @@ internal fun VocabularySourceDetailScreen(
             onTitleChanged = viewModel::onTitleChanged,
             onDescriptionChanged = viewModel::onDescriptionChanged,
             onUrlChanged = viewModel::onUrlChanged,
+            showOpenVideoAction = externalAppActions.supportsYouTubeSourceOpening,
+            onOpenVideo = { url ->
+                if (!externalAppActions.openExternalUrl(url)) {
+                    sharedViewModel.notify(
+                        EventMessage(
+                            resId = Res.string.vocabulary_source_open_video_failed,
+                            type = EventMessage.Type.Negative,
+                        ),
+                    )
+                }
+            },
             onSelectAudioClick = audioPicker::launch,
             onClearAudioFile = viewModel::onClearAudioFile,
             onTranscribeAudio = viewModel::onTranscribeAudio,
@@ -502,6 +518,8 @@ private fun VocabularySourceDetailContent(
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
     onUrlChanged: (String) -> Unit,
+    showOpenVideoAction: Boolean,
+    onOpenVideo: (String) -> Unit,
     onSelectAudioClick: () -> Unit,
     onClearAudioFile: () -> Unit,
     onTranscribeAudio: () -> Unit,
@@ -610,31 +628,46 @@ private fun VocabularySourceDetailContent(
                     },
                     minLines = 2,
                 )
-                OutlinedTextField(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp),
-                    value = state.url,
-                    onValueChange = onUrlChanged,
-                    label = {
-                        Text(text = stringResource(resource = Res.string.vocabulary_source_url_label))
-                    },
-                    singleLine = true,
-                    trailingIcon = if (state.url.isNotBlank()) {
-                        {
-                            IconButton(
-                                onClick = {
-                                    clipboardManager.setText(AnnotatedString(text = state.url))
-                                },
-                            ) {
-                                Icon(
-                                    painter = painterResource(resource = Res.drawable.ic_copy_24),
-                                    contentDescription = stringResource(resource = Res.string.vocabulary_source_copy_url_action),
-                                )
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier.weight(1f),
+                        value = state.url,
+                        onValueChange = onUrlChanged,
+                        label = {
+                            Text(text = stringResource(resource = Res.string.vocabulary_source_url_label))
+                        },
+                        singleLine = true,
+                        trailingIcon = if (state.url.isNotBlank()) {
+                            {
+                                IconButton(
+                                    onClick = {
+                                        clipboardManager.setText(AnnotatedString(text = state.url))
+                                    },
+                                ) {
+                                    Icon(
+                                        painter = painterResource(resource = Res.drawable.ic_copy_24),
+                                        contentDescription = stringResource(resource = Res.string.vocabulary_source_copy_url_action),
+                                    )
+                                }
                             }
+                        } else null,
+                    )
+                    if (showOpenVideoAction) {
+                        val videoUrl = validatedYouTubeSourceUrl(state.url)
+                        OutlinedButton(
+                            onClick = { videoUrl?.let(onOpenVideo) },
+                            enabled = videoUrl != null,
+                        ) {
+                            Text(text = stringResource(resource = Res.string.vocabulary_source_open_video_action))
                         }
-                    } else null,
-                )
+                    }
+                }
                 VocabularySourceAudioSection(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1970,6 +2003,8 @@ private fun VocabularySourceDetailContentPreviewContent(darkTheme: Boolean) {
                 onTitleChanged = {},
                 onDescriptionChanged = {},
                 onUrlChanged = {},
+                showOpenVideoAction = true,
+                onOpenVideo = {},
                 onSelectAudioClick = {},
                 onClearAudioFile = {},
                 onTranscribeAudio = {},

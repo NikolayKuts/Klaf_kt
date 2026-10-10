@@ -81,6 +81,7 @@ internal fun NavGraphBuilder.registerAppDestinations(
             backStackEntry = backStackEntry,
             sharedViewModel = sharedViewModel,
             sourceId = route.sourceId,
+            externalAppActions = externalAppActions,
         )
     }
 

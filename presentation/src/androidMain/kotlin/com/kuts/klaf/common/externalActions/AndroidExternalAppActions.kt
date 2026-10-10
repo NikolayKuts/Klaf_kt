@@ -16,6 +16,8 @@ class AndroidExternalAppActions(
     private val context: Context,
 ) : IExternalAppActions {
 
+    override val supportsYouTubeSourceOpening: Boolean = true
+
     private val appContext = context.applicationContext
 
     override fun consumeProcessTextWord(): String? {

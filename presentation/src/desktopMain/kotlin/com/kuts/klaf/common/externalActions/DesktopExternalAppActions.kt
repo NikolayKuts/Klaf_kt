@@ -7,6 +7,8 @@ import java.net.URI
 
 class DesktopExternalAppActions : IExternalAppActions {
 
+    override val supportsYouTubeSourceOpening: Boolean = true
+
     override fun consumeProcessTextWord(): String? = null
 
     override fun copyTextToClipboard(text: String) {

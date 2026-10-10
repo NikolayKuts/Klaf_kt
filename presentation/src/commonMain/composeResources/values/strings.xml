@@ -332,6 +332,8 @@
         <string name="vocabulary_source_title_label">Title</string>
         <string name="vocabulary_source_url_label">Source URL</string>
         <string name="vocabulary_source_copy_url_action">Copy source URL</string>
+        <string name="vocabulary_source_open_video_action">Open</string>
+        <string name="vocabulary_source_open_video_failed">Could not open YouTube video</string>
         <string name="vocabulary_source_audio_label">Audio file</string>
         <string name="vocabulary_source_audio_select_action">Select audio</string>
         <string name="vocabulary_source_audio_replace_action">Replace audio</string>
