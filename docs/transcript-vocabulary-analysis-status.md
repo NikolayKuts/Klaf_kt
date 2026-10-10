@@ -18,6 +18,9 @@ Working status file for the `VocabularySource` feature.
 
 ## Completed
 
+- Vocabulary Source detail now shows `Total` above `Selected` for the review
+  list. Independent review found no issues; `:presentation:desktopTest` and
+  `:presentation:compileDebugKotlinAndroid` passed. Manual UI check is pending.
 - Item target offsets are now server-owned and validated against `original_text`,
   the actual surface form in the cleaned transcript, never `foreign_word` (the
   normalized dictionary form). Ambiguous or missing surface matches are omitted;

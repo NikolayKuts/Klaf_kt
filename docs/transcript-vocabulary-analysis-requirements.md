@@ -229,6 +229,10 @@ Selection checkbox state is runtime UI state only and should not be persisted in
 Room. It can be modeled with a holder similar to the existing card transfer
 selection holder.
 
+The item review toolbar should show `Total` above `Selected`. `Total` counts
+the items currently shown for review (including ignored items, excluding items
+already added to a deck); `Selected` counts selected items from that same list.
+
 `pending` and `added` are persistent source-item states. `ignored` is runtime
 state until the next save. The user can restore an ignored item back to
 `pending` before saving.

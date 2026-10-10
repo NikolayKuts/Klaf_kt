@@ -135,6 +135,7 @@ import com.kuts.klaf.presentation.resources.vocabulary_source_open_video_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_open_video_failed
 import com.kuts.klaf.presentation.resources.vocabulary_source_speak_word_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_selected_items
+import com.kuts.klaf.presentation.resources.vocabulary_source_total_items
 import com.kuts.klaf.presentation.resources.vocabulary_source_stale_items_warning
 import com.kuts.klaf.presentation.resources.vocabulary_source_target_deck_title
 import com.kuts.klaf.presentation.resources.vocabulary_source_title_label
@@ -753,6 +754,7 @@ private fun VocabularySourceDetailContent(
             } else {
                 item {
                     VocabularySourceItemReviewToolbar(
+                        totalItemCount = state.displayedItems.size,
                         selectedItemCount = state.selectedItemCount,
                         isAllSelected = state.isAllItemsSelected,
                         hasUnsavedChanges = state.hasUnsavedChanges,
@@ -1341,6 +1343,7 @@ private fun TextModeSwitchItem(
 
 @Composable
 private fun VocabularySourceItemReviewToolbar(
+    totalItemCount: Int,
     selectedItemCount: Int,
     isAllSelected: Boolean,
     hasUnsavedChanges: Boolean,
@@ -1361,6 +1364,12 @@ private fun VocabularySourceItemReviewToolbar(
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = stringResource(
+                resource = Res.string.vocabulary_source_total_items,
+                totalItemCount,
+            ),
+        )
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
