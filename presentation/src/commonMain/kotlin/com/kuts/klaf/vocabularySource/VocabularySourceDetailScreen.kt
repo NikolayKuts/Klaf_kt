@@ -561,11 +561,9 @@ private fun VocabularySourceDetailContent(
     val disabledButtonContentColor = MainTheme.colors.vocabularySourceScreen.disabledButtonContent
 
     LaunchedEffect(state.cleanText) {
-        highlightedTextRanges = highlightedTextRanges.filter { range ->
-            range.startOffset >= 0 &&
-                range.endOffset > range.startOffset &&
-                range.endOffset <= state.cleanText.length
-        }
+        highlightedTextRanges = emptyList()
+        locateRequest = null
+        clearTranscriptSelectionRequestId += 1
     }
 
     state.itemEditState?.let { editState ->
@@ -778,14 +776,17 @@ private fun VocabularySourceDetailContent(
                         onEditClick = { onStartItemEditing(holder.sourceIndex) },
                         onLocateClick = {
                             val highlightRanges = holder.item.occurrences.toHighlightRanges(text = state.cleanText)
+                            highlightedTextRanges = highlightRanges
+                            locateRequest = null
                             if (highlightRanges.isNotEmpty()) {
-                                highlightedTextRanges = highlightRanges
                                 textMode = VocabularySourceTextMode.CLEAN
                                 locateRequestId += 1
                                 locateRequest = VocabularySourceTextLocateRequest(
                                     id = locateRequestId,
                                     startOffset = highlightRanges.first().startOffset,
                                 )
+                            } else {
+                                clearTranscriptSelectionRequestId += 1
                             }
                         },
                         onSpeakClick = { onSpeakItemClick(holder.sourceIndex) },

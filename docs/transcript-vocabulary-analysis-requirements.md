@@ -76,6 +76,17 @@ Starting analysis must clear any active occurrence highlight, locate request,
 and text selection left by the item target action, because those offsets belong
 to the previous analysis result.
 
+The item target action must use occurrence offsets into the cleaned transcript
+text. Those offsets identify the exact surface form that appeared there, not
+the item's normalized dictionary form. The server must validate and, when
+unambiguous, repair AI-proposed offsets using `original_text` and the source
+sentence; it must not fall back to matching `foreign_word`. For a discontinuous
+expression, `original_text` must contain the complete text span between the
+first and last word. If no reliable surface-form match exists, omit the item.
+The client uses the server-provided offsets without trying to locate the item
+again. Changing the cleaned text or selecting an item without a valid range
+must clear any previous highlight and text selection.
+
 On reanalysis, items already linked to created cards should be preserved. Other
 items can be replaced by the new AI result. The user may later adjust item status
 manually when needed.

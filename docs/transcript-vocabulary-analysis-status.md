@@ -4,6 +4,8 @@ Working status file for the `VocabularySource` feature.
 
 ## Current Focus
 
+- Manually smoke-test item target selection on Android with inflected words,
+  repeated words, and discontinuous expressions.
 - The user reports that external YouTube opening works in a manual check;
   platform-specific Android/Desktop checks were not separately recorded.
   Verify URL-field layout at narrow widths and with larger text scaling.
@@ -16,6 +18,14 @@ Working status file for the `VocabularySource` feature.
 
 ## Completed
 
+- Item target offsets are now server-owned and validated against `original_text`,
+  the actual surface form in the cleaned transcript, never `foreign_word` (the
+  normalized dictionary form). Ambiguous or missing surface matches are omitted;
+  the client uses returned offsets directly, with no saved-item relocalization.
+  The server prompt requires the full surface span for discontinuous expressions.
+  Focused server regression tests and Desktop/Android client compilation pass;
+  independent review found no remaining actionable issues. Android device
+  smoke check remains pending.
 - Added an open-video action beside the source URL field for Android/Desktop.
   It uses the current unsaved URL, is disabled for invalid HTTPS YouTube links,
   and preserves the existing copy action. URL validation tests passed on
