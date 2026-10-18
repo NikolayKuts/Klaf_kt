@@ -831,6 +831,8 @@ For MVP, preserve the current non-streaming behavior for text generation feature
 Feature request failures should be returned as structured protocol error messages tied to the original request ID. Invalid assistant JSON, invalid contract data, request validation failures, and KlafServer failures should not close the WebSocket connection unless the connection itself is broken or unauthorized.
 
 Logging should use short summaries by default. Full raw assistant responses should only be logged in an explicit debug mode because future requests may contain user text or subtitle content.
+For failed AI requests, server logs should include the request ID, the AgentDriver error category and safe structured reason when available. Do not log raw prompts, provider responses, credentials, or user content as failure diagnostics.
+For mnemonic image failures, log the AgentDriver request ID and code-owned image generation diagnostics so the request failure can be correlated with the provider phase and event.
 
 Connection readiness is defined by the public Klaf Server WebSocket connection, not by internal AgentDriver sessions. The client is ready only after it receives `server.ready` from the server.
 

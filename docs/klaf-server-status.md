@@ -1,5 +1,10 @@
 # Klaf Server Status
 
+## AI request failure diagnostics (2026-10-18)
+
+Klaf Server now logs safe AgentDriver error categories and structured reasons for Word Insights, mnemonic text/image, and Vocabulary Source analysis failures, including unavailable paths. The diagnostic formatter has focused tests; the full offline `:klaf-server:test` suite passed. A live recurrence still needs verification after server deployment. AgentDriver does not expose the raw provider error through its client protocol.
+The account runtime now also logs AgentDriver image diagnostics and the failure log includes the SDK request ID for correlation. The diagnostic test and full offline `:klaf-server:test` suite passed after this follow-up. A live recurrence remains to be checked after server deployment. The extended AgentDriver event labels are local and unpublished.
+
 ## Current focus (2026-10-09): Codex owner startup warning
 
 Implemented local `SecretConstants.Codex` fallback with environment override.
