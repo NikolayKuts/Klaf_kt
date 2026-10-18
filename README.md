@@ -65,6 +65,10 @@ background-generation contract.
 See [Mnemonic Generation](docs/mnemonic-generation.md) for the component flow,
 cleanup rules, platform limits, and diagnostics.
 
+Server-side AI error diagnostics require AgentDriver `0.10.15-SNAPSHOT`.
+See [AI error diagnostics](docs/ai-error-diagnostics.md) for SDK installation,
+request correlation, and the setting for sensitive provider error details.
+
 ## Requirements
 
 - JDK 17

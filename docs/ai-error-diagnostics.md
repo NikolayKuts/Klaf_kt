@@ -1,6 +1,6 @@
 # Klaf Server AI error diagnostics
 
-AgentDriver's updated SDK is required to produce the new records. The server
+AgentDriver `0.10.15-SNAPSHOT` is required to produce the new records. The server
 consumer is backward compatible; updating only Klaf without updating the SDK
 does not recover details discarded by the old SDK.
 
@@ -21,5 +21,7 @@ user/provider content. Restrict log access/retention and disable the setting
 after reproduction. Never forward the diagnostic stream to Android or include
 these details in public errors.
 
-No live recurrence, SDK publication or target-server deployment has been performed
-by the local implementation/test runs.
+Version `0.10.15-SNAPSHOT` was published to Maven Local on Windows on 2026-10-18.
+Klaf's version catalog targets that version for the SDK and speech-runtime plugin.
+The Linux host must publish/install the same version before building the server.
+Target-server deployment and live reproduction remain pending.
