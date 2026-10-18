@@ -8,6 +8,7 @@
     <string name="good">good</string>
     <string name="easy">easy</string>
 
+    <string name="deck_review_play_pronunciation">Play pronunciation</string>
     <string name="deck_review_stat_reviewed_cards">reviewed: %1$d</string>
     <string name="deck_review_stat_max_time">max time: %1$s</string>
     <string name="deck_review_stat_left_time">left: %1$s</string>

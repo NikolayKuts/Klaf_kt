@@ -11,12 +11,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,9 +28,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
@@ -39,15 +39,15 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.alpha
@@ -69,7 +69,6 @@ import com.kuts.domain.common.DeckRepetitionState
 import com.kuts.domain.common.ifTrue
 import com.kuts.domain.entities.Card
 import com.kuts.domain.entities.CefrLevel
-import com.kuts.domain.repositories.IMnemonicImageAssetRepository
 import com.kuts.domain.entities.WordMeaningInsights
 import com.kuts.domain.entities.WordMeaningItem
 import com.kuts.domain.enums.DifficultyRecallingLevel.EASY
@@ -78,6 +77,8 @@ import com.kuts.domain.enums.DifficultyRecallingLevel.HARD
 import com.kuts.domain.ipa.IpaHolder
 import com.kuts.domain.ipa.LetterInfo
 import com.kuts.domain.ipa.toIpaPrompts
+import com.kuts.domain.repositories.IMnemonicImageAssetRepository
+import com.kuts.klaf.cardManagement.mnemonic.ExpandableMnemonicImage
 import com.kuts.klaf.common.BaseMainViewModel
 import com.kuts.klaf.common.ButtonState
 import com.kuts.klaf.common.ContentHolder
@@ -85,18 +86,40 @@ import com.kuts.klaf.common.DIALOG_APP_LABEL_SIZE
 import com.kuts.klaf.common.DialogAppLabel
 import com.kuts.klaf.common.FullBackgroundDialog
 import com.kuts.klaf.common.Pointer
-import com.kuts.klaf.common.RoundButton
 import com.kuts.klaf.common.RepetitionTimerState
+import com.kuts.klaf.common.RoundButton
 import com.kuts.klaf.common.ScrollableBox
 import com.kuts.klaf.common.TimerCountingState
 import com.kuts.klaf.common.WordInsightsBottomSheetContent
-import com.kuts.klaf.cardManagement.mnemonic.ExpandableMnemonicImage
 import com.kuts.klaf.common.timeAsString
 import com.kuts.klaf.deckRepetitionInfo.RepetitionInfoEvent.Non
 import com.kuts.klaf.navigation.AppDestination
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.navigation.ObserveAudioLifecycle
-import com.kuts.klaf.presentation.resources.*
+import com.kuts.klaf.presentation.resources.Res
+import com.kuts.klaf.presentation.resources.deck_repeating_exit_dialog_question
+import com.kuts.klaf.presentation.resources.deck_review_play_pronunciation
+import com.kuts.klaf.presentation.resources.deck_review_stat_left_time
+import com.kuts.klaf.presentation.resources.deck_review_stat_max_time
+import com.kuts.klaf.presentation.resources.deck_review_stat_reviewed_cards
+import com.kuts.klaf.presentation.resources.easy
+import com.kuts.klaf.presentation.resources.good
+import com.kuts.klaf.presentation.resources.hard
+import com.kuts.klaf.presentation.resources.ic_add_24
+import com.kuts.klaf.presentation.resources.ic_baseline_volume_up_24
+import com.kuts.klaf.presentation.resources.ic_close_24
+import com.kuts.klaf.presentation.resources.ic_confirmation_24
+import com.kuts.klaf.presentation.resources.ic_delete_24
+import com.kuts.klaf.presentation.resources.ic_edit_24
+import com.kuts.klaf.presentation.resources.ic_more_vert_24
+import com.kuts.klaf.presentation.resources.ic_rotate_24
+import com.kuts.klaf.presentation.resources.ic_visibility
+import com.kuts.klaf.presentation.resources.ic_visibility_off
+import com.kuts.klaf.presentation.resources.pointer_deck
+import com.kuts.klaf.presentation.resources.pointer_foreign
+import com.kuts.klaf.presentation.resources.pointer_native
+import com.kuts.klaf.presentation.resources.start
+import com.kuts.klaf.presentation.resources.word_insights_handle_label
 import com.kuts.klaf.theme.MainTheme
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
@@ -104,6 +127,56 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+
+@Composable
+fun CardButton(
+    cardSide: CardSide,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val rotationValue: Float
+    val backgroundColor: Color
+    val animationDuration = 100
+
+    when (cardSide) {
+        CardSide.FRONT -> {
+            rotationValue = 180F
+            backgroundColor = MainTheme.colors.deckRepetitionScreen.frontSideCardButton
+        }
+
+        CardSide.BACK -> {
+            rotationValue = 0F
+            backgroundColor = MainTheme.colors.deckRepetitionScreen.backSideCardButton
+        }
+    }
+
+    val rotation by animateFloatAsState(
+        targetValue = rotationValue,
+        animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)
+    )
+
+    val color by animateColorAsState(
+        targetValue = backgroundColor,
+        tween(durationMillis = animationDuration, easing = LinearEasing)
+    )
+
+    Box(
+        modifier = modifier
+            .size(width = 40.dp, height = 56.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(color)
+            .graphicsLayer { rotationY = rotation },
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            modifier = Modifier
+                .clickable { onClick() }
+                .padding(8.dp),
+            painter = painterResource(resource = Res.drawable.ic_rotate_24),
+            contentDescription = null,
+        )
+    }
+}
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -200,7 +273,7 @@ internal fun DeckRepetitionScreen(
                         )
                     )
                 },
-                onWordClick = viewModel::pronounceWord,
+                onPronounceClick = viewModel::pronounceWord,
                 onShowInsightsClick = viewModel::showInsightsSheet,
                 onHideInsightsClick = viewModel::hideInsightsSheet,
                 onStartButtonClick = viewModel::startRepeating,
@@ -214,6 +287,13 @@ internal fun DeckRepetitionScreen(
                 onResumeTimer = viewModel::resumeTimerCounting,
             )
         }
+    }
+}
+
+private fun DeckRepetitionState.isForeignWordVisible(): Boolean {
+    return when (repetitionOrder) {
+        CardRepetitionOrder.NATIVE_TO_FOREIGN -> side == CardSide.BACK
+        CardRepetitionOrder.FOREIGN_TO_NATIVE -> side == CardSide.FRONT
     }
 }
 
@@ -234,7 +314,7 @@ private fun DeckRepetitionContent(
     onDeleteCardClick: (cardId: Int) -> Unit,
     onAddCardClick: () -> Unit,
     onEditCardClick: (cardId: Int) -> Unit,
-    onWordClick: () -> Unit,
+    onPronounceClick: () -> Unit,
     onShowInsightsClick: () -> Unit,
     onHideInsightsClick: () -> Unit,
     onStartButtonClick: () -> Unit,
@@ -256,7 +336,10 @@ private fun DeckRepetitionContent(
         deckRepetitionState.side,
         deckRepetitionState.repetitionOrder,
     ) {
-        mutableStateOf(false)
+        mutableStateOf(
+            deckRepetitionState.repetitionOrder == CardRepetitionOrder.NATIVE_TO_FOREIGN
+                && deckRepetitionState.side == CardSide.BACK
+        )
     }
 
     ScrollableBox { parentHeightPx ->
@@ -334,7 +417,6 @@ private fun DeckRepetitionContent(
                         deckRepetitionState = deckRepetitionState,
                         isMnemonicImageVisible = isMnemonicImageVisible,
                         onMnemonicImageVisibilityChange = { isMnemonicImageVisible = it },
-                        onWordClick = onWordClick,
                     )
 
                     InsightsSheetHandle(
@@ -355,6 +437,7 @@ private fun DeckRepetitionContent(
                         onGoodButtonClick = onGoodButtonClick,
                         onHardButtonClick = onHardButtonClick,
                         onCardButtonClick = onCardButtonClick,
+                        onPronounceClick = onPronounceClick,
                     )
                 }
 
@@ -573,7 +656,7 @@ private fun DeckRepetitionContentPreviewContent(darkTheme: Boolean) {
             onDeleteCardClick = {},
             onAddCardClick = {},
             onEditCardClick = {},
-            onWordClick = {},
+            onPronounceClick = {},
             onShowInsightsClick = {},
             onHideInsightsClick = {},
             onStartButtonClick = {},
@@ -594,7 +677,6 @@ private fun DeckCard(
     deckRepetitionState: DeckRepetitionState,
     isMnemonicImageVisible: Boolean,
     onMnemonicImageVisibilityChange: (Boolean) -> Unit,
-    onWordClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val card = deckRepetitionState.card ?: return
@@ -645,7 +727,6 @@ private fun DeckCard(
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            modifier = Modifier.clickable { onWordClick() },
             text = word,
             style = wordTextStyle,
         )
@@ -694,7 +775,7 @@ private fun MnemonicImageHolder(
 ) {
     val backgroundColor = MainTheme.colors.common.dialogBackground.copy(alpha = 0.42f)
     val borderColor = MainTheme.colors.common.separator.copy(alpha = 0.55f)
-    val iconRes = if (isContentVisible) Res.drawable.ic_visibility_off else Res.drawable.ic_visibility
+    val iconRes = if (canRevealContent) Res.drawable.ic_visibility else Res.drawable.ic_visibility_off
 
     val holderModifier = modifier
         .clip(RoundedCornerShape(18.dp))
@@ -737,13 +818,6 @@ private fun rememberSavedMnemonicImagePath(imageAssetId: String?): String? {
     return imagePath
 }
 
-private fun DeckRepetitionState.isForeignWordVisible(): Boolean {
-    return when (repetitionOrder) {
-        CardRepetitionOrder.NATIVE_TO_FOREIGN -> side == CardSide.BACK
-        CardRepetitionOrder.FOREIGN_TO_NATIVE -> side == CardSide.FRONT
-    }
-}
-
 @Composable
 private fun RepetitionButtons(
     deckRepetitionState: DeckRepetitionState,
@@ -753,6 +827,7 @@ private fun RepetitionButtons(
     onGoodButtonClick: () -> Unit,
     onHardButtonClick: () -> Unit,
     onCardButtonClick: () -> Unit,
+    onPronounceClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (screenState) {
@@ -767,6 +842,17 @@ private fun RepetitionButtons(
                 modifier = modifier,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                IconButton(
+                    modifier = Modifier.align(Alignment.End).size(48.dp),
+                    enabled = deckRepetitionState.card != null && deckRepetitionState.isForeignWordVisible(),
+                    onClick = onPronounceClick,
+                ) {
+                    Icon(
+                        painter = painterResource(resource = Res.drawable.ic_baseline_volume_up_24),
+                        contentDescription = stringResource(Res.string.deck_review_play_pronunciation),
+                    )
+                }
+                Spacer(modifier = Modifier.size(8.dp))
                 CardButton(
                     modifier = Modifier.align(Alignment.End),
                     cardSide = deckRepetitionState.side,
@@ -955,56 +1041,6 @@ private fun CommonButton(
         onClick = onClick,
         elevation = 4.dp
     )
-}
-
-@Composable
-fun CardButton(
-    cardSide: CardSide,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val rotationValue: Float
-    val backgroundColor: Color
-    val animationDuration = 100
-
-    when (cardSide) {
-        CardSide.FRONT -> {
-            rotationValue = 180F
-            backgroundColor = MainTheme.colors.deckRepetitionScreen.frontSideCardButton
-        }
-
-        CardSide.BACK -> {
-            rotationValue = 0F
-            backgroundColor = MainTheme.colors.deckRepetitionScreen.backSideCardButton
-        }
-    }
-
-    val rotation by animateFloatAsState(
-        targetValue = rotationValue,
-        animationSpec = tween(durationMillis = animationDuration, easing = LinearEasing)
-    )
-
-    val color by animateColorAsState(
-        targetValue = backgroundColor,
-        tween(durationMillis = animationDuration, easing = LinearEasing)
-    )
-
-    Box(
-        modifier = modifier
-            .size(width = 40.dp, height = 56.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(color)
-            .graphicsLayer { rotationY = rotation },
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            modifier = Modifier
-                .clickable { onClick() }
-                .padding(8.dp),
-            painter = painterResource(resource = Res.drawable.ic_rotate_24),
-            contentDescription = null,
-        )
-    }
 }
 
 @Composable

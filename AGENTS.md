@@ -4,6 +4,7 @@
 - Keep class-level properties near the start of the class, after the constructor and before `init` blocks and methods. Group dependencies before mutable state.
 - Keep local variables close to the code that uses them; the ordering rule applies to file-level and class-level declarations.
 - Do not add new constants or support types at the bottom of a source file.
+- Order top-level functions by visibility: public, then internal, then private. Private helper and extension functions belong below public/internal entry points.
 
 # Collaboration & Engineering Principles
 
