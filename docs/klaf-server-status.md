@@ -1,5 +1,9 @@
 # Klaf Server Status
 
+## Codex configuration logging (2026-10-18)
+
+Restored the SDK configuration summary in both account and legacy diagnostic collectors, including model/default/reasoning metadata and unavailable/empty catalogs. Independent review found no actionable issues. Independent verification compiled production and test sources and passed all six configuration-log and failure-log tests. The full server suite progressed through live integration tests without reported failures but was cancelled after approximately six minutes of test execution; it remains unverified. Deployment and live verification remain pending; configuration is emitted when a provider session opens.
+
 ## AI request failure diagnostics (2026-10-18)
 
 Follow-up implemented locally: AgentDriver preserves actual Codex error fields and reports common request/stream exception context. Klaf consumes safe SDK diagnostics across both account and legacy speech collectors, bounds/filters safe fields and records sensitive error text only with `KLAF_LOG_PROVIDER_ERROR_DETAILS=true`. Raw stderr is excluded. The full 482-test Klaf suite passed, followed by focused config/log/speech-diagnostic checks after the last changes. Independent code review has no remaining findings; final affected reruns were completed directly after the testing agent reached its usage limit. See `ai-error-diagnostics.md` for operation.

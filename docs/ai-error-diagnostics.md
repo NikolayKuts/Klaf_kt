@@ -1,5 +1,12 @@
 # Klaf Server AI error diagnostics
 
+Codex provider sessions also log `AgentDriver configuration: profile=...,
+Codex configuration: ...` without an opt-in. This includes configured and
+selected models, reasoning effort, the available model catalog, the default
+model, and default/supported reasoning efforts as reported by the SDK. Account
+sessions open lazily, so this appears when an AI request opens a provider session,
+not necessarily at server startup. An unavailable/empty catalog is logged explicitly.
+
 AgentDriver `0.10.15-SNAPSHOT` is required to produce the new records. The server
 consumer is backward compatible; updating only Klaf without updating the SDK
 does not recover details discarded by the old SDK.
