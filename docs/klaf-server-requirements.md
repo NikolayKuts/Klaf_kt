@@ -833,6 +833,7 @@ Feature request failures should be returned as structured protocol error message
 Logging should use short summaries by default. Full raw assistant responses should only be logged in an explicit debug mode because future requests may contain user text or subtitle content.
 For failed AI requests, server logs should include the request ID, the AgentDriver error category and safe structured reason when available. Do not log raw prompts, provider responses, credentials, or user content as failure diagnostics.
 For mnemonic image failures, log the AgentDriver request ID and code-owned image generation diagnostics so the request failure can be correlated with the provider phase and event.
+Consume safe SDK request/provider failure diagnostics for all AI operations. Free-form SDK error details require explicit `KLAF_LOG_PROVIDER_ERROR_DETAILS=true`, remain local to server logs, and never enter client responses. The flag defaults to false; detail masking is best effort and the operator must treat enabled logs as sensitive.
 
 Connection readiness is defined by the public Klaf Server WebSocket connection, not by internal AgentDriver sessions. The client is ready only after it receives `server.ready` from the server.
 

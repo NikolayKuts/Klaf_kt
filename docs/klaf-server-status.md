@@ -2,6 +2,10 @@
 
 ## AI request failure diagnostics (2026-10-18)
 
+Follow-up implemented locally: AgentDriver preserves actual Codex error fields and reports common request/stream exception context. Klaf consumes safe SDK diagnostics across both account and legacy speech collectors, bounds/filters safe fields and records sensitive error text only with `KLAF_LOG_PROVIDER_ERROR_DETAILS=true`. Raw stderr is excluded. The full 482-test Klaf suite passed, followed by focused config/log/speech-diagnostic checks after the last changes. Independent code review has no remaining findings; final affected reruns were completed directly after the testing agent reached its usage limit. See `ai-error-diagnostics.md` for operation.
+
+The new SDK source is uncommitted and unpublished under the earlier user restriction; Klaf still uses `0.10.14-SNAPSHOT`. A new SDK release, dependency update and target-server deployment/reproduction are required before new provider details appear in live logs. The original generation failure is not yet diagnosed or verified fixed.
+
 Klaf Server now logs safe AgentDriver error categories and structured reasons for Word Insights, mnemonic text/image, and Vocabulary Source analysis failures, including unavailable paths. The diagnostic formatter has focused tests; the full offline `:klaf-server:test` suite passed. A live recurrence still needs verification after server deployment. AgentDriver does not expose the raw provider error through its client protocol.
 The account runtime now also logs existing AgentDriver image diagnostics and the failure log includes the SDK request ID for correlation. The diagnostic test and full offline `:klaf-server:test` suite passed after this follow-up. A live recurrence remains to be checked after server deployment.
 
