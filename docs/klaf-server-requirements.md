@@ -5,9 +5,12 @@ It should be removed or replaced by permanent documentation after the full imple
 
 ## Mnemonic pronunciation fidelity (2026-10-19)
 
-- Select primary and secondary Russian sound anchors from actual English pronunciation, never letter transliteration. Establish IPA before anchor search and keep all sound-mapping fields consistent with it.
-- Preserve the stressed vowel and initial sound sequence. For mustard /ˈmʌstəd/ or /ˈmʌstɚd/, the initial approximation is «маст», not «муст»: anchors beginning with pronounced «му/мус» are invalid even after earlier anchors are excluded.
-- Compare actual Russian pronunciation too, including stress and vowel reduction. Novelty, visual appeal, and caller preferences cannot make a phonetically invalid anchor valid.
+- In automatic mode, select primary and secondary Russian sound anchors from actual English pronunciation, never letter transliteration. In both modes, establish actual IPA and keep source pronunciation fields factual.
+- In automatic mode, preserve the stressed vowel and initial sound sequence. For mustard /ˈmʌstəd/ or /ˈmʌstɚd/, the initial approximation is «маст», not «муст»: anchors beginning with pronounced «му/мус» are invalid even after earlier anchors are excluded.
+- In automatic anchor selection, compare actual Russian pronunciation too, including stress and vowel reduction. Novelty and visual appeal cannot make a phonetically invalid anchor valid.
+- An explicitly requested personal anchor takes priority over automatic lexical, language, familiarity, and phonetic-match preferences. Preserve the caller's anchor and supplied meaning, including foreign/rare words and action anchors; distinguish approximate or personal sound links without falsifying the English pronunciation.
+- A requested character or scene alone does not select a sound anchor. An explicit instruction to use a word as the anchor does: return one candidate with that same anchor across the anchor fields and the central scene action, without substitute or extra anchors.
+- Anchor selection and anchor/scene consistency are responsibilities of the model instructions only. Do not add server-side reconciliation, validation, or new response fields for this behavior.
 
 ## Linux Tunnel deployment (2026-10-08)
 

@@ -2,6 +2,8 @@
 
 ## Mnemonic pronunciation fidelity (2026-10-19)
 
+Follow-up completed in model instructions and schema descriptions: explicit personal anchors retain original spelling/meaning, default selection rules apply only to automatic anchors, and the model checks anchor/scene consistency before returning. Action/event anchors require the event and its direct perceptible effect rather than bound objects. Independent review and compilation/wiring checks passed (MnemonicWorkerPlanTest and MnemonicSiwcRoutingTest); response structure and server logic are unchanged. Live generation verification remains pending after deployment.
+
 Implemented pronunciation-first anchor selection rules in the server text contract and request prompt, including mustard as a regression example. Independent review verified both account and legacy instruction paths; production Kotlin compilation and all four existing mnemonic tests passed. Deployment and live model verification remain pending; deterministic checks do not prove generated anchor quality.
 
 
