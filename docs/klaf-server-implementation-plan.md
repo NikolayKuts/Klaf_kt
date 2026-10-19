@@ -1,5 +1,10 @@
 # Klaf Server Authentication Implementation Plan
 
+## Mnemonic pronunciation fidelity (2026-10-19)
+
+Implemented pronunciation-first anchor selection rules in the server text contract and request prompt, including mustard as a regression example. Independent review verified both account and legacy instruction paths; production Kotlin compilation and all four existing mnemonic tests passed. Deployment and live model verification remain pending; deterministic checks do not prove generated anchor quality.
+
+
 ## Linux Tunnel client cutover (2026-10-08)
 
 Use the existing ignored client `SecretConstants.KlafServer` for Android and

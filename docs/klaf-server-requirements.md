@@ -3,6 +3,12 @@
 This file is a temporary working document for the Klaf server implementation.
 It should be removed or replaced by permanent documentation after the full implementation is finished.
 
+## Mnemonic pronunciation fidelity (2026-10-19)
+
+- Select primary and secondary Russian sound anchors from actual English pronunciation, never letter transliteration. Establish IPA before anchor search and keep all sound-mapping fields consistent with it.
+- Preserve the stressed vowel and initial sound sequence. For mustard /ˈmʌstəd/ or /ˈmʌstɚd/, the initial approximation is «маст», not «муст»: anchors beginning with pronounced «му/мус» are invalid even after earlier anchors are excluded.
+- Compare actual Russian pronunciation too, including stress and vowel reduction. Novelty, visual appeal, and caller preferences cannot make a phonetically invalid anchor valid.
+
 ## Linux Tunnel deployment (2026-10-08)
 
 - Klaf Server and `cloudflared` run on the same Linux host. The server listens

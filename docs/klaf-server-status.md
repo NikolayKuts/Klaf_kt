@@ -1,5 +1,10 @@
 # Klaf Server Status
 
+## Current focus: mnemonic pronunciation fidelity (2026-10-19)
+
+Strengthened the server text contract and per-request reminder: establish IPA before anchor search, compare actual English/Russian pronunciation, and reject spelling-driven anchors even for alternatives or caller-requested anchors. Added mustard /mʌst/ as a concrete example. Independent review found no actionable issues. Independent verification compiled production Kotlin and passed all four existing mnemonic tests via `:klaf-server:test --tests 'com.kuts.klaf.server.features.mnemonic.*'`; both repository diff checks passed. These checks cover deterministic wiring, not live model compliance. Deployment and repeated live generation in a fresh provider session remain pending.
+
+
 ## Codex configuration logging (2026-10-18)
 
 Restored the SDK configuration summary in both account and legacy diagnostic collectors, including model/default/reasoning metadata and unavailable/empty catalogs. Independent review found no actionable issues. Independent verification compiled production and test sources and passed all six configuration-log and failure-log tests. The full server suite progressed through live integration tests without reported failures but was cancelled after approximately six minutes of test execution; it remains unverified. Deployment and live verification remain pending; configuration is emitted when a provider session opens.
