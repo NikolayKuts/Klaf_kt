@@ -1,5 +1,31 @@
 # Klaf Server Status
 
+## Operator device deletion (2026-10-23)
+
+Implemented Delete next to Revoke/Restore, with account/device-specific
+confirmation. The registry operation invalidates captured old sessions, removes
+approval/enrollment receipts and the synchronization registration, and removes
+the auth-device entry. Only affected AI jobs/connections and sync subscriptions
+are closed; other devices receive the updated inventory. Retained revoked session
+records prevent old access/refresh credentials from reviving after re-enrollment.
+Fresh enrollment requires operator approval, including for the last device.
+Account content, images and accepted-change history remain intact.
+
+Enrollment validation and sync registration now run together under the existing
+creation mutex, preventing stale enrollment completions from recreating a deleted
+sync registration. Sync feeds register before revalidating authorization and clean
+up rejected/cancelled provisional subscriptions, closing the late-handshake race.
+
+Independent final review has no actionable findings. Independent offline server
+classes/JAR build and 86 tests passed (authentication boundary, account storage,
+AI isolation/cancellation, sync events, subscription races, token invalidation,
+re-enrollment and nonempty data/image/history preservation), with no failures or
+skips. Generated schemas remain unchanged; no migration is required. Confirmation
+UI interaction and Linux production deployment were not exercised. Committed
+with explicit operator authorization as server `a1088ee` on `develop`, pinned
+by the parent repository. Push remains operator-owned; no actual devices or
+production data were deleted.
+
 ## Runtime theme icon (2026-10-23)
 
 Server commit `4407489` on `develop`, pinned by the parent repository.

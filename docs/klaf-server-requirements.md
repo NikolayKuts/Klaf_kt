@@ -3,6 +3,22 @@
 This file is a temporary working document for the Klaf server implementation.
 It should be removed or replaced by permanent documentation after the full implementation is finished.
 
+## Operator device deletion (2026-10-23)
+
+- Add Delete beside Revoke/Restore in the server device inventory, with an
+  explicit confirmation naming the account/device and explaining session loss.
+- Remove the device's authentication approval, pending enrollment receipts and
+  synchronization registration. End its AI jobs/connections and sync feed;
+  publish the updated inventory to other devices. Old credentials remain invalid
+  even after the same installation is enrolled again with operator approval.
+- Preserve account data, images, accepted-change history and other devices.
+  Deletion also works for revoked devices and the last device. Repeating deletion
+  safely reports an already-removed device. Keep this a local operator action;
+  the legacy client device-management endpoint remains disabled. Revalidate
+  authorization after a sync-feed subscription is registered so a handshake
+  started before deletion cannot escape closure; clean up rejected/cancelled
+  provisional subscriptions.
+
 ## Runtime theme control (2026-10-23)
 
 - Place a compact sun/moon icon button in the server window header, next to the
