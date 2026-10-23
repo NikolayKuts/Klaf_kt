@@ -16,29 +16,32 @@
 
 ## Current Focus
 
-- 2026-10-23 interrupted-image investigation: the deployed conflict diagnostic
-  reports incoming 2,407,951 bytes, stored 2,392,064 bytes and an exact shorter
-  prefix. The matching local PNG has valid chunk CRCs and an IEND at EOF; the
-  reported server cutoff falls inside its IDAT chunk, missing 15,887 bytes.
-  Reproduced the ingestion defect with a real authenticated HTTP upload against
-  the disposable production CIO server: closing the sender early publishes a
-  partial PNG. The new regression failed on the original handler's persisted
-  file assertion. Ktor 3.5.1's bounded `readRemaining(max)` can return collected
-  bytes without reporting the channel's close cause; the handler also omitted
-  Content-Length verification. Initial checks fixed declared-length uploads,
-  but independent testing still reproduced partial persistence for an
-  interrupted chunked body with no length. Added `X-Klaf-Image-Size` to the
-  client/server contract and validate it independently of HTTP framing, plus
-  close-cause/Content-Length checks. Uploads with no available length are
-  rejected; complete chunked transfers carrying that size remain supported.
-  Downloads use the same completion checks before bytes can enter the cache.
-  Fixed in server commit `c62d844` and the parent client/contract update.
-  Independent review found no actionable issues; independent offline verification
-  passed 112 tests (97 client, 15 server), server classes/JAR and Android Debug
-  assembly. Linux/proxy deployment and live device acceptance remain pending;
-  deploy the server before the updated client. Existing truncated files remain
-  unchanged and still require a separate explicit repair decision. No file
-  restoration or identity remapping has been performed.
+- 2026-10-23 interrupted-image fix and live acceptance completed: the deployed
+  diagnostic reported incoming 2,407,951 bytes, stored 2,392,064 bytes and an
+  exact shorter prefix. The intact local PNG has valid chunk CRCs and IEND;
+  the server cutoff was inside IDAT, missing 15,887 bytes. A real authenticated
+  production-CIO socket test reproduced partial-file publication on interrupted
+  upload. Bounded `readRemaining(max)` did not reliably propagate close failure,
+  and the handler omitted expected-length verification; independent testing
+  also reproduced the problem with interrupted chunked transfer.
+  Server commit `c62d844` and parent `f085b481` validate channel completion and
+  expected size before storage/return, with `X-Klaf-Image-Size` independent of
+  proxy framing and Content-Length fallback. Independent review passed; 112
+  offline tests (97 client, 15 server), server classes/JAR and Android Debug
+  assembly passed. The operator deployed and restarted the corrected Linux
+  server; installed the updated APK using authorized `adb install -r`, retaining
+  data. The initial live dialog still showed versions 2/2 and 66 pending changes.
+  A one-off stopped-server command passed independent review and 11 disposable
+  Linux/WSL checks. The operator reported its successful size/SHA-256 verification,
+  hardlink backup and removal of only the served name, then restarted the server.
+  The full image was re-uploaded under the same ID during normal synchronization;
+  no identity remapping, database editing or manual outbox deletion was performed.
+  Live Android acceptance now passes: the status dialog shows Synchronized,
+  local/server versions 3/3, zero pending changes and this device confirmed at 3.
+  A read-only copy of the account DB and WAL passes SQLite quick_check, confirms
+  revision 3, zero pending operations and zero conflict snapshots. All 66 queued
+  changes were handled by the normal sync flow. The original truncated bytes
+  remain in the operator-created backup. No direct SSH inspection was performed.
 
 - 2026-10-23 server image-conflict diagnostics were deployed:
   `klaf-server` commit `5f6d5ef` on `develop`. The parent repository pins this
