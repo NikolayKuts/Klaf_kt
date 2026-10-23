@@ -774,6 +774,14 @@ synchronization error.
 
 ### Transport
 
+When immutable image upload is rejected as `IMAGE_ID_REUSED`, emit a server
+error diagnostic with a hashed asset key, byte lengths, SHA-256 fingerprints
+and whether the stored bytes are a shorter exact prefix of the upload. Do not
+log raw asset/account/device IDs, paths, headers or file/card contents. Keep
+the existing HTTP 409 response and stored file unchanged; diagnostics alone
+must not remap IDs or repair data automatically. Bound existing-file reads to
+the supported image size and report unavailable fingerprints explicitly.
+
 REST API for database CRUD and synchronization operations. The existing
 WebSocket protocol (`/ws`) remains for AI operations only (WordInsights,
 Mnemonic, VocabularySource analysis). The separate `/sync-events` WebSocket

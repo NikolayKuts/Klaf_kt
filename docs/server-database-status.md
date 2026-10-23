@@ -16,6 +16,14 @@
 
 ## Current Focus
 
+- 2026-10-23 server image-conflict diagnostics are committed for deployment:
+  `klaf-server` commit `5f6d5ef` on `develop`. The parent repository pins this
+  commit and records the diagnostic requirements. Independent review and all
+  11 focused server tests passed (5 diagnostic, 6 live HTTP). Push the server
+  repository first, then the parent branch; update the Linux checkout and its
+  submodule before rebuilding/restarting the server. Linux deployment and
+  collection of the new conflict diagnostic are still pending.
+
 - 2026-10-08 manual-sync image completeness: Android and Desktop now download
   saved images referenced by synchronized cards before the explicit sync
   reports success. Missing/invalid/download-failed files fail the attempt;
