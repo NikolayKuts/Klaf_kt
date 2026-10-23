@@ -3,6 +3,17 @@
 This file is a temporary working document for the Klaf server implementation.
 It should be removed or replaced by permanent documentation after the full implementation is finished.
 
+## Runtime theme control (2026-10-23)
+
+- Place a compact sun/moon icon button in the server window header, next to the
+  log actions. Clicking switches the entire server UI between light and dark
+  palettes immediately, without restarting the server.
+- Show the destination theme: a sun switches to light, a moon switches to dark.
+  Provide a hover tooltip, accessible action label and keyboard operation with
+  visible focus. Match the existing server action colors.
+- Retain the existing system-theme default and in-memory override for the
+  current window; switching theme preserves log entries and search queries.
+
 ## Mnemonic pronunciation fidelity (2026-10-19)
 
 - In automatic mode, select primary and secondary Russian sound anchors from actual English pronunciation, never letter transliteration. In both modes, establish actual IPA and keep source pronunciation fields factual.

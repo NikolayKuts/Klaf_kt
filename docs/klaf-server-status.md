@@ -1,5 +1,21 @@
 # Klaf Server Status
 
+## Runtime theme icon (2026-10-23)
+
+Server commit `4407489` on `develop`, pinned by the parent repository.
+
+Implemented a 40dp sun/moon header button next to Clear, replacing the text-only
+control. A sun selects light theme and a moon selects dark; a destination hover
+tooltip, accessible action label, button keyboard activation and visible focus
+outline use the existing server palette. The system-default/window-override
+wiring is unchanged, preserving logs, search and runtime server state.
+Independent final review has no actionable findings. Independent offline server
+classes/JAR build and all 14 existing theme/log-viewer tests passed (4 theme,
+10 log). Both button variants were rendered in a disposable Compose scene and
+visually checked for contrast, centering and clipping. No dependencies or
+production/test Gradle configuration were added. Full-window interaction,
+tooltip/keyboard behavior and Linux deployment were not exercised.
+
 ## Current focus: mnemonic pronunciation fidelity (2026-10-19)
 
 Follow-up implemented: automatic selection retains strict pronunciation rules; explicit personal anchors preserve the caller's spelling and supplied meaning, including foreign words and action/events. The model must use the same anchor across fields and the central scene, and identify approximate/personal sound links without falsifying source pronunciation. Object/contact/binding preferences no longer force action anchors into extra physical props. Only prompt strings and schema descriptions changed; no server validation/reconciliation or response-structure changes. Independent review found no remaining issues. Independent verification compiled production Kotlin, passed MnemonicWorkerPlanTest and MnemonicSiwcRoutingTest (2 tests, no failures/errors/skips), parsed the schema and confirmed its structure unchanged after removing descriptions; both diff checks passed. Deployment and live grape/greps and automatic mustard generation checks remain pending; deterministic checks do not prove model adherence.
