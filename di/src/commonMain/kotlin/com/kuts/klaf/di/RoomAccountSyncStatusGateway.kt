@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
-internal fun RoomSyncStatus.toAccountSyncStatus(): AccountSyncStatus = AccountSyncStatus(
+internal fun RoomSyncStatus.toAccountSyncStatus(currentDeviceId: String?): AccountSyncStatus = AccountSyncStatus(
     accountEmail = accountEmail,
     indicator = when (indicator) {
         SyncIndicatorState.HIDDEN -> AccountSyncIndicator.HIDDEN
@@ -43,8 +43,9 @@ internal fun RoomSyncStatus.toAccountSyncStatus(): AccountSyncStatus = AccountSy
             connected = device.connected,
             lastConfirmedRevision = device.lastConfirmedRevision,
             lastSuccessfulSyncAtMillis = device.lastSuccessfulSyncAtMillis,
+            isCurrentDevice = device.id == currentDeviceId,
         )
-    },
+    }.sortedWith(compareByDescending<AccountSyncDevice> { it.isCurrentDevice }.thenByDescending { it.connected }),
 )
 
 internal class AccountSyncHistoryReader(
@@ -70,9 +71,6 @@ internal class RoomAccountSyncStatusGateway(
     private val hasMissingImages: suspend (String) -> Boolean,
 ) : AccountSyncStatusGateway {
 
-    override suspend fun recentHistory(accountEmail: String): List<SyncHistoryItem> =
-        historyReader.recentHistory(accountEmail)
-
     override val status: Flow<AccountSyncStatus> = flow {
         val feed = SyncEventFeed(
             selectedAccountEmail = databaseSource.selection.map { it.accountEmail },
@@ -88,9 +86,15 @@ internal class RoomAccountSyncStatusGateway(
         )
         feed.start()
         try {
-            emitAll(observer.status.map(RoomSyncStatus::toAccountSyncStatus))
+            emitAll(observer.status.map { status ->
+                val currentDeviceId = if (status.accountEmail == null) null else identity.current().id
+                status.toAccountSyncStatus(currentDeviceId)
+            })
         } finally {
             feed.stop()
         }
     }
+
+    override suspend fun recentHistory(accountEmail: String): List<SyncHistoryItem> =
+        historyReader.recentHistory(accountEmail)
 }

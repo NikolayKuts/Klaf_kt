@@ -15,6 +15,7 @@ data class AccountSyncDevice(
     val connected: Boolean,
     val lastConfirmedRevision: Long?,
     val lastSuccessfulSyncAtMillis: Long?,
+    val isCurrentDevice: Boolean = false,
 )
 
 data class AccountSyncStatus(

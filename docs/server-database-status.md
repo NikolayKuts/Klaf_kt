@@ -88,6 +88,30 @@
   distinct image IDs and no image ID shared across distinct cards. This does
   not establish the cause of the server/client byte divergence.
 
+- 2026-10-23 current-device follow-up implemented: the persistent installation
+  ID identifies `This device`, independently of Connected/Offline. Pin it first,
+  then sort other connected devices before offline devices, retaining order
+  within groups. Missing/unknown IDs do not mark another device. Added mapping
+  coverage and updated previews with a second connected device and an offline
+  current-device example. Independent review has no actionable findings.
+  Independent Android Debug/Desktop compilation (DI and presentation) passed,
+  as did 3 mapping tests and 36 sync/history/sign-out/conflict presentation
+  tests (39 total, zero failures/errors/skips). Resource validation and diff
+  checks passed. No server protocol changes. IDE/device visual acceptance and
+  iOS compilation were not performed.
+
+- 2026-10-23 synchronization details UI implemented: a labeled status banner,
+  side-by-side local/server versions, and separate device/history cards replace
+  the flat text list. Existing sync/conflict actions and loading/error/unknown
+  states are preserved. `AccountSyncStatusView.kt` includes light, dark,
+  compact/offline (larger font), and conflict Compose previews with local sample
+  data. Android Debug and Desktop compilation passed. Independent review's
+  light-theme badge contrast finding was fixed and rechecked; no findings remain.
+  Independent verification passed both compile tasks and 36 focused sync
+  history/routing, sign-out and conflict presentation tests (zero failures,
+  errors or skips). Resource validation and `git diff --check` passed.
+  IDE/device visual acceptance has not been performed.
+
 - 2026-10-08 manual-sync image completeness: Android and Desktop now download
   saved images referenced by synchronized cards before the explicit sync
   reports success. Missing/invalid/download-failed files fail the attempt;

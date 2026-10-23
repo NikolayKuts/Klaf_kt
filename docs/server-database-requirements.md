@@ -569,6 +569,19 @@ The history read is scoped to the selected account and requires a registered
 device, like the existing sync/bootstrap endpoints. It returns identifiers and
 metadata rather than card contents; opening details does not start a sync.
 
+Synchronization details must visually separate the overall status and revision
+summary, registered devices, and recent changes. Make versions easy to compare,
+reduce repeated wording, and keep each device's metadata and each history
+entry together. Status colors must have text labels and support light/dark
+themes. Preserve existing sync/conflict actions and unknown/loading/error
+states. Provide self-contained Compose previews with representative data.
+
+Identify the current device by its persistent local device ID, independently
+of connection status, and label it `This device`. Pin it first, then show other
+connected devices before offline devices. Preserve the received order within
+each group. If the current device is absent from the received list or its ID
+is unavailable, do not guess or mark another device as current.
+
 ### Data Scope
 
 Phase 1 (this implementation): `Deck` and `Card` data plus the new server
