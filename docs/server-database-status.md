@@ -16,13 +16,74 @@
 
 ## Current Focus
 
-- 2026-10-23 server image-conflict diagnostics are committed for deployment:
+- 2026-10-23 interrupted-image investigation: the deployed conflict diagnostic
+  reports incoming 2,407,951 bytes, stored 2,392,064 bytes and an exact shorter
+  prefix. The matching local PNG has valid chunk CRCs and an IEND at EOF; the
+  reported server cutoff falls inside its IDAT chunk, missing 15,887 bytes.
+  Reproduced the ingestion defect with a real authenticated HTTP upload against
+  the disposable production CIO server: closing the sender early publishes a
+  partial PNG. The new regression failed on the original handler's persisted
+  file assertion. Ktor 3.5.1's bounded `readRemaining(max)` can return collected
+  bytes without reporting the channel's close cause; the handler also omitted
+  Content-Length verification. Initial checks fixed declared-length uploads,
+  but independent testing still reproduced partial persistence for an
+  interrupted chunked body with no length. Added `X-Klaf-Image-Size` to the
+  client/server contract and validate it independently of HTTP framing, plus
+  close-cause/Content-Length checks. Uploads with no available length are
+  rejected; complete chunked transfers carrying that size remain supported.
+  Downloads use the same completion checks before bytes can enter the cache.
+  Fixed in server commit `c62d844` and the parent client/contract update.
+  Independent review found no actionable issues; independent offline verification
+  passed 112 tests (97 client, 15 server), server classes/JAR and Android Debug
+  assembly. Linux/proxy deployment and live device acceptance remain pending;
+  deploy the server before the updated client. Existing truncated files remain
+  unchanged and still require a separate explicit repair decision. No file
+  restoration or identity remapping has been performed.
+
+- 2026-10-23 server image-conflict diagnostics were deployed:
   `klaf-server` commit `5f6d5ef` on `develop`. The parent repository pins this
   commit and records the diagnostic requirements. Independent review and all
-  11 focused server tests passed (5 diagnostic, 6 live HTTP). Push the server
-  repository first, then the parent branch; update the Linux checkout and its
-  submodule before rebuilding/restarting the server. Linux deployment and
-  collection of the new conflict diagnostic are still pending.
+  11 focused server tests passed (5 diagnostic, 6 live HTTP). The operator
+  pushed/rebuilt the separate Linux copy and supplied a live conflict diagnostic:
+  incoming 2,407,951 bytes, stored 2,392,064 bytes, exact shorter prefix. The
+  interrupted-ingestion fix and deployment are tracked above; existing files
+  remain unchanged.
+
+- 2026-10-23 manual-sync timeout investigation: Android logs confirm a handled
+  15-second request timeout; the local checkpoint remains 2 with 66 queued
+  operations. Read-only inspection found 20 locally saved images referenced by
+  pending cards (about 36 MiB total), uploaded before the metadata batch. The
+  diagnostic APK was installed in place under user-authorized ADB use and the
+  failure reproduced as `PUT /api/v1/images: TIMEOUT` before metadata upload.
+  Image transfers now have a bounded 60-second budget; other request deadlines
+  and retry policy remain unchanged. Independent review passed, as did 50
+  focused tests and `:Android:assembleDebug`; the slow-upload regression
+  completed in 16 seconds using the production default. The final APK was
+  installed in place and live retry reached the server response after about
+  32 seconds, then failed with `ImageSyncFailure.ID_REUSED`. This means the
+  server already has different bytes for an uploaded immutable asset ID; it
+  does not establish how that divergence arose. The local checkpoint is still
+  2 and all 66 operations remain queued. Do not overwrite server files, clear
+  the queue or silently remap operation IDs. Requested read-only Linux server
+  access to compare files/logs; full sync success remains unverified. A controlled
+  retry after the operator cleared server logs reproduced `ID_REUSED`, but the
+  server UI showed only connection/token activity: the HTTP 409 branch has no
+  log call. Added bounded conflict diagnostics (sizes/digests/prefix comparison)
+  without modifying stored files or the HTTP 409 response. Additional reads for
+  already-proven size conflicts are best effort; required equal-size comparison
+  errors retain their previous behavior. Independent review has no remaining
+  findings; production classes/JAR and all 11 focused tests (5 diagnostic,
+  6 live HTTP image-delivery tests) passed. A portable server-only source patch
+  is available at `build/diagnostics/image-upload-server-diagnostics.patch`.
+  The operator deployed these diagnostics to the separate Linux copy and
+  reported the shorter-prefix result. The resulting interrupted-upload
+  investigation is tracked above. No file repair has been performed.
+
+  The operator also reported replacing card images. Source inspection confirms
+  that saving a new draft creates a new random image UUID without overwriting
+  an existing saved file. The observed queue has 3 cards with successive
+  distinct image IDs and no image ID shared across distinct cards. This does
+  not establish the cause of the server/client byte divergence.
 
 - 2026-10-08 manual-sync image completeness: Android and Desktop now download
   saved images referenced by synchronized cards before the explicit sync

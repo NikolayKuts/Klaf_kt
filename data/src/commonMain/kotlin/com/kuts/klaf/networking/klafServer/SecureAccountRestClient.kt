@@ -175,7 +175,7 @@ internal class SecureAccountRestClient(
     }
 
     override suspend fun refresh(refreshToken: String, operationId: String): SecureLoginTokens =
-        klafServerRequest(requestTimeoutMillis) {
+        klafServerRequest(requestTimeoutMillis, operation = "POST /api/v1/auth/refresh") {
             require(refreshToken.isNotBlank() && operationId.length in 16..128)
             val (_, body) = postWithProof("/api/v1/auth/refresh",
                 json.encodeToString(RefreshCredentialsBody(refreshToken, operationId)))

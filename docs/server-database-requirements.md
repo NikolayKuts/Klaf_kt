@@ -774,6 +774,16 @@ synchronization error.
 
 ### Transport
 
+Synchronization transport failures must identify the failing request with a
+fixed operation label (HTTP method/path, without query values, account/device
+identifiers, credentials or payloads). Keep timeout/cancellation semantics and
+the durable pending queue intact; diagnostic context must not convert caller
+cancellation into a timeout or trigger another upload automatically.
+Image upload/download requests have a separate bounded 60-second transfer
+budget, including signing and the existing nonce challenge. The shorter sync,
+history and authentication request budgets remain unchanged. Caller cancellation
+must still stop a transfer immediately.
+
 When immutable image upload is rejected as `IMAGE_ID_REUSED`, emit a server
 error diagnostic with a hashed asset key, byte lengths, SHA-256 fingerprints
 and whether the stored bytes are a shorter exact prefix of the upload. Do not
@@ -781,6 +791,20 @@ log raw asset/account/device IDs, paths, headers or file/card contents. Keep
 the existing HTTP 409 response and stored file unchanged; diagnostics alone
 must not remap IDs or repair data automatically. Bound existing-file reads to
 the supported image size and report unavailable fingerprints explicitly.
+
+Interrupted image requests must never publish a saved image or replace an
+existing file. After bounded body reading, propagate channel failure/caller
+cancellation and reject a received byte count that differs from the declared
+Content-Length. The client supplies `X-Klaf-Image-Size` for uploads so expected
+file length survives proxy chunked reframing; the server requires either this
+header or Content-Length and rejects contradictory/invalid declarations. Image
+downloads expose the same size header and clients validate the received size
+and channel completion before returning bytes for caching. Preserve valid
+chunked transfers carrying a declared image size. Preserve the image size bound,
+authenticated ownership and immutable-ID rules. A complete retry with the same
+ID must succeed if the interrupted request did not publish a file; existing
+divergent files require
+a separate explicit repair decision.
 
 REST API for database CRUD and synchronization operations. The existing
 WebSocket protocol (`/ws`) remains for AI operations only (WordInsights,

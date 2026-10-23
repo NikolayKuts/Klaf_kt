@@ -50,6 +50,7 @@ class KlafServerSyncRestClient(
 
     suspend fun bootstrap(email: String, deviceId: String): SyncBootstrapResponse = klafServerRequest(
         SYNC_REQUEST_TIMEOUT_MILLIS,
+        operation = "GET /api/v1/sync/bootstrap",
     ) {
         val body = requestWithProof("GET", "/api/v1/sync/bootstrap", email) { proof ->
             httpClient.get("$endpointBase/api/v1/sync/bootstrap") {
@@ -63,7 +64,10 @@ class KlafServerSyncRestClient(
         json.decodeFromString<SyncBootstrapResponse>(body)
     }
 
-    suspend fun sync(request: SyncRequest): SyncResponse = klafServerRequest(SYNC_REQUEST_TIMEOUT_MILLIS) {
+    suspend fun sync(request: SyncRequest): SyncResponse = klafServerRequest(
+        SYNC_REQUEST_TIMEOUT_MILLIS,
+        operation = "POST /api/v1/sync",
+    ) {
         val encoded = json.encodeToString(request)
         val body = requestWithProof("POST", "/api/v1/sync", request.email) { proof ->
             httpClient.post("$endpointBase/api/v1/sync") {
@@ -77,6 +81,7 @@ class KlafServerSyncRestClient(
 
     suspend fun recentHistory(email: String, deviceId: String): SyncHistoryResponse = klafServerRequest(
         SYNC_REQUEST_TIMEOUT_MILLIS,
+        operation = "GET /api/v1/sync/history",
     ) {
         val body = requestWithProof("GET", "/api/v1/sync/history", email) { proof ->
             httpClient.get("$endpointBase/api/v1/sync/history") {
@@ -94,7 +99,10 @@ class KlafServerSyncRestClient(
         email: String,
         deviceId: String,
         revision: Long,
-    ): SyncPositionConfirmationResponse = klafServerRequest(SYNC_REQUEST_TIMEOUT_MILLIS) {
+    ): SyncPositionConfirmationResponse = klafServerRequest(
+        SYNC_REQUEST_TIMEOUT_MILLIS,
+        operation = "POST /api/v1/sync/confirm",
+    ) {
         val encoded = json.encodeToString(SyncPositionConfirmationRequest(
             email = email,
             deviceId = deviceId,

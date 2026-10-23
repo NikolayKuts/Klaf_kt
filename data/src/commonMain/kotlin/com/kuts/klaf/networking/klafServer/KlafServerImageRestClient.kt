@@ -1,17 +1,20 @@
 package com.kuts.klaf.networking.klafServer
 
 import com.kuts.domain.managers.AccountOperationException
+import com.kuts.domain.managers.AccountFailure
 import com.kuts.domain.managers.ImageSynchronizationException
 import com.kuts.domain.managers.ImageSyncFailure
 import com.kuts.klaf.mnemonic.MAX_MNEMONIC_IMAGE_BYTES
 import com.kuts.klaf.mnemonic.isSafeMnemonicImageId
 import com.kuts.klaf.mnemonic.mnemonicImageContentType
+import com.kuts.klaf.server.contract.IMAGE_SIZE_HEADER
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsChannel
@@ -21,7 +24,8 @@ import kotlinx.io.readByteArray
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-private const val IMAGE_REQUEST_TIMEOUT_MILLIS = 15_000L
+// Saved images can be several MiB; their transfer budget is separate from small metadata requests.
+private const val IMAGE_REQUEST_TIMEOUT_MILLIS = 60_000L
 
 @Serializable
 private data class ProtectedImageError(val code: String)
@@ -34,7 +38,12 @@ class KlafServerImageRestClient(
 
     private val endpoint = "${baseUrl.trimEnd('/')}/api/v1/images"
 
-    suspend fun upload(email: String, deviceId: String, assetId: String, bytes: ByteArray) = klafServerRequest(IMAGE_REQUEST_TIMEOUT_MILLIS) {
+    suspend fun upload(
+        email: String,
+        deviceId: String,
+        assetId: String,
+        bytes: ByteArray,
+    ) = klafServerRequest(IMAGE_REQUEST_TIMEOUT_MILLIS, operation = "PUT /api/v1/images") {
         require(isSafeMnemonicImageId(assetId)) { "Invalid image asset ID" }
         require(bytes.size in 1..MAX_MNEMONIC_IMAGE_BYTES && mnemonicImageContentType(bytes) != null) { "Invalid image data" }
         val response = requestWithProof(email, "PUT") { proof ->
@@ -43,6 +52,7 @@ class KlafServerImageRestClient(
                 parameter("deviceId", deviceId)
                 parameter("assetId", assetId)
                 contentType(ContentType.Application.OctetStream)
+                headers.append(IMAGE_SIZE_HEADER, bytes.size.toString())
                 proof?.let {
                     headers.append("Authorization", it.authorization)
                     headers.append("DPoP", it.dpop)
@@ -60,7 +70,11 @@ class KlafServerImageRestClient(
         }
     }
 
-    suspend fun download(email: String, deviceId: String, assetId: String): ByteArray? = klafServerRequest(IMAGE_REQUEST_TIMEOUT_MILLIS) {
+    suspend fun download(
+        email: String,
+        deviceId: String,
+        assetId: String,
+    ): ByteArray? = klafServerRequest(IMAGE_REQUEST_TIMEOUT_MILLIS, operation = "GET /api/v1/images") {
         require(isSafeMnemonicImageId(assetId)) { "Invalid image asset ID" }
         val response = requestWithProof(email, "GET") { proof ->
             http.get(endpoint) {
@@ -75,7 +89,22 @@ class KlafServerImageRestClient(
         }
         if (response.status.value == 404) return@klafServerRequest null
         check(response.status.value == 200) { "Klaf image HTTP ${response.status.value}" }
-        val bytes = response.bodyAsChannel().readRemaining((MAX_MNEMONIC_IMAGE_BYTES + 1).toLong()).readByteArray()
+        val imageSizeHeader = response.headers[IMAGE_SIZE_HEADER]
+        val contentSizeHeader = response.headers[HttpHeaders.ContentLength]
+        val imageSize = imageSizeHeader?.toLongOrNull()
+        val contentSize = contentSizeHeader?.toLongOrNull()
+        val declaredBytes = imageSize ?: contentSize
+        if (imageSizeHeader != null && imageSize == null || contentSizeHeader != null && contentSize == null ||
+            imageSize != null && contentSize != null && imageSize != contentSize ||
+            declaredBytes == null || declaredBytes !in 1..MAX_MNEMONIC_IMAGE_BYTES.toLong()) {
+            throw AccountOperationException(AccountFailure.INVALID_RESPONSE, "GET /api/v1/images: INVALID_RESPONSE")
+        }
+        val channel = response.bodyAsChannel()
+        val bytes = channel.readRemaining((MAX_MNEMONIC_IMAGE_BYTES + 1).toLong()).readByteArray()
+        channel.closedCause?.let { throw it }
+        if (bytes.size.toLong() != declaredBytes) {
+            throw AccountOperationException(AccountFailure.INVALID_RESPONSE, "GET /api/v1/images: INCOMPLETE_RESPONSE")
+        }
         check(bytes.size in 1..MAX_MNEMONIC_IMAGE_BYTES && mnemonicImageContentType(bytes) != null) { "Invalid image response" }
         bytes
     }
