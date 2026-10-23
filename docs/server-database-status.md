@@ -16,6 +16,21 @@
 
 ## Current Focus
 
+- 2026-10-23 follow-up code review completed: removed automatic whole-body
+  image buffering by validating/reading within a streaming response scope.
+  Read at most the validated declared size plus one byte, rejecting excess data
+  immediately and propagating channel failure/cancellation. Each nonce response
+  is consumed and released before retry; length parsing is isolated locally.
+  The unfinished-body regression failed before the fix and now passes, alongside
+  excess-body and GET nonce sequencing coverage. Increased light-theme green
+  badge/banner text contrast and finalized grouped details/current-device UI.
+  Independent final review has no actionable findings. Independent offline
+  verification passed 157 tests (100 data, 6 DI, 36 presentation, 15 server),
+  Android APK assembly, DI/presentation Android/Desktop compilation with all four
+  previews, server classes/JAR and resource/diff checks. No iOS build, visual
+  rendering or new device/proxy acceptance was performed for these review fixes;
+  the preceding deployed sync acceptance remains recorded below.
+
 - 2026-10-23 interrupted-image fix and live acceptance completed: the deployed
   diagnostic reported incoming 2,407,951 bytes, stored 2,392,064 bytes and an
   exact shorter prefix. The intact local PNG has valid chunk CRCs and IEND;
@@ -49,11 +64,11 @@
   11 focused server tests passed (5 diagnostic, 6 live HTTP). The operator
   pushed/rebuilt the separate Linux copy and supplied a live conflict diagnostic:
   incoming 2,407,951 bytes, stored 2,392,064 bytes, exact shorter prefix. The
-  interrupted-ingestion fix and deployment are tracked above; existing files
-  remain unchanged.
+  interrupted-ingestion fix, deployment and later recovery are tracked above;
+  the diagnostic-only changes did not modify stored files.
 
 - 2026-10-23 manual-sync timeout investigation: Android logs confirm a handled
-  15-second request timeout; the local checkpoint remains 2 with 66 queued
+  15-second request timeout; at that stage the checkpoint was 2 with 66 queued
   operations. Read-only inspection found 20 locally saved images referenced by
   pending cards (about 36 MiB total), uploaded before the metadata batch. The
   diagnostic APK was installed in place under user-authorized ADB use and the
@@ -65,10 +80,10 @@
   installed in place and live retry reached the server response after about
   32 seconds, then failed with `ImageSyncFailure.ID_REUSED`. This means the
   server already has different bytes for an uploaded immutable asset ID; it
-  does not establish how that divergence arose. The local checkpoint is still
-  2 and all 66 operations remain queued. Do not overwrite server files, clear
+  did not by itself establish how that divergence arose. At that stage the
+  checkpoint was 2 and all 66 operations were queued. Do not overwrite server files, clear
   the queue or silently remap operation IDs. Requested read-only Linux server
-  access to compare files/logs; full sync success remains unverified. A controlled
+  access to compare files/logs; full sync success was then unverified. A controlled
   retry after the operator cleared server logs reproduced `ID_REUSED`, but the
   server UI showed only connection/token activity: the HTTP 409 branch has no
   log call. Added bounded conflict diagnostics (sizes/digests/prefix comparison)
@@ -80,13 +95,15 @@
   is available at `build/diagnostics/image-upload-server-diagnostics.patch`.
   The operator deployed these diagnostics to the separate Linux copy and
   reported the shorter-prefix result. The resulting interrupted-upload
-  investigation is tracked above. No file repair has been performed.
+  investigation and subsequently completed repair/live acceptance are tracked
+  above; no file repair was performed during the diagnostic-only stage.
 
   The operator also reported replacing card images. Source inspection confirms
   that saving a new draft creates a new random image UUID without overwriting
   an existing saved file. The observed queue has 3 cards with successive
   distinct image IDs and no image ID shared across distinct cards. This does
-  not establish the cause of the server/client byte divergence.
+  not indicate cross-card identity reuse; the truncated-upload cause was later
+  confirmed as described above.
 
 - 2026-10-23 current-device follow-up implemented: the persistent installation
   ID identifies `This device`, independently of Connected/Offline. Pin it first,

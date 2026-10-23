@@ -812,8 +812,10 @@ Content-Length. The client supplies `X-Klaf-Image-Size` for uploads so expected
 file length survives proxy chunked reframing; the server requires either this
 header or Content-Length and rejects contradictory/invalid declarations. Image
 downloads expose the same size header and clients validate the received size
-and channel completion before returning bytes for caching. Preserve valid
-chunked transfers carrying a declared image size. Preserve the image size bound,
+and channel completion before returning bytes for caching. Read downloads in
+a streaming response scope so size validation and bounded reads happen before
+automatic whole-body buffering; release each nonce-challenge response before
+retrying. Preserve valid chunked transfers carrying a declared image size. Preserve the image size bound,
 authenticated ownership and immutable-ID rules. A complete retry with the same
 ID must succeed if the interrupted request did not publish a file; existing
 divergent files require

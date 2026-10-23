@@ -10,16 +10,27 @@ import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.HttpHeaders
 import io.ktor.http.headersOf
+import io.ktor.utils.io.ByteChannel
 import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.writeFully
 import kotlinx.io.IOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertContentEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 
 class SecureImageRestClientTest {
+
+    private companion object {
+        val PNG_BYTES = byteArrayOf(0x89.toByte(), 80, 78, 71, 13, 10, 26, 10)
+    }
 
     @Test
     fun `image upload tolerates a transfer longer than the metadata request deadline`() = runBlocking {
@@ -40,7 +51,12 @@ class SecureImageRestClientTest {
     fun `image upload uses account token proof and retries nonce challenge`() = runBlocking {
         val seen = mutableListOf<String>()
         val signer = object : KlafAuthenticatedRequestSigner {
-            override suspend fun headers(email: String, method: String, url: String, nonce: String?): AccessProofHeaders {
+            override suspend fun headers(
+                email: String,
+                method: String,
+                url: String,
+                nonce: String?,
+            ): AccessProofHeaders {
                 assertEquals("alice@example.test", email)
                 assertEquals("PUT", method)
                 assertEquals("https://server.test/api/v1/images", url)
@@ -62,6 +78,86 @@ class SecureImageRestClientTest {
             KlafServerImageRestClient("https://server.test", http, signer).upload(
                 "alice@example.test", "desktop-a", "valid-image-id", PNG_BYTES)
             assertEquals(listOf("image-proof-1-", "image-proof-2-image-server-nonce-123456789"), seen)
+        } finally {
+            http.close()
+        }
+    }
+
+    @Test
+    fun `download rejects oversized headers before waiting for an unfinished response body`() = runBlocking {
+        val body = ByteChannel()
+        val http = HttpClient(MockEngine {
+            respond(body, HttpStatusCode.OK,
+                headersOf(IMAGE_SIZE_HEADER, (MAX_MNEMONIC_IMAGE_BYTES + 1).toString()))
+        })
+        try {
+            val failure = withTimeout(2_000L) {
+                assertFailsWith<AccountOperationException> {
+                    KlafServerImageRestClient("https://server.test", http)
+                        .download("alice@example.test", "desktop-a", "valid-image-id")
+                }
+            }
+            assertEquals(AccountFailure.INVALID_RESPONSE, failure.failure)
+        } finally {
+            body.cancel(null)
+            http.close()
+        }
+    }
+
+    @Test
+    fun `download stops after declared size when a server sends excess unfinished data`() = runBlocking {
+        val body = ByteChannel(autoFlush = true)
+        val writer = launch {
+            body.writeFully(PNG_BYTES + byteArrayOf(0))
+            awaitCancellation()
+        }
+        val http = HttpClient(MockEngine {
+            respond(body, HttpStatusCode.OK, headersOf(IMAGE_SIZE_HEADER, PNG_BYTES.size.toString()))
+        })
+        try {
+            val failure = withTimeout(2_000L) {
+                assertFailsWith<AccountOperationException> {
+                    KlafServerImageRestClient("https://server.test", http)
+                        .download("alice@example.test", "desktop-a", "valid-image-id")
+                }
+            }
+            assertEquals(AccountFailure.INVALID_RESPONSE, failure.failure)
+            assertEquals("GET /api/v1/images: INCOMPLETE_RESPONSE", failure.message)
+        } finally {
+            writer.cancelAndJoin()
+            body.cancel(null)
+            http.close()
+        }
+    }
+
+    @Test
+    fun `streaming download consumes nonce challenge before retrying the image response`() = runBlocking {
+        val challenge = ByteReadChannel("""{"code":"DPOP_NONCE_REQUIRED"}""".encodeToByteArray())
+        val seen = mutableListOf<String?>()
+        val signer = object : KlafAuthenticatedRequestSigner {
+            override suspend fun headers(
+                email: String,
+                method: String,
+                url: String,
+                nonce: String?,
+            ): AccessProofHeaders {
+                assertEquals("GET", method)
+                seen += nonce
+                return AccessProofHeaders("DPoP access-token", "image-proof")
+            }
+        }
+        val http = HttpClient(MockEngine {
+            if (seen.size == 1) {
+                respond(challenge, HttpStatusCode.Unauthorized, headersOf("DPoP-Nonce", "image-server-nonce-123456789"))
+            } else {
+                assertTrue(challenge.isClosedForRead, "Challenge must be consumed before retry")
+                respond(ByteReadChannel(PNG_BYTES), HttpStatusCode.OK, headersOf(IMAGE_SIZE_HEADER, PNG_BYTES.size.toString()))
+            }
+        })
+        try {
+            assertContentEquals(PNG_BYTES, KlafServerImageRestClient("https://server.test", http, signer)
+                .download("alice@example.test", "desktop-a", "valid-image-id"))
+            assertEquals(listOf(null, "image-server-nonce-123456789"), seen)
         } finally {
             http.close()
         }
@@ -142,7 +238,4 @@ class SecureImageRestClientTest {
         }
     }
 
-    private companion object {
-        val PNG_BYTES = byteArrayOf(0x89.toByte(), 80, 78, 71, 13, 10, 26, 10)
-    }
 }
