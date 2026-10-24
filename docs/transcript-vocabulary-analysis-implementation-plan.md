@@ -73,8 +73,6 @@ Ordered implementation plan for the `VocabularySource` feature.
 - Save Ignore/Restore decisions globally and synchronize rule removals.
 - Offer Clear analysis for only the current source, preserving global Ignored
   Words, source metadata, Cards and Decks.
-- Prepare a temporary Android startup cleanup build using test-first development;
-  remove its code and tests after user-confirmed cleanup and synchronization.
 - Add runtime selectable item holders for checkbox selection.
 - Display status markers, category, original text, confidence, CEFR, part of
   speech, example, explanation, and known meanings snapshot when applicable.
