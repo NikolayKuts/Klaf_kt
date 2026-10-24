@@ -45,6 +45,9 @@ interface ICardDao {
     @Query("SELECT * FROM $CARD_TABLE_NAME")
     suspend fun getAllCards(): List<RoomCard>
 
+    @Query("SELECT * FROM $CARD_TABLE_NAME")
+    fun observeAllCards(): Flow<List<RoomCard>>
+
     @Query("SELECT * FROM $CARD_TABLE_NAME WHERE id = :cardId")
     fun getObservableCardById(cardId: Int): Flow<RoomCard?>
 

@@ -10,6 +10,8 @@ import com.kuts.domain.repositories.IIgnoredVocabularyWordRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IStorageTransactionRepository
 import com.kuts.domain.repositories.IVocabularySourceRepository
+import com.kuts.domain.vocabularySource.VocabularySourceItemKey
+import com.kuts.domain.vocabularySource.reviewKey
 import kotlinx.coroutines.withContext
 
 private const val LEGACY_VOCABULARY_SOURCE_LANGUAGE = "en"
@@ -26,24 +28,27 @@ class SaveVocabularySourceChangesUseCase(
         source: VocabularySource,
         draftItems: List<VocabularySourceItem>,
         shouldReplaceSourceItems: Boolean,
+        ignoredDecisions: Map<VocabularySourceItemKey, Boolean> = emptyMap(),
     ) {
         withContext(context = coroutineContextProvider.io) {
             localStorageTransactionRepository.performWithTransaction {
                 vocabularySourceRepository.saveSource(source = source)
 
                 if (shouldReplaceSourceItems) {
-                    val ignoredItems = draftItems.filter { item ->
-                        item.status == VocabularySourceItemStatus.IGNORED
-                    }
+                    ignoredVocabularyWordRepository.removeWords(
+                        keys = ignoredDecisions.filterValues { !it }.keys,
+                    )
                     ignoredVocabularyWordRepository.saveWords(
-                        words = ignoredItems.map { item ->
-                            item.toIgnoredVocabularyWord(createdAt = getCurrentDateAsLong())
+                        words = ignoredDecisions.filterValues { it }.keys.map { key ->
+                            draftItems.firstOrNull { it.reviewKey() == key }
+                                ?.toIgnoredVocabularyWord(createdAt = getCurrentDateAsLong())
+                                ?: IgnoredVocabularyWord(key.language, key.foreignWord, key.nativeWord, getCurrentDateAsLong())
                         },
                     )
                     vocabularySourceRepository.replaceNotAddedItemsBySourceId(
                         sourceId = source.id,
                         items = draftItems.filter { item ->
-                            item.status == VocabularySourceItemStatus.PENDING
+                            item.status != VocabularySourceItemStatus.ADDED
                         },
                     )
                 }

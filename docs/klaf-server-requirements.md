@@ -211,6 +211,11 @@ It should be removed or replaced by permanent documentation after the full imple
   part of the user's data, scoped to the selected account/guest database rather
   than a store shared across users. This includes saved text, source items and
   the feature's Ignored Words records.
+- Global ignored-rule restoration synchronizes as removal of the exact
+  normalized language/word/meaning rule. Deletion deltas must remove the rule
+  on other devices; stale concurrent Add/Remove decisions require normal sync
+  conflict handling. Removing a Card releases its source item's effective
+  ADDED state without deleting that item.
 - Sign-up transfers all such guest feature data along with decks/cards into the
   new account's local database, including when no guest decks/cards exist.
   Preserve source/item/deck/card links and verify the complete copied data before

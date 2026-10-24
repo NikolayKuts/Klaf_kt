@@ -2807,7 +2807,7 @@ on the final launch path. Choosing a login method remains an interview decision.
 
 ### Completed Vocabulary Source Follow-up
 
-- Sources, complete analyzed word lists and additive Ignored Words now use the
+- Sources, complete analyzed word lists and Ignored Words now use the
   existing manual Room/REST synchronization path. Local changes and durable
   outbox operations are committed together; the pending indicator becomes
   yellow when connected, with existing gray/error/conflict priorities retained.
@@ -2826,7 +2826,8 @@ on the final launch path. Choosing a login method remains an interview decision.
   A keep-local operation cannot restore missing card/deck links silently.
 - Portable sync IDs map links to each device's own integer IDs. Card/deck
   deletion clears obsolete source links transactionally without removing the
-  source word or its ADDED status, including deletions by old deck/card clients.
+  source word; deleting its linked Card now releases ADDED to PENDING,
+  including deletions by old deck/card clients.
   Source deletion removes its word list, not independently created cards.
 - Preserved guest sign-up transfer/retry, sign-in isolation, account separation
   and sync edit gates. Lost-response retries retain exact operation identities;

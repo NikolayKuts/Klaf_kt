@@ -22,6 +22,7 @@ internal fun planVocabularyChanges(
     val previous = before.associateBy { it.syncId }
     val currentIds = after.map { it.syncId }.toSet()
     val oldWordIds = beforeIgnored.map { it.toSyncWord().identity() }.toSet()
+    val currentWordIds = afterIgnored.map { it.toSyncWord().identity() }.toSet()
     return buildList {
         after.filter { previous[it.syncId] != it }.forEach {
             add(SyncOperation.UpsertVocabularySource(newSyncId(), it))
@@ -31,6 +32,9 @@ internal fun planVocabularyChanges(
         }
         afterIgnored.filter { it.toSyncWord().identity() !in oldWordIds }.forEach {
             add(SyncOperation.AddIgnoredVocabularyWord(newSyncId(), it.toSyncWord()))
+        }
+        beforeIgnored.filter { it.toSyncWord().identity() !in currentWordIds }.forEach {
+            add(SyncOperation.RemoveIgnoredVocabularyWord(newSyncId(), it.toSyncWord()))
         }
     }
 }

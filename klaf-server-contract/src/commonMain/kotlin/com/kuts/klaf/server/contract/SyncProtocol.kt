@@ -73,6 +73,13 @@ sealed interface SyncOperation {
     ) : SyncOperation
 
     @Serializable
+    @SerialName("REMOVE_IGNORED_VOCABULARY_WORD")
+    data class RemoveIgnoredVocabularyWord(
+        override val operationId: String,
+        val word: SyncIgnoredVocabularyWord,
+    ) : SyncOperation
+
+    @Serializable
     @SerialName("ADD_DECK")
     data class AddDeck(override val operationId: String, val deck: SyncDeck) : SyncOperation
 
@@ -213,6 +220,7 @@ data class SyncDelta(
     val sources: List<SyncVocabularySource> = emptyList(),
     val deletedSourceSyncIds: List<String> = emptyList(),
     val ignoredWords: List<SyncIgnoredVocabularyWord> = emptyList(),
+    val deletedIgnoredWordIds: List<String> = emptyList(),
 )
 
 @Serializable

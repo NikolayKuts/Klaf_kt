@@ -6,6 +6,8 @@ import com.kuts.domain.entities.*
 import com.kuts.domain.managers.*
 import com.kuts.domain.repositories.*
 import com.kuts.domain.useCases.*
+import com.kuts.domain.vocabularySource.VocabularySourceItemKey
+import com.kuts.domain.vocabularySource.reviewKey
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,6 +46,7 @@ private class DetailTestSources : IVocabularySourceRepository {
 }
 
 private object DetailTestCards : ICardRepository {
+    override fun observeAllCards() = kotlinx.coroutines.flow.flow { emit(fetchAllCards()) }
     override suspend fun fetchAllCards() = emptyList<Card>()
     override suspend fun fetchCardQuantityByDeckId(deckId: Int) = 0
     override suspend fun insertCard(card: Card) = error("Unused")
@@ -79,6 +82,8 @@ private object DetailTestTransaction : IStorageTransactionRepository {
 }
 
 private object DetailTestIgnored : IIgnoredVocabularyWordRepository {
+    override fun observeWords() = kotlinx.coroutines.flow.flow { emit(fetchWords()) }
+    override suspend fun removeWords(keys: Set<com.kuts.domain.vocabularySource.VocabularySourceItemKey>) = Unit
     override suspend fun fetchWords() = emptyList<IgnoredVocabularyWord>()
     override suspend fun saveWords(words: List<IgnoredVocabularyWord>) = Unit
 }
@@ -86,6 +91,24 @@ private object DetailTestIgnored : IIgnoredVocabularyWordRepository {
 private object DetailTestAnalysis : IVocabularySourceAnalysisRepository {
     override suspend fun analyze(cleanText: String, sourceId: Int?, sourceTitle: String?) =
         VocabularySourceAnalysisResult(VocabularySourceAnalysis("en", emptyList()), false)
+}
+
+private class DetailReviewCards : ICardRepository by DetailTestCards {
+    val records = MutableStateFlow(emptyList<Card>())
+    override fun observeAllCards(): Flow<List<Card>> = records
+    override suspend fun fetchAllCards(): List<Card> = records.value
+}
+
+private class DetailReviewIgnored : IIgnoredVocabularyWordRepository {
+    val records = MutableStateFlow(emptyList<IgnoredVocabularyWord>())
+    override fun observeWords(): Flow<List<IgnoredVocabularyWord>> = records
+    override suspend fun fetchWords(): List<IgnoredVocabularyWord> = records.value
+    override suspend fun saveWords(words: List<IgnoredVocabularyWord>) {
+        records.value = (records.value + words).distinctBy { it.reviewKey() }
+    }
+    override suspend fun removeWords(keys: Set<VocabularySourceItemKey>) {
+        records.value = records.value.filterNot { it.reviewKey() in keys }
+    }
 }
 
 private object DetailTestTranscription : IVocabularySourceTranscriptionRepository {
@@ -125,6 +148,50 @@ private object DetailTestSpeech : ITextToSpeechManager {
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class VocabularySourceDetailViewModelTest {
+
+    @Test
+    fun cardChangesRefreshCandidatesWithoutReanalysisOrLosingSourceEdits() = runTest {
+        val cards = DetailReviewCards()
+        withViewModel(cards = cards) { viewModel, sources ->
+            sources.items.value = listOf(VocabularySourceItem(1, foreignWord = "cat", nativeWord = "кот",
+                category = VocabularySourceItemCategory.NEW, createdAt = 1, updatedAt = 1))
+            runCurrent()
+            viewModel.onTitleChanged("Keep this edit")
+            assertEquals(1, viewModel.state.value.displayedItems.size)
+            cards.records.value = listOf(Card(1, "кот", "cat", emptyList(), id = 7))
+            runCurrent()
+            assertTrue(viewModel.state.value.displayedItems.isEmpty())
+            cards.records.value = emptyList()
+            runCurrent()
+            assertEquals(VocabularySourceItemStatus.PENDING, viewModel.state.value.displayedItems.single().status)
+            assertEquals("Keep this edit", viewModel.state.value.title)
+            assertTrue(viewModel.state.value.hasUnsavedChanges)
+        }
+    }
+
+    @Test
+    fun restoringIgnoredItemIsLocalUntilSavedAndSurvivesContextRefresh() = runTest {
+        val cards = DetailReviewCards()
+        val ignored = DetailReviewIgnored()
+        ignored.records.value = listOf(IgnoredVocabularyWord("en", "cat", "кот", 1))
+        withViewModel(cards = cards, ignored = ignored) { viewModel, sources ->
+            sources.items.value = listOf(VocabularySourceItem(1, language = "en", foreignWord = "cat", nativeWord = "кот",
+                category = VocabularySourceItemCategory.NEW, status = VocabularySourceItemStatus.IGNORED,
+                createdAt = 1, updatedAt = 1))
+            runCurrent()
+            viewModel.changeItemSelectionState(0)
+            viewModel.restoreSelectedItems()
+            assertEquals(1, ignored.records.value.size)
+            assertEquals(VocabularySourceItemStatus.PENDING, viewModel.state.value.displayedItems.single().status)
+            cards.records.value = listOf(Card(1, "собака", "dog", emptyList(), id = 9))
+            runCurrent()
+            assertEquals(VocabularySourceItemStatus.PENDING, viewModel.state.value.displayedItems.single().status)
+            viewModel.save()
+            runCurrent()
+            assertTrue(ignored.records.value.isEmpty())
+            assertTrue(!viewModel.state.value.hasUnsavedChanges)
+        }
+    }
 
     @Test
     fun leavingAndRecreatingViewModelDoesNotCancelTranscriptionOrLoseResult() = runTest {
@@ -217,6 +284,8 @@ class VocabularySourceDetailViewModelTest {
         coordinator: VocabularySourceTranscriptionCoordinator = VocabularySourceTranscriptionCoordinator(
             TranscribeVocabularySourceAudioUseCase(DetailTestTranscription), DetailTestTranscriptionBackground, backgroundScope),
         analysis: IVocabularySourceAnalysisRepository = DetailTestAnalysis,
+        cards: ICardRepository = DetailTestCards,
+        ignored: IIgnoredVocabularyWordRepository = DetailTestIgnored,
         block: suspend TestScope.(VocabularySourceDetailViewModel, DetailTestSources) -> Unit,
     ) {
         val dispatcher = StandardTestDispatcher(testScheduler)
@@ -225,11 +294,14 @@ class VocabularySourceDetailViewModelTest {
         val context = object : ICoroutineContextProvider { override val io = dispatcher }
         val viewModel = VocabularySourceDetailViewModel(1, ObserveVocabularySourceByIdUseCase(sources),
             ObserveVocabularySourceItemsUseCase(sources),
-            SaveVocabularySourceChangesUseCase(sources, DetailTestIgnored, DetailTestVersions, DetailTestTransaction, context),
+            ObserveVocabularySourceReviewContextUseCase(cards, ignored),
+            SaveVocabularySourceChangesUseCase(sources, ignored, DetailTestVersions, DetailTestTransaction, context),
+            ResetVocabularySourceAnalysisUseCase(sources, DetailTestVersions, DetailTestTransaction, context),
             AnalyzeVocabularySourceTextUseCase(analysis, context), coordinator,
-            FetchAllCardsUseCase(DetailTestCards, context), FetchIgnoredVocabularyWordsUseCase(DetailTestIgnored, context),
+            FetchAllCardsUseCase(cards, context), FetchIgnoredVocabularyWordsUseCase(ignored, context),
             FetchDeckSourceUseCase(DetailTestDecks),
-            AddVocabularySourceItemsToDeckUseCase(DetailTestCards, DetailTestDecks, sources, DetailTestVersions, DetailTestTransaction, context),
+            AddVocabularySourceItemsToDeckUseCase(cards, DetailTestDecks, sources, DetailTestVersions,
+                DetailTestTransaction, context, ignored),
             DetailTestAnalysisBackground, DetailTestSpeech)
         val store = ViewModelStore().apply { put("test", viewModel) }
         try {

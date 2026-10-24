@@ -12,6 +12,8 @@ import com.kuts.klaf.firestore.rootCollection
 import com.kuts.klaf.firestore.toDomainEntity
 import com.kuts.klaf.firestore.toFirestoreEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.tasks.await
 
 class AndroidCardRepositoryFirestore(
@@ -45,6 +47,17 @@ class AndroidCardRepositoryFirestore(
             .await()
 
         return card.id
+    }
+
+    override fun observeAllCards(): Flow<List<Card>> = callbackFlow {
+        val registration = getCardSubCollection().addSnapshotListener { snapshot, failure ->
+            if (failure != null) {
+                close(failure)
+            } else if (snapshot != null) {
+                trySend(snapshot.documents.mapNotNull { it.toObject<FirestoreCard>() }.map { it.toDomainEntity() })
+            }
+        }
+        awaitClose { registration.remove() }
     }
 
     override suspend fun insertCardAtPath(card: Card, rootEmailPath: String) {

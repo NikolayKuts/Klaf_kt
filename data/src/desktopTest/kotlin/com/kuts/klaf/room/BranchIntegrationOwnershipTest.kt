@@ -54,7 +54,7 @@ class BranchIntegrationOwnershipTest {
             com.kuts.klaf.room.repositoryImplementations.StorageTransactionRepositoryRoom(source),
             object : com.kuts.domain.common.ICoroutineContextProvider {
                 override val io = kotlin.coroutines.EmptyCoroutineContext
-            })
+            }, com.kuts.klaf.room.repositoryImplementations.IgnoredVocabularyWordRepositoryRoom(source))
         val deck = requireNotNull(decks.getDeckById(deckId))
         source.beginManualSyncAttempt("alice@example.com")
         try {

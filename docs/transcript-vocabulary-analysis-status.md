@@ -4,6 +4,15 @@ Working status file for the `VocabularySource` feature.
 
 ## Current Focus
 
+- Mandatory test-first development is now recorded in root/server AGENTS.md.
+- Actual device data reset, UI smoke testing and deployment were not performed
+  (no Android device attached). Install the updated client and server; use the
+  confirmed Clear analysis action to clear only the current source's analysis.
+- Manually verify Total/Ignored counter wrapping at narrow widths on a device.
+- Manually check Ignore/Restore enabled states for pending, ignored, and mixed
+  selections on a device.
+- Manually verify the pinned item review toolbar with a long list on Android,
+  including scrolling back to the source fields and both light/dark themes.
 - Manually smoke-test item target selection on Android with inflected words,
   repeated words, and discontinuous expressions.
 - The user reports that external YouTube opening works in a manual check;
@@ -18,6 +27,50 @@ Working status file for the `VocabularySource` feature.
 
 ## Completed
 
+- Corrected Clear analysis to preserve global Ignored Words; one-time legacy
+  cleanup permission is not a permanent global-clear feature. Independent review
+  found no issues; data Desktop (231) and presentation Desktop (89) tests and
+  Android/DI compilation passed. No device UI check or global cleanup performed.
+- Persist all valid analyzed items, including ignored and exact Card matches.
+  Saved ignored items retain source metadata; globally saved Ignore/Restore is
+  keyed by language/word/meaning. Different meanings keep the new-meaning badge.
+- Live Card/ignored-rule observation updates candidate visibility across sources;
+  deleted Cards release ADDED, moved/edited linked Cards retain provenance,
+  and stale/repeated Add selections cannot create duplicate Cards.
+- Added confirmed Clear analysis: clears only current source items, preserving
+  global ignored rules. Source fields/transcript/URL, Cards/Decks and other sources'
+  items are preserved. Existing Room schema suffices; no destructive migration.
+- Added ignored-rule removal operations and deletion deltas across client/server
+  sync, with conflicts for stale concurrent Add/Remove decisions.
+- The two-device regression exposed a pre-existing source-only account bootstrap
+  bug: a populated vocabulary store was treated as empty and bypassed deletion
+  deltas. Coordinator/applier now require empty source/item/ignored tables for
+  initial snapshots. Established source-only accounts use incremental sync.
+- Independent review found and verified fixes for orphan ADDED rows surviving
+  empty reanalysis and stale inherited ignores resurrecting restored rules.
+  Final review has no remaining actionable findings.
+- Passed domain Desktop (53), data Desktop (231), presentation Desktop (89),
+  shared contract JVM (14) and Android debug unit (6) tests; Android app/data/DI
+  compilation and server compilation pass. The full 505-test server run found
+  the source-only bootstrap bug above (two unrelated tests skipped). After its
+  fix, the failing Restore roundtrip passed individually, then all 119 affected
+  source/manual-coordinator/protocol/contract server tests passed. Unrelated
+  server suites were not repeated. Final independent review has no findings.
+- Added Ignored alongside Total in the pinned review toolbar, counting ignored
+  items independently of selection. Independent review found no actionable
+  issues; Android/Desktop presentation compilation and 87 Desktop tests passed.
+  Device rendering/wrapping checks were not performed.
+- Ignore now requires a selected pending item; Restore requires a selected
+  ignored item. Mixed selections enable both, empty selections enable neither;
+  analysis locking is preserved. Independent review found no actionable issues.
+  Android/Desktop presentation compilation and `:presentation:desktopTest`
+  passed (87 tests), including the selection-state regression matrix. Device UI
+  checks were not performed.
+- Pinned the complete item review toolbar within the list viewport using a
+  sticky section header with an opaque themed background. Independent review
+  found no actionable issues; `:presentation:compileDebugKotlinAndroid` and
+  `:presentation:desktopTest` passed (86 tests, no failures). Device scrolling
+  and visual checks were not performed.
 - Vocabulary Source detail now shows `Total` above `Selected` for the review
   list. Independent review found no issues; `:presentation:desktopTest` and
   `:presentation:compileDebugKotlinAndroid` passed. Manual UI check is pending.
@@ -286,7 +339,8 @@ Working status file for the `VocabularySource` feature.
   `:presentation:compileKotlinMetadata`, `:di:compileKotlinMetadata`,
   `:Android:compileDebugKotlin`, and `:domain:allTests` successfully after
   adapting the feature to Klaf Server.
-- Added global Ignored Words persistence for Vocabulary Sources:
+- Initial global Ignored Words implementation (superseded by persistent ignored
+  items and live review state described above):
   - `Ignore` remains reversible in an unsaved runtime draft;
   - `Save` atomically stores ignored word/meaning pairs, removes those source
     items, and preserves added items;
@@ -306,7 +360,7 @@ Working status file for the `VocabularySource` feature.
 
 - MVP accepts pasted text and the separately specified audio transcription path;
   subtitle fetching and subtitle/text file import remain deferred.
-- MVP stores data locally in Room only.
+- Data is stored locally in Room and uses the existing manual account sync.
 - `VocabularySource` is the persistent source object.
 - Source list is flat: no folders, seasons, or hierarchy.
 - Source has `title`, `description`, `rawText`, and `cleanText`.
@@ -319,12 +373,12 @@ Working status file for the `VocabularySource` feature.
 - `Save` persists source state and item state but does not create cards/decks.
 - Adding selected items to a deck is a separate explicit action.
 - Selection checkbox state is runtime-only and not persisted.
-- `pending` and `added` are persistent source-item states. `ignored` is a
-  runtime state until save, after which it becomes a global Ignored Words rule
-  and the source item is removed.
+- `pending`, `added`, and `ignored` are persistent source-item states. Saving
+  ignored items retains them in their source; global Ignore/Restore rules and
+  current Cards determine effective review state.
 - Ignored Words are global across Vocabulary Sources and include the analysis
-  language, foreign word, and Russian meaning. Exact normalized pairs are
-  filtered from later analysis results.
+  language, foreign word, and Russian meaning. Exact ignored pairs remain in
+  later analysis results as ignored items; other meanings stay independent.
 - Added state follows the linked card's current existence and deck.
 - MVP verification targets Android.
 
@@ -332,7 +386,6 @@ Working status file for the `VocabularySource` feature.
 
 - API-based subtitle fetching.
 - File import for `.srt`, `.vtt`, and `.txt`.
-- Remote sync/server-side storage.
 - UI/instrumentation tests.
 - Item filters by status/category/level.
 - Ignored Words management screen for viewing and removing global rules.

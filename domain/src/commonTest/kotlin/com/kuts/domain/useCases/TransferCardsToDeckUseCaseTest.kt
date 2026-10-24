@@ -368,6 +368,8 @@ class TransferCardsToDeckUseCaseTest {
             return fetchCardsByDeckId(deckId = deckId).size
         }
 
+        override fun observeAllCards() = kotlinx.coroutines.flow.flow { emit(fetchAllCards()) }
+
         override suspend fun fetchAllCards(): List<Card> {
             return cardsById.values.toList()
         }

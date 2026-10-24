@@ -5,6 +5,8 @@ import com.kuts.domain.entities.VocabularySource
 import com.kuts.domain.entities.VocabularySourceItem
 import com.kuts.domain.entities.VocabularySourceItemStatus
 import com.kuts.domain.repositories.IVocabularySourceRepository
+import com.kuts.domain.vocabularySource.VocabularySourceReviewContext
+import com.kuts.domain.vocabularySource.reviewKey
 import com.kuts.klaf.room.databases.KlafRoomDatabase
 import com.kuts.klaf.room.databases.RoomDatabaseSource
 import com.kuts.klaf.room.databases.StaticRoomDatabaseSource
@@ -15,6 +17,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class VocabularySourceRepositoryRoom(
@@ -42,15 +45,27 @@ class VocabularySourceRepositoryRoom(
 
     override fun observeItemsBySourceId(sourceId: Int): Flow<List<VocabularySourceItem>> {
         return databaseSource.databases.flatMapLatest { database ->
-            database.vocabularySourceItemDao().getObservableItemsBySourceId(sourceId = sourceId)
-                .simplifiedItemMap { item -> item.toDomainEntity() }
+            combine(
+                database.vocabularySourceItemDao().getObservableItemsBySourceId(sourceId),
+                database.cardDao().observeAllCards(),
+                database.ignoredVocabularyWordDao().observeWords(),
+            ) { items, cards, ignored ->
+                VocabularySourceReviewContext(cards.map { it.toDomainEntity() }, ignored.map { it.toDomainEntity() })
+                    .resolve(items.map { it.toDomainEntity() })
+            }
         }
     }
 
     override fun observeAllItems(): Flow<List<VocabularySourceItem>> {
         return databaseSource.databases.flatMapLatest { database ->
-            database.vocabularySourceItemDao().getObservableItems()
-                .simplifiedItemMap { item -> item.toDomainEntity() }
+            combine(
+                database.vocabularySourceItemDao().getObservableItems(),
+                database.cardDao().observeAllCards(),
+                database.ignoredVocabularyWordDao().observeWords(),
+            ) { items, cards, ignored ->
+                VocabularySourceReviewContext(cards.map { it.toDomainEntity() }, ignored.map { it.toDomainEntity() })
+                    .resolve(items.map { it.toDomainEntity() })
+            }
         }
     }
 
@@ -104,12 +119,21 @@ class VocabularySourceRepositoryRoom(
     ) {
         val itemDao = roomDatabase.vocabularySourceItemDao()
         val oldItems = itemDao.getItemsBySourceId(sourceId).associateBy { it.id }
+        val cardIds = roomDatabase.cardDao().getAllCards().map { it.id }.toSet()
+        val protectedAddedIds = oldItems.values.filter {
+            it.status == VocabularySourceItemStatus.ADDED.name && it.createdCardId in cardIds
+        }.map { it.id }.toSet()
+        val protectedAddedKeys = oldItems.values.filter { it.id in protectedAddedIds }
+            .map { it.toDomainEntity().reviewKey() }.toSet()
 
-        itemDao.deleteItemsBySourceIdExceptStatus(
-            sourceId = sourceId,
-            status = VocabularySourceItemStatus.ADDED.name,
-        )
-        itemDao.insertItems(items = items.map { item ->
+        if (protectedAddedIds.isEmpty()) {
+            itemDao.deleteItemsBySourceId(sourceId)
+        } else {
+            itemDao.deleteItemsBySourceIdExceptIds(sourceId, protectedAddedIds.toList())
+        }
+        itemDao.insertItems(items = items.filterNot {
+            it.id in protectedAddedIds || it.reviewKey() in protectedAddedKeys
+        }.map { item ->
             item.toRoomEntity().let { row -> oldItems[item.id]?.let { row.copy(syncId = it.syncId) } ?: row }
         })
     }

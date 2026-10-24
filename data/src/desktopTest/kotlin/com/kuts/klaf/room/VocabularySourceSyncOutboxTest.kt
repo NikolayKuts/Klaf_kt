@@ -11,6 +11,12 @@ import com.kuts.domain.useCases.CreateVocabularySourceUseCase
 import com.kuts.domain.useCases.RemoveVocabularySourceUseCase
 import com.kuts.domain.useCases.ReplaceVocabularySourceDraftItemsUseCase
 import com.kuts.domain.useCases.SaveVocabularySourceChangesUseCase
+import com.kuts.domain.useCases.ResetVocabularySourceAnalysisUseCase
+import com.kuts.domain.useCases.AddVocabularySourceItemsToDeckUseCase
+import com.kuts.domain.entities.Deck
+import com.kuts.domain.vocabularySource.reviewKey
+import com.kuts.klaf.room.repositoryImplementations.CardRepositoryRoom
+import com.kuts.klaf.room.repositoryImplementations.DeckRepositoryRoom
 import com.kuts.klaf.networking.klafServer.SyncEventChannelState
 import com.kuts.klaf.networking.klafServer.SyncEventFeedStatus
 import com.kuts.klaf.room.databases.ActiveLocalRoomDatabase
@@ -20,6 +26,8 @@ import com.kuts.klaf.room.databases.ScopedKlafRoomDatabaseFactory
 import com.kuts.klaf.room.repositoryImplementations.GuestAccountDataTransfer
 import com.kuts.klaf.room.repositoryImplementations.IgnoredVocabularyWordRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.RoomSyncOutbox
+import com.kuts.klaf.room.repositoryImplementations.RoomSyncDeltaApplier
+import com.kuts.klaf.server.contract.SyncBootstrapResponse
 import com.kuts.klaf.room.repositoryImplementations.RoomSyncStatusObserver
 import com.kuts.klaf.room.repositoryImplementations.StorageSaveVersionRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.StorageTransactionRepositoryRoom
@@ -103,6 +111,125 @@ private fun withVocabularySyncFixture(block: suspend VocabularySyncFixture.() ->
 class VocabularySourceSyncOutboxTest {
 
     @Test
+    fun `saved ignore survives reopen and restore updates other sources and queues removal`() = withVocabularySyncFixture {
+        selectConfirmedAccount()
+        val first = create("First")
+        val second = create("Second")
+        sources.saveItems(listOf(item(second)))
+        val save = SaveVocabularySourceChangesUseCase(sources, ignored, version, transactions, context)
+        save(requireNotNull(sources.fetchSourceById(first)), listOf(item(first).copy(status = VocabularySourceItemStatus.IGNORED)),
+            true, mapOf(item(first).reviewKey() to true))
+        acknowledgeLocalOperations()
+        reopen()
+        val saved = sources.fetchItemsBySourceId(first).single()
+        assertEquals(VocabularySourceItemStatus.IGNORED, saved.status)
+        assertTrue(sources.observeAllItems().first().all { it.status == VocabularySourceItemStatus.IGNORED })
+
+        SaveVocabularySourceChangesUseCase(sources, ignored, version, transactions, context)(
+            requireNotNull(sources.fetchSourceById(first)),
+            listOf(saved.copy(status = VocabularySourceItemStatus.PENDING)),
+            true,
+            mapOf(saved.reviewKey() to false),
+        )
+        assertTrue(ignored.fetchWords().isEmpty())
+        assertTrue(sources.observeAllItems().first().all { it.status == VocabularySourceItemStatus.PENDING })
+        assertTrue(pending().any { it.operationJson.contains("REMOVE_IGNORED_VOCABULARY_WORD") })
+    }
+
+    @Test
+    fun `reset clears only current analysis and preserves global ignored rules sources and cards`() = withVocabularySyncFixture {
+        selectConfirmedAccount()
+        val first = create("First")
+        val second = create("Second")
+        sources.saveItems(listOf(item(first), item(second, "other")))
+        val cards = CardRepositoryRoom(databaseSource)
+        val decks = DeckRepositoryRoom(databaseSource)
+        AddVocabularySourceItemsToDeckUseCase(cards, decks, sources, version, transactions, context, ignored)(
+            "Keep this deck", sources.fetchItemsBySourceId(first),
+        )
+        ignored.saveWords(listOf(IgnoredVocabularyWord("en", "skip", "meaning", 1)))
+        val sourcesBefore = sources.fetchSources()
+        val cardsBefore = cards.fetchAllCards()
+        val decksBefore = decks.fetchAllDecks()
+        val ignoredBefore = ignored.fetchWords()
+        acknowledgeLocalOperations()
+
+        ResetVocabularySourceAnalysisUseCase(sources, version, transactions, context)(first)
+
+        assertEquals(sourcesBefore, sources.fetchSources())
+        assertEquals(cardsBefore, cards.fetchAllCards())
+        assertEquals(decksBefore, decks.fetchAllDecks())
+        assertTrue(sources.fetchItemsBySourceId(first).isEmpty())
+        assertEquals(1, sources.fetchItemsBySourceId(second).size)
+        assertEquals(ignoredBefore, ignored.fetchWords())
+        assertTrue(pending().none { it.operationJson.contains("REMOVE_IGNORED_VOCABULARY_WORD") })
+        assertTrue(pending().any { it.operationJson.contains("UPSERT_VOCABULARY_SOURCE") })
+    }
+
+    @Test
+    fun `adding stale or repeated selections does not create duplicate cards or empty decks`() = withVocabularySyncFixture {
+        val id = create()
+        sources.saveItems(listOf(item(id)))
+        val staleItem = sources.fetchItemsBySourceId(id).single()
+        val cards = CardRepositoryRoom(databaseSource)
+        val decks = DeckRepositoryRoom(databaseSource)
+        val add = AddVocabularySourceItemsToDeckUseCase(cards, decks, sources, version, transactions, context, ignored)
+        assertEquals(1, add("Words", listOf(staleItem, staleItem)))
+        val decksBefore = decks.fetchAllDecks()
+        assertEquals(0, add("Unneeded", listOf(staleItem)))
+        assertEquals(decksBefore, decks.fetchAllDecks())
+        assertEquals(1, cards.fetchAllCards().size)
+    }
+
+    @Test
+    fun `empty reanalysis removes an orphan added item after its card was deleted in guest mode`() = withVocabularySyncFixture {
+        val id = create()
+        sources.saveItems(listOf(item(id)))
+        val cards = CardRepositoryRoom(databaseSource)
+        AddVocabularySourceItemsToDeckUseCase(cards, DeckRepositoryRoom(databaseSource), sources,
+            version, transactions, context, ignored)("Words", sources.fetchItemsBySourceId(id))
+        cards.deleteCard(cards.fetchAllCards().single().id)
+        assertEquals(VocabularySourceItemStatus.PENDING, sources.observeItemsBySourceId(id).first().single().status)
+
+        SaveVocabularySourceChangesUseCase(sources, ignored, version, transactions, context)(
+            requireNotNull(sources.fetchSourceById(id)), emptyList(), true,
+        )
+        assertTrue(sources.fetchItemsBySourceId(id).isEmpty())
+    }
+
+    @Test
+    fun `saving an inherited ignored snapshot cannot resurrect a globally restored pair`() = withVocabularySyncFixture {
+        val id = create()
+        val source = requireNotNull(sources.fetchSourceById(id))
+        val ignoredItem = item(id).copy(status = VocabularySourceItemStatus.IGNORED)
+        val save = SaveVocabularySourceChangesUseCase(sources, ignored, version, transactions, context)
+        save(source, listOf(ignoredItem), true, mapOf(ignoredItem.reviewKey() to true))
+        val capturedItems = sources.fetchItemsBySourceId(id)
+        ignored.removeWords(setOf(ignoredItem.reviewKey()))
+
+        save(source.copy(description = "Unrelated edit"), capturedItems, true)
+
+        assertTrue(ignored.fetchWords().isEmpty())
+        assertEquals(VocabularySourceItemStatus.PENDING, sources.observeItemsBySourceId(id).first().single().status)
+    }
+
+    @Test
+    fun `initial snapshot cannot overwrite a source-only account`() = withVocabularySyncFixture {
+        selectConfirmedAccount()
+        val id = create()
+        acknowledgeLocalOperations()
+        val before = sources.fetchSourceById(id)
+        val outbox = RoomSyncOutbox(databaseSource)
+
+        assertFailsWith<IllegalStateException> {
+            RoomSyncDeltaApplier(databaseSource, outbox).applyInitialSnapshot(
+                SOURCE_SYNC_ACCOUNT, SyncBootstrapResponse(7, emptyList(), emptyList()),
+            )
+        }
+        assertEquals(before, sources.fetchSourceById(id))
+    }
+
+    @Test
     fun `creating a source queues upload and turns a confirmed green account yellow`() = withVocabularySyncFixture {
         selectConfirmedAccount()
         val observer = RoomSyncStatusObserver(databaseSource, MutableStateFlow(SyncEventFeedStatus(
@@ -161,8 +288,11 @@ class VocabularySourceSyncOutboxTest {
     fun `reanalysis replaces pending words but retains added word status`() = withVocabularySyncFixture {
         selectConfirmedAccount()
         val id = create()
-        sources.saveItems(listOf(item(id, "addedword").copy(status = VocabularySourceItemStatus.ADDED),
-            item(id, "obsoleteword")))
+        sources.saveItems(listOf(item(id, "addedword"), item(id, "obsoleteword")))
+        AddVocabularySourceItemsToDeckUseCase(
+            CardRepositoryRoom(databaseSource), DeckRepositoryRoom(databaseSource), sources,
+            version, transactions, context, ignored,
+        )("Added words", listOf(sources.fetchItemsBySourceId(id).single { it.foreignWord == "addedword" }))
         acknowledgeLocalOperations()
         ReplaceVocabularySourceDraftItemsUseCase(sources, version, transactions, context)(id, listOf(item(id)))
 
@@ -209,6 +339,8 @@ class VocabularySourceSyncOutboxTest {
         val before = sources.fetchSourceById(id)
         val beforeVersion = version.fetchVersion()
         val failingIgnored = object : IIgnoredVocabularyWordRepository {
+            override fun observeWords() = kotlinx.coroutines.flow.flow { emit(fetchWords()) }
+            override suspend fun removeWords(keys: Set<com.kuts.domain.vocabularySource.VocabularySourceItemKey>) = Unit
             override suspend fun fetchWords() = ignored.fetchWords()
             override suspend fun saveWords(words: List<IgnoredVocabularyWord>) {
                 ignored.saveWords(words)
@@ -219,6 +351,7 @@ class VocabularySourceSyncOutboxTest {
             SaveVocabularySourceChangesUseCase(sources, failingIgnored, version, transactions, context)(
                 requireNotNull(before).copy(title = "Must roll back"),
                 listOf(item(id).copy(status = VocabularySourceItemStatus.IGNORED)), true,
+                mapOf(item(id).reviewKey() to true),
             )
         }
         assertEquals(before, sources.fetchSourceById(id))

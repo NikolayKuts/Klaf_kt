@@ -22,11 +22,16 @@ import com.kuts.domain.useCases.FetchDeckSourceUseCase
 import com.kuts.domain.useCases.FetchIgnoredVocabularyWordsUseCase
 import com.kuts.domain.useCases.ObserveVocabularySourceByIdUseCase
 import com.kuts.domain.useCases.ObserveVocabularySourceItemsUseCase
+import com.kuts.domain.useCases.ObserveVocabularySourceReviewContextUseCase
+import com.kuts.domain.useCases.ResetVocabularySourceAnalysisUseCase
 import com.kuts.domain.useCases.SaveVocabularySourceChangesUseCase
 import com.kuts.domain.vocabularySource.TranscriptTextCleaner
 import com.kuts.domain.vocabularySource.TranscriptTextValidationResult
 import com.kuts.domain.vocabularySource.TranscriptTimestampFormatter
 import com.kuts.domain.vocabularySource.VocabularySourceItemCategorizer
+import com.kuts.domain.vocabularySource.VocabularySourceItemKey
+import com.kuts.domain.vocabularySource.VocabularySourceReviewContext
+import com.kuts.domain.vocabularySource.reviewKey
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.IEventMessageSource
 import com.kuts.klaf.presentation.resources.Res
@@ -87,10 +92,12 @@ data class VocabularySourceDetailState(
     val hasUnsavedChanges: Boolean = false,
     val isSaveConfirmed: Boolean = false,
     val isSaving: Boolean = false,
+    val isResetting: Boolean = false,
     val hasStaleItems: Boolean = false,
     val hasNewAnalysisDraft: Boolean = false,
     val selectedAudioFile: SelectedAudioFile? = null,
     val transcriptionState: TranscriptionUiState = TranscriptionUiState.Idle,
+    val ignoredDecisions: Map<VocabularySourceItemKey, Boolean> = emptyMap(),
 ) {
 
     val isTranscribing: Boolean
@@ -101,11 +108,11 @@ data class VocabularySourceDetailState(
         get() = if (hasNewAnalysisDraft || draftItems.isNotEmpty()) draftItems else persistedItems
 
     val displayedItems: List<VocabularySourceItem>
-        get() = reviewItems.filter { item -> item.status != VocabularySourceItemStatus.ADDED }
+        get() = reviewItems.filter { item -> item.status != VocabularySourceItemStatus.ADDED && !item.alreadyExists }
 
     val itemHolders: List<SelectableVocabularySourceItemHolder>
         get() = reviewItems.mapIndexedNotNull { index, item ->
-            if (item.status == VocabularySourceItemStatus.ADDED) return@mapIndexedNotNull null
+            if (item.status == VocabularySourceItemStatus.ADDED || item.alreadyExists) return@mapIndexedNotNull null
 
             SelectableVocabularySourceItemHolder(
                 item = item,
@@ -116,6 +123,16 @@ data class VocabularySourceDetailState(
 
     val selectedItemCount: Int
         get() = itemHolders.count { holder -> holder.isSelected }
+
+    val hasSelectedPendingItems: Boolean
+        get() = itemHolders.any { holder ->
+            holder.isSelected && holder.item.status == VocabularySourceItemStatus.PENDING
+        }
+
+    val hasSelectedIgnoredItems: Boolean
+        get() = itemHolders.any { holder ->
+            holder.isSelected && holder.item.status == VocabularySourceItemStatus.IGNORED
+        }
 
     val selectedItemsForAdding: List<VocabularySourceItem>
         get() = selectedItemIndexes
@@ -155,6 +172,20 @@ private fun VocabularySourceDetailState.analysisNotificationTitle(): String =
         .ifBlank { source?.title?.trim().orEmpty() }
         .ifBlank { "Untitled source" }
 
+private fun List<VocabularySourceItem>.withPersistedIdentities(
+    persistedItems: List<VocabularySourceItem>,
+): List<VocabularySourceItem> {
+    val previous = persistedItems.associateBy { it.reviewKey() }
+    return map { item ->
+        val existing = previous[item.reviewKey()]
+        if (existing == null) item else item.copy(
+            id = existing.id,
+            createdCardId = existing.createdCardId,
+            targetDeckId = existing.targetDeckId,
+        )
+    }
+}
+
 private fun List<VocabularySourceItem>.categoryLogSummary(): String {
     return groupingBy { item -> item.category }
         .eachCount()
@@ -171,7 +202,9 @@ class VocabularySourceDetailViewModel(
     private val sourceId: Int,
     observeVocabularySourceById: ObserveVocabularySourceByIdUseCase,
     observeVocabularySourceItems: ObserveVocabularySourceItemsUseCase,
+    observeVocabularySourceReviewContext: ObserveVocabularySourceReviewContextUseCase,
     private val saveVocabularySourceChanges: SaveVocabularySourceChangesUseCase,
+    private val resetVocabularySourceAnalysis: ResetVocabularySourceAnalysisUseCase,
     private val analyzeVocabularySourceText: AnalyzeVocabularySourceTextUseCase,
     private val transcriptionCoordinator: VocabularySourceTranscriptionCoordinator,
     private val fetchAllCards: FetchAllCardsUseCase,
@@ -187,6 +220,7 @@ class VocabularySourceDetailViewModel(
     private val cleaner = TranscriptTextCleaner()
     private val categorizer = VocabularySourceItemCategorizer()
     private val editableState = MutableStateFlow(VocabularySourceDetailState())
+    private var reviewContext = VocabularySourceReviewContext()
     private var vocabularySourceAnalysisJob: Job? = null
     private var appliedTranscriptionId: Long? = null
     val state: StateFlow<VocabularySourceDetailState> = editableState.asStateFlow()
@@ -200,9 +234,17 @@ class VocabularySourceDetailViewModel(
                 observeVocabularySourceById(sourceId),
                 observeVocabularySourceItems(sourceId),
                 fetchDeckSource(),
-            ) { source, items, decks -> Triple(source, items, decks) }.collect { (source, items, decks) ->
+                observeVocabularySourceReviewContext(),
+            ) { source, items, decks, context -> Triple(source, items, decks) to context }.collect { (snapshot, context) ->
+                val (source, items, decks) = snapshot
+                reviewContext = context
                 editableState.update { current ->
-                    val updated = current.copy(source = source, persistedItems = items, decks = decks)
+                    val updated = current.copy(
+                        source = source,
+                        persistedItems = context.resolve(items, current.ignoredDecisions),
+                        draftItems = context.resolve(current.draftItems, current.ignoredDecisions),
+                        decks = decks,
+                    )
                     if (source != null && !current.hasUnsavedChanges && !current.isSaving) {
                         updated.copy(title = source.title, description = source.description, url = source.url,
                             rawText = source.rawText, cleanText = source.cleanText)
@@ -270,7 +312,7 @@ class VocabularySourceDetailViewModel(
 
     fun save() {
         val currentState = state.value
-        if (currentState.isSaving) return
+        if (currentState.isSaving || currentState.isResetting) return
         val source = currentState.source ?: return
         val title = currentState.title.trim()
 
@@ -313,6 +355,7 @@ class VocabularySourceDetailViewModel(
                     draftItems = currentState.draftItems,
                     shouldReplaceSourceItems = currentState.hasNewAnalysisDraft ||
                         currentState.draftItems.isNotEmpty(),
+                    ignoredDecisions = currentState.ignoredDecisions,
                 )
                 updatedSource
             }.onSuccess { savedSource ->
@@ -322,6 +365,7 @@ class VocabularySourceDetailViewModel(
                         current.copy(source = savedSource, title = savedSource.title,
                             description = savedSource.description, url = savedSource.url,
                             draftItems = emptyList(), selectedItemIndexes = emptySet(),
+                            ignoredDecisions = emptyMap(),
                             hasUnsavedChanges = false, isSaveConfirmed = true, isSaving = false,
                             hasStaleItems = currentState.hasStaleItems, hasNewAnalysisDraft = false)
                     } else {
@@ -357,13 +401,46 @@ class VocabularySourceDetailViewModel(
     private fun VocabularySourceDetailState.hasSameEditableContent(other: VocabularySourceDetailState): Boolean {
         return title == other.title && description == other.description && url == other.url &&
             rawText == other.rawText && cleanText == other.cleanText && draftItems == other.draftItems &&
-            hasNewAnalysisDraft == other.hasNewAnalysisDraft
+            hasNewAnalysisDraft == other.hasNewAnalysisDraft && ignoredDecisions == other.ignoredDecisions
+    }
+
+    fun resetAnalysis() {
+        val current = state.value
+        if (current.isSaving || current.isResetting || current.isAnalyzing || current.isAddingToDeck) return
+        editableState.update { it.copy(isResetting = true) }
+        viewModelScope.launch {
+            try {
+                resetVocabularySourceAnalysis(sourceId)
+                editableState.update {
+                    it.copy(
+                        persistedItems = emptyList(),
+                        draftItems = emptyList(),
+                        selectedItemIndexes = emptySet(),
+                        ignoredDecisions = emptyMap(),
+                        itemEditState = null,
+                        hasNewAnalysisDraft = false,
+                        hasStaleItems = false,
+                        isResetting = false,
+                    )
+                }
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (failure: Throwable) {
+                editableState.update { it.copy(isResetting = false) }
+                logE("Vocabulary source analysis reset failed: sourceId=$sourceId, failure=$failure")
+                eventMessage.tryEmit(EventMessage(
+                    resId = Res.string.problem_with_saving_vocabulary_source,
+                    type = EventMessage.Type.Negative,
+                ))
+            }
+        }
     }
 
     fun analyze() {
         if (vocabularySourceAnalysisJob?.isActive == true) return
 
         val currentState = state.value
+        if (currentState.isResetting) return
         val cleanText = currentState.cleanText.trim()
         if (cleanText.isBlank()) return
 
@@ -426,7 +503,10 @@ class VocabularySourceDetailViewModel(
                 }
             }.onSuccess { draftItems ->
                 editableState.value = state.value.copy(
-                    draftItems = draftItems,
+                    draftItems = reviewContext.resolve(
+                        draftItems.withPersistedIdentities(state.value.persistedItems),
+                        state.value.ignoredDecisions,
+                    ),
                     selectedItemIndexes = emptySet(),
                     isAnalyzing = false,
                     hasUnsavedChanges = true,
@@ -676,7 +756,7 @@ class VocabularySourceDetailViewModel(
         }
 
         editableState.value = currentState.copy(
-            draftItems = updatedItems,
+            draftItems = reviewContext.resolve(updatedItems, currentState.ignoredDecisions),
             itemEditState = null,
             hasUnsavedChanges = true,
             isSaveConfirmed = false,
@@ -845,16 +925,22 @@ class VocabularySourceDetailViewModel(
         if (currentState.selectedItemIndexes.isEmpty()) return
 
         val currentTime = getCurrentDateAsLong()
+        val ignoredDecisions = currentState.ignoredDecisions.toMutableMap()
         val updatedItems = currentState.reviewItems.mapIndexed { index, item ->
-            if (index in currentState.selectedItemIndexes) {
-                update(item).copy(updatedAt = currentTime)
+            if (index in currentState.selectedItemIndexes && !item.alreadyExists && item.status != VocabularySourceItemStatus.ADDED) {
+                val updated = update(item)
+                if (updated.status != item.status) {
+                    ignoredDecisions[item.reviewKey()] = updated.status == VocabularySourceItemStatus.IGNORED
+                    updated.copy(updatedAt = currentTime)
+                } else item
             } else {
                 item
             }
         }
 
         editableState.value = currentState.copy(
-            draftItems = updatedItems,
+            draftItems = reviewContext.resolve(updatedItems, ignoredDecisions),
+            ignoredDecisions = ignoredDecisions,
             selectedItemIndexes = emptySet(),
             hasUnsavedChanges = true,
             isSaveConfirmed = false,

@@ -39,6 +39,8 @@ internal class TestCardRepository(
         return cardsById.values.sortedBy { card -> card.id }
     }
 
+    override fun observeAllCards(): Flow<List<Card>> = flowOf(cardsById.values.toList())
+
     override suspend fun insertCard(card: Card): Int {
         val targetId = if (card.id == 0) nextId++ else card.id
         cardsById[targetId] = card.copy(id = targetId)

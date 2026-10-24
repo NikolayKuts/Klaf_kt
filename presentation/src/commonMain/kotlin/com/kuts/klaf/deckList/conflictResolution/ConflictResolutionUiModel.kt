@@ -72,6 +72,7 @@ private fun SyncOperation.describe(
     is SyncOperation.UpsertVocabularySource -> "Save source and analysis: ${source.describeAnalysis()}"
     is SyncOperation.DeleteVocabularySource -> "Delete vocabulary source $sourceSyncId and its word list"
     is SyncOperation.AddIgnoredVocabularyWord -> "Ignore word ${word.foreignWord}: ${word.nativeWord}"
+    is SyncOperation.RemoveIgnoredVocabularyWord -> "Restore word ${word.foreignWord}: ${word.nativeWord}"
 }
 
 private fun SyncConflict.describeServer(response: SyncResponse, deckNames: Map<String, String>): String {

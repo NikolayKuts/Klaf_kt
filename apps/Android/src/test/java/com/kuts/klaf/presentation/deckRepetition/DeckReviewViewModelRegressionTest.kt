@@ -107,6 +107,8 @@ private class FakeCardRepository(
         return cardsFlow.value.count { it.deckId == deckId }
     }
 
+    override fun observeAllCards() = kotlinx.coroutines.flow.flow { emit(fetchAllCards()) }
+
     override suspend fun fetchAllCards(): List<Card> {
         return cardsFlow.value
     }

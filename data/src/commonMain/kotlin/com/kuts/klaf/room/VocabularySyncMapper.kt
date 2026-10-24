@@ -33,7 +33,7 @@ fun SyncIgnoredVocabularyWord.toRoomWord(revision: Long) = IgnoredVocabularyWord
     language, foreignWord, nativeWord, createdAt,
 ).toRoomEntity().copy(lastChangedServerRevision = revision)
 
-/** Clear obsolete links without changing the word's identity or its ADDED status. Call in a transaction. */
+/** Clear obsolete links and release ADDED items whose Card was deleted. Call in a transaction. */
 suspend fun clearMissingVocabularyLinks(
     items: IVocabularySourceItemDao,
     decks: IDeckDao,
@@ -43,8 +43,11 @@ suspend fun clearMissingVocabularyLinks(
     val cardIds = cards.getAllCards().map { it.id }.toSet()
     val changed = items.getItems().mapNotNull { item ->
         val normalized = item.copy(
+            status = if (item.status == VocabularySourceItemStatus.ADDED.name && item.createdCardId !in cardIds) {
+                VocabularySourceItemStatus.PENDING.name
+            } else item.status,
             createdCardId = item.createdCardId?.takeIf(cardIds::contains),
-            targetDeckId = item.targetDeckId?.takeIf(deckIds::contains),
+            targetDeckId = item.targetDeckId?.takeIf { it in deckIds && item.createdCardId in cardIds },
         )
         normalized.takeIf { it != item }
     }

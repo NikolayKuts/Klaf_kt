@@ -10,6 +10,8 @@ interface ICardRepository {
 
     suspend fun fetchAllCards(): List<Card>
 
+    fun observeAllCards(): Flow<List<Card>>
+
     suspend fun insertCard(card: Card): Int
 
     suspend fun insertCardAtPath(card: Card, rootEmailPath: String)

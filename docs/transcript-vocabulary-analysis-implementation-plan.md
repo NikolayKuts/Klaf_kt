@@ -68,11 +68,20 @@ Ordered implementation plan for the `VocabularySource` feature.
 
 ## 9. Item Review And Editing
 
+- Persist ignored analysis items and retain exact Card matches for live review.
+- Observe all Cards and global ignore rules; preserve unsaved local decisions.
+- Save Ignore/Restore decisions globally and synchronize rule removals.
+- Offer Clear analysis for only the current source, preserving global Ignored
+  Words, source metadata, Cards and Decks.
 - Add runtime selectable item holders for checkbox selection.
 - Display status markers, category, original text, confidence, CEFR, part of
   speech, example, explanation, and known meanings snapshot when applicable.
 - Add item edit dialog/bottom sheet for `foreignWord` and `nativeWord`.
 - Add actions to ignore items and restore ignored items to pending.
+- Enable Ignore/Restore according to the selected items' pending/ignored states.
+- Show an Ignored count alongside Total in the pinned review toolbar.
+- Pin the counters, selection control, and batch actions at the top of the
+  list viewport while scrolling the item review section.
 
 ## 10. Add Items To Deck
 

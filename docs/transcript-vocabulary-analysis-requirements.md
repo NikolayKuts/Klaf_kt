@@ -55,8 +55,7 @@ The creation flow should not collect transcript text. Transcript text is entered
 or edited on the source detail screen.
 
 The source list should show item counters for each source, including pending and
-added counts. Ignored runtime items become global Ignored Words when saved and
-therefore do not remain in source counters.
+added counts. Ignored items remain persisted in their source after saving.
 
 The source list should show useful timestamps such as creation date, update date,
 or last analysis date.
@@ -176,9 +175,9 @@ Each analysis item should have a status:
 
 - `pending` - visible and not added yet;
 - `added` - added to a deck/card;
-- `ignored` - a runtime-only pending decision. Before save it is visually
-  disabled and may be restored. Saving moves its word/meaning pair into the
-  global Ignored Words store instead of persisting the item in this source.
+- `ignored` - a saved review state governed by the global exact word/meaning
+  ignore rule. The item remains in its source, is visually disabled, and may be
+  restored after reopening the app.
 
 Each analysis item should also store its result category:
 
@@ -232,16 +231,32 @@ selection holder.
 The item review toolbar should show `Total` above `Selected`. `Total` counts
 the items currently shown for review (including ignored items, excluding items
 already added to a deck); `Selected` counts selected items from that same list.
+Show `Ignored` alongside `Total`, counting all ignored items in the current
+review list regardless of selection. Update it when items are ignored or
+restored, including changes saved in another source.
 
-`pending` and `added` are persistent source-item states. `ignored` is runtime
-state until the next save. The user can restore an ignored item back to
-`pending` before saving.
+Keep the complete item review toolbar (`Total`, `Ignored`, `Selected`, `Select All` /
+`Clear Selection`, `Ignore`, `Restore`, and `Add to Deck`) pinned to the top of
+the list viewport while scrolling review items. It belongs to the review list
+section below the source fields, not the screen's top bar. Its background must
+be opaque in both themes so scrolling items do not show through it.
+
+`pending`, `added`, and `ignored` are persistent source-item states. Effective
+review state also observes the current Card database and global ignored rules.
+Ignore/Restore edits remain local until Save; Save applies the decision globally
+for the normalized language + foreignWord + nativeWord pair. Different meanings
+remain independent. Preserve unsaved decisions when external changes arrive.
+
+Enable `Ignore` only when the selection contains a `pending` item, and enable
+`Restore` only when it contains an `ignored` item. A mixed selection enables
+both actions; an empty selection enables neither. Both remain disabled while
+review is locked for analysis.
 
 Saving a source must atomically:
 
-- persist source fields and non-ignored source items;
-- upsert ignored items into a global Ignored Words store; and
-- exclude those ignored items from source-item records.
+- persist source fields and analysis items, including ignored items;
+- upsert explicitly ignored word/meaning pairs into global Ignored Words; and
+- remove explicitly restored pairs from global Ignored Words.
 
 Ignored Words apply across every Vocabulary Source. Each record stores the
 analysis `language`, `foreignWord`, `nativeWord`, timestamps, and an id. The
@@ -249,8 +264,9 @@ matching key is a normalized exact `language + foreignWord + nativeWord` pair:
 trimmed, case-insensitive, with normalized whitespace in the meaning. No
 semantic synonym matching is required.
 
-During analysis categorization, an item whose normalized pair already exists in
-either cards or Ignored Words must not be shown. If a foreign word has a
+Retain every analysis item, including exact card and ignored matches. Exact
+ignored matches start as ignored and remain visible. Exact Card matches are
+hidden from active candidates, without deleting their source records. If a foreign word has a
 different meaning in a card, it is `possibleNewMeaning`. If it has a different
 meaning only in Ignored Words, it is `ignoredWordNewMeaning` and the UI shows a
 soft red `IGNORED · NEW MEANING` badge.
@@ -303,8 +319,8 @@ can create a source first and fill it later.
 
 `VocabularySource.title` does not need to be unique.
 
-The MVP stores vocabulary sources and their items locally in Room only. Remote
-sync is out of scope.
+Vocabulary sources and their items are stored locally in Room and participate
+in the existing manual account synchronization along with global ignored rules.
 
 Implementation should live in shared/common modules where possible, including
 domain and shared Compose UI. MVP verification and any required platform-specific
@@ -405,9 +421,21 @@ should be able to show that the vocabulary already exists even when it was not
 created from this source item. This should be treated separately from the
 source-created `added` state, for example with an `alreadyExists` flag.
 
-An ignored item remains visible only in the unsaved runtime draft, with a
-disabled or semi-transparent visual style. After save it is removed from the
-source. Managing or deleting global Ignored Words is a separate future screen.
+An ignored item remains visible before and after saving, with a disabled or
+semi-transparent style. Live Card changes update all source review lists without
+reanalysis: matching pairs are hidden while a Card exists and reappear after the
+last matching Card is deleted. A source-created Card link distinguishes ADDED
+from a matching Card created elsewhere; moving/editing a linked Card preserves
+its provenance while the Card exists. Deleting it removes effective ADDED state.
+Adding to a Deck rechecks exact matches inside the transaction to avoid stale
+selections creating duplicate Cards.
+
+Provide an explicit Clear analysis action that deletes only the current
+source's generated analysis items. Preserve global Ignored Words, all
+VocabularySource fields (including URL and transcript), Cards, Decks and other
+sources' items. Prior permission for one-time legacy cleanup does not authorize
+a permanent global-clear action. Do not perform blanket destructive migrations.
+Global ignore removals through Restore must synchronize, including deletion deltas.
 
 ### P0 - Added State Tracking
 

@@ -5,6 +5,9 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
 import com.kuts.domain.common.ICoroutineContextProvider
 import com.kuts.domain.entities.IgnoredVocabularyWord
+import com.kuts.domain.entities.Card
+import com.kuts.domain.entities.Deck
+import com.kuts.domain.vocabularySource.reviewKey
 import com.kuts.domain.entities.VocabularySource
 import com.kuts.domain.entities.VocabularySourceItem
 import com.kuts.domain.entities.VocabularySourceItemCategory
@@ -17,6 +20,8 @@ import com.kuts.klaf.room.repositoryImplementations.IgnoredVocabularyWordReposit
 import com.kuts.klaf.room.repositoryImplementations.StorageSaveVersionRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.StorageTransactionRepositoryRoom
 import com.kuts.klaf.room.repositoryImplementations.VocabularySourceRepositoryRoom
+import com.kuts.klaf.room.repositoryImplementations.CardRepositoryRoom
+import com.kuts.klaf.room.repositoryImplementations.DeckRepositoryRoom
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -38,6 +43,11 @@ private fun persistenceTestItem(status: VocabularySourceItemStatus, id: Int) = V
     category = VocabularySourceItemCategory.NEW, status = status, createdAt = 1, updatedAt = 2, id = id,
     createdCardId = if (status == VocabularySourceItemStatus.ADDED) 10 else null,
 )
+
+private suspend fun persistenceTestCard(database: KlafRoomDatabase, cardId: Int) {
+    DeckRepositoryRoom(database).insertDeck(Deck("Words", creationDate = 1, id = 7))
+    CardRepositoryRoom(database).insertCard(Card(7, "meaning", "word", emptyList(), id = cardId))
+}
 
 private suspend fun withTemporaryRoomDatabase(
     startingVersion: Int? = null,
@@ -95,18 +105,19 @@ class VocabularySourcePersistenceTest {
     }
 
     @Test
-    fun saveRemovesIgnoredItemsPreservesAddedLinksAndDeduplicatesRules() = runBlocking {
+    fun saveRetainsIgnoredItemsPreservesAddedLinksAndDeduplicatesRules() = runBlocking {
         withTemporaryRoomDatabase { database ->
             val sources = VocabularySourceRepositoryRoom(database)
             val ignored = IgnoredVocabularyWordRepositoryRoom(database)
             val added = persistenceTestItem(VocabularySourceItemStatus.ADDED, 3)
             val pending = persistenceTestItem(VocabularySourceItemStatus.PENDING, 1)
             val ignoredItem = persistenceTestItem(VocabularySourceItemStatus.IGNORED, 2)
+            persistenceTestCard(database, 10)
             sources.saveSource(persistenceTestSource)
             sources.saveItems(listOf(added, pending, ignoredItem))
             val save = saveUseCase(database, ignored)
-            repeat(2) { save(persistenceTestSource, listOf(pending, ignoredItem), true) }
-            assertEquals(listOf(pending, added), sources.fetchItemsBySourceId(1))
+            repeat(2) { save(persistenceTestSource, listOf(pending, ignoredItem), true, mapOf(ignoredItem.reviewKey() to true)) }
+            assertEquals(listOf(pending, ignoredItem, added), sources.fetchItemsBySourceId(1))
             assertEquals(1, ignored.fetchWords().size)
             assertEquals(2L, StorageSaveVersionRepositoryRoom(database).fetchVersion()!!.version)
         }
@@ -119,6 +130,7 @@ class VocabularySourcePersistenceTest {
             sources.saveSource(persistenceTestSource)
             val staleAdded = persistenceTestItem(VocabularySourceItemStatus.ADDED, 3)
             val currentAdded = staleAdded.copy(createdCardId = 99, targetDeckId = 7)
+            persistenceTestCard(database, 99)
             sources.saveItems(listOf(currentAdded))
             saveUseCase(database, IgnoredVocabularyWordRepositoryRoom(database))(
                 persistenceTestSource, listOf(staleAdded), true,
@@ -133,12 +145,15 @@ class VocabularySourcePersistenceTest {
             val sources = VocabularySourceRepositoryRoom(database)
             sources.saveSource(persistenceTestSource)
             val failureRepository = object : IIgnoredVocabularyWordRepository {
+                override fun observeWords() = kotlinx.coroutines.flow.flow { emit(fetchWords()) }
+                override suspend fun removeWords(keys: Set<com.kuts.domain.vocabularySource.VocabularySourceItemKey>) = Unit
                 override suspend fun fetchWords() = emptyList<IgnoredVocabularyWord>()
                 override suspend fun saveWords(words: List<IgnoredVocabularyWord>) { error("Injected write failure") }
             }
             assertFailsWith<IllegalStateException> {
                 saveUseCase(database, failureRepository)(persistenceTestSource.copy(title = "Unsaved"),
-                    listOf(persistenceTestItem(VocabularySourceItemStatus.IGNORED, 2)), true)
+                    listOf(persistenceTestItem(VocabularySourceItemStatus.IGNORED, 2)), true,
+                    mapOf(persistenceTestItem(VocabularySourceItemStatus.IGNORED, 2).reviewKey() to true))
             }
             assertEquals(persistenceTestSource, sources.fetchSourceById(1))
             assertNull(StorageSaveVersionRepositoryRoom(database).fetchVersion())

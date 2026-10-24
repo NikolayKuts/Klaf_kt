@@ -172,7 +172,10 @@ class ManualRoomSyncCoordinator(
         val onlyInterimPending = pending.isEmpty() || pending.size == 1 &&
             (pending.single().operation as? SyncOperation.AddDeck)?.deck?.syncId == interimSyncId
         val safeForInitialSnapshot = (localDecks.isEmpty() && pending.isEmpty() ||
-            onlyEmptyInterim && onlyInterimPending) && databaseSource.current().cardDao().getAllCards().isEmpty()
+            onlyEmptyInterim && onlyInterimPending) && databaseSource.current().cardDao().getAllCards().isEmpty() &&
+            databaseSource.current().vocabularySourceDao().getSources().isEmpty() &&
+            databaseSource.current().vocabularySourceItemDao().getItems().isEmpty() &&
+            databaseSource.current().ignoredVocabularyWordDao().getWords().isEmpty()
         val hasNoCheckpoint = databaseSource.current().syncCheckpointDao().current() == null
         if (savedConflict == null && fetchBootstrap != null && (hasNoCheckpoint || safeForInitialSnapshot)) {
             val snapshot = fetchBootstrap.invoke(accountId, deviceId)

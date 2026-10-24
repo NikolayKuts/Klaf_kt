@@ -10,6 +10,14 @@ private val nullableOmittingVocabularyJson = Json { explicitNulls = false }
 class VocabularySyncProtocolTest {
 
     @Test
+    fun `ignored rule removal round trips with its exact meaning`() {
+        val operation: SyncOperation = SyncOperation.RemoveIgnoredVocabularyWord(
+            "restore-cat", SyncIgnoredVocabularyWord("en", "cat", "кот", 1),
+        )
+        assertEquals(operation, Json.decodeFromString<SyncOperation>(Json.encodeToString(operation)))
+    }
+
+    @Test
     fun `a new source with omitted optional analysis date decodes on the server`() {
         val operation: SyncOperation = SyncOperation.UpsertVocabularySource("operation-a",
             SyncVocabularySource("source-a", "Title", "", "", "text", "text", 1, 1, 2, null))

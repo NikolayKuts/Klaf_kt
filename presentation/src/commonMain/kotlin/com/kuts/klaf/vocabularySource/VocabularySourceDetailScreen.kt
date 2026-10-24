@@ -116,6 +116,7 @@ import com.kuts.klaf.presentation.resources.vocabulary_source_edit_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_edit_item_title
 import com.kuts.klaf.presentation.resources.vocabulary_source_expand_text_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_ignore_action
+import com.kuts.klaf.presentation.resources.vocabulary_source_ignored_items
 import com.kuts.klaf.presentation.resources.vocabulary_source_items_empty
 import com.kuts.klaf.presentation.resources.vocabulary_source_locate_occurrences_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_new_deck_action
@@ -124,6 +125,8 @@ import com.kuts.klaf.presentation.resources.vocabulary_source_no_decks_available
 import com.kuts.klaf.presentation.resources.vocabulary_source_original_text_mode
 import com.kuts.klaf.presentation.resources.vocabulary_source_raw_text_label
 import com.kuts.klaf.presentation.resources.vocabulary_source_restore_action
+import com.kuts.klaf.presentation.resources.vocabulary_source_reset_analysis_action
+import com.kuts.klaf.presentation.resources.vocabulary_source_reset_analysis_confirmation
 import com.kuts.klaf.presentation.resources.vocabulary_source_save_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_select_all_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_audio_clear_action
@@ -489,6 +492,7 @@ internal fun VocabularySourceDetailScreen(
             onCancelTranscription = viewModel::cancelTranscription,
             onRawTextChanged = viewModel::onRawTextChanged,
             onSave = viewModel::save,
+            onResetAnalysis = viewModel::resetAnalysis,
             onAnalyze = viewModel::analyze,
             onCancelAnalysis = viewModel::cancelAnalysis,
             onItemSelectionChanged = viewModel::changeItemSelectionState,
@@ -527,6 +531,7 @@ private fun VocabularySourceDetailContent(
     onCancelTranscription: () -> Unit,
     onRawTextChanged: (String) -> Unit,
     onSave: () -> Unit,
+    onResetAnalysis: () -> Unit,
     onAnalyze: () -> Unit,
     onCancelAnalysis: () -> Unit,
     onItemSelectionChanged: (Int) -> Unit,
@@ -554,10 +559,11 @@ private fun VocabularySourceDetailContent(
     var clearTranscriptSelectionRequestId by remember { mutableStateOf(0) }
     var locateRequestId by remember { mutableStateOf(0) }
     var locateRequest by remember { mutableStateOf<VocabularySourceTextLocateRequest?>(null) }
+    var isResetConfirmationVisible by remember { mutableStateOf(false) }
     val clipboardManager = LocalClipboardManager.current
     val lazyListState = rememberLazyListState()
-    val canSave = state.hasUnsavedChanges && state.hasSavableContent && !state.isSaving
-    val isReviewLocked = state.isAnalyzing && state.itemHolders.isNotEmpty()
+    val canSave = state.hasUnsavedChanges && state.hasSavableContent && !state.isSaving && !state.isResetting
+    val isReviewLocked = state.isResetting || (state.isAnalyzing && state.itemHolders.isNotEmpty())
     val disabledButtonContainerColor = MainTheme.colors.vocabularySourceScreen.disabledButtonContainer
     val disabledButtonContentColor = MainTheme.colors.vocabularySourceScreen.disabledButtonContent
 
@@ -574,6 +580,27 @@ private fun VocabularySourceDetailContent(
             onNativeWordChanged = onEditingNativeWordChanged,
             onConfirm = onApplyItemEditing,
             onCancel = onCancelItemEditing,
+        )
+    }
+    if (isResetConfirmationVisible) {
+        AlertDialog(
+            onDismissRequest = { isResetConfirmationVisible = false },
+            title = { Text(stringResource(Res.string.vocabulary_source_reset_analysis_action)) },
+            text = { Text(stringResource(Res.string.vocabulary_source_reset_analysis_confirmation)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    isResetConfirmationVisible = false
+                    highlightedTextRanges = emptyList()
+                    locateRequest = null
+                    clearTranscriptSelectionRequestId += 1
+                    onResetAnalysis()
+                }) { Text(stringResource(Res.string.vocabulary_source_reset_analysis_action)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { isResetConfirmationVisible = false }) {
+                    Text(stringResource(Res.string.vocabulary_source_cancel_action))
+                }
+            },
         )
     }
     if (state.isDeckChooserVisible) {
@@ -702,7 +729,7 @@ private fun VocabularySourceDetailContent(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Button(
-                        enabled = state.cleanText.isNotBlank(),
+                        enabled = state.cleanText.isNotBlank() && !state.isResetting,
                         onClick = {
                             if (!state.isAnalyzing) {
                                 highlightedTextRanges = emptyList()
@@ -746,24 +773,41 @@ private fun VocabularySourceDetailContent(
                 }
             }
 
+            item {
+                TextButton(
+                    enabled = !state.isSaving && !state.isResetting && !state.isAnalyzing && !state.isAddingToDeck,
+                    onClick = { isResetConfirmationVisible = true },
+                ) { Text(stringResource(Res.string.vocabulary_source_reset_analysis_action)) }
+            }
+
             if (state.displayedItems.isEmpty()) {
                 item {
                     Spacer(modifier = Modifier.height(18.dp))
                     Text(text = stringResource(resource = Res.string.vocabulary_source_items_empty))
                 }
             } else {
-                item {
-                    VocabularySourceItemReviewToolbar(
-                        totalItemCount = state.displayedItems.size,
-                        selectedItemCount = state.selectedItemCount,
-                        isAllSelected = state.isAllItemsSelected,
-                        hasUnsavedChanges = state.hasUnsavedChanges,
-                        isLocked = isReviewLocked,
-                        onAllItemsSelectionChanged = onAllItemsSelectionChanged,
-                        onIgnoreSelectedItems = onIgnoreSelectedItems,
-                        onRestoreSelectedItems = onRestoreSelectedItems,
-                        onAddSelectedToDeckClick = onAddSelectedToDeckClick,
-                    )
+                stickyHeader(key = "item_review_toolbar") {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MainTheme.colors.material.surface,
+                    ) {
+                        VocabularySourceItemReviewToolbar(
+                            totalItemCount = state.displayedItems.size,
+                            ignoredItemCount = state.displayedItems.count { item ->
+                                item.status == VocabularySourceItemStatus.IGNORED
+                            },
+                            selectedItemCount = state.selectedItemCount,
+                            hasSelectedPendingItems = state.hasSelectedPendingItems,
+                            hasSelectedIgnoredItems = state.hasSelectedIgnoredItems,
+                            isAllSelected = state.isAllItemsSelected,
+                            hasUnsavedChanges = state.hasUnsavedChanges,
+                            isLocked = isReviewLocked,
+                            onAllItemsSelectionChanged = onAllItemsSelectionChanged,
+                            onIgnoreSelectedItems = onIgnoreSelectedItems,
+                            onRestoreSelectedItems = onRestoreSelectedItems,
+                            onAddSelectedToDeckClick = onAddSelectedToDeckClick,
+                        )
+                    }
                 }
                 itemsIndexed(
                     items = state.itemHolders,
@@ -1344,7 +1388,10 @@ private fun TextModeSwitchItem(
 @Composable
 private fun VocabularySourceItemReviewToolbar(
     totalItemCount: Int,
+    ignoredItemCount: Int,
     selectedItemCount: Int,
+    hasSelectedPendingItems: Boolean,
+    hasSelectedIgnoredItems: Boolean,
     isAllSelected: Boolean,
     hasUnsavedChanges: Boolean,
     isLocked: Boolean,
@@ -1364,12 +1411,23 @@ private fun VocabularySourceItemReviewToolbar(
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = stringResource(
-                resource = Res.string.vocabulary_source_total_items,
-                totalItemCount,
-            ),
-        )
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = stringResource(
+                    resource = Res.string.vocabulary_source_total_items,
+                    totalItemCount,
+                ),
+            )
+            Text(
+                text = stringResource(
+                    resource = Res.string.vocabulary_source_ignored_items,
+                    ignoredItemCount,
+                ),
+            )
+        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -1398,13 +1456,13 @@ private fun VocabularySourceItemReviewToolbar(
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(
-                enabled = selectedItemCount > 0 && !isLocked,
+                enabled = hasSelectedPendingItems && !isLocked,
                 onClick = onIgnoreSelectedItems,
             ) {
                 Text(text = stringResource(resource = Res.string.vocabulary_source_ignore_action))
             }
             OutlinedButton(
-                enabled = selectedItemCount > 0 && !isLocked,
+                enabled = hasSelectedIgnoredItems && !isLocked,
                 onClick = onRestoreSelectedItems,
             ) {
                 Text(text = stringResource(resource = Res.string.vocabulary_source_restore_action))
@@ -2021,6 +2079,7 @@ private fun VocabularySourceDetailContentPreviewContent(darkTheme: Boolean) {
                 onCancelTranscription = {},
                 onRawTextChanged = {},
                 onSave = {},
+                onResetAnalysis = {},
                 onAnalyze = {},
                 onCancelAnalysis = {},
                 onItemSelectionChanged = {},

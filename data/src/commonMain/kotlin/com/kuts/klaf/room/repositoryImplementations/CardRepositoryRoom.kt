@@ -43,6 +43,10 @@ class CardRepositoryRoom(
         return card.id.takeIf { it > 0 } ?: cardId
     }
 
+    override fun observeAllCards(): Flow<List<Card>> = databaseSource.databases.flatMapLatest { database ->
+        database.cardDao().observeAllCards().map { cards -> cards.map { it.toDomainEntity() } }
+    }
+
     override suspend fun insertCardAtPath(
         card: Card,
         rootEmailPath: String

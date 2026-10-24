@@ -40,11 +40,8 @@ interface IVocabularySourceItemDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertItems(items: List<RoomVocabularySourceItem>)
 
-    @Query(
-        "DELETE FROM $VOCABULARY_SOURCE_ITEM_TABLE_NAME " +
-            "WHERE sourceId = :sourceId AND status != :status"
-    )
-    suspend fun deleteItemsBySourceIdExceptStatus(sourceId: Int, status: String)
+    @Query("DELETE FROM $VOCABULARY_SOURCE_ITEM_TABLE_NAME WHERE sourceId = :sourceId AND id NOT IN (:preservedIds)")
+    suspend fun deleteItemsBySourceIdExceptIds(sourceId: Int, preservedIds: List<Int>)
 
     @Query("DELETE FROM $VOCABULARY_SOURCE_ITEM_TABLE_NAME WHERE sourceId = :sourceId")
     suspend fun deleteItemsBySourceId(sourceId: Int)

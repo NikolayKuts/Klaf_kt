@@ -2,10 +2,54 @@ package com.kuts.klaf.vocabularySource
 
 import com.kuts.domain.entities.VocabularySourceItem
 import com.kuts.domain.entities.VocabularySourceItemCategory
+import com.kuts.domain.entities.VocabularySourceItemStatus
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class VocabularySourceDetailStateTest {
+    @Test
+    fun reviewActionsAreAvailableOnlyForApplicableSelectedItems() {
+        val items = listOf(
+            VocabularySourceItemStatus.PENDING,
+            VocabularySourceItemStatus.IGNORED,
+            VocabularySourceItemStatus.ADDED,
+        ).map { status ->
+            VocabularySourceItem(
+                sourceId = 1,
+                foreignWord = status.name,
+                nativeWord = "meaning",
+                category = VocabularySourceItemCategory.NEW,
+                status = status,
+                createdAt = 1,
+                updatedAt = 1,
+            )
+        }
+        val selectionCases = listOf(
+            Triple(emptySet<Int>(), false, false),
+            Triple(setOf(0), true, false),
+            Triple(setOf(1), false, true),
+            Triple(setOf(0, 1), true, true),
+            Triple(setOf(2, 99), false, false),
+        )
+
+        for ((selection, canIgnore, canRestore) in selectionCases) {
+            val persistedState = VocabularySourceDetailState(
+                persistedItems = items,
+                selectedItemIndexes = selection,
+            )
+            val draftState = VocabularySourceDetailState(
+                persistedItems = items.reversed(),
+                draftItems = items,
+                selectedItemIndexes = selection,
+                hasNewAnalysisDraft = true,
+            )
+            for (state in listOf(persistedState, draftState)) {
+                assertEquals(canIgnore, state.hasSelectedPendingItems, "Ignore for selection=$selection")
+                assertEquals(canRestore, state.hasSelectedIgnoredItems, "Restore for selection=$selection")
+            }
+        }
+    }
+
     @Test
     fun emptyNewAnalysisMustNotFallBackToPreviouslySavedItems() {
         val oldItem = VocabularySourceItem(1, foreignWord = "word", nativeWord = "meaning",

@@ -20,6 +20,8 @@ import kotlinx.serialization.json.Json
 import com.kuts.klaf.room.applySyncVocabularySource
 import com.kuts.klaf.room.clearMissingVocabularyLinks
 import com.kuts.klaf.room.toRoomWord
+import com.kuts.klaf.room.toSyncWord
+import com.kuts.klaf.room.identity
 
 /** Applies a response only when every submitted operation was resolved without conflicts. */
 class RoomSyncDeltaApplier(
@@ -48,6 +50,11 @@ class RoomSyncDeltaApplier(
             }
             check(database.cardDao().getAllCards().isEmpty()) {
                 "Initial snapshot requires an empty account database"
+            }
+            check(database.vocabularySourceDao().getSources().isEmpty() &&
+                database.vocabularySourceItemDao().getItems().isEmpty() &&
+                database.ignoredVocabularyWordDao().getWords().isEmpty()) {
+                "Initial snapshot cannot overwrite existing vocabulary data"
             }
             val pending = database.pendingSyncOperationDao().pendingForAccount(accountId)
             check(pending.map { it.operationId }.toSet() == acceptedInterimOperationIds.toSet()) {
@@ -162,6 +169,11 @@ class RoomSyncDeltaApplier(
             applySyncVocabularySource(incoming, database.vocabularySourceDao(), database.vocabularySourceItemDao(), decks, cards)
         }
         clearMissingVocabularyLinks(database.vocabularySourceItemDao(), decks, cards)
+        val removedWordIds = delta.deletedIgnoredWordIds.toSet()
+        val ignoredDao = database.ignoredVocabularyWordDao()
+        ignoredDao.getWords().filter { it.toSyncWord().identity() in removedWordIds }.forEach { word ->
+            ignoredDao.deleteWord(word.languageKey, word.foreignWordKey, word.nativeWordKey)
+        }
         delta.ignoredWords.forEach { incoming ->
             val row = incoming.toRoomWord(delta.toRevision)
             val existing = database.ignoredVocabularyWordDao().getWords().firstOrNull {

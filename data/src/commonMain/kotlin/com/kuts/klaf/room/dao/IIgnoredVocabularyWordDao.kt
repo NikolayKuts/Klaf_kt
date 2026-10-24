@@ -30,6 +30,10 @@ interface IIgnoredVocabularyWordDao {
     @Query("DELETE FROM $IGNORED_VOCABULARY_WORD_TABLE_NAME")
     suspend fun deleteWords()
 
+    @Query("DELETE FROM $IGNORED_VOCABULARY_WORD_TABLE_NAME " +
+        "WHERE languageKey = :language AND foreignWordKey = :foreign AND nativeWordKey = :native")
+    suspend fun deleteWord(language: String, foreign: String, native: String)
+
     companion object {
 
         const val IGNORED_VOCABULARY_WORD_TABLE_NAME = "ignored_vocabulary_words"

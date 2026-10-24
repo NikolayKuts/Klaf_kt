@@ -31,7 +31,7 @@ class VocabularySourceItemCategorizer {
                 ignoredWords.map { ignoredWord -> ignoredWord.nativeWord.toMeaningKey() }.distinct()
             }
 
-        return analysisItems.mapIndexedNotNull { index, item ->
+        return analysisItems.mapIndexed { index, item ->
             val knownMeanings = vocabularyIndex[item.foreignWord.toVocabularyKey()].orEmpty()
             val ignoredMeanings = ignoredVocabularyIndex[item.foreignWord.toVocabularyKey()].orEmpty()
             val hasKnownMeaning = knownMeanings.any { knownMeaning ->
@@ -40,8 +40,6 @@ class VocabularySourceItemCategorizer {
             val hasIgnoredMeaning = ignoredMeanings.any { ignoredMeaning ->
                 ignoredMeaning == item.nativeWord.toMeaningKey()
             }
-
-            if (hasKnownMeaning || hasIgnoredMeaning) return@mapIndexedNotNull null
 
             VocabularySourceItem(
                 sourceId = sourceId,
@@ -54,15 +52,15 @@ class VocabularySourceItemCategorizer {
                 cefrLevel = item.cefrLevel,
                 confidence = item.confidence,
                 category = when {
-                    knownMeanings.isNotEmpty() -> VocabularySourceItemCategory.POSSIBLE_NEW_MEANING
-                    ignoredMeanings.isNotEmpty() -> VocabularySourceItemCategory.IGNORED_WORD_NEW_MEANING
+                    knownMeanings.isNotEmpty() && !hasKnownMeaning -> VocabularySourceItemCategory.POSSIBLE_NEW_MEANING
+                    ignoredMeanings.isNotEmpty() && !hasIgnoredMeaning -> VocabularySourceItemCategory.IGNORED_WORD_NEW_MEANING
                     else -> VocabularySourceItemCategory.NEW
                 },
-                status = VocabularySourceItemStatus.PENDING,
+                status = if (hasIgnoredMeaning) VocabularySourceItemStatus.IGNORED else VocabularySourceItemStatus.PENDING,
                 sourceExample = item.sourceExample.trim(),
                 explanation = item.explanation.trim(),
                 knownMeaningsSnapshot = knownMeanings.joinToString(separator = "; "),
-                alreadyExists = false,
+                alreadyExists = hasKnownMeaning,
                 occurrences = item.occurrences,
                 firstOccurrenceOrder = item.occurrences.minOfOrNull { occurrence ->
                     occurrence.startOffset

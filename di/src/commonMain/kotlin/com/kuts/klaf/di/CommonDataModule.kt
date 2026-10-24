@@ -58,6 +58,8 @@ import com.kuts.domain.useCases.SaveDeckReviewInfoUseCase
 import com.kuts.domain.useCases.RetryKlafServerConnectionUseCase
 import com.kuts.domain.useCases.SaveVocabularySourceItemsUseCase
 import com.kuts.domain.useCases.SaveVocabularySourceChangesUseCase
+import com.kuts.domain.useCases.ObserveVocabularySourceReviewContextUseCase
+import com.kuts.domain.useCases.ResetVocabularySourceAnalysisUseCase
 import com.kuts.domain.useCases.SynchronizeLocalAndRemoteDataUseCase
 import com.kuts.domain.useCases.TransferCardsToDeckUseCase
 import com.kuts.domain.useCases.TransferDataOfOldAppKlafUseCase
@@ -419,6 +421,7 @@ private fun Module.commonVocabularySourceUseCaseModule() {
             cardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
             deckRepository = get(qualifier = named(name = LOCAL_DECK_REPOSITORY)),
             vocabularySourceRepository = get(),
+            ignoredVocabularyWordRepository = get(),
             localStorageSaveVersionRepository = get(
                 qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY),
             ),
@@ -463,6 +466,20 @@ private fun Module.commonVocabularySourceUseCaseModule() {
     factory { ObserveVocabularySourceByIdUseCase(vocabularySourceRepository = get()) }
     factory { ObserveAllVocabularySourceItemsUseCase(vocabularySourceRepository = get()) }
     factory { ObserveVocabularySourceItemsUseCase(vocabularySourceRepository = get()) }
+    factory {
+        ObserveVocabularySourceReviewContextUseCase(
+            cardRepository = get(qualifier = named(name = LOCAL_CARD_REPOSITORY)),
+            ignoredVocabularyWordRepository = get(),
+        )
+    }
+    factory {
+        ResetVocabularySourceAnalysisUseCase(
+            vocabularySourceRepository = get(),
+            localStorageSaveVersionRepository = get(qualifier = named(name = LOCAL_STORAGE_SAVE_VERSION_REPOSITORY)),
+            localStorageTransactionRepository = get(),
+            coroutineContextProvider = get(),
+        )
+    }
     factory { ObserveVocabularySourcesUseCase(vocabularySourceRepository = get()) }
     factory {
         RemoveVocabularySourceUseCase(

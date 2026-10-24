@@ -338,6 +338,9 @@
         <string name="vocabulary_source_select_all_action">Select all</string>
         <string name="vocabulary_source_selected_items">Selected: %1$d</string>
         <string name="vocabulary_source_total_items">Total: %1$d</string>
+        <string name="vocabulary_source_ignored_items">Ignored: %1$d</string>
+        <string name="vocabulary_source_reset_analysis_action">Clear analysis</string>
+        <string name="vocabulary_source_reset_analysis_confirmation">Delete all analysis items from this source? Source details, links, transcript, Ignored Words, cards and decks will be kept.</string>
         <string name="vocabulary_source_speak_word_action">Play word pronunciation</string>
         <string name="vocabulary_source_stale_items_warning">Text changed after analysis. Run analysis again to refresh items.</string>
         <string name="vocabulary_source_target_deck_title">Choose target deck</string>

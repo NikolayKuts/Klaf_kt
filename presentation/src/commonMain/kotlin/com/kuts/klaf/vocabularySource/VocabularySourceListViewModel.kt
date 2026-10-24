@@ -52,9 +52,9 @@ class VocabularySourceListViewModel(
 
             VocabularySourceListItemHolder(
                 source = source,
-                pendingCount = sourceItems.count { item -> item.status == VocabularySourceItemStatus.PENDING },
-                addedCount = sourceItems.count { item -> item.status == VocabularySourceItemStatus.ADDED },
-                ignoredCount = sourceItems.count { item -> item.status == VocabularySourceItemStatus.IGNORED },
+                pendingCount = sourceItems.count { item -> item.status == VocabularySourceItemStatus.PENDING && !item.alreadyExists },
+                addedCount = sourceItems.count { item -> item.status == VocabularySourceItemStatus.ADDED || item.alreadyExists },
+                ignoredCount = sourceItems.count { item -> item.status == VocabularySourceItemStatus.IGNORED && !item.alreadyExists },
             )
         }
     }

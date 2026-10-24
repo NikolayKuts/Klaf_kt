@@ -12,6 +12,10 @@ import com.kuts.domain.repositories.IDeckRepository
 import com.kuts.domain.repositories.IStorageSaveVersionRepository
 import com.kuts.domain.repositories.IStorageTransactionRepository
 import com.kuts.domain.repositories.IVocabularySourceRepository
+import com.kuts.domain.repositories.IIgnoredVocabularyWordRepository
+import com.kuts.domain.vocabularySource.reviewKey
+import com.kuts.domain.vocabularySource.toVocabularyKey
+import com.kuts.domain.vocabularySource.toMeaningKey
 import kotlinx.coroutines.withContext
 
 class AddVocabularySourceItemsToDeckUseCase(
@@ -21,6 +25,7 @@ class AddVocabularySourceItemsToDeckUseCase(
     private val localStorageSaveVersionRepository: IStorageSaveVersionRepository,
     private val localStorageTransactionRepository: IStorageTransactionRepository,
     private val coroutineContextProvider: ICoroutineContextProvider,
+    private val ignoredVocabularyWordRepository: IIgnoredVocabularyWordRepository,
 ) {
 
     suspend operator fun invoke(deck: Deck, items: List<VocabularySourceItem>): Int {
@@ -36,6 +41,15 @@ class AddVocabularySourceItemsToDeckUseCase(
         return withContext(context = coroutineContextProvider.io) {
             localStorageTransactionRepository.performWithTransaction {
                 val currentTime = getCurrentDateAsLong()
+                val existingPairs = cardRepository.fetchAllCards().map {
+                    it.foreignWord.toVocabularyKey() to it.nativeWord.toMeaningKey()
+                }.toSet()
+                val ignoredKeys = ignoredVocabularyWordRepository.fetchWords().map { it.reviewKey() }.toSet()
+                if (items.none {
+                    it.status == VocabularySourceItemStatus.PENDING && !it.alreadyExists &&
+                        it.reviewKey() !in ignoredKeys &&
+                        (it.foreignWord.toVocabularyKey() to it.nativeWord.toMeaningKey()) !in existingPairs
+                }) return@performWithTransaction 0
                 val deckId = deckRepository.insertDeck(
                     deck = Deck(
                         name = deckName,
@@ -64,11 +78,17 @@ class AddVocabularySourceItemsToDeckUseCase(
         val currentDeck = deckRepository.getDeckById(deck.id)
             ?: error("Destination deck no longer exists")
         if (currentDeck.reviewCount != 0) throw ReviewedDeckCardAdditionException()
+        val existingPairs = cardRepository.fetchAllCards().map {
+            it.foreignWord.toVocabularyKey() to it.nativeWord.toMeaningKey()
+        }.toMutableSet()
+        val ignoredKeys = ignoredVocabularyWordRepository.fetchWords().map { it.reviewKey() }.toSet()
         val addedItems = items
             .filter { item ->
                 item.status == VocabularySourceItemStatus.PENDING && !item.alreadyExists
             }
-            .map { item ->
+            .mapNotNull { item ->
+                val pair = item.foreignWord.toVocabularyKey() to item.nativeWord.toMeaningKey()
+                if (item.reviewKey() in ignoredKeys || !existingPairs.add(pair)) return@mapNotNull null
                 val cardId = cardRepository.insertCard(
                     card = Card(
                         deckId = deck.id,

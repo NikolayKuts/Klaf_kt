@@ -26,7 +26,7 @@ class VocabularySourceItemCategorizerTest {
             ignoredWords = listOf(ignoredWord(foreignWord = "take off", nativeWord = "взлетать")),
             createdAt = 100L,
         )
-        assertEquals(emptyList(), result)
+        assertEquals(VocabularySourceItemStatus.IGNORED, result.single().status)
     }
 
     @Test
@@ -64,7 +64,7 @@ class VocabularySourceItemCategorizerTest {
     }
 
     @Test
-    fun `categorize filters exact known meaning`() {
+    fun `categorize retains exact known meaning as already existing`() {
         val result = categorizer.categorize(
             sourceId = 1,
             language = "en",
@@ -74,11 +74,11 @@ class VocabularySourceItemCategorizerTest {
             createdAt = 100L,
         )
 
-        assertEquals(expected = emptyList(), actual = result)
+        assertEquals(expected = true, actual = result.single().alreadyExists)
     }
 
     @Test
-    fun `categorize filters exact ignored meaning with normalized keys`() {
+    fun `categorize retains exact ignored meaning with normalized keys`() {
         val result = categorizer.categorize(
             sourceId = 1,
             language = "en",
@@ -88,7 +88,7 @@ class VocabularySourceItemCategorizerTest {
             createdAt = 100L,
         )
 
-        assertEquals(expected = emptyList(), actual = result)
+        assertEquals(expected = VocabularySourceItemStatus.IGNORED, actual = result.single().status)
     }
 
     @Test

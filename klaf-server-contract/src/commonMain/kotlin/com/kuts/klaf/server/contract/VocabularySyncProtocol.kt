@@ -45,7 +45,7 @@ data class SyncVocabularySourceItem(
     val updatedAt: Long,
 )
 
-/** Ignored rules are an additive set identified by their normalized language/word/meaning. */
+/** Ignored rules are identified by their normalized language/word/meaning. */
 @Serializable
 data class SyncIgnoredVocabularyWord(
     val language: String,
