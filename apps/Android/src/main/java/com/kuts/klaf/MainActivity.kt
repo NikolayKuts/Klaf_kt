@@ -31,6 +31,7 @@ import com.kuts.klaf.navigation.AndroidKlafNavHost
 import com.kuts.klaf.navigation.AppLaunchNavigationExtras
 import com.kuts.klaf.navigation.AppLaunchNavigationRequest
 import com.kuts.klaf.theme.MainTheme
+import com.kuts.klaf.room.databases.RoomDatabaseSource
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.koin.android.ext.android.inject
 
@@ -48,6 +49,8 @@ class MainActivity : AppCompatActivity() {
     private val notificationPermissionManager: INotificationPermissionManager by inject()
     private val reminderScope: IReviewReminderScopeProvider by inject()
     private val klafServerSession: IClientSessionScope by inject()
+    // TEMPORARY cleanup build: remove this dependency and the gate below after confirmation.
+    private val temporaryCleanupDatabase: RoomDatabaseSource by inject()
     private var shouldCheckNotificationPermission by mutableStateOf(false)
 
     private val launchRequests = MutableSharedFlow<AppLaunchNavigationRequest>(
@@ -69,29 +72,31 @@ class MainActivity : AppCompatActivity() {
             MainTheme {
                 setStatusBarColor()
 
-                Box(modifier = Modifier.fillMaxSize()) {
-                    AndroidKlafNavHost(
-                        sharedViewModel = sharedViewModel,
-                        initialLaunchRequest = initialLaunchRequest,
-                        launchRequests = launchRequests,
-                        onRestartApp = ::finish,
+                TemporaryVocabularyCleanupGate(databaseSource = temporaryCleanupDatabase) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        AndroidKlafNavHost(
+                            sharedViewModel = sharedViewModel,
+                            initialLaunchRequest = initialLaunchRequest,
+                            launchRequests = launchRequests,
+                            onRestartApp = ::finish,
+                        )
+
+                        sharedViewModel.eventMessage.collectAsState(initial = null)
+                            .value
+                            ?.let { message ->
+                                EventMessageView(
+                                    modifier = Modifier.align(Alignment.TopCenter),
+                                    message = message,
+                                )
+                            }
+                    }
+
+                    NotificationPermissionDialogs(
+                        shouldCheckPermission = shouldCheckNotificationPermission,
+                        onPermissionCheckConsumed = { shouldCheckNotificationPermission = false },
+                        permissionManager = notificationPermissionManager,
                     )
-
-                    sharedViewModel.eventMessage.collectAsState(initial = null)
-                        .value
-                        ?.let { message ->
-                            EventMessageView(
-                                modifier = Modifier.align(Alignment.TopCenter),
-                                message = message,
-                            )
-                        }
                 }
-
-                NotificationPermissionDialogs(
-                    shouldCheckPermission = shouldCheckNotificationPermission,
-                    onPermissionCheckConsumed = { shouldCheckNotificationPermission = false },
-                    permissionManager = notificationPermissionManager,
-                )
             }
         }
     }

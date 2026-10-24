@@ -4,6 +4,9 @@ Working status file for the `VocabularySource` feature.
 
 ## Current Focus
 
+- Temporary cleanup APK is ready and verified. Await user-device execution and
+  successful manual sync before removing temporary code and producing the
+  normal build. Do not remove the gate/implementation before confirmation.
 - Mandatory test-first development is now recorded in root/server AGENTS.md.
 - Actual device data reset, UI smoke testing and deployment were not performed
   (no Android device attached). Install the updated client and server; use the
@@ -27,6 +30,16 @@ Working status file for the `VocabularySource` feature.
 
 ## Completed
 
+- Prepared the temporary Android cleanup build without changing Room version16:
+  sole-source scope, backup-before-delete, transactional source/ignored cleanup
+  and sync outbox, durable file receipt, startup blocking on errors, and no
+  repeated cleanup after completion. Ambiguous-source and already-completed
+  paths abort without storage normalization or queued writes.
+- Final verification passed: data243 tests (including cleanup8 + startup4),
+  Android unit9 (including receipt3), isolated read-only emulator UI2 (dark text
+  and small-screen action scrolling). No failures/errors/skips. APK signature
+  and ZIP alignment verified; package com.kuts.klaf, version1.5/code15.
+  Independent final review has no remaining findings. User data untouched.
 - Corrected Clear analysis to preserve global Ignored Words; one-time legacy
   cleanup permission is not a permanent global-clear feature. Independent review
   found no issues; data Desktop (231) and presentation Desktop (89) tests and
@@ -389,6 +402,42 @@ Working status file for the `VocabularySource` feature.
 - UI/instrumentation tests.
 - Item filters by status/category/level.
 - Ignored Words management screen for viewing and removing global rules.
+
+## Temporary Cleanup TDD Evidence
+
+- `:data:desktopTest --tests '*Temporary*Cleanup*Test'`: accepted red run had
+  10 behavioral assertion failures, then all10 passed after implementation.
+  Initial test-discovery/dependency errors were corrected and were not counted
+  as a behavioral red run.
+- `:data:desktopTest --tests '*TemporaryVocabularyCleanupTest.waitingStartup*'`
+  and `--tests '*TemporaryVocabularyCleanupTest.skippedAccountCleanup*'` each
+  failed for the targeted regression before the corresponding fix.
+- `:Android:testDebugUnitTest --tests '*TemporaryCleanupFileReceiptsTest'`:
+  3 behavioral failures against the no-op scaffold, then3 passing in final run.
+- Isolated UI command: `:Android:connectedRemoteStorageTestAndroidTest
+  -PklafAndroidTestBuildType=remoteStorageTest
+  -Pandroid.testInstrumentationRunnerArguments.class=com.kuts.klaf.TemporaryCleanupScreenTest`,
+  with `ANDROID_SERIAL=emulator-5580`. Both tests failed on actual dark-text and
+  missing-scroll assertions before the UI fixes; both passed afterward.
+- Final independent run: full data243 + Android unit9 + UI2 passed and
+  `:Android:assembleDebug` succeeded. The read-only emulator was stopped afterward.
+
+## Temporary Cleanup Removal Checklist
+
+After the user confirms local cleanup and successful manual synchronization:
+
+- Remove `data/.../room/maintenance/TemporaryVocabularyCleanup.kt` and
+  `TemporaryCleanupStartup.kt`, their Desktop/common tests, Android
+  `TemporaryVocabularyCleanupGate.kt`, `TemporaryCleanupFileReceipts.kt`, and
+  their unit/instrumentation tests.
+- Remove the temporary MainActivity dependency/gate and the temporary Data,
+  Material3 and isolated UI-test-manifest dependencies in Android build.gradle.
+- Keep normal Clear analysis (source items only), persistent ignored review
+  logic, global Restore synchronization and queued operations intact.
+- Build/test the normal app and verify temporary cleanup types are absent from
+  the final APK. Room schema stays version 16; no legacy cleanup migration or
+  startup flag-reading code is needed. Private backup/receipt files are inert
+  after removal and are not dependencies of the normal app.
 
 ## Open Questions
 

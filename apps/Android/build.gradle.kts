@@ -70,6 +70,9 @@ dependencies {
     implementation(project(Modules.Di))
     implementation(project(Modules.Presentation))
     implementation(project(Modules.Domain))
+    // TEMPORARY cleanup build: remove after confirmed cleanup and synchronization.
+    implementation(project(Modules.Data))
+    implementation(libs.androidx.material3.android)
 
     /** Core **/
     implementation(libs.core.kotlin.stdlib)
@@ -83,6 +86,8 @@ dependencies {
     androidTestImplementation(libs.tests.espresso)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    // TEMPORARY cleanup screen tests use an isolated target Activity/package.
+    add("remoteStorageTestImplementation", "androidx.compose.ui:ui-test-manifest")
     androidTestImplementation(libs.room.runtime)
     androidTestImplementation(libs.sqlite.bundled)
     androidTestImplementation(project(Modules.Data))

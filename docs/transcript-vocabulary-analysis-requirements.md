@@ -437,6 +437,23 @@ sources' items. Prior permission for one-time legacy cleanup does not authorize
 a permanent global-clear action. Do not perform blanket destructive migrations.
 Global ignore removals through Restore must synchronize, including deletion deltas.
 
+### Temporary Android Cleanup Build
+
+The user approved a two-build maintenance procedure: a temporary Android build
+automatically clears legacy analysis items and global ignored rules in the
+currently selected database. Run only when that database contains exactly one
+source; otherwise skip without changing data and report why. Preserve source
+metadata/transcripts/URLs, Cards, Decks and all other databases. Back up the
+affected source aggregate and ignored rules before deletion. Commit deletions
+with the existing sync outbox, so normal manual synchronization propagates them.
+Do not add a Room schema version/migration for this temporary operation.
+
+Do not allow normal app editing while cleanup or completion-record persistence
+is failing. Remember successful completion per database so relaunches do not
+erase newly generated analysis. After the user confirms cleanup and sync, remove
+the temporary startup gate, cleanup implementation, tests and wiring, and build
+the normal app. Do not remove this code before the temporary build has been run.
+
 ### P0 - Added State Tracking
 
 Analysis items should show whether they have already been added to a deck. When
