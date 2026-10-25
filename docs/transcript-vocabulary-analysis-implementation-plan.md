@@ -4,6 +4,10 @@ Ordered implementation plan for the `VocabularySource` feature.
 
 ## Current: Global Reconciliation And Retry
 
+Follow-up experiment: test-first server environment mode selection, whole-text
+extraction and separate opt-in result reports; document Run Configuration values.
+Keep normal chunked operation as default and verify independently before delivery.
+
 1. Test-first AgentDriver request-scoped read-only data tools, protocol forwarding,
    Codex registration/response handling, isolation, cancellation and size limits.
 2. Test-first server global reconciliation, strict provenance validation, bounded

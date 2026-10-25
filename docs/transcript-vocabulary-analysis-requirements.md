@@ -1,5 +1,24 @@
 # Transcript Vocabulary Analysis Requirements
 
+## Server Comparison Experiment (2026-10-25)
+
+- Add a server-only environment switch between the existing `chunked` flow
+  (default) and experimental `whole-text` extraction through one read-only tool.
+  No AgentDriver or client changes. Whole-text has no extraction chunks or
+  reconciliation pass and uses a trusted instruction profile.
+- Allow opt-in JSON reports to an explicitly configured server directory, retaining
+  separate results for repeated runs, mode, elapsed time and identical-input hash.
+  Reports are diagnostic exports; normal analysis does not write input files.
+- Preserve existing chunked retry behavior. Whole-text must not accept stale
+  reconciliation retry tokens. Experimental failures must not modify source data.
+- Compare complete items and occurrences, not just successful responses or counts.
+  Real-provider runs will be performed on the user's remote server.
+- An opt-in input-file setting runs one analysis and exits before normal server
+  startup, using the existing configured owner runtime and a separate experiment
+  namespace, without opening the working Klaf database or requiring a client.
+- The phone can be disconnected: the transcript and current 382-item/463-occurrence
+  baseline were exported read-only to the operator's local experiment directory.
+
 ## Global Semantic Reconciliation (2026-10-25)
 
 - After chunk extraction, run one model reconciliation over the complete transcript

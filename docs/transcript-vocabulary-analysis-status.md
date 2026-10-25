@@ -4,6 +4,13 @@ Working status file for the `VocabularySource` feature.
 
 ## Current Focus
 
+- Server-only chunked/whole-text comparison, opt-in JSON reports and standalone
+  file-input startup are implemented. Independent code review has no remaining
+  findings; independent post-fix test/build verification passed.
+  Real remote-provider comparison remains pending user runs.
+  Source snapshot verified at `C:/Users/kutsn/.codex/experiments/klaf-vocabulary-comparison-2026-10-25`:
+  14,189 text characters, 382 items, 463 occurrences. Phone is no longer required.
+
 - Global semantic reconciliation and retry are implemented using request-scoped
   read-only AgentDriver data tools and in-memory checkpoints. Independent final
   review and regression/build verification passed; no database cleanup/migration.
@@ -35,6 +42,38 @@ Working status file for the `VocabularySource` feature.
 
 ## Completed
 
+- Comparison experiment TDD: tests were written before behavior. Minimal API
+  scaffolding allowed executable RED assertions: mode parsing/whole-text routing/
+  exports failed (3/4) in `klaf-vocabulary-experiment-red.log`; file-input startup
+  failed (2/3) in `klaf-vocabulary-file-experiment-red.log`; variable-form span
+  retention failed (1/1) in `klaf-vocabulary-variants-red.log` (host TEMP logs).
+  Commands were `:klaf-server:test --tests '*VocabularyAnalysisExperimentTest*'`,
+  `:klaf-server:test --tests '*VocabularyAnalysisFileExperimentTest*'`, and
+  `:klaf-server:test --tests
+  '*VocabularyAnalysisExperimentTest.wholeTextPreservesDifferentInflectedOccurrenceSpans'`.
+  Each passed after implementation. Final scoped command passed:
+  `:klaf-server:test --tests '*VocabularyAnalysis*ExperimentTest*' --tests
+  '*VocabularySource*Test*' --tests '*AccountCodexInstructionsTest*' --tests
+  '*KlafServerConfigTest*' --console=plain` (`klaf-vocabulary-experiment-final-green.log`).
+  Run Configuration instructions: [vocabulary-analysis-comparison.md](vocabulary-analysis-comparison.md).
+- Review follow-up RED: `:klaf-server:test --tests
+  '*VocabularyAnalysisExperimentTest.wholeTextRepairsOffsetAgainstExactOccurrenceSurfaceInsteadOfAcceptingUnrelatedWord'
+  --tests '*VocabularyAnalysisFileExperimentTest.bothCloseAttemptsRunAndOriginalAnalysisFailureRemainsPrimary'`
+  failed both assertions (`klaf-vocabulary-review-fixes-red.log`). Whole-text now
+  requires per-occurrence exact `surface_text`, and cleanup always attempts both
+  pool/factory closure while preserving primary errors. The same scoped suite
+  passed (`klaf-vocabulary-review-fixes-green.log`); independent review rechecked
+  both fixes and reports no remaining actionable findings.
+- Independent post-fix command: `:klaf-server:test --tests
+  '*VocabularyAnalysis*ExperimentTest*' --tests '*VocabularySource*Test*' --tests
+  '*AccountCodexInstructionsTest*' --tests '*KlafServerConfigTest*' --tests
+  '*AccountCodexRuntimePoolTest*' --tests '*ManagedAccountCodexRuntimeFactoryTest*'
+  --tests '*ControlledSiwcFeatureRoutingTest*' --tests
+  '*VocabularyDataToolsLiveSmokeTest*' :klaf-server:assemble --continue --console=plain`.
+  Passed in 51s: 102 discovered, 101 passed, zero failures/errors, one opt-in
+  real-model smoke skipped. All 10 new experiment tests passed. Log:
+  `klaf-vocabulary-experiment-independent-final.log`. No real provider requests,
+  device access or working database changes; remote comparison remains pending.
 - Global reconciliation receives the full transcript and every valid chunk item
   in one model pass, without host-side grouping. The host validates complete,
   unique source-item coverage and reconstructs all original occurrences.
