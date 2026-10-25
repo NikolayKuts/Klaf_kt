@@ -89,6 +89,8 @@ data class VocabularySourceDetailState(
     val newDeckName: String = "",
     val isAddingToDeck: Boolean = false,
     val isAnalyzing: Boolean = false,
+    val analysisRetryToken: String? = null,
+    val analysisRetryText: String? = null,
     val hasUnsavedChanges: Boolean = false,
     val isSaveConfirmed: Boolean = false,
     val isSaving: Boolean = false,
@@ -99,6 +101,9 @@ data class VocabularySourceDetailState(
     val transcriptionState: TranscriptionUiState = TranscriptionUiState.Idle,
     val ignoredDecisions: Map<VocabularySourceItemKey, Boolean> = emptyMap(),
 ) {
+
+    val canRetryAnalysis: Boolean
+        get() = analysisRetryToken != null && analysisRetryText == cleanText.trim()
 
     val isTranscribing: Boolean
         get() = transcriptionState is TranscriptionUiState.Uploading ||
@@ -420,6 +425,8 @@ class VocabularySourceDetailViewModel(
                         itemEditState = null,
                         hasNewAnalysisDraft = false,
                         hasStaleItems = false,
+                        analysisRetryToken = null,
+                        analysisRetryText = null,
                         isResetting = false,
                     )
                 }
@@ -478,6 +485,7 @@ class VocabularySourceDetailViewModel(
                     cleanText = cleanText,
                     sourceId = sourceId,
                     sourceTitle = currentState.analysisNotificationTitle(),
+                    analysisRetryToken = currentState.analysisRetryToken.takeIf { currentState.canRetryAnalysis },
                 )
                 val analysis = analysisResult.analysis
                 serverNotificationSent = analysisResult.serverNotificationSent
@@ -513,6 +521,8 @@ class VocabularySourceDetailViewModel(
                     isSaveConfirmed = false,
                     hasStaleItems = state.value.cleanText.trim() != cleanText,
                     hasNewAnalysisDraft = true,
+                    analysisRetryToken = null,
+                    analysisRetryText = null,
                 )
                 eventMessage.tryEmit(
                     EventMessage(
@@ -531,7 +541,15 @@ class VocabularySourceDetailViewModel(
                     "Vocabulary source analysis failed: sourceId=$sourceId\n" +
                         throwable.stackTraceToString()
                 )
-                editableState.value = state.value.copy(isAnalyzing = false)
+                val retryToken = when {
+                    state.value.cleanText.trim() != cleanText -> null
+                    throwable is com.kuts.domain.entities.VocabularyAnalysisRetryAvailableException -> throwable.retryToken
+                    throwable is com.kuts.domain.entities.VocabularyAnalysisRetryExpiredException -> null
+                    currentState.canRetryAnalysis -> currentState.analysisRetryToken
+                    else -> null
+                }
+                editableState.value = state.value.copy(isAnalyzing = false,
+                    analysisRetryToken = retryToken, analysisRetryText = cleanText.takeIf { retryToken != null })
                 eventMessage.tryEmit(
                     EventMessage(
                         resId = Res.string.vocabulary_source_analysis_failed,

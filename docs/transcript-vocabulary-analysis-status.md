@@ -4,6 +4,13 @@ Working status file for the `VocabularySource` feature.
 
 ## Current Focus
 
+- Global semantic reconciliation and retry are implemented using request-scoped
+  read-only AgentDriver data tools and in-memory checkpoints. Independent final
+  review and regression/build verification passed; no database cleanup/migration.
+- Real-provider smoke verification is blocked: `KLAF_CODEX_OWNER_HOME` is not
+  configured in this environment. The opt-in smoke test stopped before a model
+  request; fake-provider tests do not establish real-provider context capacity.
+
 - User reports completing Android cleanup and manual synchronization. Prepare
   the normal client update for installation over the existing app.
 - Mandatory test-first development is now recorded in root/server AGENTS.md.
@@ -28,6 +35,50 @@ Working status file for the `VocabularySource` feature.
 
 ## Completed
 
+- Global reconciliation receives the full transcript and every valid chunk item
+  in one model pass, without host-side grouping. The host validates complete,
+  unique source-item coverage and reconstructs all original occurrences.
+  Genuine different meanings remain independent by prompt instruction.
+- Failed reconciliation retains successful extraction in bounded server RAM
+  (30-minute TTL, until restart). Generic Retry analysis reuses extraction only
+  for the same authenticated account, source and exact text. Successful Clear
+  analysis removes client retry state. Failures preserve previous analysis.
+- Test-first verification: semantic merge/coverage, checkpoint binding/expiry/
+  capacity/concurrency, protocol token handling, repository retry mapping, and
+  ViewModel retry/text-change/reset tests failed for the missing behavior before
+  implementation and passed afterward. Valid RED logs are in the host TEMP
+  directory: `klaf-reconciliation-red.log`,
+  `klaf-reconciliation-retry-valid-red.log`,
+  `klaf-analysis-repository-red.log`, `klaf-reconciliation-retry-red.log`,
+  `klaf-no-premerge-red.log`, and `klaf-clear-retry-red.log`.
+- Focused RED/GREEN commands used `:klaf-server:test --tests
+  '*VocabularySourceReconciliationTest*'`, `:data:desktopTest --tests
+  '*VocabularyAnalysisRetryRepositoryTest*'`, `:klaf-server-contract:jvmTest
+  --tests '*VocabularyAnalysisRetryProtocolTest*'`, and
+  `:presentation:desktopTest --tests '*VocabularySourceDetailViewModelTest*'`.
+  RED runs used the pre-implementation behavior; tests failed on the expected
+  behavioral assertions. Compilation/setup failures were corrected and were
+  not counted as valid RED results.
+- Targeted GREEN command: `:klaf-server:test --tests '*VocabularySource*Test*'
+  --tests '*AccountCodexInstructionsTest*' :presentation:desktopTest
+  --tests '*VocabularySourceDetailViewModelTest*' --continue --console=plain`
+  passed after review fixes (`klaf-reconciliation-review-fixes-green.log`).
+  Earlier targeted contract/data/server/presentation suites also passed
+  (`klaf-reconciliation-targeted-green.log`). Independent code review rechecked
+  both fixes and reported no remaining actionable findings.
+- Independent final SDK JVM regressions passed: 424 tests, zero failures/errors/
+  skips. Independent Klaf regressions and Android debug unit/build checks passed
+  in 9m14s: domain 53, data 233, presentation 91, contract 15, Android 6, server
+  513 discovered (911 total), zero failures/errors. Three server tests skipped:
+  opt-in real-model data-tools smoke, Linux synthetic secret-service integration,
+  and opt-in manual desktop import smoke. Combined: 1,332 passed, 3 skipped.
+  `:Android:assembleDebug` passed; no phone/emulator installation, working database
+  access, remote publication or deployment was performed by verification.
+- Independent final Gradle command (live-model flag false):
+  `:domain:desktopTest :data:desktopTest :presentation:desktopTest
+  :klaf-server-contract:jvmTest :Android:testDebugUnitTest :Android:assembleDebug
+  :klaf-server:test --continue --console=plain`. APK:
+  `apps/Android/build/outputs/apk/debug/Android-debug.apk`.
 - Removed temporary startup cleanup, receipt/backup handlers, maintenance UI,
   temporary dependencies and maintenance-only tests after user confirmation.
   Permanent source review behavior and server submodule revision are unchanged;

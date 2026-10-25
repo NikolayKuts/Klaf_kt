@@ -90,6 +90,7 @@ data class VocabularySourceAnalyzeRequest(
     val cleanText: String,
     val sourceId: Int? = null,
     val sourceTitle: String? = null,
+    val analysisRetryToken: String? = null,
 ) : KlafServerClientMessage
 
 @Serializable
@@ -204,6 +205,7 @@ data class KlafServerErrorMessage(
     val requestId: String? = null,
     val code: KlafServerErrorCode,
     val message: String,
+    val analysisRetryToken: String? = null,
 ) : KlafServerMessage
 
 @Serializable

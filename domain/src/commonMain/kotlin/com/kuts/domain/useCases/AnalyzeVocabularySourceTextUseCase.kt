@@ -14,10 +14,18 @@ class AnalyzeVocabularySourceTextUseCase(
         cleanText: String,
         sourceId: Int? = null,
         sourceTitle: String? = null,
+        analysisRetryToken: String? = null,
     ): VocabularySourceAnalysisResult = withContext(
         context = coroutineContextProvider.io,
     ) {
-        vocabularySourceAnalysisRepository.analyze(
+        if (analysisRetryToken != null) {
+            vocabularySourceAnalysisRepository.retry(
+                cleanText = cleanText,
+                analysisRetryToken = analysisRetryToken,
+                sourceId = sourceId,
+                sourceTitle = sourceTitle,
+            )
+        } else vocabularySourceAnalysisRepository.analyze(
             cleanText = cleanText,
             sourceId = sourceId,
             sourceTitle = sourceTitle,

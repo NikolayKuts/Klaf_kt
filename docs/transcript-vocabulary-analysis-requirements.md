@@ -1,5 +1,29 @@
 # Transcript Vocabulary Analysis Requirements
 
+## Global Semantic Reconciliation (2026-10-25)
+
+- After chunk extraction, run one model reconciliation over the complete transcript
+  and all extracted items, without code-selected candidate groups or independent
+  reconciliation chunks. Merge equivalent vocabulary units/meanings including
+  inflections, discontinuous/expanded expressions and translation variants; keep
+  genuinely distinct senses and independent expressions separate.
+- Keep input in request-scoped server memory, not temporary files. Expose only
+  read-only data tools through AgentDriver dynamic tools; retain AccountScoped
+  isolation and disabled shell/browser/computer/plugins. Use a trusted developer
+  instruction profile dedicated to reconciliation.
+- Return the final canonical items, with source-item/occurrence references for
+  validation. Preserve every source item and original occurrence offset/timestamp;
+  reject unknown/missing/duplicated ownership rather than silently losing data.
+- On reconciliation failure retain completed extraction in bounded server memory.
+  The client offers a generic Retry analysis action; it retries only reconciliation
+  after explicit user action. Do not expose a partial result as completed analysis.
+- Retry identity is bound to the authenticated account, source and exact text.
+  Changed text, expired input or server restart requires full Analyze. Preserve
+  existing saved analysis on failure. No Room migration is required.
+- Log extraction success, reconciliation start/failure/retry and concrete failure
+  diagnostics with request correlation, without logging the full transcript or
+  sensitive tool data. Intermediate input survives neither restart nor expiry.
+
 ## Uncommitted-worktree Audit (2026-09-28)
 
 - Preserve edits made while Save is running; saving an older snapshot must not

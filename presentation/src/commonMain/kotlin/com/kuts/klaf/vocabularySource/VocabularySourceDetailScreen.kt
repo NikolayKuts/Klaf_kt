@@ -104,6 +104,7 @@ import com.kuts.klaf.presentation.resources.ic_target_24
 import com.kuts.klaf.presentation.resources.label_foreign_word
 import com.kuts.klaf.presentation.resources.label_native_word
 import com.kuts.klaf.presentation.resources.vocabulary_source_add_to_deck_action
+import com.kuts.klaf.presentation.resources.vocabulary_source_retry_analysis_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_analyze_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_analyzing_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_cancel_action
@@ -754,6 +755,8 @@ private fun VocabularySourceDetailContent(
                                 text = stringResource(
                                     resource = if (state.isAnalyzing) {
                                         Res.string.vocabulary_source_analyzing_action
+                                    } else if (state.canRetryAnalysis) {
+                                        Res.string.vocabulary_source_retry_analysis_action
                                     } else {
                                         Res.string.vocabulary_source_analyze_action
                                     },

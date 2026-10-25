@@ -1,5 +1,7 @@
 package com.kuts.klaf.networking.klafServer
 
+import com.kuts.domain.entities.VocabularyAnalysisRetryAvailableException
+import com.kuts.domain.entities.VocabularyAnalysisRetryExpiredException
 import com.kuts.domain.entities.CefrLevel
 import com.kuts.domain.entities.VocabularySourceAnalysis
 import com.kuts.domain.entities.VocabularySourceAnalysisItem
@@ -30,6 +32,20 @@ class KlafServerVocabularySourceAnalysisRepository(
         cleanText: String,
         sourceId: Int?,
         sourceTitle: String?,
+    ): VocabularySourceAnalysisResult = requestAnalysis(cleanText, sourceId, sourceTitle, null)
+
+    override suspend fun retry(
+        cleanText: String,
+        analysisRetryToken: String,
+        sourceId: Int?,
+        sourceTitle: String?,
+    ): VocabularySourceAnalysisResult = requestAnalysis(cleanText, sourceId, sourceTitle, analysisRetryToken)
+
+    private suspend fun requestAnalysis(
+        cleanText: String,
+        sourceId: Int?,
+        sourceTitle: String?,
+        analysisRetryToken: String?,
     ): VocabularySourceAnalysisResult {
         val text = cleanText.trim()
         require(text.isNotBlank()) { "Transcript text must not be blank." }
@@ -42,6 +58,7 @@ class KlafServerVocabularySourceAnalysisRepository(
                     cleanText = text,
                     sourceId = sourceId,
                     sourceTitle = sourceTitle,
+                    analysisRetryToken = analysisRetryToken,
                 ),
             )
         } catch (cancellation: CancellationException) {
@@ -71,6 +88,12 @@ class KlafServerVocabularySourceAnalysisRepository(
                     "Klaf Server vocabulary source analysis error: requestId=$requestId, " +
                         "code=${response.code}, message=${response.message}",
                 )
+                response.analysisRetryToken?.takeIf { it.isNotBlank() && it.length <= 128 }?.let {
+                    throw VocabularyAnalysisRetryAvailableException(it)
+                }
+                if (analysisRetryToken != null && response.code == com.kuts.klaf.server.contract.KlafServerErrorCode.VALIDATION_FAILED) {
+                    throw VocabularyAnalysisRetryExpiredException()
+                }
                 throw IllegalArgumentException(response.message)
             }
             else -> error("Unexpected Klaf Server response: ${response::class.simpleName}")

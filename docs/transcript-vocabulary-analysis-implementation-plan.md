@@ -2,6 +2,17 @@
 
 Ordered implementation plan for the `VocabularySource` feature.
 
+## Current: Global Reconciliation And Retry
+
+1. Test-first AgentDriver request-scoped read-only data tools, protocol forwarding,
+   Codex registration/response handling, isolation, cancellation and size limits.
+2. Test-first server global reconciliation, strict provenance validation, bounded
+   memory retention and authenticated text/source-bound retry.
+3. Test-first client retry contract and generic user action; preserve prior drafts.
+4. Publish SDK to Maven Local for integration, update the dependency, run affected
+   tests/builds and isolated real-provider smoke checks. Do not push/deploy.
+5. Independent final review and independent test/build verification.
+
 ## 1. Domain Model And Contracts
 
 - Add domain entities for `VocabularySource`, `VocabularySourceItem`, item status,

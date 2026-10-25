@@ -302,6 +302,7 @@
         <string name="the_deck_has_been_removed">The deck has been removed</string>
         <string name="type_deck_name">Type a new name</string>
         <string name="vocabulary_source_add_to_deck_action">Add to deck</string>
+        <string name="vocabulary_source_retry_analysis_action">Retry analysis</string>
         <string name="vocabulary_source_analyze_action">Analyze</string>
         <string name="vocabulary_source_analyzing_action">Analyzing</string>
         <string name="vocabulary_source_analysis_failed">Vocabulary source analysis failed</string>

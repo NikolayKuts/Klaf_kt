@@ -148,6 +148,66 @@ private object DetailTestSpeech : ITextToSpeechManager {
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class VocabularySourceDetailViewModelTest {
+    @Test
+    fun clearAnalysisDropsRetryCheckpointAndNextAnalyzeStartsFresh() = runTest {
+        var fullCalls = 0
+        val analysis = object : IVocabularySourceAnalysisRepository {
+            override suspend fun analyze(cleanText: String, sourceId: Int?, sourceTitle: String?): VocabularySourceAnalysisResult {
+                fullCalls++
+                throw VocabularyAnalysisRetryAvailableException("old-checkpoint")
+            }
+            override suspend fun retry(cleanText: String, analysisRetryToken: String, sourceId: Int?, sourceTitle: String?) =
+                error("Clear analysis must discard the old retry checkpoint")
+        }
+        withViewModel(analysis = analysis) { viewModel, _ ->
+            viewModel.onRawTextChanged("A science project.")
+            viewModel.analyze()
+            advanceUntilIdle()
+            assertTrue(viewModel.state.value.canRetryAnalysis)
+            viewModel.resetAnalysis()
+            advanceUntilIdle()
+            assertEquals(false, viewModel.state.value.canRetryAnalysis)
+            viewModel.analyze()
+            advanceUntilIdle()
+            assertEquals(2, fullCalls)
+        }
+    }
+    @Test
+    fun retryActionReusesServerAnalysisAndTextEditsStartFreshAnalysis() = runTest {
+        var fullCalls = 0
+        var retryCalls = 0
+        val analysis = object : IVocabularySourceAnalysisRepository {
+            override suspend fun analyze(cleanText: String, sourceId: Int?, sourceTitle: String?): VocabularySourceAnalysisResult {
+                fullCalls++
+                throw VocabularyAnalysisRetryAvailableException("retry-token")
+            }
+            override suspend fun retry(
+                cleanText: String,
+                analysisRetryToken: String,
+                sourceId: Int?,
+                sourceTitle: String?,
+            ): VocabularySourceAnalysisResult {
+                retryCalls++
+                assertEquals("retry-token", analysisRetryToken)
+                return VocabularySourceAnalysisResult(VocabularySourceAnalysis("en", emptyList()))
+            }
+        }
+        withViewModel(analysis = analysis) { viewModel, sources ->
+            viewModel.onRawTextChanged("A science project.")
+            viewModel.analyze()
+            advanceUntilIdle()
+            viewModel.analyze()
+            advanceUntilIdle()
+            assertEquals(1, fullCalls)
+            assertEquals(1, retryCalls)
+            assertTrue(viewModel.state.value.hasNewAnalysisDraft)
+            assertTrue(sources.items.value.isEmpty())
+            viewModel.onRawTextChanged("A different project.")
+            viewModel.analyze()
+            advanceUntilIdle()
+            assertEquals(2, fullCalls)
+        }
+    }
 
     @Test
     fun cardChangesRefreshCandidatesWithoutReanalysisOrLosingSourceEdits() = runTest {
