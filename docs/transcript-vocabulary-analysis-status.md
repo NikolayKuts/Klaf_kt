@@ -4,19 +4,37 @@ Working status file for the `VocabularySource` feature.
 
 ## Current Focus
 
+- Implemented agreed whole-text completeness policy for standalone content words
+  and an opt-in six-word coverage evaluation. Independent offline tests/build and
+  review passed. The old real report fails all six controls as expected; a fresh
+  real-model GREEN requires remote deployment. No new model run claimed yet.
+- Simplified comparison: local opt-in authenticated Desktop test collects both
+  remote Analyze responses. Operator only changes the remote mode/restarts;
+  transcript/result transfers and remote paths are optional standalone fallback.
+  Independent offline verification passed (23 passed, 1 remote opt-in skipped).
+  First attempt failed during authenticated connection setup with account HTTP
+  502 (`HTTP_ERROR`). After operator startup, the 2026-10-26 real chunked run
+  succeeded: 379 items, 490 occurrences, 1,149.5 seconds request time.
+  A declared whole-text attempt was stopped after operator observed chunk1/11
+  and chunk2/11: the serving process was still chunked. After correcting the
+  remote environment setting, a valid whole-text run completed: 162 items,
+  272 occurrences, 374.8 seconds. Operator confirmed the whole-text start log.
+  Comparison is complete for this transcript: 3.07x faster, but a much narrower
+  final vocabulary selection. Default remains chunked; no automatic mode change.
+  The protocol still does not advertise effective mode before Analyze.
 - Server-only chunked/whole-text comparison, opt-in JSON reports and standalone
   file-input startup are implemented. Independent code review has no remaining
   findings; independent post-fix test/build verification passed.
-  Real remote-provider comparison remains pending user runs.
+  Initial real remote comparison is complete; revised-policy evaluation pending.
   Source snapshot verified at `C:/Users/kutsn/.codex/experiments/klaf-vocabulary-comparison-2026-10-25`:
   14,189 text characters, 382 items, 463 occurrences. Phone is no longer required.
 
 - Global semantic reconciliation and retry are implemented using request-scoped
   read-only AgentDriver data tools and in-memory checkpoints. Independent final
   review and regression/build verification passed; no database cleanup/migration.
-- Real-provider smoke verification is blocked: `KLAF_CODEX_OWNER_HOME` is not
-  configured in this environment. The opt-in smoke test stopped before a model
-  request; fake-provider tests do not establish real-provider context capacity.
+- Local direct-owner smoke remains unavailable because `KLAF_CODEX_OWNER_HOME`
+  is not configured. Remote authenticated tests above verified the 14,189-character
+  input; larger-input/provider capacity is not established by those samples.
 
 - User reports completing Android cleanup and manual synchronization. Prepare
   the normal client update for installation over the existing app.
@@ -42,6 +60,97 @@ Working status file for the `VocabularySource` feature.
 
 ## Completed
 
+- Whole-text standalone coverage policy now explicitly requires all independently
+  meaningful content-word senses, including basic/frequent vocabulary, independent
+  words inside compositional phrases, and full transcript coverage. It states
+  explicit grammatical/name/noise/opaque-idiom exceptions and contains no corpus-
+  specific target words. Chunked instructions, SDK, schema and default unchanged.
+- TDD evaluator RED/GREEN: `:di:desktopTest --tests
+  '*StandaloneVocabularyCoverageTest*' --rerun --console=plain` failed expected
+  missing evaluator behavior (2 failures), then passed after implementation.
+  Logs `klaf-standalone-coverage-evaluator-{red,green}.log` in host TEMP.
+  Before instruction changes, `:di:desktopTest --tests
+  '*StandaloneVocabularyCoverageTest.evaluateRecordedRealResponseForStandaloneWordCoverage'
+  --rerun --console=plain`, with `KLAF_VOCABULARY_COVERAGE_REPORT` set to the
+  preserved real whole-text report, failed all six real controls. This was a
+  replay evaluation, not another provider call (`klaf-standalone-real-baseline-red.log`).
+- Review regression RED/GREEN: the focused punctuation and wrong-POS tests failed
+  before the evaluator fix (`klaf-standalone-review-red.log`) and full DI passed
+  afterward (`klaf-standalone-review-green.log`). Recorded baseline was rechecked
+  after normalization: still expected RED all six (`klaf-standalone-real-baseline-recheck-red.log`).
+  Evaluation tolerates boundary punctuation/whitespace, rejects larger phrases,
+  and reports wrong POS distinctly. Semantic meaning accuracy remains manual.
+- Independent final verification: DI31 discovered (29 passed,2 opt-in skips),
+  server102 discovered (101 passed,1 live smoke skip), zero failures/errors;
+  server assembly passed. Final review has no remaining findings. Logs
+  `klaf-standalone-policy-independent-final.log` and
+  `klaf-standalone-policy-independent-review-fix.log`. Full DI was actually rerun;
+  server filters covered vocabulary, config, profiles, account runtime and routing.
+  The semantic acceptance of the revised model is still pending the next remote
+  request; offline GREEN is not proof of NLP completeness.
+- Contextual follow-up audit of the full transcript and both item inventories:
+  whole-text retains advanced idioms/constructions (`jump through hoops`,
+  `from the ground up`, `have a problem licked`, `hold office`, `go to the dogs`)
+  and contextual senses (`set` for the sun, `count` as matter). A smaller list
+  alone does not establish worse learning value; many differences are basic
+  literal words, sound/music annotations or equivalent dictionary forms.
+  Useful whole-text gaps remain: `button` meaning campaign badge, `tell` meaning
+  discern, `get something done`, indirect request `I don't suppose...`, and
+  intentional `mean to`. Both outputs omit transport sense of `take` in
+  `take me to the park` (both retain `take sides`). Recommendation, not yet
+  implemented: refine whole-text selection for contextual senses/constructions
+  and rerun semantic control examples; do not target the chunked item count.
+  Whole-text input contains no learner vocabulary/level, so selection is not
+  personalized knowledge filtering. Private comparison report updated.
+- 2026-10-26 valid real whole-text request passed after remote environment fix:
+  same 14,189-character transcript/hash, 162 items, 272 unique occurrence spans,
+  374.8 seconds request time (Gradle6m25s). User confirmed
+  `Vocabulary whole-text extraction started` and no sanitizer-change log.
+  Report `remote-whole-text-4a038759-3ca8-4f15-99d7-83532eeab538.json` is in the
+  same private local results directory as the chunked report. Log:
+  `klaf-remote-vocabulary-whole-text-retry-20261026.log`. No Room/Save/sync changes.
+- Real comparison: whole-text is3.07x faster but returns162 vs379 items and272
+  vs490 occurrences. It lacks final units such as `What do you mean?`, `get off`
+  and `on the way`; other differences are canonical naming variants. It also
+  finds useful units missing from chunked (`cooperation`, `deliver`, `weed`).
+  For142 normalized forms shared by both, whole-text has250 vs191 occurrences;
+  `science project` has all3 literal mentions vs2 in chunked. Occurrences span
+  all text quarters, so this is not simply an output cut off near the beginning.
+  Neither output is ground truth. Current one-pass instructions are not equivalent
+  in extraction scope; retain normal chunked behavior pending completeness work.
+  Private detailed report/metrics saved beside the fixture as `comparison.md` and
+  `comparison-metrics.json`; no private transcript/result was committed.
+- 2026-10-26 declared whole-text attempt was invalidated by operator-observed
+  chunk logs. Local test worker41164 was stopped intentionally after3m11s, not a
+  spontaneous build/runtime failure; server stop was requested to cancel its work.
+  Log `klaf-remote-vocabulary-whole-text-live-20261026.log`. No whole-text report
+  collected; the first successful chunked report is preserved. Investigation of
+  effective remote environment configuration is pending.
+- 2026-10-26 real remote chunked collection passed via the existing Desktop login:
+  14,189-character input SHA-256 matched the preserved source; 379 items and 490
+  occurrences (490 unique spans), all structural client checks passed. Operator
+  confirmed server chunk processing (9/11 during the run); protocol itself does
+  not echo mode. Client request took 1,149.5 seconds; Gradle run 19m23s. Report:
+  `C:/Users/kutsn/.codex/experiments/klaf-vocabulary-comparison-2026-10-25/remote-results/remote-chunked-26d8586b-7f9e-4a7a-ab00-5c5396f0a1dd.json`.
+  Command `:di:desktopTest --tests
+  '*RemoteVocabularyComparisonTest.collectRemoteAnalysisUsingExistingDesktopLogin'
+  --rerun --console=plain`, opt-in true, declared mode chunked; log
+  `klaf-remote-vocabulary-chunked-live-20261026.log`. No Room/Save/sync changes.
+  Semantic quality comparison remains pending the whole-text sample.
+- Added opt-in local `RemoteVocabularyComparisonTest` using the standard Desktop
+  protected-session signer and existing selected account; it does not open Room,
+  save items or synchronize. Diagnostic recorder RED failed before implementation
+  (`klaf-remote-vocabulary-report-red.log`); GREEN and independent actual rerun
+  `:di:desktopTest --rerun --console=plain` passed 23 tests with one remote skip
+  (`klaf-remote-vocabulary-report-green.log`,
+  `klaf-remote-vocabulary-independent-final.log`). Independent review has no
+  remaining findings. Invalid/empty/error responses are retained before assertions;
+  tokens are excluded. Test-only JSON dependency added to DI desktop tests.
+- Real opt-in command used `:di:desktopTest --tests
+  '*RemoteVocabularyComparisonTest.collectRemoteAnalysisUsingExistingDesktopLogin'
+  --rerun --console=plain` with local fixture paths and declared chunked mode.
+  It failed HTTP 502 in account authorization setup (9s), not in model extraction;
+  log `klaf-remote-vocabulary-chunked-live.log`. No remote quality result is claimed.
 - Comparison experiment TDD: tests were written before behavior. Minimal API
   scaffolding allowed executable RED assertions: mode parsing/whole-text routing/
   exports failed (3/4) in `klaf-vocabulary-experiment-red.log`; file-input startup

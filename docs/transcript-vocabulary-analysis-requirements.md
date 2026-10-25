@@ -1,7 +1,34 @@
 # Transcript Vocabulary Analysis Requirements
 
+## Whole-Text Standalone Vocabulary Coverage (2026-10-26)
+
+- Whole-text must comprehensively extract independently meaningful content words
+  (nouns, lexical verbs, adjectives, adverbs), including basic/frequent words and
+  their contextual senses. It must not silently produce only an advanced shortlist
+  or assume which words the learner already knows.
+- Preserve different senses of the same lemma. Extract independent lexical senses
+  even when a larger phrase in that sentence is also returned. Do not fabricate
+  literal senses of words used only as parts of an opaque idiom.
+- Function/auxiliary-only uses, proper names without independent lexical content
+  and unrecoverable transcription fragments are explicit exceptions. Existing
+  phrase/idiom extraction, deduplication and occurrence provenance remain required.
+- Evaluate standalone coverage separately from phrase-boundary choices. Six
+  contextual controls in the preserved source: campaign `button`, discerning
+  `tell`, `constantly`, `leader`, `exercise`, and transport `take`. These controls
+  belong to evaluation only, not corpus-specific production prompt rules.
+- Source-position coverage is an automated guard, not a proof of correct meaning
+  or exhaustive recall. Real-model validation follows server deployment; preserve
+  previous reports and compare semantic content, not a target item count.
+
 ## Server Comparison Experiment (2026-10-25)
 
+- Automate remote requests and result collection from a local desktop test using
+  the existing authenticated client session and saved transcript. The operator
+  only switches the remote mode/restarts the server between runs; no manual
+  transcript transfer, result transfer or remote file paths are required.
+- The file-input server route is an optional standalone alternative, not required
+  for the normal comparison workflow. Local comparison must not save/sync items
+  or modify Cards, Decks or Vocabulary Sources.
 - Add a server-only environment switch between the existing `chunked` flow
   (default) and experimental `whole-text` extraction through one read-only tool.
   No AgentDriver or client changes. Whole-text has no extraction chunks or

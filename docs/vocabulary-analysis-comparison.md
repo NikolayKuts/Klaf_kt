@@ -4,6 +4,63 @@ This temporary server experiment compares the existing chunk extraction plus
 global reconciliation with whole-text extraction through a read-only data tool.
 AgentDriver and the client application are unchanged.
 
+## Preferred workflow: local authenticated desktop test
+
+The operator does not need to copy input/results or configure remote paths.
+Start the remote server normally with `KLAF_VOCABULARY_ANALYSIS_MODE=chunked`.
+Do not set `KLAF_VOCABULARY_ANALYSIS_INPUT_FILE` or the remote report directory.
+The agent runs `RemoteVocabularyComparisonTest` locally, using the preserved
+transcript, existing Desktop selected account and standard protected-session/DPoP
+request signer. It requests Analyze and saves the complete response locally,
+without opening Room, saving items or synchronizing data.
+
+Then change only the remote mode to `whole-text` and restart the server. The agent
+collects the second response with the same test and compares the local reports.
+The normal server protocol does not echo its configured mode, so local reports
+explicitly record `operatorDeclaredMode` and `serverModeVerified=false`; server
+Run Configuration/log confirmation is required to identify the two samples.
+
+The local test is opt-in; all paths below are set by the agent on this computer,
+not by the operator on the remote server:
+
+```text
+KLAF_VOCABULARY_REMOTE_COMPARISON=true
+KLAF_VOCABULARY_COMPARISON_MODE=chunked
+KLAF_VOCABULARY_COMPARISON_INPUT=<local saved transcript.txt>
+KLAF_VOCABULARY_COMPARISON_OUTPUT=<local experiment results directory>
+```
+
+Run `:di:desktopTest --tests '*RemoteVocabularyComparisonTest*'`. The test uses a
+real model and is skipped during ordinary offline tests. The existing Desktop
+login must be valid; credentials are never test arguments or output fields.
+
+## Standalone-word acceptance follow-up
+
+The revised whole-text developer profile requires comprehensive independent
+content-word coverage, with explicit function-word/name/noise/opaque-idiom
+exceptions. No exact corpus words are embedded in the production instruction.
+
+For the next real run, the agent additionally sets the local test flag
+`KLAF_VOCABULARY_COMPARISON_REQUIRE_STANDALONE=true`. This activates six contextual
+controls in the preserved transcript: campaign `button`, discerning `tell`,
+`constantly`, `leader`, `exercise`, and transport `take`. The test preflights the
+source contexts before making a request. Reports retain coverage failures before
+assertions, so an unsuccessful evaluation does not discard the model's response.
+
+Controls require independent word occurrences (allowing boundary punctuation and
+whitespace) and lexical POS. Larger phrases/example mentions do not substitute
+for those occurrences; wrong POS is reported as metadata disagreement. This is a
+small coverage guard, not proof of exhaustive recall or correct Russian meanings.
+Meaning and the remaining vocabulary require contextual review.
+
+Recorded reports can be evaluated without a provider call using
+`KLAF_VOCABULARY_COVERAGE_REPORT=<local report.json>` and
+`:di:desktopTest --tests '*StandaloneVocabularyCoverageTest.evaluateRecordedRealResponseForStandaloneWordCoverage' --rerun`.
+The old162-item whole-text report was evaluated before changing instructions and
+failed all six controls. This intentional baseline RED must not be confused with
+an infrastructure regression. Ordinary offline tests leave both opt-ins unset.
+The revised policy still needs its fresh real-model acceptance run after deployment.
+
 ## Preserved input
 
 The Android source was read with SQLite `-readonly` through ADB. No application
@@ -19,7 +76,7 @@ data was modified. Its local, untracked copy is outside the repository:
 Input SHA-256: `8b096fa1b9b4f41c1cd221ef950b4f6ad9c543db018ede4b5b1849b56f8d8460`.
 The phone is no longer needed. Do not add this private fixture to Git.
 
-## Run Configuration on the remote server
+## Optional standalone alternative: file on the remote server
 
 Copy `transcript.txt` to the server using the available file transfer method.
 Use the existing Klaf Server Run Configuration (`com.kuts.klaf.server.MainKt`),
@@ -76,5 +133,26 @@ Remove `KLAF_VOCABULARY_ANALYSIS_REPORT_DIR` to disable diagnostic exports.
 Leaving only the mode/report flags applies them to ordinary Analyze requests.
 Invalid mode values fail startup instead of silently selecting a different mode.
 
-The implementation can be verified offline with fake generators, but real-model
-comparison requires the two remote runs. No real comparison is claimed yet.
+## Recorded real comparison (2026-10-26)
+
+Both real remote runs completed on the same 14,189-character transcript and input
+hash. The operator confirmed chunk logs and the whole-text start log respectively;
+one incorrectly configured intermediate attempt was stopped and excluded.
+
+| Metric | Chunked + reconciliation | Whole-text |
+|---|---:|---:|
+| Client request seconds | 1,149.5 | 374.8 |
+| Items | 379 | 162 |
+| Occurrences / unique spans | 490 / 490 | 272 / 272 |
+
+Whole-text was3.07x faster but selected fewer units, including omissions such as
+`What do you mean?`, `get off` and `on the way`. It also found units absent from
+chunked and more occurrences for shared forms: `science project`3 vs2 (the input
+has3 literal mentions). For142 normalized forms shared by both, it returned250
+occurrences vs191. The lower item count cannot be interpreted as just better
+deduplication. The operator reported no sanitizer-change log for whole-text.
+
+This single-transcript comparison does not establish ground-truth recall or
+general performance. Keep the ordinary chunked default until the intended
+whole-text extraction scope/completeness is addressed. Full private metrics and
+contextual findings are saved beside the local fixture, outside Git.

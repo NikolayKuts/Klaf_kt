@@ -72,6 +72,7 @@ kotlin {
             dependencies {
                 implementation(libs.tests.kotlin)
                 implementation(libs.room.runtime)
+                implementation(libs.kotlin.serilization)
             }
         }
         val androidMain by getting {

@@ -4,9 +4,17 @@ Ordered implementation plan for the `VocabularySource` feature.
 
 ## Current: Global Reconciliation And Retry
 
+Current follow-up: add standalone lexical coverage controls test-first, confirm
+the recorded real whole-text response fails them, update only the whole-text
+developer instruction, verify offline wiring/regressions, then evaluate the new
+real response after the operator updates the remote server. Do not claim model
+behavior GREEN from fake-provider or instruction-string assertions.
+
 Follow-up experiment: test-first server environment mode selection, whole-text
 extraction and separate opt-in result reports; document Run Configuration values.
 Keep normal chunked operation as default and verify independently before delivery.
+Use local authenticated Desktop collection as the primary remote workflow; the
+operator only switches remote mode and restarts. File transfer is optional.
 
 1. Test-first AgentDriver request-scoped read-only data tools, protocol forwarding,
    Codex registration/response handling, isolation, cancellation and size limits.
