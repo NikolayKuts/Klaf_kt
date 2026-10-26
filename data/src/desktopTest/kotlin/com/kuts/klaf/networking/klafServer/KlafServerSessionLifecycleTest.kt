@@ -57,6 +57,28 @@ private suspend fun withSessionServer(
 }
 
 class KlafServerSessionLifecycleTest {
+    @Test
+    fun transportFailureReplaysPendingRequestAfterReconnect() = runBlocking {
+        val connections = AtomicInteger()
+        withSessionServer(handler = {
+            val connection = connections.incrementAndGet()
+            send(sessionTestJson.encodeToString<KlafServerMessage>(KlafServerReadyMessage()))
+            val frame = incoming.receive() as Frame.Text
+            val request = sessionTestJson.decodeFromString<KlafServerClientMessage>(frame.readText())
+            if (connection == 1) throw java.io.IOException("Ping timeout")
+            send(sessionTestJson.encodeToString<KlafServerMessage>(WordInsightsGeneratedMessage(
+                request.requestId, WordMeaningInsightsDto("word", "en", emptyList()),
+            )))
+            awaitCancellation()
+        }) { session ->
+            session.connect()
+            val requestId = session.nextRequestId("heartbeat-recovery")
+            val response = withTimeout(10_000) { session.request(WordInsightsGenerateRequest(requestId, "word")) }
+            assertEquals(requestId, (response as WordInsightsGeneratedMessage).requestId)
+            assertEquals(2, connections.get())
+        }
+    }
+
 
     @Test
     fun offlineLogoutRotatesSessionWithoutConnecting() = runBlocking {

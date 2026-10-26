@@ -4,6 +4,30 @@ Working status file for the `VocabularySource` feature.
 
 ## Current Focus
 
+- Follow-up decode failure and heartbeat investigation: notifications committed
+  as server `2f5e5d2` and client `b4a840d5`. Actual remote offending field is
+  unknown because previous diagnostics omit JSON paths. Reproduced metadata
+  null/enum formatting failures locally and missing field diagnostics: 3 expected
+  RED failures with `:klaf-server:test --tests '*VocabularyPayloadDecodingTest'
+  --console=plain` (`%TEMP%/klaf-vocabulary-decoding-red.log`). Add conservative
+  metadata normalization without changing lexical values or dropping items.
+  Initial parser GREEN passed 31 server checks (one malformed test fixture was
+  corrected before GREEN). Added strict-type/privacy edge coverage afterward;
+  independent final review and broader verification passed. Main log:
+  `%TEMP%/klaf-vocabulary-decoding-green.log`.
+  Heartbeat recovery characterization passed: 7 client lifecycle tests and 13
+  server registry tests (`%TEMP%/klaf-ping-recovery-characterization.log` and
+  `%TEMP%/klaf-ping-registry-characterization.log`). The first registry assertion
+  omitted its owner session, was corrected, then passed without production network
+  changes. 592 seconds is connection age, not an Analyze timeout. No remote model
+  calls or working database changes. Exact remote JSON payload and real phone
+  heartbeat event remain unavailable; fixes cover reproduced metadata failures.
+  Independent final verification: 57 tests, no failures/errors/skips (50 server,
+  7 client lifecycle explicitly rerun), server compilation/assembly passed.
+  Logs `%TEMP%/klaf-vocabulary-decode-independent-final.log` (40s) and
+  `%TEMP%/klaf-vocabulary-decode-client-independent-rerun.log` (20s). Both diff
+  checks passed. Notifications remain in separate earlier commits.
+
 - Analyze failure notifications: implemented disconnected/delivery-failure Firebase
   alerts, Android failure-push handling and confirmed-delivery propagation through
   retryable/generic errors to suppress duplicate local alerts. Red error icon,

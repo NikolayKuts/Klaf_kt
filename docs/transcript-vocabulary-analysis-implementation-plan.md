@@ -2,6 +2,16 @@
 
 Ordered implementation plan for the `VocabularySource` feature.
 
+## Current: Response Decoding And Disconnect Investigation
+
+1. Done: commit notification changes separately (server `2f5e5d2`, client `b4a840d5`).
+2. Done: reproduce metadata decoding failures and missing safe field diagnostics
+   before implementation; normalize only metadata in all three analysis stages.
+3. Done: verify that simulated I/O disconnect reconnects/replays and server work
+   survives socket-waiter cancellation. No production timer changes justified.
+4. Done: final independent review and 57 tests/build passed.
+   Exact remote failure requires the new field/index diagnostics if it repeats.
+
 ## Current: Analyze Failure Notifications
 
 1. Done: preserve confirmed push delivery in error responses and client exceptions.

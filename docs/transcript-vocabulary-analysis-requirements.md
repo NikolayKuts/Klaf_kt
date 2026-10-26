@@ -318,6 +318,18 @@ in the retained error response to suppress duplicate local notifications after
 reconnection, including retryable failures. Cancellation is not an error alert.
 Use a generic user-facing failure message; keep exception details in server logs.
 
+Vocabulary response decoding must tolerate missing-quality metadata without
+discarding lexical items: normalize enum case/whitespace, represent null or
+unrecognized part-of-speech labels as UNKNOWN, unrecognized confidence as LOW,
+and unavailable CEFR as null. Null IPA/timestamps mean unavailable text. Keep
+word, meaning, examples and occurrence provenance intact; malformed core fields
+still fail rather than being invented. Apply the same rules to chunk extraction,
+whole-text extraction and reconciliation. Failure logs should identify JSON
+field/item index without logging response snippets or arbitrary field values.
+
+An ordinary WebSocket I/O/heartbeat disconnect must not cancel a running server
+analysis. After reconnect, replay the same request and reuse its retained result.
+
 Keep the complete item review toolbar (`Total`, `Ignored`, `Selected`, `Select All` /
 `Clear Selection`, `Ignore`, `Restore`, and `Add to Deck`) pinned to the top of
 the list viewport while scrolling review items. It belongs to the review list
