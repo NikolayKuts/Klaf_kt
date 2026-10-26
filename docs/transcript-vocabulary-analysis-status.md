@@ -4,6 +4,13 @@ Working status file for the `VocabularySource` feature.
 
 ## Current Focus
 
+- Revised-policy live validation is still pending: first real attempt failed with
+  operator-reported provider `serverOverloaded`; one unchanged retry failed after
+  902.5 seconds with operator-confirmed `RequestTimeout`. No analysis was returned
+  in either attempt, so no standalone controls were evaluated. Bounded server
+  text-timeout override(default15min, next experiment30min) is implemented;
+  independent review/test verification passed. Await remote update and full
+  process restart with the explicit30min override before another real run.
 - Implemented agreed whole-text completeness policy for standalone content words
   and an opt-in six-word coverage evaluation. Independent offline tests/build and
   review passed. The old real report fails all six controls as expected; a fresh
@@ -60,6 +67,28 @@ Working status file for the `VocabularySource` feature.
 
 ## Completed
 
+- New-policy live attempt reports preserved: first provider overload after293.4s
+  (`remote-whole-text-b2e66e7b-c4a7-4896-8911-dc7a5123d762.json`), then confirmed
+  timeout after902.5s (`remote-whole-text-915d7fa3-f978-4bfb-83d8-865fe7c57829.json`).
+  Logs `klaf-remote-vocabulary-standalone-live-20261026.log` and
+  `klaf-remote-vocabulary-standalone-retry1-live-20261026.log`. SDK code confirms
+  provider failures trigger a best-effort `turn/interrupt`, so the operator's
+  additional JSON-RPC-32600 interrupt error may be cleanup fallout, not the root
+  provider failure. No automatic/unbounded retry or model-quality claim.
+- Configurable account-runtime one-shot text deadline added test-first. Command
+  `:klaf-server:test --tests '*KlafServerConfigTest*TextTimeout*' --console=plain`
+  RED:3tests,2expected failures for ignored override/invalid values; then
+  `:klaf-server:test --tests '*KlafServerConfigTest*' --tests
+  '*ManagedAccountCodexRuntimeFactoryTest*' --tests '*AccountCodexRuntimePoolTest*'
+  :klaf-server:assemble --continue --console=plain` GREEN36s. Logs
+  `klaf-text-timeout-config-{red,green}.log`. Default15minutes retained; explicit
+  env override1..60validated in config/direct constructor and wired to SDK total.
+  Effective numeric deadline is logged on factory construction. Independent final
+  review has no findings; scoped server105 discovered,104 passed,1 live smoke
+  skipped, zero failures/errors; server assembly passed52s. Exact filters covered
+  config/factory/pool/profiles/vocabulary/controlled routing; log
+  `klaf-text-timeout-independent-final.log`. The actual30-minute-budget model run
+  still requires deployment; no model-completeness improvement is claimed yet.
 - Whole-text standalone coverage policy now explicitly requires all independently
   meaningful content-word senses, including basic/frequent vocabulary, independent
   words inside compositional phrases, and full transcript coverage. It states

@@ -9,6 +9,9 @@ the recorded real whole-text response fails them, update only the whole-text
 developer instruction, verify offline wiring/regressions, then evaluate the new
 real response after the operator updates the remote server. Do not claim model
 behavior GREEN from fake-provider or instruction-string assertions.
+The first revised-policy attempts returned no analysis (provider overload, then
+confirmed15min timeout). A bounded server text-timeout override is implemented
+and independently verified; next controlled run uses30min after deployment.
 
 Follow-up experiment: test-first server environment mode selection, whole-text
 extraction and separate opt-in result reports; document Run Configuration values.

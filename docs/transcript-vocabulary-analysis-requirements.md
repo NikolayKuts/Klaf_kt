@@ -2,6 +2,11 @@
 
 ## Whole-Text Standalone Vocabulary Coverage (2026-10-26)
 
+- Make the server's account-runtime one-shot text timeout explicitly configurable
+  through `KLAF_CODEX_TEXT_TIMEOUT_MINUTES`, bounded to1..60 minutes, default15.
+  This applies to text-generation calls, not only vocabulary, and does not change
+  extraction instructions or retry policy. Use30 for the next controlled run
+  after a confirmed15-minute timeout; quality still requires a completed result.
 - Whole-text must comprehensively extract independently meaningful content words
   (nouns, lexical verbs, adjectives, adverbs), including basic/frequent words and
   their contextual senses. It must not silently produce only an advanced shortlist

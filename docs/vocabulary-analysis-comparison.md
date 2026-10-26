@@ -36,6 +36,28 @@ login must be valid; credentials are never test arguments or output fields.
 
 ## Standalone-word acceptance follow-up
 
+The first revised-policy attempt failed with operator-reported
+`serverOverloaded` after293.4s. One unchanged retry failed after902.5s with
+operator-confirmed `RequestTimeout`; the configured one-shot total was15min.
+Neither returned an analysis, so no coverage acceptance was evaluated.
+
+For the next controlled run, update the server and use these remote Environment
+variables (the normal default remains15min if the timeout override is absent):
+
+```text
+KLAF_VOCABULARY_ANALYSIS_MODE=whole-text
+KLAF_CODEX_TEXT_TIMEOUT_MINUTES=30
+```
+
+Fully restart the server process. Its startup log should include
+`Codex text generation timeout configured: 30 minute(s)` before requesting the
+next sample. The timeout is a server account-runtime setting for **all one-shot
+text generation calls**, not just vocabulary. It accepts integer1..60 minutes;
+invalid explicit settings fail configuration. Image/audio policies and streaming
+settings are unchanged. Remove the timeout variable to restore the15min default.
+This extends the wait budget; it does not fix provider overload, prove adequate
+output capacity, guarantee completion, or establish vocabulary coverage.
+
 The revised whole-text developer profile requires comprehensive independent
 content-word coverage, with explicit function-word/name/noise/opaque-idiom
 exceptions. No exact corpus words are embedded in the production instruction.
