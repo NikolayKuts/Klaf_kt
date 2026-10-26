@@ -149,6 +149,53 @@ private object DetailTestSpeech : ITextToSpeechManager {
 @OptIn(ExperimentalCoroutinesApi::class)
 class VocabularySourceDetailViewModelTest {
     @Test
+    fun successPushMustNotSuppressLaterLocalProcessingFailure() = runTest {
+        var completion: Pair<VocabularySourceAnalysisOutcome, Boolean>? = null
+        val background = object : IVocabularySourceAnalysisBackgroundManager {
+            override fun startAnalysis(sourceId: Int, sourceTitle: String) = VocabularySourceAnalysisHandle { outcome, pushed ->
+                completion = outcome to pushed
+            }
+        }
+        val analysis = object : IVocabularySourceAnalysisRepository {
+            override suspend fun analyze(cleanText: String, sourceId: Int?, sourceTitle: String?) =
+                VocabularySourceAnalysisResult(VocabularySourceAnalysis("en", emptyList()), true)
+        }
+        val cards = object : ICardRepository by DetailTestCards {
+            override suspend fun fetchAllCards(): List<Card> = error("Synthetic local processing failure")
+        }
+        withViewModel(analysis = analysis, cards = cards, analysisBackground = background) { viewModel, _ ->
+            viewModel.onRawTextChanged("A science project.")
+            viewModel.analyze()
+            advanceUntilIdle()
+            assertEquals(VocabularySourceAnalysisOutcome.Failed to false, completion)
+        }
+    }
+
+    @Test
+    fun failedAnalysisPassesPushDeliveryToBackgroundManagerIncludingRetryErrors() = runTest {
+        for (sent in listOf(false, true)) {
+            var completion: Pair<VocabularySourceAnalysisOutcome, Boolean>? = null
+            val background = object : IVocabularySourceAnalysisBackgroundManager {
+                override fun startAnalysis(sourceId: Int, sourceTitle: String) = VocabularySourceAnalysisHandle { outcome, pushed ->
+                    completion = outcome to pushed
+                }
+            }
+            val analysis = object : IVocabularySourceAnalysisRepository {
+                override suspend fun analyze(cleanText: String, sourceId: Int?, sourceTitle: String?): VocabularySourceAnalysisResult {
+                    throw VocabularyAnalysisRetryAvailableException("retry-token", sent)
+                }
+            }
+            withViewModel(analysis = analysis, analysisBackground = background) { viewModel, _ ->
+                viewModel.onRawTextChanged("A science project.")
+                viewModel.analyze()
+                advanceUntilIdle()
+                assertEquals(VocabularySourceAnalysisOutcome.Failed to sent, completion)
+                assertTrue(viewModel.state.value.canRetryAnalysis)
+            }
+        }
+    }
+
+    @Test
     fun clearAnalysisDropsRetryCheckpointAndNextAnalyzeStartsFresh() = runTest {
         var fullCalls = 0
         val analysis = object : IVocabularySourceAnalysisRepository {
@@ -346,6 +393,7 @@ class VocabularySourceDetailViewModelTest {
         analysis: IVocabularySourceAnalysisRepository = DetailTestAnalysis,
         cards: ICardRepository = DetailTestCards,
         ignored: IIgnoredVocabularyWordRepository = DetailTestIgnored,
+        analysisBackground: IVocabularySourceAnalysisBackgroundManager = DetailTestAnalysisBackground,
         block: suspend TestScope.(VocabularySourceDetailViewModel, DetailTestSources) -> Unit,
     ) {
         val dispatcher = StandardTestDispatcher(testScheduler)
@@ -362,7 +410,7 @@ class VocabularySourceDetailViewModelTest {
             FetchDeckSourceUseCase(DetailTestDecks),
             AddVocabularySourceItemsToDeckUseCase(cards, DetailTestDecks, sources, DetailTestVersions,
                 DetailTestTransaction, context, ignored),
-            DetailTestAnalysisBackground, DetailTestSpeech)
+            analysisBackground, DetailTestSpeech)
         val store = ViewModelStore().apply { put("test", viewModel) }
         try {
             runCurrent()

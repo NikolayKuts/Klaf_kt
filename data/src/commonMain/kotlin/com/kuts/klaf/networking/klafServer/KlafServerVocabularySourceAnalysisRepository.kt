@@ -2,6 +2,7 @@ package com.kuts.klaf.networking.klafServer
 
 import com.kuts.domain.entities.VocabularyAnalysisRetryAvailableException
 import com.kuts.domain.entities.VocabularyAnalysisRetryExpiredException
+import com.kuts.domain.entities.VocabularyAnalysisFailedException
 import com.kuts.domain.entities.CefrLevel
 import com.kuts.domain.entities.VocabularySourceAnalysis
 import com.kuts.domain.entities.VocabularySourceAnalysisItem
@@ -84,17 +85,20 @@ class KlafServerVocabularySourceAnalysisRepository(
                 )
             }
             is KlafServerErrorMessage -> {
+                if (response.code == com.kuts.klaf.server.contract.KlafServerErrorCode.CANCELLED) {
+                    throw CancellationException("Vocabulary Source analysis cancelled.")
+                }
                 logE(
                     "Klaf Server vocabulary source analysis error: requestId=$requestId, " +
                         "code=${response.code}, message=${response.message}",
                 )
                 response.analysisRetryToken?.takeIf { it.isNotBlank() && it.length <= 128 }?.let {
-                    throw VocabularyAnalysisRetryAvailableException(it)
+                    throw VocabularyAnalysisRetryAvailableException(it, response.serverNotificationSent)
                 }
                 if (analysisRetryToken != null && response.code == com.kuts.klaf.server.contract.KlafServerErrorCode.VALIDATION_FAILED) {
-                    throw VocabularyAnalysisRetryExpiredException()
+                    throw VocabularyAnalysisRetryExpiredException(response.serverNotificationSent)
                 }
-                throw IllegalArgumentException(response.message)
+                throw VocabularyAnalysisFailedException(response.message, response.serverNotificationSent)
             }
             else -> error("Unexpected Klaf Server response: ${response::class.simpleName}")
         }

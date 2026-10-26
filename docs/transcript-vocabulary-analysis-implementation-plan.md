@@ -2,6 +2,17 @@
 
 Ordered implementation plan for the `VocabularySource` feature.
 
+## Current: Analyze Failure Notifications
+
+1. Done: preserve confirmed push delivery in error responses and client exceptions.
+2. Done: send scoped, deduplicated failure push on disconnection or failed delivery;
+   preserve the marker in retained responses. Do not alert for cancellation.
+3. Done: handle Android failure push with source navigation, error icon and red accent;
+   suppress local duplicates after reconnect, including retryable failures.
+4. Done: verify protocol, simulated Firebase payload, authenticated loopback scenarios,
+   client propagation and Android/Desktop compilation; independent final review
+   and verification (143 tests passed). Real remote Firebase/device delivery remains a manual check.
+
 ## Current: Global Reconciliation And Retry
 
 Current follow-up: add standalone lexical coverage controls test-first, confirm

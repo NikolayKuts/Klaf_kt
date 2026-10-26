@@ -38,6 +38,32 @@ private class RetryTestSession : IKlafServerSession {
 
 class VocabularyAnalysisRetryRepositoryTest {
     @Test
+    fun cancelledServerOperationIsNotAnAnalysisFailure() = runBlocking<Unit> {
+        val session = RetryTestSession().apply {
+            response = KlafServerErrorMessage("r", KlafServerErrorCode.CANCELLED, "Cancelled")
+        }
+        assertFailsWith<kotlinx.coroutines.CancellationException> {
+            KlafServerVocabularySourceAnalysisRepository(session).analyze("Text", 7, "Source")
+        }
+    }
+
+    @Test
+    fun confirmedFailurePushSurvivesGenericRetryableAndExpiredErrors() = runBlocking<Unit> {
+        for ((token, retry) in listOf(null to false, "checkpoint" to false, null to true)) {
+            val session = RetryTestSession().apply {
+                response = KlafServerErrorMessage("r", if (retry) KlafServerErrorCode.VALIDATION_FAILED
+                    else KlafServerErrorCode.ASSISTANT_FAILED, "Failed", token, serverNotificationSent = true)
+            }
+            val failure = assertFailsWith<com.kuts.domain.entities.VocabularyAnalysisFailedException> {
+                val repository = KlafServerVocabularySourceAnalysisRepository(session)
+                if (retry) repository.retry("Text", "expired", 7, "Source")
+                else repository.analyze("Text", 7, "Source")
+            }
+            assertEquals(true, failure.serverNotificationSent)
+        }
+    }
+
+    @Test
     fun failureExposesOpaqueRetryAndRetrySendsItWithExactSourceAndText() = runBlocking<Unit> {
         val session = RetryTestSession()
         val repository = KlafServerVocabularySourceAnalysisRepository(session)

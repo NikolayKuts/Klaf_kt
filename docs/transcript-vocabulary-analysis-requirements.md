@@ -310,6 +310,14 @@ Show `Ignored` alongside `Total`, counting all ignored items in the current
 review list regardless of selection. Update it when items are ignored or
 restored, including changes saved in another source.
 
+Analyze failures must notify Android users as well as successes. While the
+client is connected and backgrounded, show a local failure notification. When
+disconnected or response delivery fails, send a source-linked Firebase failure
+notification with an error icon and red accent. Carry confirmed push delivery
+in the retained error response to suppress duplicate local notifications after
+reconnection, including retryable failures. Cancellation is not an error alert.
+Use a generic user-facing failure message; keep exception details in server logs.
+
 Keep the complete item review toolbar (`Total`, `Ignored`, `Selected`, `Select All` /
 `Clear Selection`, `Ignore`, `Restore`, and `Add to Deck`) pinned to the top of
 the list viewport while scrolling review items. It belongs to the review list

@@ -106,7 +106,7 @@ class AndroidVocabularySourceAnalysisBackgroundManager(
                     }
 
                     VocabularySourceAnalysisOutcome.Failed -> {
-                        notifier.showFailure(
+                        if (!serverNotificationSent) notifier.showFailure(
                             sourceId = finishedAnalysis.sourceId,
                             sourceTitle = finishedAnalysis.sourceTitle,
                         )

@@ -28,6 +28,7 @@ private const val SOURCE_ID_KEY = "sourceId"
 private const val SOURCE_TITLE_KEY = "sourceTitle"
 private const val WORD_KEY = "word"
 private const val VOCABULARY_SOURCE_ANALYSIS_COMPLETED_TYPE = "vocabulary_source_analysis_completed"
+private const val VOCABULARY_SOURCE_ANALYSIS_FAILED_TYPE = "vocabulary_source_analysis_failed"
 private const val VOCABULARY_SOURCE_TRANSCRIPTION_COMPLETED_TYPE = "vocabulary_source_transcription_completed"
 private const val MNEMONIC_TEXT_COMPLETED_TYPE = "mnemonic_text_completed"
 private const val MNEMONIC_IMAGE_COMPLETED_TYPE = "mnemonic_image_completed"
@@ -61,6 +62,7 @@ class KlafFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
         }
         when (data[PUSH_TYPE_KEY]) {
             VOCABULARY_SOURCE_ANALYSIS_COMPLETED_TYPE -> showVocabularySourceAnalysisCompleted(data = data)
+            VOCABULARY_SOURCE_ANALYSIS_FAILED_TYPE -> showVocabularySourceAnalysisFailed(data)
             VOCABULARY_SOURCE_TRANSCRIPTION_COMPLETED_TYPE -> showVocabularySourceTranscriptionCompleted(data = data)
             MNEMONIC_TEXT_COMPLETED_TYPE -> showMnemonicGenerationCompleted(
                 data = data,
@@ -73,6 +75,20 @@ class KlafFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
             WORD_INSIGHTS_COMPLETED_TYPE -> showWordInsightsCompleted(data = data)
             else -> logD("Klaf push message ignored: dataKeys=${data.keys}")
         }
+    }
+
+    private fun showVocabularySourceAnalysisFailed(data: Map<String, String>) {
+        val sourceId = data[SOURCE_ID_KEY]?.toIntOrNull()
+        if (sourceId == null) {
+            logE("Klaf push failure ignored: missing vocabulary source id")
+            return
+        }
+        vocabularySourceAnalysisNotifier.showFailure(
+            sourceId = sourceId,
+            sourceTitle = data[SOURCE_TITLE_KEY].orEmpty().ifBlank { "Vocabulary source" },
+            clientSessionId = requestClientSessionId(data["requestId"].orEmpty()),
+        )
+        logD("Klaf push vocabulary source analysis failure notification shown: sourceId=$sourceId")
     }
 
     private fun showVocabularySourceAnalysisCompleted(data: Map<String, String>) {

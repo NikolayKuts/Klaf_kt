@@ -987,7 +987,9 @@ class VocabularySourceDetailViewModel(
         runCatching {
             handle.finish(
                 outcome = outcome,
-                serverNotificationSent = serverNotificationSent,
+                serverNotificationSent = if (outcome == VocabularySourceAnalysisOutcome.Failed) {
+                    (failure as? com.kuts.domain.entities.VocabularyAnalysisFailedException)?.serverNotificationSent == true
+                } else serverNotificationSent,
             )
         }.onFailure { backgroundManagerFailure ->
             logE(

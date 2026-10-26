@@ -206,6 +206,7 @@ data class KlafServerErrorMessage(
     val code: KlafServerErrorCode,
     val message: String,
     val analysisRetryToken: String? = null,
+    val serverNotificationSent: Boolean = false,
 ) : KlafServerMessage
 
 @Serializable

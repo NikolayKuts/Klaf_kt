@@ -4,6 +4,34 @@ Working status file for the `VocabularySource` feature.
 
 ## Current Focus
 
+- Analyze failure notifications: implemented disconnected/delivery-failure Firebase
+  alerts, Android failure-push handling and confirmed-delivery propagation through
+  retryable/generic errors to suppress duplicate local alerts. Red error icon,
+  high-importance failure channel and red accent; generic message only.
+  Contract RED: `:klaf-server-contract:jvmTest --tests
+  '*VocabularyAnalysisRetryProtocolTest' --console=plain` compiled and failed the
+  delivery-marker round-trip assertion (2 tests, 1 expected failure).
+  Clean loopback RED: `:klaf-server:test --tests
+  '*LiveVocabularyAnalysisFailurePushTest' --console=plain` failed waiting for
+  the missing disconnected-error push; connected error passed (2 tests, 1 failure).
+  Two review regressions reproduced before their fixes: successful push masking a
+  subsequent local processing failure (`VocabularySourceDetailViewModelTest`,
+  expected Failed/false, got Failed/true); server CANCELLED becoming a failure
+  (`VocabularyAnalysisRetryRepositoryTest.cancelledServerOperationIsNotAnAnalysisFailure`,
+  expected CancellationException, got VocabularyAnalysisFailedException).
+  Final targeted GREEN: contract retry protocol, server failure-push and loopback,
+  data retry repository and presentation ViewModel tests passed, together with
+  `:data:compileDebugKotlinAndroid :presentation:compileDebugKotlinAndroid`.
+  Log `%TEMP%/klaf-analysis-error-final-green.log` (2m30s). Repeat independent review
+  passed. Independent broader verification passed (56s): 143 tests, no
+  failures/errors/skips (16 contract, 95 presentation, 4 data, 28 server), Android
+  compilation and server assembly. All four test tasks executed; compilation and
+  assembly were up-to-date after the main successful build. Log:
+  `%TEMP%/klaf-analysis-error-independent-final.log`.
+  An earlier overlapping Gradle invocation collided while writing test XML;
+  subsequent RED/GREEN runs were sequential. Real remote Firebase delivery and
+  Android notification appearance remain unverified on a phone.
+
 - Revised-policy live validation is still pending: first real attempt failed with
   operator-reported provider `serverOverloaded`; one unchanged retry failed after
   902.5 seconds with operator-confirmed `RequestTimeout`. No analysis was returned

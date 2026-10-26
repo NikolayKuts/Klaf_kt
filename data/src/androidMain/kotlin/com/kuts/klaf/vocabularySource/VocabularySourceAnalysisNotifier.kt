@@ -65,6 +65,7 @@ class VocabularySourceAnalysisNotifier(
     fun showFailure(
         sourceId: Int,
         sourceTitle: String,
+        clientSessionId: String = sessionIdProvider(),
     ) {
         val contentText = context.getString(
             R.string.vocabulary_source_analysis_failed,
@@ -80,7 +81,7 @@ class VocabularySourceAnalysisNotifier(
                 .setCategory(NotificationCompat.CATEGORY_ERROR)
                 .setColor(Color.RED)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(createResultPendingIntent(sourceId = sourceId))
+                .setContentIntent(createResultPendingIntent(sourceId = sourceId, clientSessionId = clientSessionId))
                 .setAutoCancel(true)
                 .build(),
         )

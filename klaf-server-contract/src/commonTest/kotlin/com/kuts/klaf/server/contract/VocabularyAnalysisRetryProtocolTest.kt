@@ -10,6 +10,15 @@ class VocabularyAnalysisRetryProtocolTest {
     private val json = Json { ignoreUnknownKeys = true }
 
     @Test
+    fun errorRetainsConfirmedPushDeliveryAcrossReconnect() {
+        val error = json.decodeFromString<KlafServerErrorMessage>(
+            """{"requestId":"r1","code":"ASSISTANT_FAILED","message":"Failed","serverNotificationSent":true}""",
+        )
+        val encoded = json.parseToJsonElement(json.encodeToString(KlafServerErrorMessage.serializer(), error)).jsonObject
+        assertEquals("true", encoded["serverNotificationSent"]?.jsonPrimitive?.content)
+    }
+
+    @Test
     fun retryTokenSurvivesErrorAndAnalyzeRequestRoundTrips() {
         val error = json.decodeFromString<KlafServerErrorMessage>(
             """{"requestId":"r1","code":"ASSISTANT_FAILED","message":"Try again","analysisRetryToken":"opaque-token"}""",
