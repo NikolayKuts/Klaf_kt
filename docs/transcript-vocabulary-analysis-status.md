@@ -80,17 +80,18 @@ Working status file for the `VocabularySource` feature.
   unperformed; the indicator approximates progress by item index. No
   extraction/server behavior changes.
 
-- Revised-policy live validation is still pending: first real attempt failed with
-  operator-reported provider `serverOverloaded`; one unchanged retry failed after
-  902.5 seconds with operator-confirmed `RequestTimeout`. No analysis was returned
-  in either attempt, so no standalone controls were evaluated. Bounded server
-  text-timeout override(default15min, next experiment30min) is implemented;
-  independent review/test verification passed. Await remote update and full
-  process restart with the explicit30min override before another real run.
+- Revised-policy live validation passed with operator-confirmed30min setting:
+  497items,1021occurrences(1019unique spans),846.7seconds. All six automated
+  standalone controls passed; their contextual meanings were manually verified.
+  Earlier overload/15min timeout attempts remain recorded separately. Remaining
+  issues: fragmented cooperation omitted, two exact duplicate occurrences, likely
+  excess good/better sense split and LOW-confidence transcription noise. No more
+  model requests or automatic source/card/deck changes were performed.
 - Implemented agreed whole-text completeness policy for standalone content words
   and an opt-in six-word coverage evaluation. Independent offline tests/build and
   review passed. The old real report fails all six controls as expected; a fresh
-  real-model GREEN requires remote deployment. No new model run claimed yet.
+  real response now passes them. This is sample-level acceptance, not proof of
+  exhaustive recall or semantic correctness for arbitrary transcripts.
 - Simplified comparison: local opt-in authenticated Desktop test collects both
   remote Analyze responses. Operator only changes the remote mode/restarts;
   transcript/result transfers and remote paths are optional standalone fallback.
@@ -143,6 +144,29 @@ Working status file for the `VocabularySource` feature.
 
 ## Completed
 
+- Real revised-policy acceptance: `:di:desktopTest --tests
+  '*RemoteVocabularyComparisonTest.collectRemoteAnalysisUsingExistingDesktopLogin'
+  --rerun --console=plain`, live opt-in and standalone checks enabled, passed in
+  14m16s. Client request846.695s. Source hash unchanged; operator confirmed30min
+  deadline after server update. Report `remote-whole-text-6456c24e-f9de-48e5-b20c-83dd2ec9e6a2.json`:
+  497items,1021occurrences,1019unique spans. Log
+  `klaf-remote-vocabulary-standalone-30min-live-20261026.log`. All six word controls
+  and manually reviewed senses correct: button=campaign badge, tell=discern,
+  constantly, leader, exercise=physical activity, take=transport/accompany.
+- Wider audit:206/207 alphabetic single-word content headwords from chunked exist
+  under the same lemma; cuz is represented by cousin at the original cuz span.
+  This checks headword presence, not every sense/occurrence. Important idioms
+  remain, sometimes with different canonical forms. New successful request was
+  ~26.3% shorter than chunked19m09.5s, not the original shortlist's3x speedup.
+  Failed attempts added1195.9s without an analysis, so successful-run timings
+  do not characterize overall reliability. Single-sample result only.
+- Residual audit findings were recorded without product edits: co-op-/Operation
+  is not recovered as cooperation; committee/elect each contain one identical
+  repeated occurrence; good from better may be an excess same-sense split.
+  LOW-confidence leper/titties/addition reflect suspicious literal transcript
+  fragments, requiring source/audio review rather than guessed corrections.
+  Private report `standalone-comparison.md`, metrics and attempt ledger saved
+  beside the fixture, outside Git. No additional provider call launched.
 - New-policy live attempt reports preserved: first provider overload after293.4s
   (`remote-whole-text-b2e66e7b-c4a7-4896-8911-dc7a5123d762.json`), then confirmed
   timeout after902.5s (`remote-whole-text-915d7fa3-f978-4bfb-83d8-865fe7c57829.json`).
@@ -164,7 +188,8 @@ Working status file for the `VocabularySource` feature.
   skipped, zero failures/errors; server assembly passed52s. Exact filters covered
   config/factory/pool/profiles/vocabulary/controlled routing; log
   `klaf-text-timeout-independent-final.log`. The actual30-minute-budget model run
-  still requires deployment; no model-completeness improvement is claimed yet.
+  is recorded above. Configured30min is a budget; this successful call itself
+  returned before15min, so a universal need for30min is not established.
 - Whole-text standalone coverage policy now explicitly requires all independently
   meaningful content-word senses, including basic/frequent vocabulary, independent
   words inside compositional phrases, and full transcript coverage. It states

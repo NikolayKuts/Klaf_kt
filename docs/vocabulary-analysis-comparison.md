@@ -81,7 +81,28 @@ Recorded reports can be evaluated without a provider call using
 The old162-item whole-text report was evaluated before changing instructions and
 failed all six controls. This intentional baseline RED must not be confused with
 an infrastructure regression. Ordinary offline tests leave both opt-ins unset.
-The revised policy still needs its fresh real-model acceptance run after deployment.
+The revised policy subsequently passed the real-model acceptance run below.
+
+## Revised-policy real result (2026-10-26)
+
+With the confirmed30min server budget, a fresh response passed all six source-word
+controls and manual contextual-meaning review. Request846.7s(14m06.7s),497items,
+1021occurrences(1019unique spans). Full Gradle probe passed14m16s. All207 checked
+alphabetic single-word content headwords from chunked are represented (206same
+lemma plus cuz normalized to cousin). This is not a full sense/recall proof.
+
+Useful idioms were retained with occasional canonical-name changes. New issues
+remain: fragmented cooperation is omitted, two exact occurrences are duplicated,
+and good from better may be an excess same-sense split. Comprehensive extraction
+also exposes probable transcription noise as LOW-confidence entries. Private
+`standalone-comparison.md` and `standalone-comparison-metrics.json` contain details.
+
+The successful response is26.3% quicker than the recorded chunked run, with much
+broader word coverage than the initial162-item shortlist. Two preceding failed
+attempts consumed additional provider wait time; do not treat the successful-run
+comparison as a general performance/reliability guarantee. No product default
+was changed, source data were not saved/synchronized and no extra model run was
+performed after this sample.
 
 ## Preserved input
 
