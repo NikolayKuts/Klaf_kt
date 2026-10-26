@@ -336,10 +336,10 @@ fun Modifier.verticalScrollbar(
     drawWithContent {
         drawContent()
 
-        val firstVisibleElementIndex = state.layoutInfo.visibleItemsInfo.firstOrNull()?.index
+        val firstVisibleElementIndex = state.firstVisibleItemIndex
         val needDrawScrollbar = state.isScrollInProgress || alpha > 0f
 
-        if (needDrawScrollbar && firstVisibleElementIndex != null) {
+        if (needDrawScrollbar && state.layoutInfo.totalItemsCount > 0) {
             val elementHeight = this.size.height / state.layoutInfo.totalItemsCount
             val scrollbarOffsetY = firstVisibleElementIndex * elementHeight
             val scrollbarHeight = state.layoutInfo.visibleItemsInfo.size * elementHeight

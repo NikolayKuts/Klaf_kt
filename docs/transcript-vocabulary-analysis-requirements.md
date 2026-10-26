@@ -330,6 +330,14 @@ field/item index without logging response snippets or arbitrary field values.
 An ordinary WebSocket I/O/heartbeat disconnect must not cancel a running server
 analysis. After reconnect, replay the same request and reuse its retained result.
 
+Provide an `Ignored last` switch, enabled by default, in the pinned review toolbar. When enabled,
+place ignored items after the other review items, preserving source order within
+each group. Turning it off restores source order. Sorting changes presentation
+only: selection, editing, speech and text location still target the original item.
+Show each item's one-based position in the currently displayed order. Show a
+vertical scroll indicator for the existing scroll viewport on Android/Desktop.
+Do not change analysis/extraction behavior.
+
 Keep the complete item review toolbar (`Total`, `Ignored`, `Selected`, `Select All` /
 `Clear Selection`, `Ignore`, `Restore`, and `Add to Deck`) pinned to the top of
 the list viewport while scrolling review items. It belongs to the review list

@@ -56,6 +56,30 @@ Working status file for the `VocabularySource` feature.
   subsequent RED/GREEN runs were sequential. Real remote Firebase delivery and
   Android notification appearance remain unverified on a phone.
 
+- Review-list navigation: added an enabled-by-default `Ignored last` switch,
+  stable pending/ignored grouping without changing source indexes or selection,
+  one-based visible item numbers and the existing always-visible scroll indicator.
+  RED: `:presentation:desktopTest --tests '*VocabularySourceDetailStateTest'
+  --console=plain` compiled and failed the new ordering assertion (3 tests, 1
+  expected failure). Initial GREEN plus `:presentation:compileDebugKotlinAndroid`
+  passed. Independent review identified that the existing scrollbar included a
+  pinned header as its first visible item. Added a Desktop screenshot regression:
+  `:presentation:desktopTest --tests '*VocabularySourceScrollbarTest' --console=plain`
+  failed the expected assertion (thumb remained at rows 0..10 after item 70).
+  Earlier UI-test startup lacked the Skiko runtime; this was an environment
+  failure, not RED, resolved through Desktop-test-only dependencies. The fix uses
+  `LazyListState.firstVisibleItemIndex`; repeat independent review passed.
+  Final GREEN: `:presentation:desktopTest --tests '*VocabularySourceDetailStateTest'
+  --tests '*VocabularySourceScrollbarTest' :presentation:compileDebugKotlinAndroid
+  --console=plain` passed. Independent final verification:
+  `:presentation:desktopTest :presentation:compileDebugKotlinAndroid --console=plain`
+  passed, 93 tests, no failures/errors/skips. Log:
+  `%TEMP%/klaf-review-list-independent-final.log`. The first independent run
+  overlapped test-dependency edits and failed compilation; the final fresh run
+  passed. `git diff --check` passed. Android phone/full-screen manual checks remain
+  unperformed; the indicator approximates progress by item index. No
+  extraction/server behavior changes.
+
 - Revised-policy live validation is still pending: first real attempt failed with
   operator-reported provider `serverOverloaded`; one unchanged retry failed after
   902.5 seconds with operator-confirmed `RequestTimeout`. No analysis was returned

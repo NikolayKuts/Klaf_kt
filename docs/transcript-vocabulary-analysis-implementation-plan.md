@@ -23,6 +23,14 @@ Ordered implementation plan for the `VocabularySource` feature.
    client propagation and Android/Desktop compilation; independent final review
    and verification (143 tests passed). Real remote Firebase/device delivery remains a manual check.
 
+## Current: Review List Navigation
+
+1. Done: test-first stable ignored-last ordering with preserved source identity and selection.
+2. Done: toolbar switch, visible item ordinals and a sticky-header-safe scroll indicator.
+3. Done: Android/Desktop compilation and 93 presentation regressions; obtained
+   independent final review and test/build verification.
+4. Analysis/extraction implementation unchanged. User evaluation on the phone remains.
+
 ## Current: Global Reconciliation And Retry
 
 Current follow-up: add standalone lexical coverage controls test-first, confirm

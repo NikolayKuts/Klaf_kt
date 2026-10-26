@@ -83,6 +83,7 @@ data class VocabularySourceDetailState(
     val draftItems: List<VocabularySourceItem> = emptyList(),
     val decks: List<Deck> = emptyList(),
     val selectedItemIndexes: Set<Int> = emptySet(),
+    val ignoredItemsLast: Boolean = true,
     val itemEditState: VocabularySourceItemEditState? = null,
     val isDeckChooserVisible: Boolean = false,
     val isNewDeckCreationVisible: Boolean = false,
@@ -124,6 +125,9 @@ data class VocabularySourceDetailState(
                 sourceIndex = index,
                 isSelected = index in selectedItemIndexes,
             )
+        }.let { holders ->
+            if (ignoredItemsLast) holders.sortedBy { it.item.status == VocabularySourceItemStatus.IGNORED }
+            else holders
         }
 
     val selectedItemCount: Int
@@ -673,6 +677,10 @@ class VocabularySourceDetailViewModel(
         onRawTextChanged(formatted)
         editableState.update { it.copy(transcriptionState = TranscriptionUiState.Idle) }
         eventMessage.tryEmit(EventMessage(Res.string.vocabulary_source_transcription_finished, type = EventMessage.Type.Positive))
+    }
+
+    fun changeIgnoredItemsLast(ignoredItemsLast: Boolean) {
+        editableState.update { it.copy(ignoredItemsLast = ignoredItemsLast) }
     }
 
     fun changeItemSelectionState(index: Int) {

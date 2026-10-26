@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -41,6 +42,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -58,6 +60,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
@@ -87,6 +90,7 @@ import com.kuts.klaf.common.CustomCheckBox
 import com.kuts.klaf.common.EventMessage
 import com.kuts.klaf.common.ROUNDED_ELEMENT_SIZE
 import com.kuts.klaf.common.RoundButton
+import com.kuts.klaf.common.verticalScrollbar
 import com.kuts.klaf.common.externalActions.IExternalAppActions
 import com.kuts.klaf.navigation.CollectFlowWithLifecycle
 import com.kuts.klaf.presentation.resources.Res
@@ -118,6 +122,7 @@ import com.kuts.klaf.presentation.resources.vocabulary_source_edit_item_title
 import com.kuts.klaf.presentation.resources.vocabulary_source_expand_text_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_ignore_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_ignored_items
+import com.kuts.klaf.presentation.resources.vocabulary_source_ignored_last
 import com.kuts.klaf.presentation.resources.vocabulary_source_items_empty
 import com.kuts.klaf.presentation.resources.vocabulary_source_locate_occurrences_action
 import com.kuts.klaf.presentation.resources.vocabulary_source_new_deck_action
@@ -498,6 +503,7 @@ internal fun VocabularySourceDetailScreen(
             onCancelAnalysis = viewModel::cancelAnalysis,
             onItemSelectionChanged = viewModel::changeItemSelectionState,
             onAllItemsSelectionChanged = viewModel::changeAllItemSelectionState,
+            onIgnoredItemsLastChanged = viewModel::changeIgnoredItemsLast,
             onIgnoreSelectedItems = viewModel::ignoreSelectedItems,
             onRestoreSelectedItems = viewModel::restoreSelectedItems,
             onStartItemEditing = viewModel::startItemEditing,
@@ -537,6 +543,7 @@ private fun VocabularySourceDetailContent(
     onCancelAnalysis: () -> Unit,
     onItemSelectionChanged: (Int) -> Unit,
     onAllItemsSelectionChanged: () -> Unit,
+    onIgnoredItemsLastChanged: (Boolean) -> Unit,
     onIgnoreSelectedItems: () -> Unit,
     onRestoreSelectedItems: () -> Unit,
     onStartItemEditing: (Int) -> Unit,
@@ -630,7 +637,8 @@ private fun VocabularySourceDetailContent(
             state = lazyListState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp)
+                .verticalScrollbar(state = lazyListState, alwaysVisible = true),
             contentPadding = PaddingValues(bottom = FloatingSaveButtonContentBottomPadding),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
@@ -806,6 +814,8 @@ private fun VocabularySourceDetailContent(
                             hasUnsavedChanges = state.hasUnsavedChanges,
                             isLocked = isReviewLocked,
                             onAllItemsSelectionChanged = onAllItemsSelectionChanged,
+                            ignoredItemsLast = state.ignoredItemsLast,
+                            onIgnoredItemsLastChanged = onIgnoredItemsLastChanged,
                             onIgnoreSelectedItems = onIgnoreSelectedItems,
                             onRestoreSelectedItems = onRestoreSelectedItems,
                             onAddSelectedToDeckClick = onAddSelectedToDeckClick,
@@ -817,9 +827,10 @@ private fun VocabularySourceDetailContent(
                     key = { _, holder ->
                         "${holder.item.id}-${holder.sourceIndex}"
                     },
-                ) { _, holder ->
+                ) { index, holder ->
                     VocabularySourceResultItem(
                         holder = holder,
+                        position = index + 1,
                         isLocked = isReviewLocked,
                         onSelectionChanged = { onItemSelectionChanged(holder.sourceIndex) },
                         onEditClick = { onStartItemEditing(holder.sourceIndex) },
@@ -1399,6 +1410,8 @@ private fun VocabularySourceItemReviewToolbar(
     hasUnsavedChanges: Boolean,
     isLocked: Boolean,
     onAllItemsSelectionChanged: () -> Unit,
+    ignoredItemsLast: Boolean,
+    onIgnoredItemsLastChanged: (Boolean) -> Unit,
     onIgnoreSelectedItems: () -> Unit,
     onRestoreSelectedItems: () -> Unit,
     onAddSelectedToDeckClick: () -> Unit,
@@ -1414,6 +1427,21 @@ private fun VocabularySourceItemReviewToolbar(
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.toggleable(
+                value = ignoredItemsLast,
+                role = Role.Switch,
+                onValueChange = onIgnoredItemsLastChanged,
+            ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Switch(
+                checked = ignoredItemsLast,
+                onCheckedChange = null,
+            )
+            Text(text = stringResource(Res.string.vocabulary_source_ignored_last))
+        }
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -1484,6 +1512,7 @@ private fun VocabularySourceItemReviewToolbar(
 @Composable
 private fun VocabularySourceResultItem(
     holder: SelectableVocabularySourceItemHolder,
+    position: Int,
     isLocked: Boolean,
     onSelectionChanged: () -> Unit,
     onEditClick: () -> Unit,
@@ -1515,6 +1544,7 @@ private fun VocabularySourceResultItem(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
+                Text(text = "#$position", style = MaterialTheme.typography.labelMedium)
                 CustomCheckBox(
                     modifier = Modifier,
                     checked = holder.isSelected,
@@ -2087,6 +2117,7 @@ private fun VocabularySourceDetailContentPreviewContent(darkTheme: Boolean) {
                 onCancelAnalysis = {},
                 onItemSelectionChanged = {},
                 onAllItemsSelectionChanged = {},
+                onIgnoredItemsLastChanged = {},
                 onIgnoreSelectedItems = {},
                 onRestoreSelectedItems = {},
                 onStartItemEditing = {},
@@ -2120,6 +2151,7 @@ private fun VocabularySourceItemsPreviewContent(darkTheme: Boolean) {
             ) {
                 vocabularySourcePreviewItems().forEachIndexed { index, item ->
                     VocabularySourceResultItem(
+                        position = index + 1,
                         holder = SelectableVocabularySourceItemHolder(
                             item = item,
                             sourceIndex = index,
